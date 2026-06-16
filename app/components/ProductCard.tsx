@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import FavoriteButton from "./FavoriteButton";
 
 interface ProductCardProps {
   name: string;
@@ -74,7 +75,7 @@ export default function ProductCard({
               alt={name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-              className="object-contain group-hover:scale-105 transition-transform duration-300"
+              className="object-contain"
             />
           ) : (
             <svg className="w-24 h-24 text-gray-200" fill="currentColor" viewBox="0 0 24 24">
@@ -89,6 +90,11 @@ export default function ProductCard({
             {displayBadge}
           </span>
         )}
+
+        {/* Favorite */}
+        <div className="absolute top-4 right-4">
+          <FavoriteButton productSlug={slug} />
+        </div>
 
       </div>
 
