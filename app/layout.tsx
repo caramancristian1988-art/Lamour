@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import TopBar from "./components/TopBar";
 import ScrollAwareHeader from "./components/ScrollAwareHeader";
+import ScrollToTop from "./components/ScrollToTop";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
@@ -28,6 +30,9 @@ export default function RootLayout({
   return (
     <html lang="ro" className={GeistSans.variable}>
       <body className="min-h-screen flex flex-col">
+        <Suspense fallback={null}>
+          <ScrollToTop />
+        </Suspense>
         <TopBar />
         <ScrollAwareHeader />
         {children}
