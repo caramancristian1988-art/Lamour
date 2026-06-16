@@ -194,11 +194,14 @@ export default function DesprePage() {
                     key={member.name}
                     className="group bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
                   >
-                    <div className={`h-44 bg-gradient-to-br ${member.color} flex items-center justify-center relative overflow-hidden`}>
-                      <div className="w-20 h-20 rounded-2xl bg-white/15 border-2 border-white/25 flex items-center justify-center">
-                        <span className="text-2xl font-extrabold text-white">{member.initials}</span>
-                      </div>
-                      <div className="absolute -bottom-5 -right-5 w-20 h-20 rounded-full bg-[#c7092b]/20" />
+                    <div className="h-44 relative overflow-hidden">
+                      <Image
+                        src="/tehnician.png"
+                        alt={member.name}
+                        fill
+                        className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                      />
                     </div>
                     <div className="px-4 py-4 text-center">
                       <h3 className="font-extrabold text-[#1d2353] text-sm mb-1">{member.name}</h3>
