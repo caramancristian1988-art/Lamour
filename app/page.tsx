@@ -4,7 +4,6 @@ import {
   fallbackProducts,
   fallbackPopularProducts,
   fallbackOfferProducts,
-  fallbackDiscountProducts,
 } from "@/lib/fallbackData";
 import Hero from "@/app/components/Hero";
 import CategoryGrid from "@/app/components/CategoryGrid";
@@ -26,7 +25,6 @@ async function getData() {
       products,
       popularProducts,
       offerProducts: fallbackOfferProducts.slice(0, 4),
-      discountProducts: fallbackDiscountProducts.slice(0, 4),
     };
   } catch {
     return {
@@ -34,13 +32,12 @@ async function getData() {
       products: fallbackProducts,
       popularProducts: fallbackPopularProducts,
       offerProducts: fallbackOfferProducts.slice(0, 4),
-      discountProducts: fallbackDiscountProducts.slice(0, 4),
     };
   }
 }
 
 export default async function HomePage() {
-  const { categories, products, popularProducts, offerProducts, discountProducts } = await getData();
+  const { categories, products, popularProducts, offerProducts } = await getData();
 
   return (
     <main>
@@ -60,14 +57,6 @@ export default async function HomePage() {
         highlighted="speciale"
         viewAllHref="/produse"
         bg="bg-[#f8fafc]"
-      />
-      <ProductsSection
-        products={discountProducts}
-        title="Produse cu"
-        highlighted="reduceri"
-        viewAllHref="/produse"
-        bg="bg-white"
-        showDiscount
       />
       <ServicesSection />
       <TrustBar />
