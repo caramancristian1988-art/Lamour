@@ -16,10 +16,10 @@ const stats = [
 ];
 
 const team = [
-  { name: "Alexandru Popescu", role: "Director General", initials: "AP", color: "from-[#1d2353] to-[#2a3470]" },
-  { name: "Mihai Rotaru", role: "Responsabil Tehnic", initials: "MR", color: "from-[#1d2353] to-[#2a3470]" },
-  { name: "Ion Cebotari", role: "Tehnician Șef", initials: "IC", color: "from-[#1d2353] to-[#2a3470]" },
-  { name: "Vladimir Turcanu", role: "Consultant Vânzări", initials: "VT", color: "from-[#1d2353] to-[#2a3470]" },
+  { name: "Alexandru Popescu", role: "Director General", image: "/tehnician.png" },
+  { name: "Mihai Rotaru", role: "Responsabil Tehnic", image: "/tehnician-2.png" },
+  { name: "Ion Cebotari", role: "Tehnician Șef", image: "/tehnician.png" },
+  { name: "Vladimir Turcanu", role: "Consultant Vânzări", image: "/tehnician-2.png" },
 ];
 
 export default function DesprePage() {
@@ -196,7 +196,7 @@ export default function DesprePage() {
                   >
                     <div className="h-44 relative overflow-hidden">
                       <Image
-                        src="/tehnician.png"
+                        src={member.image}
                         alt={member.name}
                         fill
                         className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
