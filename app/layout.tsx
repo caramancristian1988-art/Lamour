@@ -5,6 +5,7 @@ import "./globals.css";
 import TopBar from "./components/TopBar";
 import ScrollAwareHeader from "./components/ScrollAwareHeader";
 import ScrollToTop from "./components/ScrollToTop";
+import { FavoritesProvider } from "./components/FavoritesProvider";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
@@ -30,13 +31,15 @@ export default function RootLayout({
   return (
     <html lang="ro" className={GeistSans.variable}>
       <body className="min-h-screen flex flex-col">
-        <Suspense fallback={null}>
-          <ScrollToTop />
-        </Suspense>
-        <TopBar />
-        <ScrollAwareHeader />
-        {children}
-        <Footer />
+        <FavoritesProvider>
+          <Suspense fallback={null}>
+            <ScrollToTop />
+          </Suspense>
+          <TopBar />
+          <ScrollAwareHeader />
+          {children}
+          <Footer />
+        </FavoritesProvider>
       </body>
     </html>
   );

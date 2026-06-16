@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SearchBar from "./SearchBar";
 import MobileMenuButton from "./MobileMenuButton";
+import FavoritesBadge from "./FavoritesBadge";
 
 const productsDropdown = [
   { href: "/produse/conditioane-rezidentiale", label: "Condiționere rezidențiale" },
@@ -15,6 +16,9 @@ const servicesDropdown = [
   { href: "/servicii/instalare", label: "Instalare" },
   { href: "/servicii/mentenanta", label: "Mentenanță" },
   { href: "/servicii/diagnosticare", label: "Diagnosticare & Reparații" },
+  { href: "/servicii/consultanta", label: "Consultanță" },
+  { href: "/servicii/multisplit", label: "Sisteme multisplit" },
+  { href: "/servicii/comerciale", label: "Sisteme comerciale HVAC" },
 ];
 
 export default function StickyHeader() {
@@ -42,10 +46,11 @@ export default function StickyHeader() {
                 </svg>
                 <span className="text-xs font-medium whitespace-nowrap">Contul meu</span>
               </Link>
-              <Link href="/favorite" className="text-gray-600 hover:text-[#c7092b] transition-colors" aria-label="Favorite">
+              <Link href="/favorite" className="text-gray-600 hover:text-[#c7092b] transition-colors relative" aria-label="Favorite">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
+                <FavoritesBadge className="absolute -top-2 -right-2 w-4 h-4 bg-[#c7092b] rounded-full text-white text-[9px] font-bold flex items-center justify-center" />
               </Link>
               <Link href="/cos" className="text-gray-600 relative" aria-label="Coș">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
@@ -83,10 +88,11 @@ export default function StickyHeader() {
               </svg>
               <span className="hidden lg:block font-medium">Contul meu</span>
             </Link>
-            <Link href="/favorite" className="text-gray-600 hover:text-[#c7092b] transition-colors" aria-label="Favorite">
+            <Link href="/favorite" className="text-gray-600 hover:text-[#c7092b] transition-colors relative" aria-label="Favorite">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
+              <FavoritesBadge className="absolute -top-2 -right-2 w-5 h-5 bg-[#c7092b] rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
             </Link>
             <Link href="/cos" className="text-gray-600 hover:text-[#1d2353] transition-colors" aria-label="Coș">
               <div className="relative">

@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useFavorites } from "./FavoritesProvider";
 
 export default function FavoriteButton({ productSlug }: { productSlug: string }) {
-  const [liked, setLiked] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const liked = isFavorite(productSlug);
 
   return (
     <button
-      onClick={() => setLiked(!liked)}
+      onClick={() => toggleFavorite(productSlug)}
       aria-label={liked ? "Elimină din favorite" : "Adaugă la favorite"}
       className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
         liked
