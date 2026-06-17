@@ -52,8 +52,10 @@ export default async function ProdusePage({
   const query = await searchParams;
   const sort = parseSort(query.sort);
   const page = parsePage(query.page);
+  const offersOnly = query.oferte === "1";
 
-  const { categories, products } = await getData();
+  const { categories, products: allProducts } = await getData();
+  const products = offersOnly ? allProducts.filter((p) => p.oldPrice != null) : allProducts;
 
   const sorted = sortProducts(products, sort);
   const { items, page: currentPage, totalPages } = paginate(sorted, page);
@@ -120,9 +122,19 @@ export default async function ProdusePage({
             <div className="flex items-center gap-1 overflow-x-auto scroll-smooth" style={{ scrollbarWidth: "none" }}>
               <Link
                 href="/produse"
-                className="shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all bg-[#1d2353] text-white"
+                className={`shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all ${
+                  !offersOnly ? "bg-[#1d2353] text-white" : "text-gray-500 hover:bg-gray-100"
+                }`}
               >
                 Toate produsele
+              </Link>
+              <Link
+                href="/produse?oferte=1"
+                className={`shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all ${
+                  offersOnly ? "bg-[#c7092b] text-white" : "text-[#c7092b] hover:bg-gray-100"
+                }`}
+              >
+                Oferte Speciale
               </Link>
               {categories.map((cat) => (
                 <Link
@@ -155,16 +167,25 @@ export default async function ProdusePage({
                   name={localProductNames[product.slug] ?? product.name}
                   image={localProductImages[product.slug] ?? product.image}
                   badge={localProductBadges[product.slug] ?? product.badge}
+                  showDiscount={offersOnly}
                 />
               ))}
             </div>
           ) : (
             <div className="text-center py-16">
-              <p className="text-gray-500">Momentan nu există produse disponibile.</p>
+              <p className="text-gray-500">
+                {offersOnly ? "Momentan nu există oferte speciale active." : "Momentan nu există produse disponibile."}
+              </p>
             </div>
           )}
 
-          <ProductPagination basePath="/produse" page={currentPage} totalPages={totalPages} sort={sort} />
+          <ProductPagination
+            basePath="/produse"
+            page={currentPage}
+            totalPages={totalPages}
+            sort={sort}
+            extraParams={offersOnly ? { oferte: "1" } : undefined}
+          />
         </div>
       </section>
 

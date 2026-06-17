@@ -5,17 +5,18 @@ interface Props {
   page: number;
   totalPages: number;
   sort: string;
+  extraParams?: Record<string, string>;
 }
 
-function buildHref(basePath: string, page: number, sort: string) {
-  const params = new URLSearchParams();
+function buildHref(basePath: string, page: number, sort: string, extraParams: Record<string, string> = {}) {
+  const params = new URLSearchParams(extraParams);
   if (sort !== "newest") params.set("sort", sort);
   if (page > 1) params.set("page", String(page));
   const qs = params.toString();
   return qs ? `${basePath}?${qs}` : basePath;
 }
 
-export default function ProductPagination({ basePath, page, totalPages, sort }: Props) {
+export default function ProductPagination({ basePath, page, totalPages, sort, extraParams }: Props) {
   if (totalPages <= 1) return null;
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -23,7 +24,7 @@ export default function ProductPagination({ basePath, page, totalPages, sort }: 
   return (
     <div className="flex items-center justify-center gap-1 mt-12">
       <Link
-        href={buildHref(basePath, Math.max(1, page - 1), sort)}
+        href={buildHref(basePath, Math.max(1, page - 1), sort, extraParams)}
         aria-disabled={page === 1}
         className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${
           page === 1 ? "text-gray-300 pointer-events-none" : "text-gray-400 hover:bg-gray-100"
@@ -36,7 +37,7 @@ export default function ProductPagination({ basePath, page, totalPages, sort }: 
       {pages.map((p) => (
         <Link
           key={p}
-          href={buildHref(basePath, p, sort)}
+          href={buildHref(basePath, p, sort, extraParams)}
           className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-colors ${
             p === page ? "bg-[#1d2353] text-white" : "text-gray-500 hover:bg-gray-100"
           }`}
@@ -45,7 +46,7 @@ export default function ProductPagination({ basePath, page, totalPages, sort }: 
         </Link>
       ))}
       <Link
-        href={buildHref(basePath, Math.min(totalPages, page + 1), sort)}
+        href={buildHref(basePath, Math.min(totalPages, page + 1), sort, extraParams)}
         aria-disabled={page === totalPages}
         className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${
           page === totalPages ? "text-gray-300 pointer-events-none" : "text-gray-400 hover:bg-gray-100"
