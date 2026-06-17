@@ -93,7 +93,7 @@ export default function Hero() {
       </div>
 
       {/* ── DESKTOP ── */}
-      <div className="hidden sm:block relative h-[560px] lg:h-[640px] xl:h-[700px]">
+      <div className="hidden sm:block relative h-[calc(100vh-210px)] min-h-[480px] max-h-[760px]">
         <Image
           src="/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png"
           alt="Aparat de aer condiționat în sufragerie"
