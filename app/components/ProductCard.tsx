@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import FavoriteButton from "./FavoriteButton";
+import AddToCartButton from "./AddToCartButton";
 
 interface ProductCardProps {
   name: string;
@@ -137,12 +138,18 @@ export default function ProductCard({
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="flex-1 h-11 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide">
+            <AddToCartButton
+              slug={slug}
+              name={name}
+              price={price}
+              image={image ?? null}
+              className="flex-1 h-11 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-gray-200 disabled:text-gray-400"
+            >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="hidden sm:inline">Adaugă în coș</span>
-            </button>
+            </AddToCartButton>
             <button
               onClick={() => { window.location.href = `/produse/${slug}`; }}
               className="w-11 h-11 flex items-center justify-center border border-gray-200 rounded-xl shrink-0 text-gray-400 hover:border-[#c7092b] hover:text-[#c7092b] transition-colors"

@@ -6,6 +6,7 @@ import TopBar from "./components/TopBar";
 import ScrollAwareHeader from "./components/ScrollAwareHeader";
 import ScrollToTop from "./components/ScrollToTop";
 import { FavoritesProvider } from "./components/FavoritesProvider";
+import { CartProvider } from "./components/CartProvider";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
@@ -32,13 +33,15 @@ export default function RootLayout({
     <html lang="ro" className={GeistSans.variable}>
       <body className="min-h-screen flex flex-col">
         <FavoritesProvider>
-          <Suspense fallback={null}>
-            <ScrollToTop />
-          </Suspense>
-          <TopBar />
-          <ScrollAwareHeader />
-          {children}
-          <Footer />
+          <CartProvider>
+            <Suspense fallback={null}>
+              <ScrollToTop />
+            </Suspense>
+            <TopBar />
+            <ScrollAwareHeader />
+            {children}
+            <Footer />
+          </CartProvider>
         </FavoritesProvider>
       </body>
     </html>

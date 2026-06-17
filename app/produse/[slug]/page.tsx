@@ -17,6 +17,7 @@ import { sortProducts, paginate, parseSort, parsePage } from "@/lib/productListi
 import ProductCard from "../../components/ProductCard";
 import ProductSortSelect from "../../components/ProductSortSelect";
 import ProductPagination from "../../components/ProductPagination";
+import AddToCartButton from "../../components/AddToCartButton";
 
 export const revalidate = 3600;
 
@@ -438,8 +439,12 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
 
             {/* Actions */}
             <div className="flex items-center gap-3 mb-7">
-              <button
-                disabled={!product.inStock}
+              <AddToCartButton
+                slug={product.slug}
+                name={displayName}
+                price={product.price}
+                image={displayImage}
+                inStock={product.inStock}
                 className={`flex-1 sm:flex-none sm:px-10 h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors ${
                   product.inStock
                     ? "bg-[#c7092b] hover:bg-[#a5071f] text-white"
@@ -450,7 +455,7 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 {product.inStock ? "Adaugă în coș" : "Stoc epuizat"}
-              </button>
+              </AddToCartButton>
               <Link
                 href="/contact"
                 className="h-12 px-6 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide"
