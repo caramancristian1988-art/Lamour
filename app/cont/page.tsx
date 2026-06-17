@@ -37,6 +37,18 @@ export default async function ContPage() {
             </div>
           </div>
 
+          {user.isAdmin && (
+            <Link
+              href="/admin"
+              className="flex items-center justify-center gap-2 bg-[#1d2353] hover:bg-[#2a3470] text-white font-bold px-6 py-3.5 rounded-xl transition-colors text-sm uppercase tracking-wide mb-8"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10m-9 11h4" />
+              </svg>
+              Mergi la pagina de administrator
+            </Link>
+          )}
+
           <AccountStats />
 
           <div className="border-t border-gray-100 pt-6">

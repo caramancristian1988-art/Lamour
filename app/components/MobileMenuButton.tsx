@@ -21,6 +21,7 @@ const servicesDropdown = [
 ];
 
 const navLinks = [
+  { href: "/proiecte", label: "Proiecte" },
   { href: "/despre", label: "Despre noi" },
   { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },

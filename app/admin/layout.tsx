@@ -6,21 +6,38 @@ export const metadata = {
   title: "Admin | Climat Rapid",
 };
 
-async function getNotificationCounts() {
+async function getNotifications() {
   try {
-    const [unreadMessages, pendingReviews] = await Promise.all([
+    const [unreadMessages, pendingReviews, recentMessages, recentReviews] = await Promise.all([
       prisma.contactMessage.count({ where: { read: false } }),
       prisma.review.count({ where: { approved: false } }),
+      prisma.contactMessage.findMany({ where: { read: false }, orderBy: { createdAt: "desc" }, take: 5 }),
+      prisma.review.findMany({ where: { approved: false }, orderBy: { createdAt: "desc" }, take: 5 }),
     ]);
-    return { unreadMessages, pendingReviews };
+    return {
+      unreadMessages,
+      pendingReviews,
+      recentMessages: recentMessages.map((m) => ({
+        id: m.id,
+        name: m.name,
+        phone: m.phone,
+        createdAt: m.createdAt.toISOString(),
+      })),
+      recentReviews: recentReviews.map((r) => ({
+        id: r.id,
+        name: r.name,
+        text: r.text,
+        createdAt: r.createdAt.toISOString(),
+      })),
+    };
   } catch {
-    return { unreadMessages: 0, pendingReviews: 0 };
+    return { unreadMessages: 0, pendingReviews: 0, recentMessages: [], recentReviews: [] };
   }
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireAdmin();
-  const notifications = await getNotificationCounts();
+  const notifications = await getNotifications();
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] lg:flex">
