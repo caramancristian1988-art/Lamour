@@ -546,12 +546,9 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
       {/* Reviews */}
       <section className="bg-[#f6f8fb] border-y border-gray-100 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="flex items-center justify-between gap-4 flex-wrap mb-8">
-            <h2 className="text-2xl font-extrabold text-[#1d2353]">
-              Recenzii clienți {reviews.length > 0 && <span className="text-gray-400 font-medium text-base">({reviews.length})</span>}
-            </h2>
-            <WriteReviewModal productSlug={product.slug} productName={product.name} />
-          </div>
+          <h2 className="text-2xl font-extrabold text-[#1d2353] mb-8">
+            Recenzii clienți {reviews.length > 0 && <span className="text-gray-400 font-medium text-base">({reviews.length})</span>}
+          </h2>
 
           {reviews.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -574,9 +571,41 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
                   </div>
                 </div>
               ))}
+
+              <WriteReviewModal
+                productSlug={product.slug}
+                productName={product.name}
+                className="group flex flex-col items-center justify-center gap-3 bg-white border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:border-[#c7092b] hover:bg-[#fdf2f3] transition-colors min-h-[160px]"
+              >
+                <span className="w-11 h-11 rounded-full bg-[#fdf2f3] text-[#c7092b] flex items-center justify-center transition-transform group-hover:scale-110">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </span>
+                <span className="text-sm font-bold text-[#1d2353] group-hover:text-[#c7092b] transition-colors">Scrie o recenzie</span>
+                <span className="text-xs text-gray-400">Spune-ne ce părere ai despre acest produs</span>
+              </WriteReviewModal>
             </div>
           ) : (
-            <p className="text-gray-500 text-sm">Nu există încă recenzii pentru acest produs.</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="sm:col-span-2 lg:col-span-3 -mb-1">
+                <p className="text-gray-500 text-sm">Nu există încă recenzii pentru acest produs. Fii primul!</p>
+              </div>
+
+              <WriteReviewModal
+                productSlug={product.slug}
+                productName={product.name}
+                className="group flex flex-col items-center justify-center gap-3 bg-white border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:border-[#c7092b] hover:bg-[#fdf2f3] transition-colors min-h-[160px]"
+              >
+                <span className="w-11 h-11 rounded-full bg-[#fdf2f3] text-[#c7092b] flex items-center justify-center transition-transform group-hover:scale-110">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </span>
+                <span className="text-sm font-bold text-[#1d2353] group-hover:text-[#c7092b] transition-colors">Scrie o recenzie</span>
+                <span className="text-xs text-gray-400">Spune-ne ce părere ai despre acest produs</span>
+              </WriteReviewModal>
+            </div>
           )}
         </div>
       </section>

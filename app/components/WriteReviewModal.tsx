@@ -35,20 +35,131 @@ function StarPicker({ rating, onChange }: { rating: number; onChange: (value: nu
   );
 }
 
-export default function WriteReviewModal({ productSlug, productName }: { productSlug: string; productName: string }) {
-  const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+function ReviewFormPanel({
+  productSlug,
+  productName,
+  onSuccess,
+}: {
+  productSlug: string;
+  productName: string;
+  onSuccess: () => void;
+}) {
   const [rating, setRating] = useState(0);
   const [state, formAction, pending] = useActionState(submitReviewAction, initialState);
 
+  useEffect(() => {
+    if (state.success) {
+      const timeout = setTimeout(onSuccess, 2200);
+      return () => clearTimeout(timeout);
+    }
+  }, [state.success, onSuccess]);
+
+  if (state.success) {
+    return (
+      <div className="flex flex-col items-center text-center py-8">
+        <div className="relative w-14 h-14 mb-4">
+          <span className="absolute inset-0 rounded-full bg-green-200 animate-ping" />
+          <div className="relative w-14 h-14 rounded-full bg-green-100 text-green-600 flex items-center justify-center animate-pop">
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        </div>
+        <h3 className="text-lg font-extrabold text-[#1d2353] mb-1 animate-pop" style={{ animationDelay: "100ms" }}>
+          Recenzia ta a fost trimisă!
+        </h3>
+        <p className="text-sm text-gray-500 animate-pop" style={{ animationDelay: "180ms" }}>
+          Va fi afișată pe pagina produsului după ce este verificată.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <h2 className="text-xl font-extrabold text-[#1d2353] text-center mb-5">Recenzii</h2>
+
+      <form action={formAction} className="flex flex-col gap-3.5">
+        <input type="hidden" name="productSlug" value={productSlug} />
+        <input type="hidden" name="productName" value={productName} />
+        <input type="hidden" name="rating" value={rating} />
+
+        <StarPicker rating={rating} onChange={setRating} />
+
+        {state.error && (
+          <p className="text-sm text-[#c7092b] bg-[#fdf2f3] border border-[#fbd5d9] rounded-lg px-4 py-2.5 text-center">
+            {state.error}
+          </p>
+        )}
+
+        <input
+          type="text"
+          name="name"
+          required
+          placeholder="Nume/Prenume"
+          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
+        />
+        <textarea
+          name="pros"
+          placeholder="Plusuri"
+          rows={2}
+          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400 resize-none"
+        />
+        <textarea
+          name="cons"
+          placeholder="Minusuri"
+          rows={2}
+          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400 resize-none"
+        />
+        <textarea
+          name="text"
+          required
+          placeholder="Comentariu"
+          rows={3}
+          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400 resize-none"
+        />
+
+        <button
+          type="submit"
+          disabled={pending}
+          className="bg-[#c7092b] hover:bg-[#a5071f] disabled:opacity-60 active:scale-95 text-white font-bold py-3 rounded-xl transition-all text-sm uppercase tracking-wide mt-1"
+        >
+          {pending ? "Se trimite..." : "Trimite"}
+        </button>
+      </form>
+    </>
+  );
+}
+
+export default function WriteReviewModal({
+  productSlug,
+  productName,
+  className,
+  children,
+}: {
+  productSlug: string;
+  productName: string;
+  className?: string;
+  children?: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [openCount, setOpenCount] = useState(0);
+
   function openModal() {
+    setOpenCount((c) => c + 1);
     setMounted(true);
     requestAnimationFrame(() => requestAnimationFrame(() => setOpen(true)));
   }
 
   function closeModal() {
     setOpen(false);
-    setRating(0);
   }
 
   useEffect(() => {
@@ -66,20 +177,16 @@ export default function WriteReviewModal({ productSlug, productName }: { product
     };
   }, [mounted]);
 
-  useEffect(() => {
-    if (state.success) {
-      const timeout = setTimeout(closeModal, 1800);
-      return () => clearTimeout(timeout);
-    }
-  }, [state.success]);
-
   return (
     <>
       <button
         onClick={openModal}
-        className="bg-[#111827] hover:bg-black text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors uppercase tracking-wide"
+        className={
+          className ??
+          "bg-[#111827] hover:bg-black text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors uppercase tracking-wide"
+        }
       >
-        Scrie o recenzie
+        {children ?? "Scrie o recenzie"}
       </button>
 
       {mounted && (
@@ -105,76 +212,7 @@ export default function WriteReviewModal({ productSlug, productName }: { product
               </svg>
             </button>
 
-            {state.success ? (
-              <div className="flex flex-col items-center text-center py-8 animate-pop">
-                <div className="w-14 h-14 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-4">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-extrabold text-[#1d2353] mb-1">Mulțumim pentru recenzie!</h3>
-                <p className="text-sm text-gray-500">Va fi afișată pe pagina produsului după ce este verificată.</p>
-              </div>
-            ) : (
-              <>
-                <h2 className="text-xl font-extrabold text-[#1d2353] text-center mb-5">Recenzii</h2>
-
-                <form action={formAction} className="flex flex-col gap-3.5">
-                  <input type="hidden" name="productSlug" value={productSlug} />
-                  <input type="hidden" name="productName" value={productName} />
-                  <input type="hidden" name="rating" value={rating} />
-
-                  <StarPicker rating={rating} onChange={setRating} />
-
-                  {state.error && (
-                    <p className="text-sm text-[#c7092b] bg-[#fdf2f3] border border-[#fbd5d9] rounded-lg px-4 py-2.5 text-center">
-                      {state.error}
-                    </p>
-                  )}
-
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    placeholder="Nume/Prenume"
-                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
-                  />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
-                  />
-                  <textarea
-                    name="pros"
-                    placeholder="Plusuri"
-                    rows={2}
-                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400 resize-none"
-                  />
-                  <textarea
-                    name="cons"
-                    placeholder="Minusuri"
-                    rows={2}
-                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400 resize-none"
-                  />
-                  <textarea
-                    name="text"
-                    required
-                    placeholder="Comentariu"
-                    rows={3}
-                    className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400 resize-none"
-                  />
-
-                  <button
-                    type="submit"
-                    disabled={pending}
-                    className="bg-[#c7092b] hover:bg-[#a5071f] disabled:opacity-60 active:scale-95 text-white font-bold py-3 rounded-xl transition-all text-sm uppercase tracking-wide mt-1"
-                  >
-                    {pending ? "Se trimite..." : "Trimite"}
-                  </button>
-                </form>
-              </>
-            )}
+            <ReviewFormPanel key={openCount} productSlug={productSlug} productName={productName} onSuccess={closeModal} />
           </div>
         </div>
       )}
