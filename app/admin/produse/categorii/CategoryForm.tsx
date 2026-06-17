@@ -1,4 +1,5 @@
 import { AdminInput, AdminTextarea } from "../../components/AdminField";
+import ImageUploadField from "../../components/ImageUploadField";
 
 interface CategoryDefaults {
   id?: string;
@@ -24,7 +25,7 @@ export default function CategoryForm({
       <AdminInput label="Nume categorie" name="name" required defaultValue={defaults?.name} placeholder="Condiționere rezidențiale" />
       <AdminInput label="Slug" name="slug" required defaultValue={defaults?.slug} placeholder="conditioane-rezidentiale" />
       <AdminTextarea label="Descriere (opțional)" name="description" defaultValue={defaults?.description ?? ""} placeholder="Pentru confortul casei tale" rows={2} />
-      <AdminInput label="URL imagine (opțional)" name="image" defaultValue={defaults?.image ?? ""} placeholder="/categorii/rezidentiale.webp" />
+      <ImageUploadField name="image" label="Imagine (opțional)" defaultValue={defaults?.image} />
 
       <button
         type="submit"

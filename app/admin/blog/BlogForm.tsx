@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { AdminInput, AdminTextarea } from "../components/AdminField";
+import ImageUploadField from "../components/ImageUploadField";
 import type { BlogFormState } from "@/lib/adminBlogActions";
 
 interface BlogDefaults {
@@ -11,8 +12,11 @@ interface BlogDefaults {
   description?: string;
   image?: string | null;
   content?: string | null;
+  category?: string | null;
   published?: boolean;
 }
+
+const BLOG_CATEGORIES = ["Ghiduri", "Sfaturi", "Întreținere", "Tehnologie", "Noutăți"];
 
 const initialState: BlogFormState = {};
 
@@ -38,7 +42,24 @@ export default function BlogForm({
       <AdminInput label="Titlu" name="title" required defaultValue={defaults?.title} placeholder="5 sfaturi pentru întreținerea aparatului de aer condiționat" />
       <AdminInput label="Slug" name="slug" defaultValue={defaults?.slug} placeholder="se generează automat din titlu dacă e gol" />
       <AdminTextarea label="Descriere scurtă" name="description" defaultValue={defaults?.description} placeholder="Apare în lista de articole și la SEO." rows={2} />
-      <AdminInput label="URL imagine principală" name="image" defaultValue={defaults?.image ?? ""} placeholder="/blog/articol-1.jpg" />
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-bold text-gray-600">Categorie</span>
+        <select
+          name="category"
+          defaultValue={defaults?.category ?? ""}
+          className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] bg-white"
+        >
+          <option value="">—</option>
+          {BLOG_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <ImageUploadField name="image" label="Imagine principală" defaultValue={defaults?.image} />
       <AdminTextarea label="Conținut" name="content" defaultValue={defaults?.content ?? ""} placeholder="Conținutul complet al articolului..." rows={10} />
 
       <label className="flex items-center gap-2 text-sm font-bold text-gray-600">

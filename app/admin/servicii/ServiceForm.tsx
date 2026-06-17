@@ -1,4 +1,5 @@
 import { AdminInput, AdminTextarea } from "../components/AdminField";
+import ImageUploadField from "../components/ImageUploadField";
 
 interface ServiceDefaults {
   id?: string;
@@ -30,7 +31,7 @@ export default function ServiceForm({
         defaultValue={defaults?.description}
         placeholder="Montaj rapid și sigur pentru apartamente, case, birouri și spații comerciale."
       />
-      <AdminInput label="URL imagine" name="image" defaultValue={defaults?.image ?? ""} placeholder="/IMG_2838.PNG" />
+      <ImageUploadField name="image" label="Imagine" defaultValue={defaults?.image} />
       <AdminInput label="Link (href)" name="href" defaultValue={defaults?.href ?? ""} placeholder="/servicii/instalare" />
 
       <label className="flex flex-col gap-1.5">

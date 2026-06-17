@@ -1,4 +1,5 @@
 import { AdminInput, AdminTextarea } from "../components/AdminField";
+import MultiImageUploadField from "../components/MultiImageUploadField";
 
 interface ProjectDefaults {
   id?: string;
@@ -29,16 +30,7 @@ export default function ProjectForm({
         placeholder="Descrierea proiectului realizat..."
       />
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-bold text-gray-600">Galerie imagini (un URL pe linie)</span>
-        <textarea
-          name="images"
-          rows={5}
-          defaultValue={defaults?.images?.join("\n")}
-          placeholder={"/proiect-1.jpg\n/proiect-2.jpg"}
-          className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400 resize-none font-mono"
-        />
-      </label>
+      <MultiImageUploadField name="images" label="Galerie imagini" defaultValue={defaults?.images} />
 
       <button
         type="submit"

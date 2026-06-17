@@ -81,16 +81,60 @@ const navItems = [
   },
 ];
 
-function SidebarContent({ userName, onNavigate }: { userName: string; onNavigate?: () => void }) {
+interface Notifications {
+  unreadMessages: number;
+  pendingReviews: number;
+}
+
+function NavBadge({ count, active }: { count: number; active: boolean }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      className={`ml-auto text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+        active ? "bg-white text-[#c7092b]" : "bg-[#c7092b] text-white"
+      }`}
+    >
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
+
+function SidebarContent({
+  userName,
+  notifications,
+  onNavigate,
+}: {
+  userName: string;
+  notifications: Notifications;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
+  const totalNotifications = notifications.unreadMessages + notifications.pendingReviews;
+
+  const badgeFor: Record<string, number> = {
+    "/admin/mesaje": notifications.unreadMessages,
+    "/admin/recenzii": notifications.pendingReviews,
+  };
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-6 py-6 border-b border-white/10">
-        <Link href="/" className="text-lg font-extrabold uppercase tracking-tight text-white">
-          Climat <span className="text-[#c7092b]">Rapid</span>
-        </Link>
-        <p className="text-[11px] text-white/50 mt-1">Panou de administrare</p>
+      <div className="px-6 py-6 border-b border-white/10 flex items-center justify-between">
+        <div>
+          <Link href="/" className="text-lg font-extrabold uppercase tracking-tight text-white">
+            Climat <span className="text-[#c7092b]">Rapid</span>
+          </Link>
+          <p className="text-[11px] text-white/50 mt-1">Panou de administrare</p>
+        </div>
+        <div className="relative shrink-0">
+          <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.85 23.85 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+          </svg>
+          {totalNotifications > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 bg-[#c7092b] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              {totalNotifications > 9 ? "9+" : totalNotifications}
+            </span>
+          )}
+        </div>
       </div>
 
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
@@ -107,6 +151,7 @@ function SidebarContent({ userName, onNavigate }: { userName: string; onNavigate
             >
               {item.icon}
               {item.label}
+              <NavBadge count={badgeFor[item.href] ?? 0} active={!!active} />
             </Link>
           );
         })}
@@ -139,8 +184,9 @@ function SidebarContent({ userName, onNavigate }: { userName: string; onNavigate
   );
 }
 
-export default function AdminSidebar({ userName }: { userName: string }) {
+export default function AdminSidebar({ userName, notifications }: { userName: string; notifications: Notifications }) {
   const [open, setOpen] = useState(false);
+  const totalNotifications = notifications.unreadMessages + notifications.pendingReviews;
 
   return (
     <>
@@ -149,10 +195,15 @@ export default function AdminSidebar({ userName }: { userName: string }) {
         <span className="font-extrabold uppercase tracking-tight">
           Climat <span className="text-[#c7092b]">Rapid</span> <span className="text-white/50 text-xs font-normal">Admin</span>
         </span>
-        <button onClick={() => setOpen(true)} aria-label="Meniu admin" className="p-1.5">
+        <button onClick={() => setOpen(true)} aria-label="Meniu admin" className="relative p-1.5">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
+          {totalNotifications > 0 && (
+            <span className="absolute top-0 right-0 bg-[#c7092b] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              {totalNotifications > 9 ? "9+" : totalNotifications}
+            </span>
+          )}
         </button>
       </div>
 
@@ -170,14 +221,14 @@ export default function AdminSidebar({ userName }: { userName: string }) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <SidebarContent userName={userName} onNavigate={() => setOpen(false)} />
+            <SidebarContent userName={userName} notifications={notifications} onNavigate={() => setOpen(false)} />
           </div>
         </div>
       )}
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 bg-[#1d2353] min-h-screen sticky top-0">
-        <SidebarContent userName={userName} />
+        <SidebarContent userName={userName} notifications={notifications} />
       </aside>
     </>
   );

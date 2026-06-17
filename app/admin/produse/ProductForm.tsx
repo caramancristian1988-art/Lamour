@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 import { AdminInput, AdminTextarea } from "../components/AdminField";
+import ImageUploadField from "../components/ImageUploadField";
+import MultiImageUploadField from "../components/MultiImageUploadField";
 import type { ProductFormState } from "@/lib/adminProductActions";
 
 interface CategoryOption {
@@ -77,18 +79,8 @@ export default function ProductForm({
         <AdminInput label="Preț vechi (opțional)" name="oldPrice" type="number" defaultValue={defaults?.oldPrice ?? ""} placeholder="14999" />
       </div>
 
-      <AdminInput label="URL imagine principală" name="image" defaultValue={defaults?.image ?? ""} placeholder="/produse/daikin.webp" />
-
-      <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-bold text-gray-600">Galerie imagini (opțional, un URL pe linie)</span>
-        <textarea
-          name="images"
-          rows={3}
-          defaultValue={defaults?.images?.join("\n")}
-          placeholder={"/produse/daikin-1.jpg\n/produse/daikin-2.jpg"}
-          className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400 resize-none font-mono"
-        />
-      </label>
+      <ImageUploadField name="image" label="Imagine principală" defaultValue={defaults?.image} />
+      <MultiImageUploadField name="images" label="Galerie imagini (opțional)" defaultValue={defaults?.images} />
 
       <div className="grid grid-cols-2 gap-4">
         <AdminInput label="BTU (opțional)" name="btu" type="number" defaultValue={defaults?.btu ?? ""} placeholder="12000" />

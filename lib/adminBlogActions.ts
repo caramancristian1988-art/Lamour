@@ -26,6 +26,7 @@ export async function createBlogPostAction(_prevState: BlogFormState, formData: 
   const description = String(formData.get("description") ?? "").trim();
   const image = String(formData.get("image") ?? "").trim() || null;
   const content = String(formData.get("content") ?? "").trim() || null;
+  const category = String(formData.get("category") ?? "").trim() || null;
   const published = formData.get("published") === "on";
 
   if (!title) return { error: "Completează titlul." };
@@ -35,7 +36,7 @@ export async function createBlogPostAction(_prevState: BlogFormState, formData: 
   const existing = await prisma.blogPost.findUnique({ where: { slug } });
   if (existing) return { error: "Există deja un articol cu acest slug." };
 
-  await prisma.blogPost.create({ data: { title, slug, description: description || title, image, content, published } });
+  await prisma.blogPost.create({ data: { title, slug, description: description || title, image, content, category, published } });
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
   redirect("/admin/blog");
@@ -50,6 +51,7 @@ export async function updateBlogPostAction(_prevState: BlogFormState, formData: 
   const description = String(formData.get("description") ?? "").trim();
   const image = String(formData.get("image") ?? "").trim() || null;
   const content = String(formData.get("content") ?? "").trim() || null;
+  const category = String(formData.get("category") ?? "").trim() || null;
   const published = formData.get("published") === "on";
 
   if (!id) return { error: "Articol invalid." };
@@ -62,7 +64,7 @@ export async function updateBlogPostAction(_prevState: BlogFormState, formData: 
 
   await prisma.blogPost.update({
     where: { id },
-    data: { title, slug, description: description || title, image, content, published },
+    data: { title, slug, description: description || title, image, content, category, published },
   });
   revalidatePath("/admin/blog");
   revalidatePath("/blog");

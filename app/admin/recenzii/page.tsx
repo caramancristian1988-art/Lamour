@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import DeleteButton from "../components/DeleteButton";
 import { AdminInput, AdminTextarea } from "../components/AdminField";
+import ImageUploadField from "../components/ImageUploadField";
 import {
   createAdminReviewAction,
   deleteAdminReviewAction,
@@ -140,7 +141,7 @@ export default async function AdminRecenziiPage() {
               <option value="1">1 stea</option>
             </select>
           </label>
-          <AdminInput label="URL imagine client (opțional)" name="image" placeholder="/clienti/ana.jpg" />
+          <ImageUploadField name="image" label="Imagine client (opțional)" />
           <button type="submit" className="self-start bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-2.5 rounded-xl transition-colors text-sm uppercase tracking-wide mt-2">
             Adaugă recenzie
           </button>
