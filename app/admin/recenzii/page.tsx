@@ -3,13 +3,22 @@ import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import DeleteButton from "../components/DeleteButton";
 import { AdminInput, AdminTextarea } from "../components/AdminField";
-import { createAdminReviewAction, deleteAdminReviewAction } from "@/lib/adminReviewActions";
+import {
+  createAdminReviewAction,
+  deleteAdminReviewAction,
+  approveReviewAction,
+  rejectReviewAction,
+} from "@/lib/adminReviewActions";
 
 async function getReviews() {
   try {
-    return await prisma.review.findMany({ orderBy: { createdAt: "desc" } });
+    const reviews = await prisma.review.findMany({ orderBy: { createdAt: "desc" } });
+    return {
+      pending: reviews.filter((r) => !r.approved),
+      approved: reviews.filter((r) => r.approved),
+    };
   } catch {
-    return [];
+    return { pending: [], approved: [] };
   }
 }
 
@@ -25,45 +34,100 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
+function ReviewAvatar({ name, image }: { name: string; image: string | null }) {
+  return (
+    <div className="relative w-10 h-10 rounded-full bg-[#1d2353] text-white flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+      {image ? (
+        <Image src={image} alt={name} fill className="object-cover" />
+      ) : (
+        name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+      )}
+    </div>
+  );
+}
+
 export default async function AdminRecenziiPage() {
-  const reviews = await getReviews();
+  const { pending, approved } = await getReviews();
 
   return (
     <div>
       <AdminPageHeader title="Recenzii" description="Recenzii și testimoniale ale clienților." />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-        <div className="flex flex-col gap-3 order-2 lg:order-1">
-          {reviews.length === 0 ? (
-            <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center text-gray-500">
-              Nu există recenzii adăugate încă.
-            </div>
-          ) : (
-            reviews.map((r) => (
-              <div key={r.id} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-start gap-3">
-                <div className="relative w-10 h-10 rounded-full bg-[#1d2353] text-white flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
-                  {r.image ? (
-                    <Image src={r.image} alt={r.name} fill className="object-cover" />
-                  ) : (
-                    r.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-bold text-sm text-[#1d2353]">{r.name}</p>
-                    <DeleteButton action={deleteAdminReviewAction} id={r.id} confirmText="Sigur vrei să ștergi această recenzie?" />
+        <div className="flex flex-col gap-6 order-2 lg:order-1">
+          {pending.length > 0 && (
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-wide text-[#c7092b] mb-3">
+                În așteptare ({pending.length})
+              </p>
+              <div className="flex flex-col gap-3">
+                {pending.map((r) => (
+                  <div key={r.id} className="bg-white border border-[#c7092b]/30 rounded-2xl p-4 flex items-start gap-3">
+                    <ReviewAvatar name={r.name} image={r.image} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-[#1d2353]">{r.name}</p>
+                      <StarRating rating={r.rating} />
+                      <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{r.text}</p>
+                      {r.product && <p className="text-xs text-gray-400 mt-1">Produs: {r.product}</p>}
+                      <div className="flex items-center gap-2 mt-3">
+                        <form action={approveReviewAction}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <button
+                            type="submit"
+                            className="text-xs font-bold text-white bg-[#1d2353] hover:bg-[#2a3470] px-3 py-1.5 rounded-lg transition-colors"
+                          >
+                            Acceptă
+                          </button>
+                        </form>
+                        <form action={rejectReviewAction}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <button
+                            type="submit"
+                            className="text-xs font-bold text-gray-500 border border-gray-200 hover:bg-gray-50 px-3 py-1.5 rounded-lg transition-colors"
+                          >
+                            Respinge
+                          </button>
+                        </form>
+                      </div>
+                    </div>
                   </div>
-                  <StarRating rating={r.rating} />
-                  <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{r.text}</p>
-                  {r.product && <p className="text-xs text-gray-400 mt-1">Produs: {r.product}</p>}
-                </div>
+                ))}
               </div>
-            ))
+            </div>
           )}
+
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">
+              Publicate ({approved.length})
+            </p>
+            {approved.length === 0 ? (
+              <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center text-gray-500">
+                Nu există recenzii publicate încă.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {approved.map((r) => (
+                  <div key={r.id} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-start gap-3">
+                    <ReviewAvatar name={r.name} image={r.image} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-bold text-sm text-[#1d2353]">{r.name}</p>
+                        <DeleteButton action={deleteAdminReviewAction} id={r.id} confirmText="Sigur vrei să ștergi această recenzie?" />
+                      </div>
+                      <StarRating rating={r.rating} />
+                      <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{r.text}</p>
+                      {r.product && <p className="text-xs text-gray-400 mt-1">Produs: {r.product}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <form action={createAdminReviewAction} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4 h-fit order-1 lg:order-2">
           <p className="font-bold text-sm text-[#1d2353]">Adaugă recenzie</p>
+          <p className="text-xs text-gray-400 -mt-2">Recenziile adăugate aici sunt publicate direct.</p>
           <AdminInput label="Nume client" name="name" required placeholder="Ana Popescu" />
           <AdminTextarea label="Text recenzie" name="text" required placeholder="Servicii excelente, recomand cu încredere!" />
           <label className="flex flex-col gap-1.5">

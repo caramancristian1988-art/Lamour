@@ -18,15 +18,17 @@ export async function submitContactMessageAction(
   const email = String(formData.get("email") ?? "").trim();
   const subject = String(formData.get("subject") ?? "").trim();
   const messageText = String(formData.get("message") ?? "").trim();
+  const sourcePath = String(formData.get("source") ?? "").trim();
 
   if (!name || !phone) {
     return { error: `Lipsește ${!name ? "numele" : ""}${!name && !phone ? " și " : ""}${!phone ? "numărul de telefon" : ""}.` };
   }
 
   const message = [subject && `Subiect: ${subject}`, messageText].filter(Boolean).join("\n\n") || null;
+  const source = sourcePath === "/contact" ? "Pagina de contact" : sourcePath || "Pagina de contact";
 
   try {
-    await prisma.contactMessage.create({ data: { name, phone, email: email || null, message } });
+    await prisma.contactMessage.create({ data: { name, phone, email: email || null, message, source } });
   } catch {
     return { error: "Nu am putut trimite mesajul. Încearcă din nou." };
   }

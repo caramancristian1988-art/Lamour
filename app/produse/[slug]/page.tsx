@@ -62,7 +62,7 @@ const getProductData = cache(async (slug: string) => {
         where: { categoryId: product.categoryId, NOT: { id: product.id } },
         take: 4,
       }),
-      prisma.review.findMany({ where: { product: product.name } }),
+      prisma.review.findMany({ where: { product: product.name, approved: true } }),
     ]);
     return { product, category: product.category, related, reviews };
   } catch {

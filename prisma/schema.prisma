@@ -48,6 +48,7 @@ model Review {
   cons      String?
   image     String?
   product   String?
+  approved  Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
@@ -87,6 +88,7 @@ model ContactMessage {
   phone     String
   email     String?
   message   String?
+  source    String   @default("Pagina de contact")
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }

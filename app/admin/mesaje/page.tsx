@@ -43,10 +43,13 @@ export default async function AdminMesajePage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                  <div className="flex items-center gap-3 text-xs text-gray-500 mt-1 flex-wrap">
                     <a href={`tel:${m.phone}`} className="hover:text-[#c7092b] transition-colors">{m.phone}</a>
                     {m.email && <a href={`mailto:${m.email}`} className="hover:text-[#c7092b] transition-colors">{m.email}</a>}
                     <span>{formatDate(m.createdAt)}</span>
+                    <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full uppercase">
+                      {m.source}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">

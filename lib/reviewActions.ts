@@ -44,18 +44,11 @@ export async function submitReviewAction(_prevState: ReviewFormState, formData: 
         pros: pros || null,
         cons: cons || null,
         product: productName,
+        approved: false,
       },
     });
 
-    const reviews = await prisma.review.findMany({ where: { product: productName } });
-    const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-
-    await prisma.product.update({
-      where: { slug: productSlug },
-      data: { rating: avgRating, reviewCount: reviews.length },
-    });
-
-    revalidatePath(`/produse/${productSlug}`);
+    revalidatePath("/admin/recenzii");
   } catch {
     return { error: "Nu am putut salva recenzia. Încearcă din nou." };
   }

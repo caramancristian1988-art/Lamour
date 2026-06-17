@@ -1,12 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { submitContactMessageAction } from "@/lib/adminMessageActions";
 
 type Status = "idle" | "error" | "success" | "pending";
 
 export default function ContactForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  const pathname = usePathname();
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
 
@@ -14,6 +16,7 @@ export default function ContactForm() {
     e.preventDefault();
 
     const data = new FormData(e.currentTarget);
+    data.set("source", pathname);
     const name = (data.get("name") as string).trim();
     const phone = (data.get("phone") as string).trim();
 

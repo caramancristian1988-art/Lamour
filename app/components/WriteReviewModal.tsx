@@ -113,7 +113,7 @@ export default function WriteReviewModal({ productSlug, productName }: { product
                   </svg>
                 </div>
                 <h3 className="text-lg font-extrabold text-[#1d2353] mb-1">Mulțumim pentru recenzie!</h3>
-                <p className="text-sm text-gray-500">Va fi afișată pe pagina produsului.</p>
+                <p className="text-sm text-gray-500">Va fi afișată pe pagina produsului după ce este verificată.</p>
               </div>
             ) : (
               <>
