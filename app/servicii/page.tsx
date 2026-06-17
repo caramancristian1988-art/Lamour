@@ -158,12 +158,12 @@ export default function ServiciiPage() {
           SERVICII PRINCIPALE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6">
           {serviciiPrincipale.map((s) => (
             <Link key={s.title} href={s.href} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="relative px-6 py-6" style={{ aspectRatio: "4/3" }}>
+              <div className="relative px-3 sm:px-6 py-3 sm:py-6" style={{ aspectRatio: "4/3" }}>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "1/1", height: "calc(100% - 48px)" }}>
+                  <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "1/1", height: "calc(100% - 24px)" }}>
                     <Image
                       src={s.img}
                       alt={s.title}
@@ -173,12 +173,12 @@ export default function ServiciiPage() {
                   </div>
                 </div>
               </div>
-              <div className="px-6 pt-4 pb-10 flex flex-col gap-6">
-                <h3 className="text-base font-bold group-hover:text-[#c7092b] transition-colors">{s.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
-                <span className="text-[#c7092b] text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-1">
+              <div className="px-3 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-10 flex flex-col gap-2 sm:gap-6">
+                <h3 className="text-sm sm:text-base font-bold group-hover:text-[#c7092b] transition-colors">{s.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+                <span className="text-[#c7092b] text-[11px] sm:text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-1">
                   AFLĂ MAI MULTE
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <svg className="w-3 sm:w-3.5 h-3 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
                   </svg>
                 </span>
@@ -194,12 +194,12 @@ export default function ServiciiPage() {
           SERVICII AVANSATE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6">
           {serviciiAvansate.map((s) => (
             <Link key={s.title} href={s.href} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="relative px-6 py-6" style={{ aspectRatio: "4/3" }}>
+              <div className="relative px-3 sm:px-6 py-3 sm:py-6" style={{ aspectRatio: "4/3" }}>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "1/1", height: "calc(100% - 48px)" }}>
+                  <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "1/1", height: "calc(100% - 24px)" }}>
                     <Image
                       src={s.img}
                       alt={s.title}
@@ -209,12 +209,12 @@ export default function ServiciiPage() {
                   </div>
                 </div>
               </div>
-              <div className="px-6 pt-4 pb-10 flex flex-col gap-6">
-                <h3 className="text-base font-bold group-hover:text-[#c7092b] transition-colors">{s.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>
-                <span className="text-[#c7092b] text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-1">
+              <div className="px-3 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-10 flex flex-col gap-2 sm:gap-6">
+                <h3 className="text-sm sm:text-base font-bold group-hover:text-[#c7092b] transition-colors">{s.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+                <span className="text-[#c7092b] text-[11px] sm:text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-1">
                   AFLĂ MAI MULTE
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <svg className="w-3 sm:w-3.5 h-3 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
                   </svg>
                 </span>
@@ -230,15 +230,15 @@ export default function ServiciiPage() {
           SERVICII SUPLIMENTARE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6">
           {serviciiSuplimentare.map((s) => (
-            <div key={s.title} className="flex items-start gap-4 p-5 border border-gray-100 rounded-2xl hover:shadow-sm transition-shadow">
-              <div className="shrink-0 w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center">
+            <div key={s.title} className="flex items-start gap-2 sm:gap-4 p-3 sm:p-5 border border-gray-100 rounded-2xl hover:shadow-sm transition-shadow">
+              <div className="shrink-0 w-10 sm:w-14 h-10 sm:h-14 bg-gray-50 rounded-xl flex items-center justify-center">
                 {s.icon}
               </div>
-              <div>
-                <p className="font-bold text-sm mb-1">{s.title}</p>
-                <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
+              <div className="min-w-0">
+                <p className="font-bold text-xs sm:text-sm mb-1">{s.title}</p>
+                <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed">{s.desc}</p>
               </div>
             </div>
           ))}
