@@ -93,13 +93,12 @@ export default function Hero() {
       </div>
 
       {/* ── DESKTOP ── */}
-      <div className="hidden sm:block relative">
+      <div className="hidden sm:block relative h-[560px] lg:h-[640px] xl:h-[700px]">
         <Image
           src="/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png"
           alt="Aparat de aer condiționat în sufragerie"
-          width={1719}
-          height={915}
-          className="w-full h-auto block"
+          fill
+          className="object-cover object-center"
           priority
           sizes="100vw"
         />

@@ -35,59 +35,65 @@ export default function CosPage() {
                 {items.map((item) => (
                   <div
                     key={item.slug}
-                    className="flex items-center gap-4 border border-gray-100 rounded-2xl p-4"
+                    className="flex flex-col sm:flex-row sm:items-center gap-4 border border-gray-100 rounded-2xl p-4"
                   >
-                    <Link href={`/produse/${item.slug}`} className="relative w-20 h-20 shrink-0 bg-[#f6f8fb] rounded-xl overflow-hidden">
-                      {item.image ? (
-                        <Image src={item.image} alt={item.name} fill className="object-contain" sizes="80px" />
-                      ) : (
-                        <svg className="w-8 h-8 text-gray-200 absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M20 8H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2zM4 6h16V4H4v2z" />
-                        </svg>
-                      )}
-                    </Link>
-
-                    <div className="flex-1 min-w-0">
-                      <Link href={`/produse/${item.slug}`} className="font-bold text-sm text-[#0f172a] hover:text-[#c7092b] transition-colors line-clamp-2">
-                        {item.name}
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <Link href={`/produse/${item.slug}`} className="relative w-20 h-20 shrink-0 bg-[#f6f8fb] rounded-xl overflow-hidden">
+                        {item.image ? (
+                          <Image src={item.image} alt={item.name} fill className="object-contain" sizes="80px" />
+                        ) : (
+                          <svg className="w-8 h-8 text-gray-200 absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 8H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2zM4 6h16V4H4v2z" />
+                          </svg>
+                        )}
                       </Link>
-                      <p className="text-sm font-extrabold text-gray-900 mt-1">
-                        {item.price.toLocaleString("ro-MD")} MDL
-                      </p>
+
+                      <div className="flex-1 min-w-0">
+                        <Link href={`/produse/${item.slug}`} className="font-bold text-sm text-[#0f172a] hover:text-[#c7092b] transition-colors line-clamp-2">
+                          {item.name}
+                        </Link>
+                        <p className="text-sm font-extrabold text-gray-900 mt-1">
+                          {item.price.toLocaleString("ro-MD")} MDL
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2 border border-gray-200 rounded-lg shrink-0">
-                      <button
-                        onClick={() => updateQuantity(item.slug, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                        className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-[#c7092b] disabled:text-gray-300 transition-colors"
-                        aria-label="Scade cantitatea"
-                      >
-                        −
-                      </button>
-                      <span className="text-sm font-bold w-6 text-center">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.slug, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-[#c7092b] transition-colors"
-                        aria-label="Crește cantitatea"
-                      >
-                        +
-                      </button>
+                    <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6">
+                      <div className="flex items-center gap-2 border border-gray-200 rounded-lg shrink-0">
+                        <button
+                          onClick={() => updateQuantity(item.slug, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                          className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-[#c7092b] disabled:text-gray-300 transition-colors"
+                          aria-label="Scade cantitatea"
+                        >
+                          −
+                        </button>
+                        <span className="text-sm font-bold w-6 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.slug, item.quantity + 1)}
+                          className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-[#c7092b] transition-colors"
+                          aria-label="Crește cantitatea"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                        <p className="text-sm font-extrabold text-[#1d2353] sm:w-24 sm:text-right">
+                          {(item.price * item.quantity).toLocaleString("ro-MD")} MDL
+                        </p>
+
+                        <button
+                          onClick={() => removeFromCart(item.slug)}
+                          aria-label="Elimină din coș"
+                          className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#c7092b] hover:bg-gray-50 rounded-lg transition-colors shrink-0"
+                        >
+                          <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-
-                    <p className="text-sm font-extrabold text-[#1d2353] w-24 text-right shrink-0">
-                      {(item.price * item.quantity).toLocaleString("ro-MD")} MDL
-                    </p>
-
-                    <button
-                      onClick={() => removeFromCart(item.slug)}
-                      aria-label="Elimină din coș"
-                      className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#c7092b] hover:bg-gray-50 rounded-lg transition-colors shrink-0"
-                    >
-                      <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
                   </div>
                 ))}
               </div>

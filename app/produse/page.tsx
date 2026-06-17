@@ -102,7 +102,7 @@ export default async function ProdusePage({
           src="/IMG_2851.PNG"
           alt="Produse Climat Rapid"
           fill
-          className="object-cover object-[center_20%]"
+          className="object-cover object-bottom"
           priority
           sizes="100vw"
         />

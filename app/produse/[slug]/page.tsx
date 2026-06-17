@@ -215,7 +215,7 @@ function CategoryView({ category, products: baseProducts, allCategories, sort, p
           src="/IMG_2851.PNG"
           alt={category.name}
           fill
-          className="object-cover object-[center_20%]"
+          className="object-cover object-bottom"
           priority
           sizes="100vw"
         />
