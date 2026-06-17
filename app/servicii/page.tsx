@@ -1,97 +1,118 @@
 import Image from "next/image";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-const serviciiPrincipale = [
+const fallbackServiciiPrincipale = [
   {
-    img: "/IMG_2838.PNG",
+    id: "fallback-1",
+    image: "/IMG_2838.PNG",
     title: "Instalare condiționere",
-    desc: "Montaj rapid și sigur pentru apartamente, case, birouri și spații comerciale.",
+    description: "Montaj rapid și sigur pentru apartamente, case, birouri și spații comerciale.",
     href: "/servicii/instalare",
   },
   {
-    img: "/IMG_2839.PNG",
+    id: "fallback-2",
+    image: "/IMG_2839.PNG",
     title: "Mentenanță & curățare",
-    desc: "Curățare profesională, igienizare, încărcare freon și verificări complete.",
+    description: "Curățare profesională, igienizare, încărcare freon și verificări complete.",
     href: "/servicii/mentenanta",
   },
   {
-    img: "/IMG_2840.PNG",
+    id: "fallback-3",
+    image: "/IMG_2840.PNG",
     title: "Reparații",
-    desc: "Diagnosticare rapidă și reparații pentru orice tip de problemă.",
+    description: "Diagnosticare rapidă și reparații pentru orice tip de problemă.",
     href: "/servicii/diagnosticare",
   },
 ];
 
-const serviciiAvansate = [
+const fallbackServiciiAvansate = [
   {
-    img: "/IMG_2841.PNG",
+    id: "fallback-4",
+    image: "/IMG_2841.PNG",
     title: "Consultanță",
-    desc: "Te ajutăm să alegi sistemul potrivit pentru nevoile și bugetul tău.",
+    description: "Te ajutăm să alegi sistemul potrivit pentru nevoile și bugetul tău.",
     href: "/servicii/consultanta",
   },
   {
-    img: "/IMG_2843.PNG",
+    id: "fallback-5",
+    image: "/IMG_2843.PNG",
     title: "Sisteme multisplit",
-    desc: "Climatizare pentru mai multe camere cu o singură unitate exterioară.",
+    description: "Climatizare pentru mai multe camere cu o singură unitate exterioară.",
     href: "/servicii/multisplit",
   },
   {
-    img: "/IMG_2842.PNG",
+    id: "fallback-6",
+    image: "/IMG_2842.PNG",
     title: "Sisteme comerciale HVAC",
-    desc: "Soluții profesionale pentru spații comerciale, birouri, hale și clădiri mari.",
+    description: "Soluții profesionale pentru spații comerciale, birouri, hale și clădiri mari.",
     href: "/servicii/comerciale",
   },
 ];
 
-const serviciiSuplimentare = [
-  {
-    title: "Demontare & relocare",
-    desc: "Demontare aparat, mutare și reinstalare profesională.",
-    icon: (
-      <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        {/* AC unit body */}
-        <rect x="2" y="12" width="20" height="7" rx="1.5"/>
-        <path d="M6 15.5h1M10 15.5h1M14 15.5h1"/>
-        <path d="M2 19v1.5M22 19v1.5"/>
-        {/* Up arrow */}
-        <path d="M12 2v8"/>
-        <path d="M9 7l3-5 3 5"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Verificări tehnice",
-    desc: "Verificare consum, test eficiență și detectare pierderi de freon.",
-    icon: (
-      <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        {/* Clipboard */}
-        <rect x="5" y="3" width="14" height="18" rx="2"/>
-        <path d="M9 3a2 2 0 0 0 4 0"/>
-        {/* Checklist rows */}
-        <path d="M9 10l1 1 2-2"/>
-        <path d="M14 10.5h2"/>
-        <path d="M9 14l1 1 2-2"/>
-        <path d="M14 14.5h2"/>
-        <path d="M9 18l1 1 2-2"/>
-        <path d="M14 18.5h2"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Abonamente service",
-    desc: "Întreținere periodică, vizite sezoniere și prioritate suport.",
-    icon: (
-      <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        {/* Shield */}
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        {/* Checkmark */}
-        <path d="M8.5 12l2.5 2.5 4.5-4.5"/>
-      </svg>
-    ),
-  },
+const fallbackServiciiSuplimentare = [
+  { id: "fallback-7", title: "Demontare & relocare", description: "Demontare aparat, mutare și reinstalare profesională." },
+  { id: "fallback-8", title: "Verificări tehnice", description: "Verificare consum, test eficiență și detectare pierderi de freon." },
+  { id: "fallback-9", title: "Abonamente service", description: "Întreținere periodică, vizite sezoniere și prioritate suport." },
 ];
 
-export default function ServiciiPage() {
+const suplimentareIcons: Record<string, React.ReactNode> = {
+  "Demontare & relocare": (
+    <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <rect x="2" y="12" width="20" height="7" rx="1.5"/>
+      <path d="M6 15.5h1M10 15.5h1M14 15.5h1"/>
+      <path d="M2 19v1.5M22 19v1.5"/>
+      <path d="M12 2v8"/>
+      <path d="M9 7l3-5 3 5"/>
+    </svg>
+  ),
+  "Verificări tehnice": (
+    <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <rect x="5" y="3" width="14" height="18" rx="2"/>
+      <path d="M9 3a2 2 0 0 0 4 0"/>
+      <path d="M9 10l1 1 2-2"/>
+      <path d="M14 10.5h2"/>
+      <path d="M9 14l1 1 2-2"/>
+      <path d="M14 14.5h2"/>
+      <path d="M9 18l1 1 2-2"/>
+      <path d="M14 18.5h2"/>
+    </svg>
+  ),
+  "Abonamente service": (
+    <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <path d="M8.5 12l2.5 2.5 4.5-4.5"/>
+    </svg>
+  ),
+};
+
+const genericServiceIcon = (
+  <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <path d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+  </svg>
+);
+
+async function getServicesByCategorie() {
+  try {
+    const services = await prisma.service.findMany({ orderBy: [{ section: "asc" }, { order: "asc" }] });
+    if (services.length === 0) throw new Error("empty");
+    return {
+      principale: services.filter((s) => s.section === "principale"),
+      avansate: services.filter((s) => s.section === "avansate"),
+      suplimentare: services.filter((s) => s.section === "suplimentare"),
+    };
+  } catch {
+    return {
+      principale: fallbackServiciiPrincipale,
+      avansate: fallbackServiciiAvansate,
+      suplimentare: fallbackServiciiSuplimentare,
+    };
+  }
+}
+
+export default async function ServiciiPage() {
+  const { principale: serviciiPrincipale, avansate: serviciiAvansate, suplimentare: serviciiSuplimentare } = await getServicesByCategorie();
+
   return (
     <div className="bg-white text-[#1d2353]">
       {/* Hero – MOBILE */}
@@ -158,24 +179,26 @@ export default function ServiciiPage() {
           SERVICII PRINCIPALE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-2 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
           {serviciiPrincipale.map((s) => (
-            <Link key={s.title} href={s.href} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            <Link key={s.id} href={s.href ?? "/servicii"} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative px-3 sm:px-6 py-3 sm:py-6" style={{ aspectRatio: "4/3" }}>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "1/1", height: "calc(100% - 24px)" }}>
-                    <Image
-                      src={s.img}
-                      alt={s.title}
-                      fill
-                      className="object-contain group-hover:scale-105 transition-transform duration-300"
-                    />
+                    {s.image && (
+                      <Image
+                        src={s.image}
+                        alt={s.title}
+                        fill
+                        className="object-contain group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
               <div className="px-3 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-10 flex flex-col gap-2 sm:gap-6">
                 <h3 className="text-sm sm:text-base font-bold group-hover:text-[#c7092b] transition-colors">{s.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.description}</p>
                 <span className="text-[#c7092b] text-[11px] sm:text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-1">
                   AFLĂ MAI MULTE
                   <svg className="w-3 sm:w-3.5 h-3 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -194,24 +217,26 @@ export default function ServiciiPage() {
           SERVICII AVANSATE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-2 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
           {serviciiAvansate.map((s) => (
-            <Link key={s.title} href={s.href} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            <Link key={s.id} href={s.href ?? "/servicii"} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative px-3 sm:px-6 py-3 sm:py-6" style={{ aspectRatio: "4/3" }}>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "1/1", height: "calc(100% - 24px)" }}>
-                    <Image
-                      src={s.img}
-                      alt={s.title}
-                      fill
-                      className="object-contain group-hover:scale-105 transition-transform duration-300"
-                    />
+                    {s.image && (
+                      <Image
+                        src={s.image}
+                        alt={s.title}
+                        fill
+                        className="object-contain group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
               <div className="px-3 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-10 flex flex-col gap-2 sm:gap-6">
                 <h3 className="text-sm sm:text-base font-bold group-hover:text-[#c7092b] transition-colors">{s.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.desc}</p>
+                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.description}</p>
                 <span className="text-[#c7092b] text-[11px] sm:text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-1">
                   AFLĂ MAI MULTE
                   <svg className="w-3 sm:w-3.5 h-3 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -230,15 +255,15 @@ export default function ServiciiPage() {
           SERVICII SUPLIMENTARE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-2 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
           {serviciiSuplimentare.map((s) => (
-            <div key={s.title} className="flex items-start gap-2 sm:gap-4 p-3 sm:p-5 border border-gray-100 rounded-2xl hover:shadow-sm transition-shadow">
+            <div key={s.id} className="flex items-start gap-2 sm:gap-4 p-3 sm:p-5 border border-gray-100 rounded-2xl hover:shadow-sm transition-shadow">
               <div className="shrink-0 w-10 sm:w-14 h-10 sm:h-14 bg-gray-50 rounded-xl flex items-center justify-center">
-                {s.icon}
+                {suplimentareIcons[s.title] ?? genericServiceIcon}
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-xs sm:text-sm mb-1">{s.title}</p>
-                <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed">{s.desc}</p>
+                <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed">{s.description}</p>
               </div>
             </div>
           ))}
