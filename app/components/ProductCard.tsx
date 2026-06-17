@@ -87,13 +87,13 @@ export default function ProductCard({
 
         {/* Badge */}
         {displayBadge && (
-          <span className="absolute top-3 left-3 right-12 sm:top-4 sm:left-4 sm:right-auto bg-[#c7092b] text-white text-[10px] sm:text-xs font-bold rounded-md px-2 sm:px-3 py-1 uppercase tracking-wide truncate">
+          <span className="absolute top-2 left-2 right-11 sm:top-4 sm:left-4 sm:right-auto bg-[#c7092b] text-white text-[10px] sm:text-xs font-bold rounded-md px-2 sm:px-3 py-1 uppercase tracking-wide truncate">
             {displayBadge}
           </span>
         )}
 
         {/* Favorite */}
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+        <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
           <FavoriteButton
             product={{ slug, name, price, oldPrice, image, btu, inverter, energyClass, rating, reviewCount, badge }}
           />
