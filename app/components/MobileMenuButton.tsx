@@ -100,20 +100,20 @@ export default function MobileMenuButton() {
         aria-label="Meniu"
         aria-expanded={open}
       >
-        <span className="relative flex flex-col items-center justify-center w-5 h-5">
+        <span className="relative flex flex-col items-center justify-center w-5 h-5 active:scale-90 transition-transform">
           <span
-            className={`absolute h-0.5 w-5 bg-current rounded-full transition-all duration-300 ease-in-out ${
-              open ? "rotate-45" : "-translate-y-1.5"
+            className={`absolute h-0.5 w-5 bg-current rounded-full transition-all duration-[350ms] ease-[cubic-bezier(0.65,0,0.35,1)] ${
+              open ? "rotate-45 translate-y-0" : "-translate-y-1.5"
             }`}
           />
           <span
-            className={`absolute h-0.5 w-5 bg-current rounded-full transition-all duration-300 ease-in-out ${
-              open ? "opacity-0 scale-x-0" : "opacity-100 scale-x-100"
+            className={`absolute h-0.5 w-5 bg-current rounded-full transition-all duration-200 ease-[cubic-bezier(0.65,0,0.35,1)] ${
+              open ? "opacity-0 scale-x-0" : "opacity-100 scale-x-100 delay-100"
             }`}
           />
           <span
-            className={`absolute h-0.5 w-5 bg-current rounded-full transition-all duration-300 ease-in-out ${
-              open ? "-rotate-45" : "translate-y-1.5"
+            className={`absolute h-0.5 w-5 bg-current rounded-full transition-all duration-[350ms] ease-[cubic-bezier(0.65,0,0.35,1)] ${
+              open ? "-rotate-45 translate-y-0" : "translate-y-1.5"
             }`}
           />
         </span>
@@ -128,8 +128,10 @@ export default function MobileMenuButton() {
           />
 
           <div
-            className={`absolute inset-x-0 top-0 w-full max-h-full bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
-              open ? "translate-y-0" : "-translate-y-full"
+            className={`absolute inset-x-0 top-0 w-full max-h-full bg-white shadow-2xl flex flex-col transition-all ${
+              open
+                ? "duration-[350ms] ease-[cubic-bezier(0.16,1,0.3,1)] translate-y-0 opacity-100"
+                : "duration-200 ease-in translate-y-[-12px] opacity-0"
             }`}
           >
             <div className="flex-1 overflow-y-auto">
@@ -138,12 +140,18 @@ export default function MobileMenuButton() {
                 <Link
                   href="/"
                   onClick={closeMenu}
-                  className="px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
+                  style={{ transitionDelay: open ? "40ms" : "0ms" }}
+                  className={`px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-all duration-300 ease-out text-[15px] font-bold ${
+                    open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+                  }`}
                 >
                   Acasă
                 </Link>
 
-                <div>
+                <div
+                  style={{ transitionDelay: open ? "75ms" : "0ms" }}
+                  className={`transition-all duration-300 ease-out ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}
+                >
                   <button
                     onClick={() => setProduseOpen((v) => !v)}
                     className="w-full flex items-center justify-between px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
@@ -167,7 +175,10 @@ export default function MobileMenuButton() {
                   </div>
                 </div>
 
-                <div>
+                <div
+                  style={{ transitionDelay: open ? "110ms" : "0ms" }}
+                  className={`transition-all duration-300 ease-out ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}
+                >
                   <button
                     onClick={() => setServiciiOpen((v) => !v)}
                     className="w-full flex items-center justify-between px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
@@ -191,12 +202,15 @@ export default function MobileMenuButton() {
                   </div>
                 </div>
 
-                {navLinks.map((link) => (
+                {navLinks.map((link, i) => (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={closeMenu}
-                    className="px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
+                    style={{ transitionDelay: open ? `${145 + i * 35}ms` : "0ms" }}
+                    className={`px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-all duration-300 ease-out text-[15px] font-bold ${
+                      open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+                    }`}
                   >
                     {link.label}
                   </Link>
