@@ -72,6 +72,11 @@ export default function MobileMenuButton() {
     setServiciiOpen(false);
   }
 
+  function toggleMenu() {
+    if (open) closeMenu();
+    else openMenu();
+  }
+
   useEffect(() => {
     if (!open && mounted) {
       const timeout = setTimeout(() => setMounted(false), 300);
@@ -90,7 +95,7 @@ export default function MobileMenuButton() {
   return (
     <>
       <button
-        onClick={openMenu}
+        onClick={toggleMenu}
         className="relative flex items-center justify-center w-9 h-9 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
         aria-label="Meniu"
         aria-expanded={open}
