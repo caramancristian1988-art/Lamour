@@ -7,7 +7,7 @@ export default async function LoginPage() {
   if (user) redirect("/cont");
 
   return (
-    <main className="bg-white min-h-[70vh] flex items-center justify-center px-4 py-16">
+    <main className="bg-white min-h-[70vh] flex items-center justify-center px-6 py-16">
       <LoginForm />
     </main>
   );
