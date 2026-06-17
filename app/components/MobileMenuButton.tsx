@@ -51,11 +51,12 @@ export default function MobileMenuButton() {
   const [navHeight, setNavHeight] = useState(0);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
+  function updateNavHeight() {
+    const headerEl = document.getElementById("site-header");
+    if (headerEl) setNavHeight(headerEl.getBoundingClientRect().height);
+  }
+
   useEffect(() => {
-    function updateNavHeight() {
-      const navEl = triggerRef.current?.closest("nav");
-      if (navEl) setNavHeight(navEl.getBoundingClientRect().height);
-    }
     updateNavHeight();
     window.addEventListener("resize", updateNavHeight);
     return () => window.removeEventListener("resize", updateNavHeight);

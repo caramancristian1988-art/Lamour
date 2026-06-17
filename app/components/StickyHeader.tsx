@@ -25,7 +25,7 @@ const servicesDropdown = [
 
 export default function StickyHeader() {
   return (
-    <div className="bg-white relative z-40">
+    <div id="site-header" className="bg-white relative z-40">
 
       {/* ══ ROW 1: Header ══ */}
       <div className="border-b border-gray-200">
