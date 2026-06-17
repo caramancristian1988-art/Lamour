@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import DeleteButton from "../components/DeleteButton";
+import MessageStatusBadge from "../components/MessageStatusBadge";
 import { markMessageReadAction, deleteMessageAction } from "@/lib/adminMessageActions";
 
 async function getMessages() {
@@ -14,6 +15,13 @@ async function getMessages() {
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("ro-MD", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);
 }
+
+const STATUS_ACCENT_COLORS: Record<string, string> = {
+  in_asteptare: "#f59e0b",
+  sunat: "#3b82f6",
+  nu_raspunde: "#f97316",
+  rezolvat: "#22c55e",
+};
 
 export default async function AdminMesajePage() {
   const messages = await getMessages();
@@ -31,7 +39,10 @@ export default async function AdminMesajePage() {
           {messages.map((m) => (
             <div
               key={m.id}
-              className={`bg-white border rounded-2xl p-5 ${m.read ? "border-gray-100" : "border-[#c7092b]/30"}`}
+              style={{ borderLeftColor: STATUS_ACCENT_COLORS[m.status] ?? STATUS_ACCENT_COLORS.in_asteptare }}
+              className={`bg-white border rounded-2xl p-5 border-l-4 transition-colors ${
+                m.read ? "border-gray-100" : "border-[#c7092b]/30"
+              }`}
             >
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
@@ -53,6 +64,7 @@ export default async function AdminMesajePage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  <MessageStatusBadge id={m.id} status={m.status} />
                   {!m.read && (
                     <form action={markMessageReadAction}>
                       <input type="hidden" name="id" value={m.id} />

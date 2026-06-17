@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
+import { MESSAGE_STATUSES } from "./messageStatuses";
 
 export interface ContactFormState {
   error?: string;
@@ -42,6 +43,15 @@ export async function markMessageReadAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await prisma.contactMessage.update({ where: { id }, data: { read: true } });
+  revalidatePath("/admin/mesaje");
+}
+
+export async function setMessageStatusAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "");
+  if (!id || !MESSAGE_STATUSES.some((s) => s.value === status)) return;
+  await prisma.contactMessage.update({ where: { id }, data: { status, read: true } });
   revalidatePath("/admin/mesaje");
 }
 

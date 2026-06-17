@@ -59,6 +59,7 @@ model BlogPost {
   description String
   image       String?
   content     String?
+  category    String?
   published   Boolean  @default(true)
   createdAt   DateTime @default(now())
 }
@@ -90,6 +91,7 @@ model ContactMessage {
   message   String?
   source    String   @default("Pagina de contact")
   read      Boolean  @default(false)
+  status    String   @default("in_asteptare")
   createdAt DateTime @default(now())
 }
 
