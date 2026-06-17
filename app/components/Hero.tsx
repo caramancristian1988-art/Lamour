@@ -93,7 +93,7 @@ export default function Hero() {
       </div>
 
       {/* ── DESKTOP ── */}
-      <div className="hidden sm:block relative h-[calc(100vh-210px)] min-h-[480px] max-h-[760px]">
+      <div className="hidden sm:block relative h-[calc(100vh-230px)] min-h-[440px] max-h-[700px]">
         <Image
           src="/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png"
           alt="Aparat de aer condiționat în sufragerie"
@@ -107,13 +107,13 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-r from-white/90 from-5% via-white/50 via-30% to-transparent to-55%" />
 
         {/* Content */}
-        <div className="absolute inset-0 flex flex-col justify-between max-w-7xl mx-auto px-6 py-16">
+        <div className="absolute inset-0 flex flex-col justify-between max-w-7xl mx-auto px-6 py-8 lg:py-10">
           <div>
-            <h1 className="text-4xl lg:text-5xl xl:text-[52px] font-extrabold text-[#111827] leading-tight mb-4 drop-shadow-sm">
+            <h1 className="text-4xl lg:text-5xl xl:text-[52px] font-extrabold text-[#111827] leading-tight mb-3 drop-shadow-sm">
               Confortul ideal,{" "}
               <span className="text-[#c7092b] block">în fiecare sezon.</span>
             </h1>
-            <p className="text-base text-gray-800 leading-relaxed mb-8 max-w-md">
+            <p className="text-base text-gray-800 leading-relaxed mb-6 max-w-md">
               Soluții complete de climatizare pentru locuința sau afacerea ta.
             </p>
             <div className="flex flex-wrap gap-3">
