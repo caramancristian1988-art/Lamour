@@ -293,7 +293,7 @@ export default function ProductFilterSidebar({ sort, categories, energyClasses, 
             aria-hidden
           />
           <div
-            className={`absolute top-0 left-0 w-[85%] max-w-sm max-h-[85vh] bg-white p-5 overflow-y-auto shadow-2xl rounded-r-3xl transition-transform duration-300 ease-out ${
+            className={`absolute inset-y-0 left-0 w-[85%] max-w-sm bg-white p-5 overflow-y-auto shadow-2xl rounded-r-3xl transition-transform duration-300 ease-out ${
               mobileOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
