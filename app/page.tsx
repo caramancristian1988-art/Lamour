@@ -48,14 +48,14 @@ export default async function HomePage() {
         products={popularProducts}
         title="Produse"
         highlighted="populare"
-        viewAllHref="/produse"
+        viewAllHref="/produse?sort=rating"
         bg="bg-[#f8fafc]"
       />
       <ProductsSection
         products={offerProducts}
         title="Oferte"
         highlighted="speciale"
-        viewAllHref="/produse"
+        viewAllHref="/produse?oferte=1"
         bg="bg-[#f8fafc]"
       />
       <ServicesSection />
