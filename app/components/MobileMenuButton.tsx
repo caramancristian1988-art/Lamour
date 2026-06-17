@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import FavoritesBadge from "./FavoritesBadge";
@@ -48,6 +48,18 @@ export default function MobileMenuButton() {
   const [mounted, setMounted] = useState(false);
   const [produseOpen, setProduseOpen] = useState(false);
   const [serviciiOpen, setServiciiOpen] = useState(false);
+  const [navHeight, setNavHeight] = useState(0);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    function updateNavHeight() {
+      const navEl = triggerRef.current?.closest("nav");
+      if (navEl) setNavHeight(navEl.getBoundingClientRect().height);
+    }
+    updateNavHeight();
+    window.addEventListener("resize", updateNavHeight);
+    return () => window.removeEventListener("resize", updateNavHeight);
+  }, []);
 
   function openMenu() {
     setMounted(true);
@@ -78,6 +90,7 @@ export default function MobileMenuButton() {
   return (
     <>
       <button
+        ref={triggerRef}
         onClick={openMenu}
         className="relative flex items-center justify-center w-9 h-9 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
         aria-label="Meniu"
@@ -103,7 +116,7 @@ export default function MobileMenuButton() {
       </button>
 
       {mounted && (
-        <div className="lg:hidden fixed inset-0 z-50">
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-50" style={{ top: navHeight }}>
           <div
             className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
             onClick={closeMenu}
@@ -111,7 +124,7 @@ export default function MobileMenuButton() {
           />
 
           <div
-            className={`absolute inset-x-0 top-0 w-full max-h-[85vh] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+            className={`absolute inset-x-0 top-0 w-full max-h-full bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
               open ? "translate-y-0" : "-translate-y-full"
             }`}
           >
