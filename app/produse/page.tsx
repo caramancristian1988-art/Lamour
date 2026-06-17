@@ -189,7 +189,7 @@ export default async function ProdusePage({
       {/* ── PRODUCTS GRID ── */}
       <section className="bg-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex gap-8 items-start">
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
               categories={categoryOptions}
               energyClasses={energyClassOptions}

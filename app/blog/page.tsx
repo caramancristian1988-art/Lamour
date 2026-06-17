@@ -225,34 +225,6 @@ export default function BlogPage() {
                 </Link>
               ))}
             </div>
-
-            {/* ── PAGINATION ── */}
-            <div className="flex items-center justify-center gap-1 mt-12">
-              <button className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              {[1, 2, 3].map((p) => (
-                <button
-                  key={p}
-                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold transition-colors ${
-                    p === 1 ? "bg-[#1d2353] text-white" : "text-gray-500 hover:bg-gray-100"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-              <span className="text-gray-400 text-sm px-1">...</span>
-              <button className="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-100 transition-colors">
-                12
-              </button>
-              <button className="w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
           </div>
         </section>
 

@@ -1,8 +1,9 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import { fallbackProducts } from "@/lib/fallbackData";
+import ProductsSection from "../components/ProductsSection";
+import FaqAccordion from "../components/FaqAccordion";
 
 const FAQS = [
   "Cât durează instalarea unui aparat de aer condiționat?",
@@ -10,35 +11,21 @@ const FAQS = [
   "Asigurați service și mentenanță?",
 ];
 
-const PRODUCTS = [
-  {
-    name: "Daikin Perfera FTXM35A",
-    btu: "12000 BTU",
-    price: "11 990 MDL",
-    img: "/510px_klimatyzator-split-Daikin-SENSIRA-FTXFE-01.webp",
-  },
-  {
-    name: "Mitsubishi Electric MSZ-HR35VF",
-    btu: "12000 BTU",
-    price: "10 490 MDL",
-    img: "/klimatyzator-scienny-mitsubishi-electric-hr-msz-hr50vf-5kw_9cb0a676-7d03-4a32-ba2a-4b320f3a2a44.webp",
-  },
-  {
-    name: "Gree Amber GWH12YD-S6DBA2A",
-    btu: "12000 BTU",
-    price: "8 990 MDL",
-    img: "/MIDEA@FT_Multi-split_Free_Match_product_02.webp",
-  },
-  {
-    name: "Hisense Easy Smart CA35YR03G",
-    btu: "12000 BTU",
-    price: "7 990 MDL",
-    img: "/CH-S24FTXN-NG_00-800x800_thm.jpg",
-  },
-];
+async function getRecommendedProducts() {
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: { rating: "desc" },
+      take: 4,
+    });
+    if (products.length === 0) throw new Error("empty");
+    return products;
+  } catch {
+    return fallbackProducts.slice(0, 4);
+  }
+}
 
-export default function ContactPage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+export default async function ContactPage() {
+  const products = await getRecommendedProducts();
 
   return (
     <div className="bg-white text-[#1B2A4A]">
@@ -192,17 +179,17 @@ export default function ContactPage() {
               <div className="grid grid-cols-2 gap-4">
                 <input
                   type="email"
-                  placeholder="Email"
+                  placeholder="Email (opțional)"
                   className="border border-gray-300 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#E31E24] placeholder:text-gray-400"
                 />
                 <input
                   type="text"
-                  placeholder="Subiect"
+                  placeholder="Subiect (opțional)"
                   className="border border-gray-300 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#E31E24] placeholder:text-gray-400"
                 />
               </div>
               <textarea
-                placeholder="Mesajul tău"
+                placeholder="Mesajul tău (opțional)"
                 rows={5}
                 className="border border-gray-300 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#E31E24] resize-none placeholder:text-gray-400"
               />
@@ -271,66 +258,11 @@ export default function ContactPage() {
       <section id="faq" className="max-w-7xl mx-auto px-4 pb-14">
         <h2 className="text-2xl font-bold mb-2">Întrebări frecvente</h2>
         <div className="w-10 h-[3px] bg-[#E31E24] mb-6" />
-        <div className="border border-gray-200 rounded-2xl overflow-hidden divide-y divide-gray-200">
-          {FAQS.map((q, i) => (
-            <div key={i}>
-              <button
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between px-6 py-4 text-left text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
-                {q}
-                <span className="text-gray-400 text-base ml-4">
-                  {openFaq === i ? "∧" : "∨"}
-                </span>
-              </button>
-              {openFaq === i && (
-                <div className="px-6 pb-4 text-sm text-gray-500">
-                  Răspunsul va fi adăugat în curând.
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <FaqAccordion faqs={FAQS} />
       </section>
 
       {/* Recommended products */}
-      <section className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Produse recomandate</h2>
-          <Link
-            href="/produse"
-            className="text-[#E31E24] font-bold text-xs hover:underline"
-          >
-            VEZI TOATE PRODUSELE →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {PRODUCTS.map((product, i) => (
-            <div
-              key={i}
-              className="border border-gray-200 rounded-2xl p-4 flex flex-col gap-2 hover:shadow-md transition-shadow"
-            >
-              <div className="relative h-36 w-full mb-2">
-                <Image
-                  src={product.img}
-                  alt={product.name}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-              <p className="font-semibold text-sm leading-tight">{product.name}</p>
-              <p className="text-xs text-gray-400">{product.btu}</p>
-              <p className="text-[#E31E24] font-bold text-sm">{product.price}</p>
-              <Link
-                href="/produse"
-                className="border border-[#1B2A4A] text-[#1B2A4A] text-xs font-bold py-2 rounded hover:bg-[#1B2A4A] hover:text-white transition-colors text-center mt-auto"
-              >
-                VEZI PRODUSUL
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ProductsSection products={products} viewAllHref="/produse" />
     </div>
   );
 }

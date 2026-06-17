@@ -13,6 +13,9 @@ const servicesDropdown = [
   { href: "/servicii/instalare", label: "Instalare" },
   { href: "/servicii/mentenanta", label: "Mentenanță" },
   { href: "/servicii/diagnosticare", label: "Diagnosticare & Reparații" },
+  { href: "/servicii/consultanta", label: "Consultanță" },
+  { href: "/servicii/multisplit", label: "Sisteme multisplit" },
+  { href: "/servicii/comerciale", label: "Sisteme comerciale HVAC" },
 ];
 
 export default function Navbar() {
