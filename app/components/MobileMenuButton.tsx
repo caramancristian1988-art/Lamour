@@ -48,25 +48,23 @@ export default function MobileMenuButton() {
   const [mounted, setMounted] = useState(false);
   const [produseOpen, setProduseOpen] = useState(false);
   const [serviciiOpen, setServiciiOpen] = useState(false);
-  const [navHeight, setNavHeight] = useState(0);
+  const [headerBottom, setHeaderBottom] = useState(0);
 
-  function updateNavHeight() {
+  function updateHeaderBottom() {
     const headerEl = document.getElementById("site-header");
-    if (headerEl) setNavHeight(headerEl.getBoundingClientRect().height);
+    if (headerEl) setHeaderBottom(headerEl.getBoundingClientRect().bottom);
   }
 
   useEffect(() => {
     const headerEl = document.getElementById("site-header");
     if (!headerEl) return;
-    const observer = new ResizeObserver((entries) => {
-      setNavHeight(entries[0].contentRect.height);
-    });
+    const observer = new ResizeObserver(() => updateHeaderBottom());
     observer.observe(headerEl);
     return () => observer.disconnect();
   }, []);
 
   function openMenu() {
-    updateNavHeight();
+    updateHeaderBottom();
     setMounted(true);
     requestAnimationFrame(() => requestAnimationFrame(() => setOpen(true)));
   }
@@ -120,7 +118,7 @@ export default function MobileMenuButton() {
       </button>
 
       {mounted && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-50" style={{ top: navHeight }}>
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-50" style={{ top: headerBottom }}>
           <div
             className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
             onClick={closeMenu}
