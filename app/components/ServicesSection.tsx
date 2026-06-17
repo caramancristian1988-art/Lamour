@@ -42,9 +42,9 @@ export default function ServicesSection() {
       <div className="max-w-7xl mx-auto">
 
         {/* ── Mobile layout ── */}
-        <div className="lg:hidden flex flex-col gap-4">
-          {/* Dark navy card */}
-          <div className="bg-[#1d2353] rounded-3xl p-6">
+        <div className="lg:hidden rounded-3xl overflow-hidden bg-[#1d2353]">
+          {/* Dark navy content */}
+          <div className="p-6">
             <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-2">
               Servicii profesionale
             </p>
@@ -76,7 +76,7 @@ export default function ServicesSection() {
           </div>
 
           {/* Technician image */}
-          <div className="relative h-[200px] rounded-2xl overflow-hidden">
+          <div className="relative h-[200px]">
             <Image
               src="/tehnician.png"
               alt="Tehnician instalare aer condiționat"
