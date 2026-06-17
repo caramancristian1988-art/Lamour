@@ -188,7 +188,13 @@ export default async function ProdusePage({
             />
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-400 mb-6">{products.length} produse găsite</p>
+              {filters.query ? (
+                <p className="text-sm text-gray-500 mb-6">
+                  {products.length} rezultate pentru <span className="font-bold text-[#1d2353]">&ldquo;{filters.query}&rdquo;</span>
+                </p>
+              ) : (
+                <p className="text-sm text-gray-400 mb-6">{products.length} produse găsite</p>
+              )}
 
               {items.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-5">
@@ -206,7 +212,11 @@ export default async function ProdusePage({
               ) : (
                 <div className="text-center py-16">
                   <p className="text-gray-500">
-                    {filters.offersOnly ? "Momentan nu există oferte speciale active." : "Niciun produs nu corespunde filtrelor selectate."}
+                    {filters.query
+                      ? `Niciun produs nu corespunde căutării "${filters.query}".`
+                      : filters.offersOnly
+                      ? "Momentan nu există oferte speciale active."
+                      : "Niciun produs nu corespunde filtrelor selectate."}
                   </p>
                 </div>
               )}
@@ -217,6 +227,7 @@ export default async function ProdusePage({
                 sort={sort}
                 hasMore={hasMore}
                 extraParams={{
+                  ...(filters.query ? { q: filters.query } : {}),
                   ...(filters.offersOnly ? { oferte: "1" } : {}),
                   ...(filters.categorySlugs.length > 0 ? { cat: filters.categorySlugs.join(",") } : {}),
                   ...(filters.inverterOnly ? { inverter: "1" } : {}),

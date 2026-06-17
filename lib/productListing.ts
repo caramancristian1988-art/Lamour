@@ -65,20 +65,24 @@ export interface ProductFilters {
   energyClasses: string[];
   priceBracket: string | null;
   offersOnly: boolean;
+  query: string;
 }
 
 export function parseFilters(query: { [key: string]: string | string[] | undefined }): ProductFilters {
   const priceBracket = Array.isArray(query.pret) ? query.pret[0] : query.pret;
+  const q = Array.isArray(query.q) ? query.q[0] : query.q;
   return {
     categorySlugs: parseList(query.cat),
     inverterOnly: query.inverter === "1",
     energyClasses: parseList(query.energie),
     priceBracket: PRICE_BRACKETS.some((b) => b.key === priceBracket) ? priceBracket! : null,
     offersOnly: query.oferte === "1",
+    query: q?.trim() ?? "",
   };
 }
 
 interface FilterableProduct {
+  name: string;
   price: number;
   inverter: boolean;
   energyClass: string | null;
@@ -92,6 +96,10 @@ export function applyFilters<T extends FilterableProduct>(
 ): T[] {
   let result = products;
 
+  if (filters.query) {
+    const q = filters.query.toLowerCase();
+    result = result.filter((p) => p.name.toLowerCase().includes(q));
+  }
   if (filters.categorySlugs.length > 0 && getCategorySlug) {
     result = result.filter((p) => filters.categorySlugs.includes(getCategorySlug(p)));
   }
@@ -118,6 +126,7 @@ export function hasActiveFilters(filters: ProductFilters): boolean {
     filters.inverterOnly ||
     filters.energyClasses.length > 0 ||
     filters.priceBracket !== null ||
-    filters.offersOnly
+    filters.offersOnly ||
+    filters.query.length > 0
   );
 }
