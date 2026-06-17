@@ -24,7 +24,8 @@ export async function POST(request: NextRequest) {
       addRandomSuffix: true,
     });
     return NextResponse.json({ url: blob.url });
-  } catch {
+  } catch (err) {
+    console.error("Vercel Blob upload failed:", err);
     return NextResponse.json(
       { error: "Încărcarea a eșuat. Verifică dacă Vercel Blob este configurat (BLOB_READ_WRITE_TOKEN)." },
       { status: 500 }
