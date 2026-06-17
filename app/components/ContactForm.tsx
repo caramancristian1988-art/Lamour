@@ -1,15 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { submitContactMessageAction } from "@/lib/adminMessageActions";
 
-type Status = "idle" | "error" | "success";
+type Status = "idle" | "error" | "success" | "pending";
 
 export default function ContactForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const data = new FormData(e.currentTarget);
@@ -20,6 +21,15 @@ export default function ContactForm() {
 
     if (missing.length > 0) {
       setMessage(`Lipsește ${missing.join(" și ")}.`);
+      setStatus("error");
+      return;
+    }
+
+    setStatus("pending");
+    const result = await submitContactMessageAction({}, data);
+
+    if (result.error) {
+      setMessage(result.error);
       setStatus("error");
       return;
     }
@@ -93,9 +103,9 @@ export default function ContactForm() {
       <div>
         <button
           type="submit"
-          disabled={status === "success"}
+          disabled={status === "success" || status === "pending"}
           className={`text-white text-sm font-bold px-8 py-3 rounded flex items-center gap-2 transition-all duration-300 ${
-            status === "success" ? "bg-green-600" : "bg-[#E31E24] hover:bg-red-700 active:scale-95"
+            status === "success" ? "bg-green-600" : "bg-[#E31E24] hover:bg-red-700 active:scale-95 disabled:opacity-60"
           }`}
         >
           {status === "success" ? (
@@ -105,10 +115,10 @@ export default function ContactForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
             </>
+          ) : status === "pending" ? (
+            "Se trimite..."
           ) : (
-            <>
-              TRIMITE MESAJ →
-            </>
+            "TRIMITE MESAJ →"
           )}
         </button>
         <p className="text-xs text-gray-400 mt-3 flex items-center gap-1.5">

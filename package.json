@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "seed": "node -r dotenv/config prisma/seed.js"
+    "seed": "node -r dotenv/config prisma/seed.js",
+    "make-admin": "node -r dotenv/config scripts/make-admin.js"
   },
   "prisma": {
     "seed": "node -r dotenv/config prisma/seed.js"

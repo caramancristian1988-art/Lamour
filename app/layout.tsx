@@ -2,15 +2,13 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
-import TopBar from "./components/TopBar";
-import ScrollAwareHeader from "./components/ScrollAwareHeader";
+import { SiteHeader, SiteFooter } from "./components/SiteChrome";
 import ScrollToTop from "./components/ScrollToTop";
 import { FavoritesProvider } from "./components/FavoritesProvider";
 import { CartProvider } from "./components/CartProvider";
 import { AuthProvider } from "./components/AuthProvider";
 import { AuthModalProvider } from "./components/AuthModalProvider";
 import AuthModal from "./components/AuthModal";
-import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
   title: "Climat Rapid — Condiționere & Climatizare Moldova",
@@ -42,10 +40,9 @@ export default function RootLayout({
                 <Suspense fallback={null}>
                   <ScrollToTop />
                 </Suspense>
-                <TopBar />
-                <ScrollAwareHeader />
+                <SiteHeader />
                 {children}
-                <Footer />
+                <SiteFooter />
                 <AuthModal />
               </CartProvider>
             </FavoritesProvider>
