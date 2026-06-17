@@ -7,6 +7,9 @@ import ScrollAwareHeader from "./components/ScrollAwareHeader";
 import ScrollToTop from "./components/ScrollToTop";
 import { FavoritesProvider } from "./components/FavoritesProvider";
 import { CartProvider } from "./components/CartProvider";
+import { AuthProvider } from "./components/AuthProvider";
+import { AuthModalProvider } from "./components/AuthModalProvider";
+import AuthModal from "./components/AuthModal";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
@@ -32,17 +35,22 @@ export default function RootLayout({
   return (
     <html lang="ro" className={GeistSans.variable}>
       <body className="min-h-screen flex flex-col">
-        <FavoritesProvider>
-          <CartProvider>
-            <Suspense fallback={null}>
-              <ScrollToTop />
-            </Suspense>
-            <TopBar />
-            <ScrollAwareHeader />
-            {children}
-            <Footer />
-          </CartProvider>
-        </FavoritesProvider>
+        <AuthProvider>
+          <AuthModalProvider>
+            <FavoritesProvider>
+              <CartProvider>
+                <Suspense fallback={null}>
+                  <ScrollToTop />
+                </Suspense>
+                <TopBar />
+                <ScrollAwareHeader />
+                {children}
+                <Footer />
+                <AuthModal />
+              </CartProvider>
+            </FavoritesProvider>
+          </AuthModalProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -5,6 +5,7 @@ import MobileMenuButton from "./MobileMenuButton";
 import FavoritesBadge from "./FavoritesBadge";
 import CartBadge from "./CartBadge";
 import AllCategoriesMenu from "./AllCategoriesMenu";
+import AccountMenuLink from "./AccountMenuLink";
 
 const productsDropdown = [
   { href: "/produse?cat=conditioane-rezidentiale", label: "Condiționere rezidențiale" },
@@ -42,12 +43,12 @@ export default function StickyHeader() {
               </span>
             </Link>
             <div className="flex items-center gap-3">
-              <Link href="/cont" className="flex items-center gap-1 text-gray-600 hover:text-[#1d2353] transition-colors" aria-label="Contul meu">
+              <AccountMenuLink className="flex items-center gap-1 text-gray-600 hover:text-[#1d2353] transition-colors">
                 <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
                 </svg>
                 <span className="text-xs font-medium whitespace-nowrap">Contul meu</span>
-              </Link>
+              </AccountMenuLink>
               <Link href="/favorite" className="text-gray-600 hover:text-[#c7092b] transition-colors relative" aria-label="Favorite">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -84,12 +85,12 @@ export default function StickyHeader() {
           </div>
 
           <div className="flex items-center gap-4 justify-end py-8">
-            <Link href="/cont" className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#1d2353] transition-colors whitespace-nowrap" aria-label="Contul meu">
+            <AccountMenuLink className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#1d2353] transition-colors whitespace-nowrap">
               <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
               </svg>
               <span className="hidden lg:block font-medium">Contul meu</span>
-            </Link>
+            </AccountMenuLink>
             <Link href="/favorite" className="text-gray-600 hover:text-[#c7092b] transition-colors relative" aria-label="Favorite">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
