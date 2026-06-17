@@ -41,8 +41,11 @@ model Product {
 model Review {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
+  email     String?
   rating    Float
   text      String
+  pros      String?
+  cons      String?
   product   String?
   createdAt DateTime @default(now())
 }

@@ -28,6 +28,7 @@ import AddToCartButton from "../../components/AddToCartButton";
 import ProductGallery from "../../components/ProductGallery";
 import FavoriteButton from "../../components/FavoriteButton";
 import ProductFilterSidebar from "../../components/ProductFilterSidebar";
+import WriteReviewModal from "../../components/WriteReviewModal";
 
 export const revalidate = 3600;
 
@@ -352,7 +353,15 @@ interface ProductViewProps {
     reviewCount: number;
     badge: string | null;
   }>;
-  reviews: Array<{ id: string; name: string; rating: number; text: string; product: string | null }>;
+  reviews: Array<{
+    id: string;
+    name: string;
+    rating: number;
+    text: string;
+    pros?: string | null;
+    cons?: string | null;
+    product: string | null;
+  }>;
 }
 
 function ProductView({ product, category, related, reviews }: ProductViewProps) {
@@ -537,16 +546,26 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
       {/* Reviews */}
       <section className="bg-[#f6f8fb] border-y border-gray-100 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <h2 className="text-2xl font-extrabold text-[#1d2353] mb-8">
-            Recenzii clienți {reviews.length > 0 && <span className="text-gray-400 font-medium text-base">({reviews.length})</span>}
-          </h2>
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-8">
+            <h2 className="text-2xl font-extrabold text-[#1d2353]">
+              Recenzii clienți {reviews.length > 0 && <span className="text-gray-400 font-medium text-base">({reviews.length})</span>}
+            </h2>
+            <WriteReviewModal productSlug={product.slug} productName={product.name} />
+          </div>
 
           {reviews.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {reviews.map((review) => (
                 <div key={review.id} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col">
                   <StarRating rating={review.rating} size="w-4 h-4" />
-                  <p className="text-sm text-gray-600 mt-3 flex-1 leading-relaxed">&ldquo;{review.text}&rdquo;</p>
+                  <p className="text-sm text-gray-600 mt-3 leading-relaxed">&ldquo;{review.text}&rdquo;</p>
+                  {review.pros && (
+                    <p className="text-xs text-green-700 mt-2"><span className="font-bold">Plusuri:</span> {review.pros}</p>
+                  )}
+                  {review.cons && (
+                    <p className="text-xs text-[#c7092b] mt-1"><span className="font-bold">Minusuri:</span> {review.cons}</p>
+                  )}
+                  <div className="flex-1" />
                   <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
                     <div className="w-9 h-9 bg-[#1d2353] rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
                       {getInitials(review.name)}
