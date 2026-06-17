@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import FavoritesBadge from "./FavoritesBadge";
-import CartBadge from "./CartBadge";
 
 const productsDropdown = [
   { href: "/produse/conditioane-rezidentiale", label: "Condiționere rezidențiale" },
@@ -130,60 +127,9 @@ export default function MobileMenuButton() {
               open ? "translate-y-0" : "-translate-y-full"
             }`}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
-              <Link href="/" onClick={closeMenu} className="flex items-center gap-2">
-                <div className="w-8 h-8 shrink-0">
-                  <Image src="/Untitled-2.png" alt="Climat Rapid logo" width={32} height={32} className="w-full h-full object-contain" />
-                </div>
-                <span className="text-base font-extrabold text-[#1d2353] tracking-tight uppercase leading-none">
-                  Climat <span className="text-[#c7092b]">Rapid</span>
-                </span>
-              </Link>
-              <button onClick={closeMenu} aria-label="Închide meniul" className="group text-gray-400 hover:text-[#c7092b] transition-colors p-1">
-                <svg
-                  className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
             <div className="flex-1 overflow-y-auto">
-              {/* Quick access */}
-              <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100">
-                <Link href="/cont" onClick={closeMenu} className="flex flex-col items-center gap-1.5 py-4 text-gray-600 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
-                  </svg>
-                  <span className="text-[11px] font-bold">Cont</span>
-                </Link>
-                <Link href="/favorite" onClick={closeMenu} className="relative flex flex-col items-center gap-1.5 py-4 text-gray-600 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
-                  <span className="relative">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    <FavoritesBadge className="absolute -top-1.5 -right-2 w-4 h-4 bg-[#c7092b] rounded-full text-white text-[9px] font-bold flex items-center justify-center" />
-                  </span>
-                  <span className="text-[11px] font-bold">Favorite</span>
-                </Link>
-                <Link href="/cos" onClick={closeMenu} className="relative flex flex-col items-center gap-1.5 py-4 text-gray-600 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
-                  <span className="relative">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <CartBadge className="absolute -top-1.5 -right-2 w-4 h-4 bg-[#c7092b] rounded-full text-white text-[9px] font-bold flex items-center justify-center" />
-                  </span>
-                  <span className="text-[11px] font-bold">Coș</span>
-                </Link>
-              </div>
-
               {/* Nav */}
-              <nav className="flex flex-col px-2 py-2">
+              <nav className="flex flex-col px-2 py-3">
                 <Link
                   href="/"
                   onClick={closeMenu}
