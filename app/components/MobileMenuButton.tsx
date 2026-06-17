@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import FavoritesBadge from "./FavoritesBadge";
@@ -49,7 +49,6 @@ export default function MobileMenuButton() {
   const [produseOpen, setProduseOpen] = useState(false);
   const [serviciiOpen, setServiciiOpen] = useState(false);
   const [navHeight, setNavHeight] = useState(0);
-  const triggerRef = useRef<HTMLButtonElement>(null);
 
   function updateNavHeight() {
     const headerEl = document.getElementById("site-header");
@@ -57,12 +56,17 @@ export default function MobileMenuButton() {
   }
 
   useEffect(() => {
-    updateNavHeight();
-    window.addEventListener("resize", updateNavHeight);
-    return () => window.removeEventListener("resize", updateNavHeight);
+    const headerEl = document.getElementById("site-header");
+    if (!headerEl) return;
+    const observer = new ResizeObserver((entries) => {
+      setNavHeight(entries[0].contentRect.height);
+    });
+    observer.observe(headerEl);
+    return () => observer.disconnect();
   }, []);
 
   function openMenu() {
+    updateNavHeight();
     setMounted(true);
     requestAnimationFrame(() => requestAnimationFrame(() => setOpen(true)));
   }
@@ -91,7 +95,6 @@ export default function MobileMenuButton() {
   return (
     <>
       <button
-        ref={triggerRef}
         onClick={openMenu}
         className="relative flex items-center justify-center w-9 h-9 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
         aria-label="Meniu"
