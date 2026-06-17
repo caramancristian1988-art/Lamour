@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { PRICE_BRACKETS } from "@/lib/productListing";
+import { PRICE_BRACKETS, type SortKey } from "@/lib/productListing";
+import ProductSortSelect from "./ProductSortSelect";
 
 interface CategoryOption {
   id: string;
@@ -23,13 +24,15 @@ interface PriceBracketOption {
 }
 
 interface Props {
+  sort: SortKey;
   categories?: CategoryOption[];
   energyClasses: EnergyOption[];
   priceBrackets: PriceBracketOption[];
   inverterCount: number;
+  offersCount: number;
 }
 
-export default function ProductFilterSidebar({ categories, energyClasses, priceBrackets, inverterCount }: Props) {
+export default function ProductFilterSidebar({ sort, categories, energyClasses, priceBrackets, inverterCount, offersCount }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -56,6 +59,7 @@ export default function ProductFilterSidebar({ categories, energyClasses, priceB
   const inverterOnly = searchParams.get("inverter") === "1";
   const selectedEnergy = searchParams.get("energie")?.split(",").filter(Boolean) ?? [];
   const selectedPrice = searchParams.get("pret");
+  const offersOnly = searchParams.get("oferte") === "1";
 
   function go(params: URLSearchParams) {
     params.delete("page");
@@ -99,7 +103,7 @@ export default function ProductFilterSidebar({ categories, energyClasses, priceB
 
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString());
-    ["cat", "inverter", "energie", "pret"].forEach((k) => params.delete(k));
+    ["cat", "inverter", "energie", "pret", "oferte"].forEach((k) => params.delete(k));
     go(params);
   }
 
@@ -118,11 +122,35 @@ export default function ProductFilterSidebar({ categories, energyClasses, priceB
     const bracket = PRICE_BRACKETS.find((b) => b.key === selectedPrice);
     if (bracket) activeChips.push({ key: "pret", label: bracket.label, onRemove: () => removeParam("pret") });
   }
+  if (offersOnly) activeChips.push({ key: "oferte", label: "Oferte speciale", onRemove: () => removeParam("oferte") });
 
   const hasActive = activeChips.length > 0;
 
   const sidebarContent = (
     <div className="flex flex-col gap-6">
+      <div>
+        <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Sortează după</p>
+        <ProductSortSelect defaultValue={sort} />
+      </div>
+
+      {offersCount > 0 && (
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Oferte</p>
+          <label className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
+            <span className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={offersOnly}
+                onChange={() => toggleBoolParam("oferte")}
+                className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
+              />
+              Oferte speciale
+            </span>
+            <span className="text-xs text-gray-400">({offersCount})</span>
+          </label>
+        </div>
+      )}
+
       {hasActive && (
         <div>
           <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Filtre active</p>

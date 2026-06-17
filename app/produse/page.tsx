@@ -10,7 +10,6 @@ import {
   fallbackDiscountProducts,
 } from "@/lib/fallbackData";
 import ProductCard from "../components/ProductCard";
-import ProductSortSelect from "../components/ProductSortSelect";
 import LoadMoreButton from "../components/LoadMoreButton";
 import ProductFilterSidebar from "../components/ProductFilterSidebar";
 import {
@@ -32,7 +31,35 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-async function getData() {
+interface CategoryRow {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image: string | null;
+  createdAt: Date;
+}
+
+interface ProductRow {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  price: number;
+  oldPrice: number | null;
+  image: string | null;
+  btu: number | null;
+  inverter: boolean;
+  energyClass: string | null;
+  rating: number;
+  reviewCount: number;
+  badge: string | null;
+  inStock: boolean;
+  categoryId: string;
+  createdAt: Date;
+}
+
+async function getData(): Promise<{ categories: CategoryRow[]; products: ProductRow[] }> {
   try {
     const [categories, products] = await Promise.all([
       prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
@@ -48,7 +75,7 @@ async function getData() {
         ...fallbackPopularProducts,
         ...fallbackOfferProducts,
         ...fallbackDiscountProducts,
-      ],
+      ].map((p) => ({ ...p, images: [] as string[] })),
     };
   }
 }
@@ -61,11 +88,9 @@ export default async function ProdusePage({
   const query = await searchParams;
   const sort = parseSort(query.sort);
   const page = parsePage(query.page);
-  const offersOnly = query.oferte === "1";
   const filters = parseFilters(query);
 
-  const { categories, products: allProducts } = await getData();
-  const baseProducts = offersOnly ? allProducts.filter((p) => p.oldPrice != null) : allProducts;
+  const { categories, products: baseProducts } = await getData();
 
   const categoryById = new Map(categories.map((c) => [c.id, c.slug]));
   const products = applyFilters(baseProducts, filters, (p) => categoryById.get(p.categoryId) ?? "");
@@ -89,6 +114,7 @@ export default async function ProdusePage({
   })).filter((b) => b.count > 0);
 
   const inverterCount = baseProducts.filter((p) => p.inverter).length;
+  const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
 
   const sorted = sortProducts(products, sort);
   const { items, page: currentPage, hasMore } = paginate(sorted, page);
@@ -148,53 +174,17 @@ export default async function ProdusePage({
         </div>
       </section>
 
-      {/* ── FILTER TABS ── */}
-      <section className="border-y border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-4 py-3">
-            <div className="flex items-center gap-1 overflow-x-auto scroll-smooth" style={{ scrollbarWidth: "none" }}>
-              <Link
-                href="/produse"
-                className={`shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all ${
-                  !offersOnly ? "bg-[#1d2353] text-white" : "text-gray-500 hover:bg-gray-100"
-                }`}
-              >
-                Toate produsele
-              </Link>
-              <Link
-                href="/produse?oferte=1"
-                className={`shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all ${
-                  offersOnly ? "bg-[#c7092b] text-white" : "text-[#c7092b] hover:bg-gray-100"
-                }`}
-              >
-                Oferte Speciale
-              </Link>
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/produse/${cat.slug}`}
-                  className="shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all text-gray-500 hover:bg-gray-100"
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-            <div className="hidden sm:flex items-center shrink-0">
-              <ProductSortSelect defaultValue={sort} />
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── PRODUCTS GRID ── */}
       <section className="bg-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
+              sort={sort}
               categories={categoryOptions}
               energyClasses={energyClassOptions}
               priceBrackets={priceBracketOptions}
               inverterCount={inverterCount}
+              offersCount={offersCount}
             />
 
             <div className="flex-1 min-w-0">
@@ -209,14 +199,14 @@ export default async function ProdusePage({
                       name={localProductNames[product.slug] ?? product.name}
                       image={localProductImages[product.slug] ?? product.image}
                       badge={localProductBadges[product.slug] ?? product.badge}
-                      showDiscount={offersOnly}
+                      showDiscount={filters.offersOnly}
                     />
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-16">
                   <p className="text-gray-500">
-                    {offersOnly ? "Momentan nu există oferte speciale active." : "Niciun produs nu corespunde filtrelor selectate."}
+                    {filters.offersOnly ? "Momentan nu există oferte speciale active." : "Niciun produs nu corespunde filtrelor selectate."}
                   </p>
                 </div>
               )}
@@ -227,7 +217,7 @@ export default async function ProdusePage({
                 sort={sort}
                 hasMore={hasMore}
                 extraParams={{
-                  ...(offersOnly ? { oferte: "1" } : {}),
+                  ...(filters.offersOnly ? { oferte: "1" } : {}),
                   ...(filters.categorySlugs.length > 0 ? { cat: filters.categorySlugs.join(",") } : {}),
                   ...(filters.inverterOnly ? { inverter: "1" } : {}),
                   ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),

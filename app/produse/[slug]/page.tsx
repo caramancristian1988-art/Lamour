@@ -23,7 +23,6 @@ import {
   PRICE_BRACKETS,
 } from "@/lib/productListing";
 import ProductCard from "../../components/ProductCard";
-import ProductSortSelect from "../../components/ProductSortSelect";
 import LoadMoreButton from "../../components/LoadMoreButton";
 import AddToCartButton from "../../components/AddToCartButton";
 import ProductGallery from "../../components/ProductGallery";
@@ -37,22 +36,19 @@ const allFallbackProducts = [
   ...fallbackPopularProducts,
   ...fallbackOfferProducts,
   ...fallbackDiscountProducts,
-];
+].map((p) => ({ ...p, images: [] as string[] }));
 
 const getCategoryData = cache(async (slug: string) => {
   try {
     const category = await prisma.category.findUnique({ where: { slug } });
     if (!category) return null;
-    const [products, allCategories] = await Promise.all([
-      prisma.product.findMany({ where: { categoryId: category.id }, orderBy: { createdAt: "desc" } }),
-      prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
-    ]);
-    return { category, products, allCategories };
+    const products = await prisma.product.findMany({ where: { categoryId: category.id }, orderBy: { createdAt: "desc" } });
+    return { category, products };
   } catch {
     const category = fallbackCategories.find((c) => c.slug === slug);
     if (!category) return null;
     const products = allFallbackProducts.filter((p) => p.categoryId === category.id);
-    return { category, products, allCategories: fallbackCategories };
+    return { category, products };
   }
 });
 
@@ -181,13 +177,12 @@ interface CategoryViewProps {
     badge: string | null;
     createdAt: Date;
   }>;
-  allCategories: Array<{ id: string; name: string; slug: string }>;
   sort: ReturnType<typeof parseSort>;
   page: number;
   filters: ReturnType<typeof parseFilters>;
 }
 
-function CategoryView({ category, products: baseProducts, allCategories, sort, page, filters }: CategoryViewProps) {
+function CategoryView({ category, products: baseProducts, sort, page, filters }: CategoryViewProps) {
   const products = applyFilters(baseProducts, filters);
 
   const energyClassOptions = Array.from(new Set(baseProducts.map((p) => p.energyClass).filter((v): v is string => Boolean(v))))
@@ -202,6 +197,7 @@ function CategoryView({ category, products: baseProducts, allCategories, sort, p
   })).filter((b) => b.count > 0);
 
   const inverterCount = baseProducts.filter((p) => p.inverter).length;
+  const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
 
   const sorted = sortProducts(products, sort);
   const { items, page: currentPage, hasMore } = paginate(sorted, page);
@@ -260,44 +256,16 @@ function CategoryView({ category, products: baseProducts, allCategories, sort, p
         </div>
       </section>
 
-      {/* FILTER TABS */}
-      <section className="border-y border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-4 py-3">
-            <div className="flex items-center gap-1 overflow-x-auto scroll-smooth" style={{ scrollbarWidth: "none" }}>
-              <Link href="/produse" className="shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all text-gray-500 hover:bg-gray-100">
-                Toate produsele
-              </Link>
-              <Link href="/produse?oferte=1" className="shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all text-[#c7092b] hover:bg-gray-100">
-                Oferte Speciale
-              </Link>
-              {allCategories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/produse/${cat.slug}`}
-                  className={`shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all ${
-                    cat.slug === category.slug ? "bg-[#1d2353] text-white" : "text-gray-500 hover:bg-gray-100"
-                  }`}
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-            <div className="hidden sm:flex items-center shrink-0">
-              <ProductSortSelect defaultValue={sort} />
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* PRODUCTS GRID */}
       <section className="bg-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
+              sort={sort}
               energyClasses={energyClassOptions}
               priceBrackets={priceBracketOptions}
               inverterCount={inverterCount}
+              offersCount={offersCount}
             />
 
             <div className="flex-1 min-w-0">
@@ -312,6 +280,7 @@ function CategoryView({ category, products: baseProducts, allCategories, sort, p
                       name={localProductNames[product.slug] ?? product.name}
                       image={localProductImages[product.slug] ?? product.image}
                       badge={localProductBadges[product.slug] ?? product.badge}
+                      showDiscount={filters.offersOnly}
                     />
                   ))}
                 </div>
@@ -333,6 +302,7 @@ function CategoryView({ category, products: baseProducts, allCategories, sort, p
                 sort={sort}
                 hasMore={hasMore}
                 extraParams={{
+                  ...(filters.offersOnly ? { oferte: "1" } : {}),
                   ...(filters.inverterOnly ? { inverter: "1" } : {}),
                   ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),
                   ...(filters.priceBracket ? { pret: filters.priceBracket } : {}),

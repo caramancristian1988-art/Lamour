@@ -64,6 +64,7 @@ export interface ProductFilters {
   inverterOnly: boolean;
   energyClasses: string[];
   priceBracket: string | null;
+  offersOnly: boolean;
 }
 
 export function parseFilters(query: { [key: string]: string | string[] | undefined }): ProductFilters {
@@ -73,6 +74,7 @@ export function parseFilters(query: { [key: string]: string | string[] | undefin
     inverterOnly: query.inverter === "1",
     energyClasses: parseList(query.energie),
     priceBracket: PRICE_BRACKETS.some((b) => b.key === priceBracket) ? priceBracket! : null,
+    offersOnly: query.oferte === "1",
   };
 }
 
@@ -80,6 +82,7 @@ interface FilterableProduct {
   price: number;
   inverter: boolean;
   energyClass: string | null;
+  oldPrice: number | null;
 }
 
 export function applyFilters<T extends FilterableProduct>(
@@ -102,6 +105,9 @@ export function applyFilters<T extends FilterableProduct>(
     const bracket = PRICE_BRACKETS.find((b) => b.key === filters.priceBracket);
     if (bracket) result = result.filter((p) => p.price >= bracket.min && p.price < bracket.max);
   }
+  if (filters.offersOnly) {
+    result = result.filter((p) => p.oldPrice != null);
+  }
 
   return result;
 }
@@ -111,6 +117,7 @@ export function hasActiveFilters(filters: ProductFilters): boolean {
     filters.categorySlugs.length > 0 ||
     filters.inverterOnly ||
     filters.energyClasses.length > 0 ||
-    filters.priceBracket !== null
+    filters.priceBracket !== null ||
+    filters.offersOnly
   );
 }
