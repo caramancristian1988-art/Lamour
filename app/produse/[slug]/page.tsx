@@ -233,6 +233,9 @@ function CategoryView({ category, products, allCategories, sort, page }: Categor
               <Link href="/produse" className="shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all text-gray-500 hover:bg-gray-100">
                 Toate produsele
               </Link>
+              <Link href="/produse?oferte=1" className="shrink-0 text-xs font-bold px-4 py-2 rounded-full transition-all text-[#c7092b] hover:bg-gray-100">
+                Oferte Speciale
+              </Link>
               {allCategories.map((cat) => (
                 <Link
                   key={cat.id}
