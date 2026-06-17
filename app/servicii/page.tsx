@@ -158,7 +158,7 @@ export default function ServiciiPage() {
           SERVICII PRINCIPALE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {serviciiPrincipale.map((s) => (
             <Link key={s.title} href={s.href} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative px-6 py-6" style={{ aspectRatio: "4/3" }}>
@@ -194,7 +194,7 @@ export default function ServiciiPage() {
           SERVICII AVANSATE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {serviciiAvansate.map((s) => (
             <Link key={s.title} href={s.href} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative px-6 py-6" style={{ aspectRatio: "4/3" }}>
@@ -230,7 +230,7 @@ export default function ServiciiPage() {
           SERVICII SUPLIMENTARE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {serviciiSuplimentare.map((s) => (
             <div key={s.title} className="flex items-start gap-4 p-5 border border-gray-100 rounded-2xl hover:shadow-sm transition-shadow">
               <div className="shrink-0 w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center">
