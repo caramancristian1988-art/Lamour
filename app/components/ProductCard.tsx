@@ -139,24 +139,24 @@ export default function ProductCard({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <AddToCartButton
               slug={slug}
               name={name}
               price={price}
               image={image ?? null}
-              className="flex-1 h-11 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-gray-200 disabled:text-gray-400"
+              className="flex-1 h-9 sm:h-11 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold rounded-lg sm:rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-gray-200 disabled:text-gray-400"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="hidden sm:inline">Adaugă în coș</span>
             </AddToCartButton>
             <button
               onClick={() => { window.location.href = `/produse/${slug}`; }}
-              className="w-11 h-11 flex items-center justify-center border border-gray-200 rounded-xl shrink-0 text-gray-400 hover:border-[#c7092b] hover:text-[#c7092b] transition-colors"
+              className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center border border-gray-200 rounded-lg sm:rounded-xl shrink-0 text-gray-400 hover:border-[#c7092b] hover:text-[#c7092b] transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
               </svg>
