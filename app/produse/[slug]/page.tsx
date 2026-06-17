@@ -13,11 +13,22 @@ import {
   fallbackReviews,
 } from "@/lib/fallbackData";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
-import { sortProducts, paginate, parseSort, parsePage } from "@/lib/productListing";
+import {
+  sortProducts,
+  paginate,
+  parseSort,
+  parsePage,
+  parseFilters,
+  applyFilters,
+  PRICE_BRACKETS,
+} from "@/lib/productListing";
 import ProductCard from "../../components/ProductCard";
 import ProductSortSelect from "../../components/ProductSortSelect";
-import ProductPagination from "../../components/ProductPagination";
+import LoadMoreButton from "../../components/LoadMoreButton";
 import AddToCartButton from "../../components/AddToCartButton";
+import ProductGallery from "../../components/ProductGallery";
+import FavoriteButton from "../../components/FavoriteButton";
+import ProductFilterSidebar from "../../components/ProductFilterSidebar";
 
 export const revalidate = 3600;
 
@@ -133,7 +144,14 @@ export default async function ProduseSlugPage({
 
   const categoryData = await getCategoryData(slug);
   if (categoryData) {
-    return <CategoryView {...categoryData} sort={parseSort(query.sort)} page={parsePage(query.page)} />;
+    return (
+      <CategoryView
+        {...categoryData}
+        sort={parseSort(query.sort)}
+        page={parsePage(query.page)}
+        filters={parseFilters(query)}
+      />
+    );
   }
 
   const productData = await getProductData(slug);
@@ -166,11 +184,27 @@ interface CategoryViewProps {
   allCategories: Array<{ id: string; name: string; slug: string }>;
   sort: ReturnType<typeof parseSort>;
   page: number;
+  filters: ReturnType<typeof parseFilters>;
 }
 
-function CategoryView({ category, products, allCategories, sort, page }: CategoryViewProps) {
+function CategoryView({ category, products: baseProducts, allCategories, sort, page, filters }: CategoryViewProps) {
+  const products = applyFilters(baseProducts, filters);
+
+  const energyClassOptions = Array.from(new Set(baseProducts.map((p) => p.energyClass).filter((v): v is string => Boolean(v))))
+    .sort()
+    .reverse()
+    .map((value) => ({ value, count: baseProducts.filter((p) => p.energyClass === value).length }));
+
+  const priceBracketOptions = PRICE_BRACKETS.map((b) => ({
+    key: b.key,
+    label: b.label,
+    count: baseProducts.filter((p) => p.price >= b.min && p.price < b.max).length,
+  })).filter((b) => b.count > 0);
+
+  const inverterCount = baseProducts.filter((p) => p.inverter).length;
+
   const sorted = sortProducts(products, sort);
-  const { items, page: currentPage, totalPages } = paginate(sorted, page);
+  const { items, page: currentPage, hasMore } = paginate(sorted, page);
 
   return (
     <main className="bg-white">
@@ -259,33 +293,53 @@ function CategoryView({ category, products, allCategories, sort, page }: Categor
       {/* PRODUCTS GRID */}
       <section className="bg-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <p className="text-sm text-gray-400 mb-6">{products.length} produse găsite</p>
+          <div className="flex gap-8 items-start">
+            <ProductFilterSidebar
+              energyClasses={energyClassOptions}
+              priceBrackets={priceBracketOptions}
+              inverterCount={inverterCount}
+            />
 
-          {items.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-              {items.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  {...product}
-                  name={localProductNames[product.slug] ?? product.name}
-                  image={localProductImages[product.slug] ?? product.image}
-                  badge={localProductBadges[product.slug] ?? product.badge}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-gray-500 mb-4">Momentan nu există produse în această categorie.</p>
-              <Link
-                href="/produse"
-                className="inline-flex items-center bg-[#1d2353] hover:bg-[#2a3470] text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm uppercase tracking-wide"
-              >
-                Vezi toate produsele
-              </Link>
-            </div>
-          )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-400 mb-6">{products.length} produse găsite</p>
 
-          <ProductPagination basePath={`/produse/${category.slug}`} page={currentPage} totalPages={totalPages} sort={sort} />
+              {items.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-5">
+                  {items.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      {...product}
+                      name={localProductNames[product.slug] ?? product.name}
+                      image={localProductImages[product.slug] ?? product.image}
+                      badge={localProductBadges[product.slug] ?? product.badge}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <p className="text-gray-500 mb-4">Niciun produs nu corespunde filtrelor selectate.</p>
+                  <Link
+                    href="/produse"
+                    className="inline-flex items-center bg-[#1d2353] hover:bg-[#2a3470] text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm uppercase tracking-wide"
+                  >
+                    Vezi toate produsele
+                  </Link>
+                </div>
+              )}
+
+              <LoadMoreButton
+                basePath={`/produse/${category.slug}`}
+                page={currentPage}
+                sort={sort}
+                hasMore={hasMore}
+                extraParams={{
+                  ...(filters.inverterOnly ? { inverter: "1" } : {}),
+                  ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),
+                  ...(filters.priceBracket ? { pret: filters.priceBracket } : {}),
+                }}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -304,6 +358,7 @@ interface ProductViewProps {
     price: number;
     oldPrice: number | null;
     image: string | null;
+    images?: string[];
     btu: number | null;
     inverter: boolean;
     energyClass: string | null;
@@ -340,8 +395,15 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
     product.btu ? { label: "Capacitate", value: `${(product.btu / 1000).toFixed(0)}000 BTU` } : null,
     { label: "Tehnologie", value: product.inverter ? "Inverter" : "On/Off" },
     product.energyClass ? { label: "Clasă energetică", value: product.energyClass } : null,
-    { label: "Disponibilitate", value: product.inStock ? "În stoc" : "Stoc epuizat" },
+    category ? { label: "Categorie", value: category.name } : null,
   ].filter(Boolean) as { label: string; value: string }[];
+
+  const subtitle = specs.map((s) => s.value).join(" / ");
+  const galleryImages = product.images && product.images.length > 0
+    ? product.images
+    : displayImage
+    ? [displayImage]
+    : [];
 
   return (
     <main className="bg-white">
@@ -363,127 +425,140 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
         </nav>
       </div>
 
-      {/* Top section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14">
-
-          {/* LEFT: image */}
-          <div className="relative">
-            <div className="relative h-[280px] sm:h-[380px] lg:h-[440px] rounded-2xl border border-gray-100 bg-white overflow-hidden flex items-center justify-center">
-              {displayImage ? (
-                <Image
-                  src={displayImage}
-                  alt={displayName}
-                  fill
-                  className="object-contain p-6"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  priority
-                />
-              ) : (
-                <svg className="w-32 h-32 text-gray-200" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20 8H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2zM4 6h16V4H4v2z" />
-                </svg>
-              )}
-              {displayBadge && (
-                <span className="absolute top-5 left-5 bg-[#c7092b] text-white text-xs font-bold rounded-md px-3 py-1 uppercase tracking-wide">
-                  {displayBadge}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* RIGHT: details */}
-          <div className="flex flex-col">
-            <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-[#1d2353] leading-tight mb-3">
+      {/* Title row */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-6">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-[#1d2353] leading-tight mb-1">
               {displayName}
             </h1>
-
-            <div className="flex items-center gap-2 mb-5">
+            {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2">
               <StarRating rating={product.rating} />
               <span className="text-sm text-gray-500">
                 {product.rating.toFixed(1)} ({product.reviewCount} recenzii)
               </span>
             </div>
+            <FavoriteButton
+              product={{
+                slug: product.slug,
+                name: displayName,
+                price: product.price,
+                oldPrice: product.oldPrice,
+                image: displayImage,
+                btu: product.btu,
+                inverter: product.inverter,
+                energyClass: product.energyClass,
+                rating: product.rating,
+                reviewCount: product.reviewCount,
+                badge: displayBadge,
+              }}
+            />
+          </div>
+        </div>
+      </section>
 
-            <div className="flex items-center gap-3 flex-wrap mb-6">
-              <span className="text-3xl font-extrabold text-gray-900">
-                {product.price.toLocaleString("ro-MD")} MDL
-              </span>
-              {product.oldPrice && (
-                <span className="text-base text-gray-400 line-through">
-                  {product.oldPrice.toLocaleString("ro-MD")} MDL
+      {/* Top section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          {/* Gallery */}
+          <div className="lg:col-span-5">
+            <ProductGallery images={galleryImages} alt={displayName} badge={displayBadge} />
+          </div>
+
+          {/* Quick specs */}
+          <div className="lg:col-span-4 flex flex-col gap-5">
+            <div className="border border-gray-100 rounded-2xl divide-y divide-gray-100 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3.5 bg-[#f6f8fb]">
+                <span className="text-sm font-bold text-[#1d2353]">Disponibilitate</span>
+                <span className={`text-sm font-bold flex items-center gap-1.5 ${product.inStock ? "text-green-600" : "text-gray-400"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${product.inStock ? "bg-green-500" : "bg-gray-400"}`} />
+                  {product.inStock ? "În stoc" : "Stoc epuizat"}
                 </span>
-              )}
-              {discount && (
-                <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2.5 py-1 rounded-md">
-                  -{discount}%
-                </span>
-              )}
-            </div>
-
-            {product.description && (
-              <p className="text-gray-600 text-[15px] leading-relaxed mb-6 max-w-lg">
-                {product.description}
-              </p>
-            )}
-
-            {/* Specs */}
-            <div className="grid grid-cols-2 gap-3 mb-7 max-w-lg">
+              </div>
               {specs.map((spec) => (
-                <div key={spec.label} className="bg-[#f6f8fb] border border-gray-100 rounded-xl px-4 py-3">
-                  <p className="text-[11px] text-gray-400 uppercase tracking-wide mb-1">{spec.label}</p>
-                  <p className="text-sm font-bold text-[#1d2353]">{spec.value}</p>
+                <div key={spec.label} className="flex items-center justify-between px-5 py-3.5">
+                  <span className="text-sm text-gray-500">{spec.label}</span>
+                  <span className="text-sm font-bold text-[#1d2353]">{spec.value}</span>
                 </div>
               ))}
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3 mb-7">
-              <AddToCartButton
-                slug={product.slug}
-                name={displayName}
-                price={product.price}
-                image={displayImage}
-                inStock={product.inStock}
-                className={`flex-1 sm:flex-none sm:px-10 h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors ${
-                  product.inStock
-                    ? "bg-[#c7092b] hover:bg-[#a5071f] text-white"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                {product.inStock ? "Adaugă în coș" : "Stoc epuizat"}
-              </AddToCartButton>
-              <Link
-                href="/contact"
-                className="h-12 px-6 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide"
-              >
-                Cere ofertă
-              </Link>
-            </div>
+            {product.description && (
+              <p className="text-gray-600 text-[15px] leading-relaxed">
+                {product.description}
+              </p>
+            )}
+          </div>
 
-            {/* Trust row */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-gray-500 border-t border-gray-100 pt-5">
-              <span className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1.647 7.412A2 2 0 008.607 17h6.786a2 2 0 001.96-1.588L19 8M10 12h4" />
-                </svg>
-                Livrare rapidă
-              </span>
-              <span className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
-                </svg>
-                Garanție inclusă
-              </span>
-              <span className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M14.7 6.3a1 1 0 000-1.4l-2.6-2.6a1 1 0 00-1.4 0L9.3 3.7l4 4 1.4-1.4zM7.9 5.1L2 11v4h4l5.9-5.9-4-4z" />
-                </svg>
-                Instalare profesională
-              </span>
+          {/* Buy box */}
+          <div className="lg:col-span-3">
+            <div className="lg:sticky lg:top-24 flex flex-col gap-4">
+              <div className="border border-gray-100 rounded-2xl p-5">
+                <div className="flex items-center gap-3 flex-wrap mb-4">
+                  <span className="text-2xl font-extrabold text-gray-900">
+                    {product.price.toLocaleString("ro-MD")} MDL
+                  </span>
+                  {discount && (
+                    <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2.5 py-1 rounded-md">
+                      -{discount}%
+                    </span>
+                  )}
+                </div>
+                {product.oldPrice && (
+                  <p className="text-sm text-gray-400 line-through mb-4">
+                    {product.oldPrice.toLocaleString("ro-MD")} MDL
+                  </p>
+                )}
+
+                <AddToCartButton
+                  slug={product.slug}
+                  name={displayName}
+                  price={product.price}
+                  image={displayImage}
+                  inStock={product.inStock}
+                  className={`w-full h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors mb-3 ${
+                    product.inStock
+                      ? "bg-[#c7092b] hover:bg-[#a5071f] text-white"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  {product.inStock ? "Adaugă în coș" : "Stoc epuizat"}
+                </AddToCartButton>
+                <Link
+                  href="/contact"
+                  className="w-full h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide"
+                >
+                  Cere ofertă
+                </Link>
+              </div>
+
+              <div className="bg-[#1d2353] rounded-2xl divide-y divide-white/10 overflow-hidden">
+                <div className="flex items-center gap-3 px-5 py-3.5 text-sm text-white/80">
+                  <svg className="w-4 h-4 text-[#c7092b] shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1.647 7.412A2 2 0 008.607 17h6.786a2 2 0 001.96-1.588L19 8M10 12h4" />
+                  </svg>
+                  Livrare rapidă
+                </div>
+                <div className="flex items-center gap-3 px-5 py-3.5 text-sm text-white/80">
+                  <svg className="w-4 h-4 text-[#c7092b] shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+                  </svg>
+                  Garanție inclusă
+                </div>
+                <div className="flex items-center gap-3 px-5 py-3.5 text-sm text-white/80">
+                  <svg className="w-4 h-4 text-[#c7092b] shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M14.7 6.3a1 1 0 000-1.4l-2.6-2.6a1 1 0 00-1.4 0L9.3 3.7l4 4 1.4-1.4zM7.9 5.1L2 11v4h4l5.9-5.9-4-4z" />
+                  </svg>
+                  Instalare profesională
+                </div>
+              </div>
             </div>
           </div>
         </div>

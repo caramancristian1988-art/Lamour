@@ -11,8 +11,17 @@ import {
 } from "@/lib/fallbackData";
 import ProductCard from "../components/ProductCard";
 import ProductSortSelect from "../components/ProductSortSelect";
-import ProductPagination from "../components/ProductPagination";
-import { sortProducts, paginate, parseSort, parsePage } from "@/lib/productListing";
+import LoadMoreButton from "../components/LoadMoreButton";
+import ProductFilterSidebar from "../components/ProductFilterSidebar";
+import {
+  sortProducts,
+  paginate,
+  parseSort,
+  parsePage,
+  parseFilters,
+  applyFilters,
+  PRICE_BRACKETS,
+} from "@/lib/productListing";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 
 export const metadata: Metadata = {
@@ -53,12 +62,36 @@ export default async function ProdusePage({
   const sort = parseSort(query.sort);
   const page = parsePage(query.page);
   const offersOnly = query.oferte === "1";
+  const filters = parseFilters(query);
 
   const { categories, products: allProducts } = await getData();
-  const products = offersOnly ? allProducts.filter((p) => p.oldPrice != null) : allProducts;
+  const baseProducts = offersOnly ? allProducts.filter((p) => p.oldPrice != null) : allProducts;
+
+  const categoryById = new Map(categories.map((c) => [c.id, c.slug]));
+  const products = applyFilters(baseProducts, filters, (p) => categoryById.get(p.categoryId) ?? "");
+
+  const categoryOptions = categories.map((cat) => ({
+    id: cat.id,
+    slug: cat.slug,
+    name: cat.name,
+    count: baseProducts.filter((p) => p.categoryId === cat.id).length,
+  }));
+
+  const energyClassOptions = Array.from(new Set(baseProducts.map((p) => p.energyClass).filter((v): v is string => Boolean(v))))
+    .sort()
+    .reverse()
+    .map((value) => ({ value, count: baseProducts.filter((p) => p.energyClass === value).length }));
+
+  const priceBracketOptions = PRICE_BRACKETS.map((b) => ({
+    key: b.key,
+    label: b.label,
+    count: baseProducts.filter((p) => p.price >= b.min && p.price < b.max).length,
+  })).filter((b) => b.count > 0);
+
+  const inverterCount = baseProducts.filter((p) => p.inverter).length;
 
   const sorted = sortProducts(products, sort);
-  const { items, page: currentPage, totalPages } = paginate(sorted, page);
+  const { items, page: currentPage, hasMore } = paginate(sorted, page);
 
   return (
     <main className="bg-white">
@@ -156,36 +189,53 @@ export default async function ProdusePage({
       {/* ── PRODUCTS GRID ── */}
       <section className="bg-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <p className="text-sm text-gray-400 mb-6">{products.length} produse găsite</p>
+          <div className="flex gap-8 items-start">
+            <ProductFilterSidebar
+              categories={categoryOptions}
+              energyClasses={energyClassOptions}
+              priceBrackets={priceBracketOptions}
+              inverterCount={inverterCount}
+            />
 
-          {items.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-              {items.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  {...product}
-                  name={localProductNames[product.slug] ?? product.name}
-                  image={localProductImages[product.slug] ?? product.image}
-                  badge={localProductBadges[product.slug] ?? product.badge}
-                  showDiscount={offersOnly}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-gray-500">
-                {offersOnly ? "Momentan nu există oferte speciale active." : "Momentan nu există produse disponibile."}
-              </p>
-            </div>
-          )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-400 mb-6">{products.length} produse găsite</p>
 
-          <ProductPagination
-            basePath="/produse"
-            page={currentPage}
-            totalPages={totalPages}
-            sort={sort}
-            extraParams={offersOnly ? { oferte: "1" } : undefined}
-          />
+              {items.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-5">
+                  {items.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      {...product}
+                      name={localProductNames[product.slug] ?? product.name}
+                      image={localProductImages[product.slug] ?? product.image}
+                      badge={localProductBadges[product.slug] ?? product.badge}
+                      showDiscount={offersOnly}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <p className="text-gray-500">
+                    {offersOnly ? "Momentan nu există oferte speciale active." : "Niciun produs nu corespunde filtrelor selectate."}
+                  </p>
+                </div>
+              )}
+
+              <LoadMoreButton
+                basePath="/produse"
+                page={currentPage}
+                sort={sort}
+                hasMore={hasMore}
+                extraParams={{
+                  ...(offersOnly ? { oferte: "1" } : {}),
+                  ...(filters.categorySlugs.length > 0 ? { cat: filters.categorySlugs.join(",") } : {}),
+                  ...(filters.inverterOnly ? { inverter: "1" } : {}),
+                  ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),
+                  ...(filters.priceBracket ? { pret: filters.priceBracket } : {}),
+                }}
+              />
+            </div>
+          </div>
         </div>
       </section>
 

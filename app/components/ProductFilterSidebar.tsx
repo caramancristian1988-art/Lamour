@@ -1,0 +1,259 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { PRICE_BRACKETS } from "@/lib/productListing";
+
+interface CategoryOption {
+  id: string;
+  slug: string;
+  name: string;
+  count: number;
+}
+
+interface EnergyOption {
+  value: string;
+  count: number;
+}
+
+interface PriceBracketOption {
+  key: string;
+  label: string;
+  count: number;
+}
+
+interface Props {
+  categories?: CategoryOption[];
+  energyClasses: EnergyOption[];
+  priceBrackets: PriceBracketOption[];
+  inverterCount: number;
+}
+
+export default function ProductFilterSidebar({ categories, energyClasses, priceBrackets, inverterCount }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const selectedCats = searchParams.get("cat")?.split(",").filter(Boolean) ?? [];
+  const inverterOnly = searchParams.get("inverter") === "1";
+  const selectedEnergy = searchParams.get("energie")?.split(",").filter(Boolean) ?? [];
+  const selectedPrice = searchParams.get("pret");
+
+  function go(params: URLSearchParams) {
+    params.delete("page");
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }
+
+  function toggleListParam(key: string, value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    const current = params.get(key)?.split(",").filter(Boolean) ?? [];
+    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+    if (next.length > 0) params.set(key, next.join(",")); else params.delete(key);
+    go(params);
+  }
+
+  function toggleBoolParam(key: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.get(key) === "1") params.delete(key); else params.set(key, "1");
+    go(params);
+  }
+
+  function setSingleParam(key: string, value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.get(key) === value) params.delete(key); else params.set(key, value);
+    go(params);
+  }
+
+  function removeListValue(key: string, value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    const current = params.get(key)?.split(",").filter(Boolean) ?? [];
+    const next = current.filter((v) => v !== value);
+    if (next.length > 0) params.set(key, next.join(",")); else params.delete(key);
+    go(params);
+  }
+
+  function removeParam(key: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete(key);
+    go(params);
+  }
+
+  function clearAll() {
+    const params = new URLSearchParams(searchParams.toString());
+    ["cat", "inverter", "energie", "pret"].forEach((k) => params.delete(k));
+    go(params);
+  }
+
+  const activeChips: { key: string; label: string; onRemove: () => void }[] = [];
+  if (categories) {
+    selectedCats.forEach((slug) => {
+      const cat = categories.find((c) => c.slug === slug);
+      if (cat) activeChips.push({ key: `cat-${slug}`, label: cat.name, onRemove: () => removeListValue("cat", slug) });
+    });
+  }
+  if (inverterOnly) activeChips.push({ key: "inverter", label: "Inverter", onRemove: () => removeParam("inverter") });
+  selectedEnergy.forEach((val) =>
+    activeChips.push({ key: `energie-${val}`, label: `Clasa ${val}`, onRemove: () => removeListValue("energie", val) })
+  );
+  if (selectedPrice) {
+    const bracket = PRICE_BRACKETS.find((b) => b.key === selectedPrice);
+    if (bracket) activeChips.push({ key: "pret", label: bracket.label, onRemove: () => removeParam("pret") });
+  }
+
+  const hasActive = activeChips.length > 0;
+
+  const sidebarContent = (
+    <div className="flex flex-col gap-6">
+      {hasActive && (
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Filtre active</p>
+          <div className="flex flex-col gap-2 mb-3">
+            {activeChips.map((chip) => (
+              <span
+                key={chip.key}
+                className="flex items-center justify-between gap-2 bg-[#f6f8fb] border border-gray-100 rounded-lg px-3 py-2 text-xs font-semibold text-[#1d2353]"
+              >
+                {chip.label}
+                <button onClick={chip.onRemove} aria-label="Elimină filtrul" className="text-gray-400 hover:text-[#c7092b] transition-colors shrink-0">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            ))}
+          </div>
+          <button
+            onClick={clearAll}
+            className="w-full text-xs font-bold bg-[#1d2353] hover:bg-[#2a3470] text-white rounded-lg py-2.5 transition-colors uppercase tracking-wide"
+          >
+            Șterge tot
+          </button>
+        </div>
+      )}
+
+      {categories && categories.length > 0 && (
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Categorie</p>
+          <div className="flex flex-col gap-2.5">
+            {categories.map((cat) => (
+              <label key={cat.id} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedCats.includes(cat.slug)}
+                    onChange={() => toggleListParam("cat", cat.slug)}
+                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
+                  />
+                  {cat.name}
+                </span>
+                <span className="text-xs text-gray-400">({cat.count})</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {inverterCount > 0 && (
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Tip</p>
+          <label className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
+            <span className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={inverterOnly}
+                onChange={() => toggleBoolParam("inverter")}
+                className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
+              />
+              Inverter
+            </span>
+            <span className="text-xs text-gray-400">({inverterCount})</span>
+          </label>
+        </div>
+      )}
+
+      {energyClasses.length > 0 && (
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Clasă energetică</p>
+          <div className="flex flex-col gap-2.5">
+            {energyClasses.map((opt) => (
+              <label key={opt.value} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedEnergy.includes(opt.value)}
+                    onChange={() => toggleListParam("energie", opt.value)}
+                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
+                  />
+                  Clasa {opt.value}
+                </span>
+                <span className="text-xs text-gray-400">({opt.count})</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {priceBrackets.length > 0 && (
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Preț</p>
+          <div className="flex flex-col gap-2.5">
+            {priceBrackets.map((b) => (
+              <label key={b.key} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedPrice === b.key}
+                    onChange={() => setSingleParam("pret", b.key)}
+                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
+                  />
+                  {b.label}
+                </span>
+                <span className="text-xs text-gray-400">({b.count})</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile trigger */}
+      <div className="lg:hidden mb-5">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="flex items-center gap-2 text-xs font-bold border border-gray-200 rounded-full px-4 py-2.5 text-[#1d2353]"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h18M6 12h12M10 20h4" />
+          </svg>
+          Filtre {hasActive && `(${activeChips.length})`}
+        </button>
+      </div>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:block w-64 shrink-0">{sidebarContent}</aside>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} aria-hidden />
+          <div className="absolute inset-y-0 left-0 w-[85%] max-w-sm bg-white p-5 overflow-y-auto">
+            <div className="flex items-center justify-between mb-5">
+              <p className="font-extrabold text-[#1d2353]">Filtre</p>
+              <button onClick={() => setMobileOpen(false)} aria-label="Închide filtrele" className="text-gray-400 hover:text-[#c7092b] transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
