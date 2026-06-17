@@ -16,22 +16,29 @@ interface Props {
 export default function AddToCartButton({ slug, name, price, image, inStock = true, className, children }: Props) {
   const { addToCart } = useCart();
   const [added, setAdded] = useState(false);
+  const [bump, setBump] = useState(0);
 
   function handleClick() {
     addToCart({ slug, name, price, image });
     setAdded(true);
+    setBump((b) => b + 1);
     setTimeout(() => setAdded(false), 1500);
   }
 
   return (
-    <button onClick={handleClick} disabled={!inStock} className={className}>
+    <button
+      onClick={handleClick}
+      disabled={!inStock}
+      key={bump}
+      className={`${className} active:scale-90 transition-transform duration-150 ${bump ? "animate-bump" : ""}`}
+    >
       {added ? (
-        <>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <span key="added" className="contents animate-pop">
+          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
           <span>Adăugat!</span>
-        </>
+        </span>
       ) : (
         children
       )}
