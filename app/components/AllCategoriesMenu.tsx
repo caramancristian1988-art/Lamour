@@ -70,40 +70,39 @@ export default function AllCategoriesMenu() {
         </button>
 
         {open && (
-          <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-100 py-3 min-w-[480px] grid grid-cols-2 gap-2">
-            <div className="px-2">
-              <p className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wide">Produse</p>
+          <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 w-72">
+            <p className="px-4 pt-1.5 pb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wide">Produse</p>
+            <Link
+              href="/produse?oferte=1"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm font-bold text-[#c7092b] hover:bg-gray-50 transition-colors"
+            >
+              Oferte Speciale
+            </Link>
+            {productsDropdown.map((item) => (
               <Link
-                href="/produse?oferte=1"
+                key={item.href}
+                href={item.href}
                 onClick={() => setOpen(false)}
-                className="block px-3 py-2 rounded-lg text-sm font-bold text-[#c7092b] hover:bg-gray-50 transition-colors"
+                className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors"
               >
-                Oferte Speciale
+                {item.label}
               </Link>
-              {productsDropdown.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-            <div className="px-2 border-l border-gray-100">
-              <p className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wide">Servicii</p>
-              {servicesDropdown.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="block px-3 py-2 rounded-lg text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+            ))}
+
+            <div className="my-2 border-t border-gray-100" />
+
+            <p className="px-4 pt-1.5 pb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wide">Servicii</p>
+            {servicesDropdown.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         )}
       </div>
