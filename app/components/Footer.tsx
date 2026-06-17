@@ -16,10 +16,10 @@ const footerLinks = {
     { label: "Retur produse", href: "/retur" },
   ],
   "CATEGORII": [
-    { label: "Condiționere rezidențiale", href: "/produse/conditioane-rezidentiale" },
-    { label: "Condiționere comerciale", href: "/produse/conditioane-comerciale" },
-    { label: "Sisteme multisplit", href: "/produse/sisteme-multisplit" },
-    { label: "Accesorii & consumabile", href: "/produse/accesorii-consumabile" },
+    { label: "Condiționere rezidențiale", href: "/produse?cat=conditioane-rezidentiale" },
+    { label: "Condiționere comerciale", href: "/produse?cat=conditioane-comerciale" },
+    { label: "Sisteme multisplit", href: "/produse?cat=sisteme-multisplit" },
+    { label: "Accesorii & consumabile", href: "/produse?cat=accesorii-consumabile" },
   ],
 };
 

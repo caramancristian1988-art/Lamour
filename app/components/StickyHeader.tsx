@@ -7,11 +7,11 @@ import CartBadge from "./CartBadge";
 import AllCategoriesMenu from "./AllCategoriesMenu";
 
 const productsDropdown = [
-  { href: "/produse/conditioane-rezidentiale", label: "Condiționere rezidențiale" },
-  { href: "/produse/conditioane-comerciale", label: "Condiționere comerciale" },
-  { href: "/produse/sisteme-multisplit", label: "Sisteme multisplit" },
-  { href: "/produse/conditioane-portabile", label: "Condiționere portabile" },
-  { href: "/produse/accesorii-consumabile", label: "Accesorii și consumabile" },
+  { href: "/produse?cat=conditioane-rezidentiale", label: "Condiționere rezidențiale" },
+  { href: "/produse?cat=conditioane-comerciale", label: "Condiționere comerciale" },
+  { href: "/produse?cat=sisteme-multisplit", label: "Sisteme multisplit" },
+  { href: "/produse?cat=conditioane-portabile", label: "Condiționere portabile" },
+  { href: "/produse?cat=accesorii-consumabile", label: "Accesorii și consumabile" },
 ];
 
 const servicesDropdown = [

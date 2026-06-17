@@ -52,7 +52,7 @@ export default function CategoryGrid({ categories }: Props) {
             return (
               <Link
                 key={cat.id}
-                href={`/produse/${cat.slug}`}
+                href={`/produse?cat=${cat.slug}`}
                 className="group flex flex-col items-center bg-white rounded-2xl border border-[#e5e7eb] p-4 sm:p-6 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-[3px]"
               >
                 {/* Image container */}
