@@ -7,7 +7,7 @@ export default async function RegisterPage() {
   if (user) redirect("/cont");
 
   return (
-    <main className="bg-white min-h-[70vh] flex items-center justify-center px-6 py-16">
+    <main className="bg-white min-h-[70vh] flex items-start justify-center px-6 pt-10 sm:pt-16 pb-16">
       <RegisterForm />
     </main>
   );
