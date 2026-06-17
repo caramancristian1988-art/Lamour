@@ -133,6 +133,7 @@ function SidebarContent({
           recentMessages={notifications.recentMessages}
           recentReviews={notifications.recentReviews}
           variant="dark"
+          align="left"
         />
       </div>
 

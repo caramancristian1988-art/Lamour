@@ -26,8 +26,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: blob.url });
   } catch (err) {
     console.error("Vercel Blob upload failed:", err);
+    const detail = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "Încărcarea a eșuat. Verifică dacă Vercel Blob este configurat (BLOB_READ_WRITE_TOKEN)." },
+      { error: `Încărcarea a eșuat: ${detail}` },
       { status: 500 }
     );
   }

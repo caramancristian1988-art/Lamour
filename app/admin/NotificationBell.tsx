@@ -23,6 +23,7 @@ interface Props {
   recentMessages: NotificationMessage[];
   recentReviews: NotificationReview[];
   variant?: "light" | "dark";
+  align?: "left" | "right";
 }
 
 function formatDate(iso: string) {
@@ -31,7 +32,14 @@ function formatDate(iso: string) {
   );
 }
 
-export default function NotificationBell({ unreadMessages, pendingReviews, recentMessages, recentReviews, variant = "dark" }: Props) {
+export default function NotificationBell({
+  unreadMessages,
+  pendingReviews,
+  recentMessages,
+  recentReviews,
+  variant = "dark",
+  align = "right",
+}: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const total = unreadMessages + pendingReviews;
@@ -69,7 +77,11 @@ export default function NotificationBell({ unreadMessages, pendingReviews, recen
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 max-h-[70vh] overflow-y-auto">
+        <div
+          className={`absolute top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 max-h-[70vh] overflow-y-auto ${
+            align === "left" ? "left-0" : "right-0"
+          }`}
+        >
           {!hasAny ? (
             <p className="text-sm text-gray-400 text-center py-8">Nicio notificare nouă.</p>
           ) : (
