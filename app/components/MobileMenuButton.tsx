@@ -84,9 +84,21 @@ export default function MobileMenuButton() {
         aria-expanded={open}
       >
         <span className="relative flex flex-col items-center justify-center w-5 h-5">
-          <span className="absolute h-0.5 w-5 bg-current rounded-full -translate-y-1.5" />
-          <span className="absolute h-0.5 w-5 bg-current rounded-full" />
-          <span className="absolute h-0.5 w-5 bg-current rounded-full translate-y-1.5" />
+          <span
+            className={`absolute h-0.5 w-5 bg-current rounded-full transition-all duration-300 ease-in-out ${
+              open ? "rotate-45" : "-translate-y-1.5"
+            }`}
+          />
+          <span
+            className={`absolute h-0.5 w-5 bg-current rounded-full transition-all duration-300 ease-in-out ${
+              open ? "opacity-0 scale-x-0" : "opacity-100 scale-x-100"
+            }`}
+          />
+          <span
+            className={`absolute h-0.5 w-5 bg-current rounded-full transition-all duration-300 ease-in-out ${
+              open ? "-rotate-45" : "translate-y-1.5"
+            }`}
+          />
         </span>
       </button>
 
@@ -113,8 +125,14 @@ export default function MobileMenuButton() {
                   Climat <span className="text-[#c7092b]">Rapid</span>
                 </span>
               </Link>
-              <button onClick={closeMenu} aria-label="Închide meniul" className="text-gray-400 hover:text-[#c7092b] transition-colors p-1">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <button onClick={closeMenu} aria-label="Închide meniul" className="group text-gray-400 hover:text-[#c7092b] transition-colors p-1">
+                <svg
+                  className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
