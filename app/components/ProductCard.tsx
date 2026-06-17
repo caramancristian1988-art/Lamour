@@ -94,7 +94,9 @@ export default function ProductCard({
 
         {/* Favorite */}
         <div className="absolute top-4 right-4">
-          <FavoriteButton productSlug={slug} />
+          <FavoriteButton
+            product={{ slug, name, price, oldPrice, image, btu, inverter, energyClass, rating, reviewCount, badge }}
+          />
         </div>
 
       </div>
