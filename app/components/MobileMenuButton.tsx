@@ -99,7 +99,7 @@ export default function MobileMenuButton() {
           />
 
           <div
-            className={`absolute inset-x-0 top-0 h-full w-full bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+            className={`absolute inset-x-0 top-0 w-full max-h-[85vh] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
               open ? "translate-y-0" : "-translate-y-full"
             }`}
           >
