@@ -297,14 +297,7 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
       {drawerMounted && (
         <div className="lg:hidden fixed inset-0 z-50">
           <div
-            className={`absolute inset-0 bg-black transition-opacity duration-300 ease-in-out ${
-              mobileOpen ? "opacity-70" : "opacity-0"
-            }`}
-            onClick={closeDrawer}
-            aria-hidden
-          />
-          <div
-            className={`absolute inset-y-0 left-0 w-[85%] max-w-sm bg-white p-5 overflow-y-auto shadow-2xl rounded-r-3xl transition-transform duration-300 ease-out ${
+            className={`absolute inset-0 bg-white transition-transform duration-300 ease-out p-5 overflow-y-auto ${
               mobileOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
