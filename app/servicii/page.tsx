@@ -116,7 +116,8 @@ export default async function ServiciiPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
 
-  const { principale: serviciiPrincipale, avansate: serviciiAvansate, suplimentare: serviciiSuplimentare } = await getServicesByCategorie();
+  const { principale, avansate, suplimentare: serviciiSuplimentare } = await getServicesByCategorie();
+  const serviciiToate = [...principale, ...avansate];
 
   return (
     <div className="bg-white text-[#1d2353]">
@@ -178,52 +179,14 @@ export default async function ServiciiPage() {
         </div>
       </section>
 
-      {/* Servicii principale */}
+      {/* Servicii */}
       <section className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 sm:pt-0 pb-14">
         <p className="text-xs font-extrabold tracking-widest uppercase text-[#1d2353] mb-1">
-          SERVICII PRINCIPALE
+          SERVICIILE NOASTRE
         </p>
         <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
-          {serviciiPrincipale.map((s) => (
-            <Link key={s.id} href={s.href ?? "/servicii"} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="relative px-3 sm:px-6 py-3 sm:py-6" style={{ aspectRatio: "4/3" }}>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "1/1", height: "calc(100% - 24px)" }}>
-                    {s.image && (
-                      <Image
-                        src={s.image}
-                        alt={s.title}
-                        fill
-                        className="object-contain group-hover:scale-105 transition-transform duration-300"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="px-3 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-10 flex flex-col gap-2 sm:gap-6">
-                <h3 className="text-sm sm:text-base font-bold group-hover:text-[#c7092b] transition-colors">{s.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.description}</p>
-                <span className="text-[#c7092b] text-[11px] sm:text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-1">
-                  AFLĂ MAI MULTE
-                  <svg className="w-3 sm:w-3.5 h-3 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
-                  </svg>
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Servicii avansate */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-12 pb-14">
-        <p className="text-xs font-extrabold tracking-widest uppercase text-[#1d2353] mb-1">
-          SERVICII AVANSATE
-        </p>
-        <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
-          {serviciiAvansate.map((s) => (
+          {serviciiToate.map((s) => (
             <Link key={s.id} href={s.href ?? "/servicii"} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative px-3 sm:px-6 py-3 sm:py-6" style={{ aspectRatio: "4/3" }}>
                 <div className="absolute inset-0 flex items-center justify-center">
