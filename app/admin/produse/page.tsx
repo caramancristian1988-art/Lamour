@@ -1,20 +1,42 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import DeleteButton from "../components/DeleteButton";
 import AdminProductFilters from "./AdminProductFilters";
+import AdminPagination from "../components/AdminPagination";
 import { deleteProductAction } from "@/lib/adminProductActions";
 
-async function getData() {
+const PER_PAGE = 10;
+
+async function getData(catFilter: string, sort: string, page: number) {
+  const where: Prisma.ProductWhereInput = catFilter ? { categoryId: catFilter } : {};
+
+  const orderBy: Prisma.ProductOrderByWithRelationInput =
+    sort === "name-asc"
+      ? { name: "asc" }
+      : sort === "price-asc"
+      ? { price: "asc" }
+      : sort === "price-desc"
+      ? { price: "desc" }
+      : { createdAt: "desc" };
+
   try {
-    const [products, categories] = await Promise.all([
-      prisma.product.findMany({ orderBy: { createdAt: "desc" }, include: { category: true } }),
+    const [products, total, categories] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * PER_PAGE,
+        take: PER_PAGE,
+        include: { category: true },
+      }),
+      prisma.product.count({ where }),
       prisma.category.findMany({ orderBy: { name: "asc" } }),
     ]);
-    return { products, categories };
+    return { products, total, categories };
   } catch {
-    return { products: [], categories: [] };
+    return { products: [], total: 0, categories: [] };
   }
 }
 
@@ -66,19 +88,13 @@ export default async function AdminProdusePage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const query = await searchParams;
-  const { products: allProducts, categories } = await getData();
 
   const catFilter = typeof query.cat === "string" ? query.cat : "";
   const sort = typeof query.sort === "string" ? query.sort : "newest";
+  const page = Math.max(1, Number(query.page) || 1);
 
-  let products = catFilter ? allProducts.filter((p) => p.categoryId === catFilter) : allProducts;
-
-  products = [...products].sort((a, b) => {
-    if (sort === "name-asc") return a.name.localeCompare(b.name);
-    if (sort === "price-asc") return a.price - b.price;
-    if (sort === "price-desc") return b.price - a.price;
-    return +new Date(b.createdAt) - +new Date(a.createdAt);
-  });
+  const { products, total, categories } = await getData(catFilter, sort, page);
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   return (
     <div>
@@ -107,13 +123,13 @@ export default async function AdminProdusePage({
       />
 
       <AdminProductFilters categories={categories} />
-      <p className="text-xs text-gray-400 mb-4">{products.length} produse găsite</p>
+      <p className="text-xs text-gray-400 mb-4">{total} produse găsite</p>
 
       {products.length === 0 ? (
         <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center text-gray-500">
           Nu există produse pentru acest filtru.
         </div>
-      ) : catFilter ? (
+      ) : (
         <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
           <div className="divide-y divide-gray-100">
             {products.map((p) => (
@@ -121,28 +137,9 @@ export default async function AdminProdusePage({
             ))}
           </div>
         </div>
-      ) : (
-        <div className="flex flex-col gap-6">
-          {categories.map((cat) => {
-            const inCategory = products.filter((p) => p.categoryId === cat.id);
-            if (inCategory.length === 0) return null;
-            return (
-              <div key={cat.id}>
-                <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-2">
-                  {cat.name} <span className="text-gray-400">({inCategory.length})</span>
-                </p>
-                <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
-                  <div className="divide-y divide-gray-100">
-                    {inCategory.map((p) => (
-                      <ProductRow key={p.id} product={p} deleteAction={deleteProductAction} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
       )}
+
+      <AdminPagination page={page} totalPages={totalPages} />
     </div>
   );
 }

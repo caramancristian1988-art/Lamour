@@ -239,7 +239,7 @@ export default function AdminSidebar({ userName, notifications }: { userName: st
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 bg-[#1d2353] min-h-screen sticky top-0 z-40">
+      <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 bg-[#1d2353] min-h-screen sticky top-0 z-40 self-start">
         <SidebarContent userName={userName} notifications={notifications} />
       </aside>
     </>
