@@ -20,7 +20,13 @@ const servicesDropdown = [
   { href: "/servicii/comerciale", label: "Sisteme comerciale HVAC" },
 ];
 
-export default function AllCategoriesMenu() {
+interface Props {
+  className?: string;
+  buttonClassName?: string;
+  label?: string;
+}
+
+export default function AllCategoriesMenu({ className, buttonClassName, label = "Toate categoriile" }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -55,15 +61,18 @@ export default function AllCategoriesMenu() {
         />
       )}
 
-      <div ref={rootRef} className="relative shrink-0 z-50">
+      <div ref={rootRef} className={`relative z-50 ${className ?? "shrink-0"}`}>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white text-sm font-bold px-5 py-3 rounded-xl transition-colors uppercase tracking-wide"
+          className={
+            buttonClassName ??
+            "flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white text-sm font-bold px-5 py-3 rounded-xl transition-colors uppercase tracking-wide"
+          }
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
-          <span>Toate categoriile</span>
+          <span className="truncate">{label}</span>
           <svg className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>

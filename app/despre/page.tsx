@@ -31,8 +31,64 @@ export default async function DesprePage() {
   return (
     <main className="bg-white">
 
-        {/* ── HERO SECTION ── */}
-        <section className="relative bg-white overflow-hidden">
+        {/* ── HERO SECTION — MOBILE ── */}
+        <section className="sm:hidden relative h-[360px] overflow-hidden">
+          <Image
+            src="/IMG_2935.PNG"
+            alt="Sediul Climat Rapid"
+            fill
+            className="object-cover object-center"
+            priority
+            sizes="100vw"
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, white 0%, white 35%, rgba(255,255,255,0.55) 55%, transparent 80%)" }}
+          />
+          <div className="absolute inset-x-0 top-0 px-4 pt-4">
+            <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-4">
+              <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
+              <span>›</span>
+              <span className="text-gray-600">Despre noi</span>
+            </nav>
+            <p className="text-[#c7092b] text-[11px] font-extrabold tracking-widest uppercase mb-3">
+              Despre Climat Rapid
+            </p>
+            <h1 className="text-3xl font-extrabold text-[#1d2353] leading-tight mb-4">
+              Confortul tău este{" "}
+              <span className="text-[#c7092b]">misiunea</span>{" "}
+              noastră.
+            </h1>
+            <div className="w-10 h-1 bg-[#c7092b] rounded-full" />
+          </div>
+        </section>
+
+        {/* Mobile-only intro text + CTAs, below the hero image */}
+        <section className="sm:hidden bg-white px-4 pt-6 pb-2">
+          <p className="text-gray-600 text-[15px] leading-relaxed mb-6">
+            Suntem o companie din Moldova specializată în soluții complete de
+            climatizare pentru locuințe și afaceri. De la consultanță și vânzare
+            până la instalare și mentenanță, ne asigurăm că ai parte de confort
+            în fiecare sezon.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/produse"
+              className="inline-flex items-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm uppercase tracking-wide"
+            >
+              Vezi produsele
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold px-6 py-3 rounded-lg transition-all text-sm uppercase tracking-wide"
+            >
+              Contactează-ne
+            </Link>
+          </div>
+        </section>
+
+        {/* ── HERO SECTION — DESKTOP ── */}
+        <section className="hidden sm:block relative bg-white overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[340px] lg:min-h-[380px] items-center gap-0 lg:gap-8 py-8 lg:py-0">
 
@@ -80,7 +136,7 @@ export default async function DesprePage() {
               </div>
 
               {/* RIGHT: Image */}
-              <div className="relative z-20 w-full -mt-20 lg:mt-0 rounded-3xl lg:rounded-none overflow-hidden shadow-2xl lg:shadow-none lg:h-full lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-[52%]" style={{ aspectRatio: "1719/915" }}>
+              <div className="relative z-20 w-full lg:mt-0 rounded-3xl lg:rounded-none overflow-hidden shadow-2xl lg:shadow-none lg:h-full lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-[52%]" style={{ aspectRatio: "1719/915" }}>
                 <Image
                   src="/IMG_2935.PNG"
                   alt="Sediul Climat Rapid"
@@ -96,11 +152,6 @@ export default async function DesprePage() {
                   className="hidden lg:block object-cover object-[center_40%]"
                   priority
                   sizes="52vw"
-                />
-                {/* Top fade — soft white-to-photo gradient under the overlapping text */}
-                <div
-                  className="absolute inset-x-0 top-0 h-16 lg:hidden pointer-events-none"
-                  style={{ background: "linear-gradient(to bottom, white 0%, rgba(255,255,255,0.85) 30%, rgba(255,255,255,0.45) 60%, transparent 100%)" }}
                 />
                 {/* Gradient overlay SVG */}
                 <div className="absolute inset-0 hidden lg:block pointer-events-none">
