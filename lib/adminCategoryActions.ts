@@ -35,6 +35,21 @@ export async function createCategoryInlineAction(
   }
 }
 
+export async function deleteCategoryInlineAction(id: string): Promise<{ success?: boolean; error?: string }> {
+  await requireAdmin();
+  if (!id) return { error: "Categorie invalidă." };
+
+  const productCount = await prisma.product.count({ where: { categoryId: id } });
+  if (productCount > 0) {
+    return { error: "Categoria este folosită de produse existente și nu poate fi ștearsă." };
+  }
+
+  await prisma.category.delete({ where: { id } });
+  revalidatePath("/admin/produse/categorii");
+  revalidatePath("/produse");
+  return { success: true };
+}
+
 export async function createCategoryAction(formData: FormData) {
   await requireAdmin();
 
