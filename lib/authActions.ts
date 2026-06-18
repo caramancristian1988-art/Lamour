@@ -4,15 +4,20 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { createSession, destroySession } from "./auth";
+import { requireAdmin } from "./adminAuth";
 
 export interface AuthFormState {
   error?: string;
+  success?: boolean;
 }
 
 export async function registerAction(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  await requireAdmin();
+
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const isAdmin = formData.get("isAdmin") === "on";
 
   if (!name || !email || !password) {
     return { error: "Completează toate câmpurile." };
@@ -30,10 +35,10 @@ export async function registerAction(_prevState: AuthFormState, formData: FormDa
   }
 
   const hashed = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({ data: { name, email, password: hashed } });
+  await prisma.user.create({ data: { name, email, password: hashed, isAdmin } });
 
-  await createSession(user.id);
-  redirect("/cont");
+  // Creating an account for someone else shouldn't switch the admin's own session.
+  return { success: true };
 }
 
 export async function loginAction(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {

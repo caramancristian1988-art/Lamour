@@ -1,10 +1,8 @@
-import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { requireAdmin } from "@/lib/adminAuth";
 import RegisterForm from "./RegisterForm";
 
 export default async function RegisterPage() {
-  const user = await getSession();
-  if (user) redirect("/cont");
+  await requireAdmin();
 
   return (
     <main className="bg-white min-h-[70vh] flex items-start justify-center px-6 pt-10 sm:pt-16 pb-16">

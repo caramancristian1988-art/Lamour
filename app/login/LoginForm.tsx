@@ -21,7 +21,7 @@ export default function LoginForm() {
         Conectează-te la <span className="text-[#c7092b]">contul tău</span>
       </h1>
       <p className="text-sm text-gray-500 text-center mb-8">
-        Nu ai cont? <Link href="/register" className="text-[#c7092b] font-semibold hover:underline">Creează unul</Link>
+        Conturile sunt create de un administrator.
       </p>
 
       <form action={formAction} className="flex flex-col gap-4">

@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { useAuthModal } from "./AuthModalProvider";
-import { loginAction, registerAction, type AuthFormState } from "@/lib/authActions";
+import { loginAction, type AuthFormState } from "@/lib/authActions";
 
 const initialState: AuthFormState = {};
 
@@ -39,14 +39,13 @@ export default function AuthModal() {
           </svg>
         </button>
 
-        {mode === "login" ? <LoginFields /> : <RegisterFields />}
+        <LoginFields />
       </div>
     </div>
   );
 }
 
 function LoginFields() {
-  const { openRegister } = useAuthModal();
   const [state, formAction, pending] = useActionState(loginAction, initialState);
 
   return (
@@ -80,65 +79,6 @@ function LoginFields() {
           {pending ? "Se conectează..." : "Conectează-te"}
         </button>
       </form>
-      <p className="text-sm text-gray-500 text-center mt-5">
-        Nu ai cont?{" "}
-        <button onClick={openRegister} className="text-[#c7092b] font-semibold hover:underline">
-          Creează un cont nou
-        </button>
-      </p>
-    </>
-  );
-}
-
-function RegisterFields() {
-  const { openLogin } = useAuthModal();
-  const [state, formAction, pending] = useActionState(registerAction, initialState);
-
-  return (
-    <>
-      <h2 className="text-xl font-extrabold text-[#1d2353] text-center mb-6">Creează cont</h2>
-      <form action={formAction} className="flex flex-col gap-3">
-        {state.error && (
-          <p className="text-sm text-[#c7092b] bg-[#fdf2f3] border border-[#fbd5d9] rounded-lg px-4 py-2.5">
-            {state.error}
-          </p>
-        )}
-        <input
-          type="text"
-          name="name"
-          required
-          placeholder="Nume complet"
-          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
-        />
-        <input
-          type="email"
-          name="email"
-          required
-          placeholder="Email"
-          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
-        />
-        <input
-          type="password"
-          name="password"
-          required
-          minLength={6}
-          placeholder="Parolă (minim 6 caractere)"
-          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
-        />
-        <button
-          type="submit"
-          disabled={pending}
-          className="bg-[#c7092b] hover:bg-[#a5071f] disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide mt-2"
-        >
-          {pending ? "Se creează contul..." : "Creează cont"}
-        </button>
-      </form>
-      <p className="text-sm text-gray-500 text-center mt-5">
-        Ai deja cont?{" "}
-        <button onClick={openLogin} className="text-[#c7092b] font-semibold hover:underline">
-          Conectează-te
-        </button>
-      </p>
     </>
   );
 }

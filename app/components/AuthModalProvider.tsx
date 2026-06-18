@@ -3,12 +3,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
-type AuthModalMode = "login" | "register" | null;
+type AuthModalMode = "login" | null;
 
 interface AuthModalContextValue {
   mode: AuthModalMode;
   openLogin: () => void;
-  openRegister: () => void;
   close: () => void;
 }
 
@@ -27,7 +26,6 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
       value={{
         mode,
         openLogin: () => setMode("login"),
-        openRegister: () => setMode("register"),
         close: () => setMode(null),
       }}
     >
