@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 const fallbackServiciiPrincipale = [
   {
@@ -111,6 +113,9 @@ async function getServicesByCategorie() {
 }
 
 export default async function ServiciiPage() {
+  const { serviciiEnabled } = await getSectionFlags();
+  if (!serviciiEnabled) notFound();
+
   const { principale: serviciiPrincipale, avansate: serviciiAvansate, suplimentare: serviciiSuplimentare } = await getServicesByCategorie();
 
   return (

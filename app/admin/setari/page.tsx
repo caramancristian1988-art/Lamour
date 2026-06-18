@@ -1,7 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import { AdminInput, AdminTextarea } from "../components/AdminField";
+import SaveButton from "../components/SaveButton";
 import { updateSettingsAction } from "@/lib/adminSettingsActions";
+
+const SECTION_TOGGLES = [
+  { name: "produseEnabled", label: "Produse", description: "Listele de produse, paginile de categorie și de detaliu." },
+  { name: "serviciiEnabled", label: "Servicii", description: "Pagina de servicii și sub-paginile ei." },
+  { name: "proiecteEnabled", label: "Proiecte", description: "Portofoliul de proiecte realizate." },
+  { name: "despreEnabled", label: "Despre noi", description: "Pagina de prezentare a companiei." },
+  { name: "blogEnabled", label: "Blog", description: "Articolele de blog și paginile de categorie." },
+  { name: "contactEnabled", label: "Contact", description: "Pagina de contact și formularul." },
+] as const;
 
 async function getSettings() {
   try {
@@ -48,23 +58,29 @@ export default async function AdminSetariPage() {
 
         <div>
           <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Secțiuni site</p>
-          <label className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 cursor-pointer">
-            <span>
-              <span className="block text-sm font-bold text-[#1d2353]">Activează secțiunea Proiecte</span>
-              <span className="block text-xs text-gray-500 mt-0.5">Afișează pagina /proiecte și linkul din meniu pe site.</span>
-            </span>
-            <input
-              type="checkbox"
-              name="proiecteEnabled"
-              defaultChecked={settings?.proiecteEnabled ?? false}
-              className="w-5 h-5 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b] shrink-0"
-            />
-          </label>
+          <p className="text-xs text-gray-400 mb-3">Dezactivează o secțiune ca să nu mai fie accesibilă pe site (pagina dă 404 și linkul din meniu e ascuns).</p>
+          <div className="flex flex-col gap-2.5">
+            {SECTION_TOGGLES.map((section) => (
+              <label
+                key={section.name}
+                className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 cursor-pointer"
+              >
+                <span>
+                  <span className="block text-sm font-bold text-[#1d2353]">{section.label}</span>
+                  <span className="block text-xs text-gray-500 mt-0.5">{section.description}</span>
+                </span>
+                <input
+                  type="checkbox"
+                  name={section.name}
+                  defaultChecked={settings?.[section.name] ?? (section.name === "proiecteEnabled" ? false : true)}
+                  className="w-5 h-5 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b] shrink-0"
+                />
+              </label>
+            ))}
+          </div>
         </div>
 
-        <button type="submit" className="self-start bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-2.5 rounded-xl transition-colors text-sm uppercase tracking-wide">
-          Salvează setările
-        </button>
+        <SaveButton />
       </form>
     </div>
   );

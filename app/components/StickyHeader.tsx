@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { SectionFlags } from "@/lib/siteSettings";
 import SearchBar from "./SearchBar";
 import MobileMenuButton from "./MobileMenuButton";
 import FavoritesBadge from "./FavoritesBadge";
@@ -24,7 +25,14 @@ const servicesDropdown = [
   { href: "/servicii/comerciale", label: "Sisteme comerciale HVAC" },
 ];
 
-export default function StickyHeader({ proiecteEnabled = true }: { proiecteEnabled?: boolean }) {
+export default function StickyHeader({
+  produseEnabled = true,
+  serviciiEnabled = true,
+  proiecteEnabled = true,
+  despreEnabled = true,
+  blogEnabled = true,
+  contactEnabled = true,
+}: Partial<SectionFlags>) {
   return (
     <div id="site-header" className="bg-white relative z-40">
 
@@ -61,7 +69,14 @@ export default function StickyHeader({ proiecteEnabled = true }: { proiecteEnabl
                 </svg>
                 <CartBadge className="absolute -top-2 -right-2 w-4 h-4 bg-[#c7092b] rounded-full text-white text-[9px] font-bold flex items-center justify-center" />
               </Link>
-              <MobileMenuButton proiecteEnabled={proiecteEnabled} />
+              <MobileMenuButton
+                produseEnabled={produseEnabled}
+                serviciiEnabled={serviciiEnabled}
+                proiecteEnabled={proiecteEnabled}
+                despreEnabled={despreEnabled}
+                blogEnabled={blogEnabled}
+                contactEnabled={contactEnabled}
+              />
             </div>
           </div>
           <div className="px-4 pb-3">
@@ -113,51 +128,61 @@ export default function StickyHeader({ proiecteEnabled = true }: { proiecteEnabl
       <div className="hidden lg:grid grid-cols-[320px_1fr_160px] gap-x-8 max-w-7xl mx-auto px-6 pr-4 border-b border-gray-200">
 
         <div className="flex items-center gap-10">
-          <AllCategoriesMenu />
+          {produseEnabled && <AllCategoriesMenu />}
           <Link href="/" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide whitespace-nowrap">
             Acasă
           </Link>
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="relative group">
-            <Link href="/produse" className="flex items-center gap-1 py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">
-              Produse
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </Link>
-            <div className="absolute top-full left-0 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
-              {productsDropdown.map((item) => (
-                <Link key={item.href} href={item.href} className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
-                  {item.label}
-                </Link>
-              ))}
+          {produseEnabled && (
+            <div className="relative group">
+              <Link href="/produse" className="flex items-center gap-1 py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">
+                Produse
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </Link>
+              <div className="absolute top-full left-0 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
+                {productsDropdown.map((item) => (
+                  <Link key={item.href} href={item.href} className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="relative group">
-            <Link href="/servicii" className="flex items-center gap-1 py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">
-              Servicii
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </Link>
-            <div className="absolute top-full left-0 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
-              {servicesDropdown.map((item) => (
-                <Link key={item.href} href={item.href} className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
-                  {item.label}
-                </Link>
-              ))}
+          {serviciiEnabled && (
+            <div className="relative group">
+              <Link href="/servicii" className="flex items-center gap-1 py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">
+                Servicii
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </Link>
+              <div className="absolute top-full left-0 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
+                {servicesDropdown.map((item) => (
+                  <Link key={item.href} href={item.href} className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {proiecteEnabled && (
             <Link href="/proiecte" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Proiecte</Link>
           )}
-          <Link href="/despre" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Despre noi</Link>
-          <Link href="/blog" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Blog</Link>
-          <Link href="/contact" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Contact</Link>
+          {despreEnabled && (
+            <Link href="/despre" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Despre noi</Link>
+          )}
+          {blogEnabled && (
+            <Link href="/blog" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Blog</Link>
+          )}
+          {contactEnabled && (
+            <Link href="/contact" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Contact</Link>
+          )}
         </div>
 
         <div />

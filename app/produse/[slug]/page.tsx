@@ -29,6 +29,7 @@ import ProductGallery from "../../components/ProductGallery";
 import FavoriteButton from "../../components/FavoriteButton";
 import ProductFilterSidebar from "../../components/ProductFilterSidebar";
 import WriteReviewModal from "../../components/WriteReviewModal";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 export const revalidate = 3600;
 
@@ -136,6 +137,9 @@ export default async function ProduseSlugPage({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const { produseEnabled } = await getSectionFlags();
+  if (!produseEnabled) notFound();
+
   const { slug } = await params;
   const query = await searchParams;
 

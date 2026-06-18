@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getSectionFlags } from "@/lib/siteSettings";
 import {
   fallbackCategories,
   fallbackProducts,
@@ -85,6 +87,9 @@ export default async function ProdusePage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const { produseEnabled } = await getSectionFlags();
+  if (!produseEnabled) notFound();
+
   const query = await searchParams;
   const sort = parseSort(query.sort);
   const page = parsePage(query.page);

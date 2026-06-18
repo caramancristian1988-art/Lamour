@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 const features = [
   {
@@ -70,7 +72,10 @@ const testimoniale = [
   { text: "Am sunat dimineața și după-amiaza aparatul funcționa perfect. Recomand cu toată încrederea!", name: "Doru N.", city: "Chișinău", initials: "DN" },
 ];
 
-export default function DiagnosticareReparatiiPage() {
+export default async function DiagnosticareReparatiiPage() {
+  const { serviciiEnabled } = await getSectionFlags();
+  if (!serviciiEnabled) notFound();
+
   return (
     <div className="bg-white text-[#1d2353]">
 

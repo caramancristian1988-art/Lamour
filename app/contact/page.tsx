@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fallbackProducts } from "@/lib/fallbackData";
+import { getSectionFlags } from "@/lib/siteSettings";
 import ProductsSection from "../components/ProductsSection";
 import FaqAccordion from "../components/FaqAccordion";
 import ContactForm from "../components/ContactForm";
@@ -26,6 +28,9 @@ async function getRecommendedProducts() {
 }
 
 export default async function ContactPage() {
+  const { contactEnabled } = await getSectionFlags();
+  if (!contactEnabled) notFound();
+
   const products = await getRecommendedProducts();
 
   return (

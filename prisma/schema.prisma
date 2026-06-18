@@ -104,7 +104,12 @@ model Settings {
   instagram   String?
   seoTitle    String?
   seoDescription String?
+  produseEnabled  Boolean @default(true)
+  serviciiEnabled Boolean @default(true)
   proiecteEnabled Boolean @default(false)
+  despreEnabled   Boolean @default(true)
+  blogEnabled     Boolean @default(true)
+  contactEnabled  Boolean @default(true)
 }
 
 model User {

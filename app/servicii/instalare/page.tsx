@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 const features = [
   {
@@ -101,7 +103,10 @@ const testimoniale = [
   },
 ];
 
-export default function InstalareePage() {
+export default async function InstalareePage() {
+  const { serviciiEnabled } = await getSectionFlags();
+  if (!serviciiEnabled) notFound();
+
   return (
     <div className="bg-white text-[#1d2353]">
 

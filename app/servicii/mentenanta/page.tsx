@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 const features = [
   {
@@ -68,7 +70,10 @@ const testimoniale = [
   { text: "Am un abonament anual și sunt foarte mulțumit. Aparatele mele sunt mereu în stare perfectă.", name: "Ion P.", city: "Chișinău", initials: "IP" },
 ];
 
-export default function MentenantaPage() {
+export default async function MentenantaPage() {
+  const { serviciiEnabled } = await getSectionFlags();
+  if (!serviciiEnabled) notFound();
+
   return (
     <div className="bg-white text-[#1d2353]">
 

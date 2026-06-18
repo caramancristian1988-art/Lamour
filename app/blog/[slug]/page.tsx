@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import NewsletterForm from "@/app/components/NewsletterForm";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 export const metadata: Metadata = {
   title: "Cum alegi conditionerul potrivit pentru casa ta? | Climat Rapid Blog",
@@ -71,7 +73,10 @@ const relatedArticles = [
   },
 ];
 
-export default function BlogArticlePage() {
+export default async function BlogArticlePage() {
+  const { blogEnabled } = await getSectionFlags();
+  if (!blogEnabled) notFound();
+
   return (
     <>
       {/* Schema.org BlogPosting */}

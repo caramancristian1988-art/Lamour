@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 export const metadata: Metadata = {
   title: "Blog | Climat Rapid — Ghiduri, sfaturi și noutăți despre climatizare",
@@ -80,7 +82,10 @@ const filterTabs = [
   { label: "Tehnologie", href: "/blog/categorie/tehnologie" },
 ];
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const { blogEnabled } = await getSectionFlags();
+  if (!blogEnabled) notFound();
+
   return (
     <main className="bg-white">
 

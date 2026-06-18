@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 const features = [
   {
@@ -72,7 +74,10 @@ const testimoniale = [
   { text: "Mulțumesc pentru recomandare, sistemul ales se potrivește perfect spațiului meu.", name: "Sergiu V.", city: "Chișinău", initials: "SV" },
 ];
 
-export default function ConsultantaPage() {
+export default async function ConsultantaPage() {
+  const { serviciiEnabled } = await getSectionFlags();
+  if (!serviciiEnabled) notFound();
+
   return (
     <div className="bg-white text-[#1d2353]">
 

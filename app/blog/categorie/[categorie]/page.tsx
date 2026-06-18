@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 const allArticles = [
   {
@@ -99,6 +101,9 @@ export async function generateMetadata({ params }: { params: Promise<{ categorie
 }
 
 export default async function CategoriePage({ params }: { params: Promise<{ categorie: string }> }) {
+  const { blogEnabled } = await getSectionFlags();
+  if (!blogEnabled) notFound();
+
   const { categorie } = await params;
   const categoryName = categoryNames[categorie] ?? categorie;
   const articles = allArticles.filter((a) => a.categorySlug === categorie);

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 export const metadata: Metadata = {
   title: "Despre Noi | Climat Rapid",
@@ -22,7 +24,10 @@ const team = [
   { name: "Vladimir Turcanu", role: "Consultant Vânzări", image: "/tehnician-2.png" },
 ];
 
-export default function DesprePage() {
+export default async function DesprePage() {
+  const { despreEnabled } = await getSectionFlags();
+  if (!despreEnabled) notFound();
+
   return (
     <main className="bg-white">
 

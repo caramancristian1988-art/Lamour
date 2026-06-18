@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 const features = [
   {
@@ -71,7 +73,10 @@ const testimoniale = [
   { text: "Recomand cu încredere sistemele multisplit, mai ales pentru case cu mai multe camere.", name: "Natalia S.", city: "Chișinău", initials: "NS" },
 ];
 
-export default function MultisplitPage() {
+export default async function MultisplitPage() {
+  const { serviciiEnabled } = await getSectionFlags();
+  if (!serviciiEnabled) notFound();
+
   return (
     <div className="bg-white text-[#1d2353]">
 

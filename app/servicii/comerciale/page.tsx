@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 const features = [
   {
@@ -72,7 +74,10 @@ const testimoniale = [
   { text: "Contractul de mentenanță ne-a scutit de bătăi de cap, totul e verificat periodic.", name: "Mihai R.", city: "Chișinău", initials: "MR" },
 ];
 
-export default function ComercialePage() {
+export default async function ComercialePage() {
+  const { serviciiEnabled } = await getSectionFlags();
+  if (!serviciiEnabled) notFound();
+
   return (
     <div className="bg-white text-[#1d2353]">
 

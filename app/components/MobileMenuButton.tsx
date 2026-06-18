@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { SectionFlags } from "@/lib/siteSettings";
 
 const productsDropdown = [
   { href: "/produse?cat=conditioane-rezidentiale", label: "Condiționere rezidențiale" },
@@ -21,10 +22,10 @@ const servicesDropdown = [
 ];
 
 const baseNavLinks = [
-  { href: "/proiecte", label: "Proiecte" },
-  { href: "/despre", label: "Despre noi" },
-  { href: "/blog", label: "Blog" },
-  { href: "/contact", label: "Contact" },
+  { href: "/proiecte", label: "Proiecte", flag: "proiecteEnabled" as const },
+  { href: "/despre", label: "Despre noi", flag: "despreEnabled" as const },
+  { href: "/blog", label: "Blog", flag: "blogEnabled" as const },
+  { href: "/contact", label: "Contact", flag: "contactEnabled" as const },
 ];
 
 function ChevronIcon({ open }: { open: boolean }) {
@@ -41,8 +42,16 @@ function ChevronIcon({ open }: { open: boolean }) {
   );
 }
 
-export default function MobileMenuButton({ proiecteEnabled = true }: { proiecteEnabled?: boolean }) {
-  const navLinks = proiecteEnabled ? baseNavLinks : baseNavLinks.filter((l) => l.href !== "/proiecte");
+export default function MobileMenuButton({
+  produseEnabled = true,
+  serviciiEnabled = true,
+  proiecteEnabled = true,
+  despreEnabled = true,
+  blogEnabled = true,
+  contactEnabled = true,
+}: Partial<SectionFlags>) {
+  const flags: SectionFlags = { produseEnabled, serviciiEnabled, proiecteEnabled, despreEnabled, blogEnabled, contactEnabled };
+  const navLinks = baseNavLinks.filter((l) => flags[l.flag]);
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [produseOpen, setProduseOpen] = useState(false);
@@ -150,59 +159,63 @@ export default function MobileMenuButton({ proiecteEnabled = true }: { proiecteE
                   Acasă
                 </Link>
 
-                <div
-                  style={{ transitionDelay: open ? "75ms" : "0ms" }}
-                  className={`transition-all duration-300 ease-out ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}
-                >
-                  <button
-                    onClick={() => setProduseOpen((v) => !v)}
-                    className="w-full flex items-center justify-between px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
+                {produseEnabled && (
+                  <div
+                    style={{ transitionDelay: open ? "75ms" : "0ms" }}
+                    className={`transition-all duration-300 ease-out ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}
                   >
-                    Produse
-                    <ChevronIcon open={produseOpen} />
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-200 ${produseOpen ? "max-h-96" : "max-h-0"}`}>
-                    <div className="flex flex-col pb-1">
-                      {productsDropdown.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={closeMenu}
-                          className="px-6 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-[#c7092b] transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
+                    <button
+                      onClick={() => setProduseOpen((v) => !v)}
+                      className="w-full flex items-center justify-between px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
+                    >
+                      Produse
+                      <ChevronIcon open={produseOpen} />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-200 ${produseOpen ? "max-h-96" : "max-h-0"}`}>
+                      <div className="flex flex-col pb-1">
+                        {productsDropdown.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={closeMenu}
+                            className="px-6 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-[#c7092b] transition-colors"
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
-                <div
-                  style={{ transitionDelay: open ? "110ms" : "0ms" }}
-                  className={`transition-all duration-300 ease-out ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}
-                >
-                  <button
-                    onClick={() => setServiciiOpen((v) => !v)}
-                    className="w-full flex items-center justify-between px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
+                {serviciiEnabled && (
+                  <div
+                    style={{ transitionDelay: open ? "110ms" : "0ms" }}
+                    className={`transition-all duration-300 ease-out ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}
                   >
-                    Servicii
-                    <ChevronIcon open={serviciiOpen} />
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-200 ${serviciiOpen ? "max-h-96" : "max-h-0"}`}>
-                    <div className="flex flex-col pb-1">
-                      {servicesDropdown.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={closeMenu}
-                          className="px-6 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-[#c7092b] transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
+                    <button
+                      onClick={() => setServiciiOpen((v) => !v)}
+                      className="w-full flex items-center justify-between px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
+                    >
+                      Servicii
+                      <ChevronIcon open={serviciiOpen} />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-200 ${serviciiOpen ? "max-h-96" : "max-h-0"}`}>
+                      <div className="flex flex-col pb-1">
+                        {servicesDropdown.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={closeMenu}
+                            className="px-6 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-[#c7092b] transition-colors"
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {navLinks.map((link, i) => (
                   <Link

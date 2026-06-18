@@ -15,7 +15,12 @@ export async function updateSettingsAction(formData: FormData) {
     instagram: String(formData.get("instagram") ?? "").trim() || null,
     seoTitle: String(formData.get("seoTitle") ?? "").trim() || null,
     seoDescription: String(formData.get("seoDescription") ?? "").trim() || null,
+    produseEnabled: formData.get("produseEnabled") === "on",
+    serviciiEnabled: formData.get("serviciiEnabled") === "on",
     proiecteEnabled: formData.get("proiecteEnabled") === "on",
+    despreEnabled: formData.get("despreEnabled") === "on",
+    blogEnabled: formData.get("blogEnabled") === "on",
+    contactEnabled: formData.get("contactEnabled") === "on",
   };
 
   const existing = await prisma.settings.findFirst();
