@@ -75,6 +75,28 @@ export default function ProductForm({
     setAddingCategory(false);
   }
 
+  const defaultEnergyClasses = ["A", "A+", "A++", "A+++"];
+  const [energyClassOptions, setEnergyClassOptions] = useState(
+    defaults?.energyClass && !defaultEnergyClasses.includes(defaults.energyClass)
+      ? [...defaultEnergyClasses, defaults.energyClass]
+      : defaultEnergyClasses
+  );
+  const [selectedEnergyClass, setSelectedEnergyClass] = useState(defaults?.energyClass ?? "");
+  const [addingEnergyClass, setAddingEnergyClass] = useState(false);
+  const [newEnergyClass, setNewEnergyClass] = useState("");
+
+  function handleAddEnergyClass() {
+    const value = newEnergyClass.trim();
+    if (!value) return;
+
+    if (!energyClassOptions.includes(value)) {
+      setEnergyClassOptions((prev) => [...prev, value]);
+    }
+    setSelectedEnergyClass(value);
+    setNewEnergyClass("");
+    setAddingEnergyClass(false);
+  }
+
   return (
     <form action={formAction} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4 max-w-2xl">
       {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
@@ -164,20 +186,67 @@ export default function ProductForm({
 
       <div className="grid grid-cols-2 gap-4">
         <AdminInput label="BTU (opțional)" name="btu" type="number" defaultValue={defaults?.btu ?? ""} placeholder="12000" />
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-bold text-gray-600">Clasă energetică</span>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-gray-600">Clasă energetică</span>
+            {!addingEnergyClass && (
+              <button
+                type="button"
+                onClick={() => setAddingEnergyClass(true)}
+                className="text-xs font-bold text-[#c7092b] hover:underline"
+              >
+                + Valoare nouă
+              </button>
+            )}
+          </div>
+
           <select
             name="energyClass"
-            defaultValue={defaults?.energyClass ?? ""}
+            value={selectedEnergyClass}
+            onChange={(e) => setSelectedEnergyClass(e.target.value)}
             className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] bg-white"
           >
             <option value="">—</option>
-            <option value="A">A</option>
-            <option value="A+">A+</option>
-            <option value="A++">A++</option>
-            <option value="A+++">A+++</option>
+            {energyClassOptions.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
           </select>
-        </label>
+
+          {addingEnergyClass && (
+            <div className="flex items-center gap-2 mt-1.5">
+              <input
+                type="text"
+                value={newEnergyClass}
+                onChange={(e) => setNewEnergyClass(e.target.value)}
+                placeholder="ex: B"
+                className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#c7092b]"
+              />
+              <button
+                type="button"
+                onClick={handleAddEnergyClass}
+                disabled={!newEnergyClass.trim()}
+                className="bg-[#1d2353] hover:bg-[#2a3470] disabled:opacity-60 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shrink-0"
+              >
+                Adaugă
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAddingEnergyClass(false);
+                  setNewEnergyClass("");
+                }}
+                className="text-gray-400 hover:text-[#c7092b] transition-colors shrink-0"
+                aria-label="Anulează"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <AdminInput label="Badge (opțional)" name="badge" defaultValue={defaults?.badge ?? ""} placeholder="Eficiență A++" />
