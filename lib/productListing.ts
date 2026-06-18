@@ -89,16 +89,76 @@ interface FilterableProduct {
   oldPrice: number | null;
 }
 
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Maps common Moldovan misspellings, colloquial terms, and Russian
+// words/transliterations to the canonical (diacritic-stripped) terms
+// that actually appear in our category names, so people searching in
+// their own words still find matching products.
+const SEARCH_SYNONYMS: Record<string, string[]> = {
+  conditoner: ["conditioner"],
+  condiționer: ["conditioner"],
+  kondiționer: ["conditioner"],
+  klimatizor: ["conditioner", "climatizare"],
+  climatizor: ["conditioner", "climatizare"],
+  "aer conditionat": ["conditioner"],
+  "aer condiționat": ["conditioner"],
+  кондиционер: ["conditioner"],
+  кондюк: ["conditioner"],
+  сплит: ["split", "conditioner"],
+  мультисплит: ["multisplit"],
+  переносной: ["portabil"],
+  портативный: ["portabil"],
+  коммерческий: ["comercial"],
+  жилой: ["rezidential"],
+  инвертор: ["inverter"],
+  kondicioner: ["conditioner"],
+  kondisioner: ["conditioner"],
+  kondicioneri: ["conditioner"],
+  split: ["split"],
+  "multi split": ["multisplit"],
+  multisplit: ["multisplit"],
+  portativ: ["portabil"],
+  portativnii: ["portabil"],
+  portabil: ["portabil"],
+  komercheskii: ["comercial"],
+  comercial: ["comercial"],
+  rezidential: ["rezidential"],
+};
+
+function expandSearchTerms(query: string): string[] {
+  const normalizedQuery = normalizeSearchText(query);
+  const terms = new Set([normalizedQuery]);
+
+  for (const [alias, canonicalTerms] of Object.entries(SEARCH_SYNONYMS)) {
+    if (normalizedQuery.includes(alias) || alias.includes(normalizedQuery)) {
+      canonicalTerms.forEach((term) => terms.add(term));
+    }
+  }
+
+  return Array.from(terms);
+}
+
 export function applyFilters<T extends FilterableProduct>(
   products: T[],
   filters: ProductFilters,
-  getCategorySlug?: (product: T) => string
+  getCategorySlug?: (product: T) => string,
+  getSearchText?: (product: T) => string
 ): T[] {
   let result = products;
 
   if (filters.query) {
-    const q = filters.query.toLowerCase();
-    result = result.filter((p) => p.name.toLowerCase().includes(q));
+    const terms = expandSearchTerms(filters.query);
+    result = result.filter((p) => {
+      const haystack = normalizeSearchText(`${p.name} ${getSearchText ? getSearchText(p) : ""}`);
+      return terms.some((term) => haystack.includes(term));
+    });
   }
   if (filters.categorySlugs.length > 0 && getCategorySlug) {
     result = result.filter((p) => filters.categorySlugs.includes(getCategorySlug(p)));

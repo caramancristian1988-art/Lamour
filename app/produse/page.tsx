@@ -98,7 +98,13 @@ export default async function ProdusePage({
   const { categories, products: baseProducts } = await getData();
 
   const categoryById = new Map(categories.map((c) => [c.id, c.slug]));
-  const products = applyFilters(baseProducts, filters, (p) => categoryById.get(p.categoryId) ?? "");
+  const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
+  const products = applyFilters(
+    baseProducts,
+    filters,
+    (p) => categoryById.get(p.categoryId) ?? "",
+    (p) => categoryNameById.get(p.categoryId) ?? ""
+  );
 
   const categoryOptions = categories.map((cat) => ({
     id: cat.id,
