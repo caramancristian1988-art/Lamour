@@ -20,7 +20,6 @@ import {
   parsePage,
   parseFilters,
   applyFilters,
-  PRICE_BRACKETS,
 } from "@/lib/productListing";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 
@@ -51,6 +50,7 @@ interface ProductRow {
   image: string | null;
   btu: number | null;
   technology: string;
+  brand: string | null;
   energyClass: string | null;
   rating: number;
   reviewCount: number;
@@ -76,7 +76,7 @@ async function getData(): Promise<{ categories: CategoryRow[]; products: Product
         ...fallbackPopularProducts,
         ...fallbackOfferProducts,
         ...fallbackDiscountProducts,
-      ].map((p) => ({ ...p, images: [] as string[] })),
+      ].map((p) => ({ ...p, images: [] as string[], brand: null as string | null })),
     };
   }
 }
@@ -117,15 +117,19 @@ export default async function ProdusePage({
     .reverse()
     .map((value) => ({ value, count: baseProducts.filter((p) => p.energyClass === value).length }));
 
-  const priceBracketOptions = PRICE_BRACKETS.map((b) => ({
-    key: b.key,
-    label: b.label,
-    count: baseProducts.filter((p) => p.price >= b.min && p.price < b.max).length,
-  })).filter((b) => b.count > 0);
+  const priceBounds = baseProducts.reduce(
+    (acc, p) => ({ min: Math.min(acc.min, p.price), max: Math.max(acc.max, p.price) }),
+    { min: baseProducts[0]?.price ?? 0, max: baseProducts[0]?.price ?? 0 }
+  );
 
   const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology)))
     .sort()
     .map((value) => ({ value, count: baseProducts.filter((p) => p.technology === value).length }));
+
+  const brandOptions = Array.from(new Set(baseProducts.map((p) => p.brand).filter((v): v is string => Boolean(v))))
+    .sort()
+    .map((value) => ({ value, count: baseProducts.filter((p) => p.brand === value).length }));
+
   const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
 
   const sorted = sortProducts(products, sort);
@@ -155,7 +159,8 @@ export default async function ProdusePage({
               categories={categoryOptions}
               technologies={technologyOptions}
               energyClasses={energyClassOptions}
-              priceBrackets={priceBracketOptions}
+              brands={brandOptions}
+              priceBounds={priceBounds}
               offersCount={offersCount}
             />
 
@@ -204,7 +209,9 @@ export default async function ProdusePage({
                   ...(filters.categorySlugs.length > 0 ? { cat: filters.categorySlugs.join(",") } : {}),
                   ...(filters.technologies.length > 0 ? { tehnologie: filters.technologies.join(",") } : {}),
                   ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),
-                  ...(filters.priceBracket ? { pret: filters.priceBracket } : {}),
+                  ...(filters.brands.length > 0 ? { brand: filters.brands.join(",") } : {}),
+                  ...(filters.priceMin !== null ? { pretMin: String(filters.priceMin) } : {}),
+                  ...(filters.priceMax !== null ? { pretMax: String(filters.priceMax) } : {}),
                 }}
               />
             </div>

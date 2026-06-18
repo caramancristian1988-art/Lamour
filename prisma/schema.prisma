@@ -28,6 +28,7 @@ model Product {
   images      String[] @default([])
   btu         Int?
   technology  String   @default("On/Off")
+  brand       String?
   energyClass String?
   rating      Float    @default(0)
   reviewCount Int      @default(0)

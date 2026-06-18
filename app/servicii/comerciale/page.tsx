@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
+import { getPromoProducts } from "@/lib/promoProducts";
+import ProductsSection from "@/app/components/ProductsSection";
 
 const features = [
   {
@@ -61,13 +63,6 @@ const pasi = [
   { nr: "03", title: "Implementare", desc: "Montăm și punem în funcțiune sistemul, cu testare completă.", img: "/IMG_2840.PNG" },
 ];
 
-const produse = [
-  { brand: "GREE", model: "Sistem comercial GMV5 modular", specs: "Inverter, Clasa A++", price: "54.499 MDL", oldPrice: "61.999 MDL", discount: "-12%", href: "/produse/gree-pular" },
-  { brand: "MIDEA", model: "VRF V8 comercial", specs: "Inverter, Clasa A++", price: "49.899 MDL", oldPrice: "56.999 MDL", discount: "-12%", href: "/produse/midea-mission" },
-  { brand: "AUX", model: "Sistem rooftop comercial", specs: "Inverter, Clasa A++", price: "47.499 MDL", oldPrice: "53.999 MDL", discount: "-12%", href: "/produse/aux-freedom" },
-  { brand: "TOSOT", model: "VRF comercial Seiya Pro", specs: "Inverter, Clasa A++", price: "45.999 MDL", oldPrice: "51.999 MDL", discount: "-11%", href: "/produse/tosot-seiya" },
-];
-
 const testimoniale = [
   { text: "Au proiectat și montat sistemul HVAC pentru biroul nostru de 300mp fără nicio problemă. Echipă foarte profesionistă.", name: "Andrei P.", city: "Chișinău", initials: "AP" },
   { text: "Sistem comercial montat în hala noastră de producție, funcționează impecabil de la instalare.", name: "Olesea D.", city: "Bălți", initials: "OD" },
@@ -77,6 +72,7 @@ const testimoniale = [
 export default async function ComercialePage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
+  const produse = await getPromoProducts("conditioane-comerciale");
 
   return (
     <div className="bg-white text-[#1d2353]">
@@ -187,41 +183,13 @@ export default async function ComercialePage() {
       </section>
 
       {/* ── REDUCERI LA PRODUSE ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        <p className="text-xs font-extrabold tracking-widest uppercase text-[#1d2353] mb-1">REDUCERI LA PRODUSE</p>
-        <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-          {produse.map((p) => (
-            <div key={p.brand + p.model} className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white flex flex-col">
-              <div className="relative h-44 bg-gray-50">
-                <Image src="/IMG_2848.PNG" alt={p.brand} fill className="object-contain p-4" />
-                <span className="absolute top-3 left-3 bg-[#c7092b] text-white text-[11px] font-bold px-2.5 py-1 rounded-md">{p.discount}</span>
-              </div>
-              <div className="p-4 flex flex-col gap-1 flex-1">
-                <p className="text-sm font-extrabold text-[#1d2353] uppercase">{p.brand}</p>
-                <p className="text-xs text-gray-600">{p.model}</p>
-                <p className="text-[11px] text-gray-400">{p.specs}</p>
-                <p className="text-xs text-gray-400 line-through mt-3">{p.oldPrice}</p>
-                <p className="text-xl font-extrabold text-[#c7092b]">{p.price}</p>
-                <div className="flex items-center gap-2 mt-4">
-                  <Link href={p.href} className="flex-1 flex items-center justify-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold py-2.5 px-3 rounded-xl transition-colors">
-                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                    Adaugă în coș
-                  </Link>
-                  <Link href={p.href} className="w-10 h-10 flex items-center justify-center border border-gray-200 rounded-xl hover:border-[#c7092b] hover:text-[#c7092b] text-gray-400 transition-colors shrink-0">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ProductsSection
+        products={produse}
+        title="Reduceri"
+        highlighted="la produse"
+        viewAllHref="/produse?reducere=true"
+        showDiscount
+      />
 
       {/* ── TESTIMONIALE ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">

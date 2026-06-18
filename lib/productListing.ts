@@ -47,35 +47,37 @@ export function parsePage(value: string | string[] | undefined): number {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 1;
 }
 
-export const PRICE_BRACKETS = [
-  { key: "0-10000", label: "Sub 10.000 MDL", min: 0, max: 10000 },
-  { key: "10000-15000", label: "10.000 - 15.000 MDL", min: 10000, max: 15000 },
-  { key: "15000-20000", label: "15.000 - 20.000 MDL", min: 15000, max: 20000 },
-  { key: "20000-", label: "Peste 20.000 MDL", min: 20000, max: Infinity },
-];
-
 function parseList(value: string | string[] | undefined): string[] {
   const v = Array.isArray(value) ? value[0] : value;
   return v ? v.split(",").filter(Boolean) : [];
+}
+
+function parseNumber(value: string | string[] | undefined): number | null {
+  const v = Array.isArray(value) ? value[0] : value;
+  const n = Number(v);
+  return v && Number.isFinite(n) ? n : null;
 }
 
 export interface ProductFilters {
   categorySlugs: string[];
   technologies: string[];
   energyClasses: string[];
-  priceBracket: string | null;
+  brands: string[];
+  priceMin: number | null;
+  priceMax: number | null;
   offersOnly: boolean;
   query: string;
 }
 
 export function parseFilters(query: { [key: string]: string | string[] | undefined }): ProductFilters {
-  const priceBracket = Array.isArray(query.pret) ? query.pret[0] : query.pret;
   const q = Array.isArray(query.q) ? query.q[0] : query.q;
   return {
     categorySlugs: parseList(query.cat),
     technologies: parseList(query.tehnologie),
     energyClasses: parseList(query.energie),
-    priceBracket: PRICE_BRACKETS.some((b) => b.key === priceBracket) ? priceBracket! : null,
+    brands: parseList(query.brand),
+    priceMin: parseNumber(query.pretMin),
+    priceMax: parseNumber(query.pretMax),
     offersOnly: query.oferte === "1",
     query: q?.trim() ?? "",
   };
@@ -87,6 +89,7 @@ interface FilterableProduct {
   technology: string;
   energyClass: string | null;
   oldPrice: number | null;
+  brand?: string | null;
 }
 
 function normalizeSearchText(value: string): string {
@@ -169,9 +172,14 @@ export function applyFilters<T extends FilterableProduct>(
   if (filters.energyClasses.length > 0) {
     result = result.filter((p) => p.energyClass && filters.energyClasses.includes(p.energyClass));
   }
-  if (filters.priceBracket) {
-    const bracket = PRICE_BRACKETS.find((b) => b.key === filters.priceBracket);
-    if (bracket) result = result.filter((p) => p.price >= bracket.min && p.price < bracket.max);
+  if (filters.brands.length > 0) {
+    result = result.filter((p) => p.brand && filters.brands.includes(p.brand));
+  }
+  if (filters.priceMin !== null) {
+    result = result.filter((p) => p.price >= filters.priceMin!);
+  }
+  if (filters.priceMax !== null) {
+    result = result.filter((p) => p.price <= filters.priceMax!);
   }
   if (filters.offersOnly) {
     result = result.filter((p) => p.oldPrice != null);
@@ -185,7 +193,9 @@ export function hasActiveFilters(filters: ProductFilters): boolean {
     filters.categorySlugs.length > 0 ||
     filters.technologies.length > 0 ||
     filters.energyClasses.length > 0 ||
-    filters.priceBracket !== null ||
+    filters.brands.length > 0 ||
+    filters.priceMin !== null ||
+    filters.priceMax !== null ||
     filters.offersOnly ||
     filters.query.length > 0
   );

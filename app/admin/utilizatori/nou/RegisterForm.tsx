@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useRef } from "react";
-import Link from "next/link";
 import { registerAction, type AuthFormState } from "@/lib/authActions";
 
 const initialState: AuthFormState = {};
@@ -11,20 +10,7 @@ export default function RegisterForm() {
   const formRef = useRef<HTMLFormElement>(null);
 
   return (
-    <div className="w-full max-w-sm">
-      <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-6 justify-center">
-        <Link href="/admin" className="hover:text-[#c7092b] transition-colors">Admin</Link>
-        <span>›</span>
-        <span className="text-gray-600">Cont nou</span>
-      </nav>
-
-      <h1 className="text-2xl font-extrabold text-[#1d2353] text-center mb-1">
-        Creează un <span className="text-[#c7092b]">cont nou</span>
-      </h1>
-      <p className="text-sm text-gray-500 text-center mb-8">
-        Doar administratorii pot crea conturi. Persoana va folosi emailul și parola de mai jos ca să se conecteze.
-      </p>
-
+    <div className="bg-white border border-gray-100 rounded-2xl p-6 max-w-sm">
       {state.success && (
         <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-2.5 mb-4">
           Cont creat cu succes!

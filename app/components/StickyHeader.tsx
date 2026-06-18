@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { SectionFlags } from "@/lib/siteSettings";
+import type { SectionFlags, HeaderCategory } from "@/lib/siteSettings";
 import SearchBar from "./SearchBar";
 import MobileMenuButton from "./MobileMenuButton";
 import FavoritesBadge from "./FavoritesBadge";
@@ -8,12 +8,12 @@ import CartBadge from "./CartBadge";
 import AllCategoriesMenu from "./AllCategoriesMenu";
 import AccountMenuLink from "./AccountMenuLink";
 
-const productsDropdown = [
-  { href: "/produse?cat=conditioane-rezidentiale", label: "Condiționere rezidențiale" },
-  { href: "/produse?cat=conditioane-comerciale", label: "Condiționere comerciale" },
-  { href: "/produse?cat=sisteme-multisplit", label: "Sisteme multisplit" },
-  { href: "/produse?cat=conditioane-portabile", label: "Condiționere portabile" },
-  { href: "/produse?cat=accesorii-consumabile", label: "Accesorii și consumabile" },
+const fallbackProductsDropdown = [
+  { id: "conditioane-rezidentiale", slug: "conditioane-rezidentiale", name: "Condiționere rezidențiale", image: null },
+  { id: "conditioane-comerciale", slug: "conditioane-comerciale", name: "Condiționere comerciale", image: null },
+  { id: "sisteme-multisplit", slug: "sisteme-multisplit", name: "Sisteme multisplit", image: null },
+  { id: "conditioane-portabile", slug: "conditioane-portabile", name: "Condiționere portabile", image: null },
+  { id: "accesorii-consumabile", slug: "accesorii-consumabile", name: "Accesorii și consumabile", image: null },
 ];
 
 const servicesDropdown = [
@@ -32,7 +32,9 @@ export default function StickyHeader({
   despreEnabled = true,
   blogEnabled = true,
   contactEnabled = true,
-}: Partial<SectionFlags>) {
+  categories,
+}: Partial<SectionFlags> & { categories?: HeaderCategory[] }) {
+  const productsDropdown = categories && categories.length > 0 ? categories : fallbackProductsDropdown;
   return (
     <div id="site-header" className="bg-white relative z-40">
 
@@ -85,6 +87,7 @@ export default function StickyHeader({
                 label="Categorii"
                 className="flex-1 min-w-0"
                 buttonClassName="w-full flex items-center justify-center gap-1.5 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold px-3 h-11 rounded-xl transition-colors uppercase tracking-wide"
+                categories={productsDropdown}
               />
             )}
             <div className="flex-1 min-w-0">
@@ -137,7 +140,7 @@ export default function StickyHeader({
       <div className="hidden lg:grid grid-cols-[320px_1fr_160px] gap-x-8 max-w-7xl mx-auto px-6 pr-4 border-b border-gray-200">
 
         <div className="flex items-center gap-10">
-          {produseEnabled && <AllCategoriesMenu />}
+          {produseEnabled && <AllCategoriesMenu categories={productsDropdown} />}
           <Link href="/" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide whitespace-nowrap">
             Acasă
           </Link>
@@ -154,8 +157,8 @@ export default function StickyHeader({
               </Link>
               <div className="absolute top-full left-0 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
                 {productsDropdown.map((item) => (
-                  <Link key={item.href} href={item.href} className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
-                    {item.label}
+                  <Link key={item.id} href={`/produse?cat=${item.slug}`} className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
+                    {item.name}
                   </Link>
                 ))}
               </div>

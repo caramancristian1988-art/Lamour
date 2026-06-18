@@ -18,10 +18,10 @@ const stats = [
 ];
 
 const team = [
-  { name: "Alexandru Popescu", role: "Director General", image: "/tehnician.png" },
-  { name: "Mihai Rotaru", role: "Responsabil Tehnic", image: "/tehnician-2.png" },
-  { name: "Ion Cebotari", role: "Tehnician Șef", image: "/tehnician.png" },
-  { name: "Vladimir Turcanu", role: "Consultant Vânzări", image: "/tehnician-2.png" },
+  { name: "Alexandru Popescu", role: "Director General", image: "/IMG_2945.PNG" },
+  { name: "Mihai Rotaru", role: "Responsabil Tehnic", image: "/IMG_2946.PNG" },
+  { name: "Ion Cebotari", role: "Tehnician Șef", image: "/IMG_2947.PNG" },
+  { name: "Vladimir Turcanu", role: "Consultant Vânzări", image: "/IMG_2948.PNG" },
 ];
 
 export default async function DesprePage() {

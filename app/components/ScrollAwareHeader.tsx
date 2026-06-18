@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { SectionFlags } from "@/lib/siteSettings";
+import type { SectionFlags, HeaderCategory } from "@/lib/siteSettings";
 import StickyHeader from "./StickyHeader";
 
-export default function ScrollAwareHeader(sectionFlags: Partial<SectionFlags>) {
+export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categories?: HeaderCategory[] }) {
   const [scrolled, setScrolled] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -35,7 +35,7 @@ export default function ScrollAwareHeader(sectionFlags: Partial<SectionFlags>) {
             : "static z-40"
         }
       >
-        <StickyHeader {...sectionFlags} />
+        <StickyHeader {...props} />
       </div>
 
       {/* Spacer keeps layout stable when header becomes fixed */}

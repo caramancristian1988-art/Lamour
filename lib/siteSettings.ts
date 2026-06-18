@@ -35,3 +35,22 @@ export const getSectionFlags = cache(async (): Promise<SectionFlags> => {
     return DEFAULTS;
   }
 });
+
+export interface HeaderCategory {
+  id: string;
+  slug: string;
+  name: string;
+  image: string | null;
+}
+
+export const getHeaderCategories = cache(async (): Promise<HeaderCategory[]> => {
+  try {
+    const categories = await prisma.category.findMany({
+      orderBy: { createdAt: "asc" },
+      select: { id: true, slug: true, name: true, image: true },
+    });
+    return categories;
+  } catch {
+    return [];
+  }
+});

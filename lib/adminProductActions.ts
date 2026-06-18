@@ -26,6 +26,7 @@ function readProductFields(formData: FormData) {
   const images = parseImageLines(formData);
   const btuRaw = String(formData.get("btu") ?? "").trim();
   const technology = String(formData.get("technology") ?? "").trim() || "On/Off";
+  const brand = String(formData.get("brand") ?? "").trim() || null;
   const energyClass = String(formData.get("energyClass") ?? "").trim() || null;
   const badge = String(formData.get("badge") ?? "").trim() || null;
   const availability = String(formData.get("availability") ?? "").trim() || "În stoc";
@@ -41,6 +42,7 @@ function readProductFields(formData: FormData) {
     images,
     btu: btuRaw ? Number(btuRaw) : null,
     technology,
+    brand,
     energyClass,
     badge,
     availability,

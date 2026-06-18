@@ -24,6 +24,7 @@ interface ProductDefaults {
   images?: string[];
   btu?: number | null;
   technology?: string;
+  brand?: string | null;
   energyClass?: string | null;
   badge?: string | null;
   availability?: string;
@@ -36,11 +37,13 @@ export default function ProductForm({
   action,
   defaults,
   categories,
+  brands,
   submitLabel,
 }: {
   action: (prevState: ProductFormState, formData: FormData) => Promise<ProductFormState>;
   defaults?: ProductDefaults;
   categories: CategoryOption[];
+  brands: string[];
   submitLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -62,6 +65,9 @@ export default function ProductForm({
     defaults?.technology && !defaultTechnologies.includes(defaults.technology)
       ? [...defaultTechnologies, defaults.technology]
       : defaultTechnologies;
+
+  const brandOptions =
+    defaults?.brand && !brands.includes(defaults.brand) ? [...brands, defaults.brand] : brands;
 
   const defaultAvailabilities = ["În stoc", "Stoc epuizat", "La comandă"];
   const availabilityOptions =
@@ -101,6 +107,18 @@ export default function ProductForm({
           const result = await deleteCategoryInlineAction(option.value);
           if (result.error) return { error: result.error };
         }}
+      />
+
+      <ManagedSelect
+        name="brand"
+        label="Brand (opțional)"
+        defaultOptions={brandOptions.map((value) => ({ value, label: value }))}
+        defaultValue={defaults?.brand ?? ""}
+        emptyOptionLabel="Fără brand"
+        addPlaceholder="Brand nou, ex: Samsung"
+        deleteConfirmText="Sigur vrei să ștergi acest brand din listă?"
+        onAdd={async (label) => ({ option: { value: label, label } })}
+        onDelete={async () => {}}
       />
 
       <div className="grid grid-cols-2 gap-4">

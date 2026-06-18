@@ -2,13 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
-const productsDropdown = [
-  { href: "/produse?cat=conditioane-rezidentiale", label: "Condiționere rezidențiale" },
-  { href: "/produse?cat=conditioane-comerciale", label: "Condiționere comerciale" },
-  { href: "/produse?cat=sisteme-multisplit", label: "Sisteme multisplit" },
-  { href: "/produse?cat=conditioane-portabile", label: "Condiționere portabile" },
-  { href: "/produse?cat=accesorii-consumabile", label: "Accesorii și consumabile" },
+export interface CategoryLink {
+  id: string;
+  slug: string;
+  name: string;
+  image: string | null;
+}
+
+const fallbackCategories: CategoryLink[] = [
+  { id: "conditioane-rezidentiale", slug: "conditioane-rezidentiale", name: "Condiționere rezidențiale", image: null },
+  { id: "conditioane-comerciale", slug: "conditioane-comerciale", name: "Condiționere comerciale", image: null },
+  { id: "sisteme-multisplit", slug: "sisteme-multisplit", name: "Sisteme multisplit", image: null },
+  { id: "conditioane-portabile", slug: "conditioane-portabile", name: "Condiționere portabile", image: null },
+  { id: "accesorii-consumabile", slug: "accesorii-consumabile", name: "Accesorii și consumabile", image: null },
 ];
 
 const servicesDropdown = [
@@ -24,9 +32,11 @@ interface Props {
   className?: string;
   buttonClassName?: string;
   label?: string;
+  categories?: CategoryLink[];
 }
 
-export default function AllCategoriesMenu({ className, buttonClassName, label = "Toate categoriile" }: Props) {
+export default function AllCategoriesMenu({ className, buttonClassName, label = "Toate categoriile", categories }: Props) {
+  const productsDropdown = categories && categories.length > 0 ? categories : fallbackCategories;
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -90,12 +100,21 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
             </Link>
             {productsDropdown.map((item) => (
               <Link
-                key={item.href}
-                href={item.href}
+                key={item.id}
+                href={`/produse?cat=${item.slug}`}
                 onClick={() => setOpen(false)}
-                className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors"
               >
-                {item.label}
+                <span className="relative w-8 h-8 rounded-lg bg-[#f6f8fb] overflow-hidden shrink-0">
+                  {item.image ? (
+                    <Image src={item.image} alt="" fill className="object-cover" />
+                  ) : (
+                    <svg className="w-4 h-4 text-gray-300 absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20 8H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2zM4 6h16V4H4v2z" />
+                    </svg>
+                  )}
+                </span>
+                {item.name}
               </Link>
             ))}
 

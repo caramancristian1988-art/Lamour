@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { PRICE_BRACKETS, type SortKey } from "@/lib/productListing";
+import { type SortKey } from "@/lib/productListing";
 import ProductSortSelect from "./ProductSortSelect";
+import PriceRangeSlider from "./PriceRangeSlider";
 
 interface CategoryOption {
   id: string;
@@ -22,10 +23,14 @@ interface TechnologyOption {
   count: number;
 }
 
-interface PriceBracketOption {
-  key: string;
-  label: string;
+interface BrandOption {
+  value: string;
   count: number;
+}
+
+interface PriceBounds {
+  min: number;
+  max: number;
 }
 
 interface Props {
@@ -33,11 +38,12 @@ interface Props {
   categories?: CategoryOption[];
   technologies: TechnologyOption[];
   energyClasses: EnergyOption[];
-  priceBrackets: PriceBracketOption[];
+  brands: BrandOption[];
+  priceBounds: PriceBounds;
   offersCount: number;
 }
 
-export default function ProductFilterSidebar({ sort, categories, technologies, energyClasses, priceBrackets, offersCount }: Props) {
+export default function ProductFilterSidebar({ sort, categories, technologies, energyClasses, brands, priceBounds, offersCount }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -63,7 +69,10 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
   const selectedCats = searchParams.get("cat")?.split(",").filter(Boolean) ?? [];
   const selectedTechnologies = searchParams.get("tehnologie")?.split(",").filter(Boolean) ?? [];
   const selectedEnergy = searchParams.get("energie")?.split(",").filter(Boolean) ?? [];
-  const selectedPrice = searchParams.get("pret");
+  const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) ?? [];
+  const priceMin = Number(searchParams.get("pretMin")) || priceBounds.min;
+  const priceMax = Number(searchParams.get("pretMax")) || priceBounds.max;
+  const priceFilterActive = searchParams.has("pretMin") || searchParams.has("pretMax");
   const offersOnly = searchParams.get("oferte") === "1";
 
   function go(params: URLSearchParams) {
@@ -86,9 +95,10 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
     go(params);
   }
 
-  function setSingleParam(key: string, value: string) {
+  function setPriceRange(min: number, max: number) {
     const params = new URLSearchParams(searchParams.toString());
-    if (params.get(key) === value) params.delete(key); else params.set(key, value);
+    if (min <= priceBounds.min) params.delete("pretMin"); else params.set("pretMin", String(Math.round(min)));
+    if (max >= priceBounds.max) params.delete("pretMax"); else params.set("pretMax", String(Math.round(max)));
     go(params);
   }
 
@@ -108,7 +118,7 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
 
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString());
-    ["cat", "tehnologie", "energie", "pret", "oferte"].forEach((k) => params.delete(k));
+    ["cat", "tehnologie", "energie", "brand", "pretMin", "pretMax", "oferte"].forEach((k) => params.delete(k));
     go(params);
   }
 
@@ -125,9 +135,20 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
   selectedEnergy.forEach((val) =>
     activeChips.push({ key: `energie-${val}`, label: `Clasa ${val}`, onRemove: () => removeListValue("energie", val) })
   );
-  if (selectedPrice) {
-    const bracket = PRICE_BRACKETS.find((b) => b.key === selectedPrice);
-    if (bracket) activeChips.push({ key: "pret", label: bracket.label, onRemove: () => removeParam("pret") });
+  selectedBrands.forEach((val) =>
+    activeChips.push({ key: `brand-${val}`, label: val, onRemove: () => removeListValue("brand", val) })
+  );
+  if (priceFilterActive) {
+    activeChips.push({
+      key: "pret",
+      label: `${Math.round(priceMin).toLocaleString("ro-MD")} - ${Math.round(priceMax).toLocaleString("ro-MD")} MDL`,
+      onRemove: () => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("pretMin");
+        params.delete("pretMax");
+        go(params);
+      },
+    });
   }
   if (offersOnly) activeChips.push({ key: "oferte", label: "Oferte speciale", onRemove: () => removeParam("oferte") });
 
@@ -139,6 +160,19 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
         <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Sortează după</p>
         <ProductSortSelect defaultValue={sort} />
       </div>
+
+      {priceBounds.max > priceBounds.min && (
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Preț</p>
+          <PriceRangeSlider
+            min={priceBounds.min}
+            max={priceBounds.max}
+            selectedMin={priceMin}
+            selectedMax={priceMax}
+            onCommit={setPriceRange}
+          />
+        </div>
+      )}
 
       {offersCount > 0 && (
         <div>
@@ -207,6 +241,28 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
         </div>
       )}
 
+      {brands.length > 0 && (
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Brand</p>
+          <div className="flex flex-col gap-2.5">
+            {brands.map((opt) => (
+              <label key={opt.value} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(opt.value)}
+                    onChange={() => toggleListParam("brand", opt.value)}
+                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
+                  />
+                  {opt.value}
+                </span>
+                <span className="text-xs text-gray-400">({opt.count})</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       {technologies.length > 0 && (
         <div>
           <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Tehnologie</p>
@@ -251,27 +307,6 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
         </div>
       )}
 
-      {priceBrackets.length > 0 && (
-        <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Preț</p>
-          <div className="flex flex-col gap-2.5">
-            {priceBrackets.map((b) => (
-              <label key={b.key} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
-                <span className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedPrice === b.key}
-                    onChange={() => setSingleParam("pret", b.key)}
-                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
-                  />
-                  {b.label}
-                </span>
-                <span className="text-xs text-gray-400">({b.count})</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 

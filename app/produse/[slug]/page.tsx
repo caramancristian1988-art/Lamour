@@ -20,7 +20,6 @@ import {
   parsePage,
   parseFilters,
   applyFilters,
-  PRICE_BRACKETS,
 } from "@/lib/productListing";
 import ProductCard from "../../components/ProductCard";
 import LoadMoreButton from "../../components/LoadMoreButton";
@@ -38,7 +37,7 @@ const allFallbackProducts = [
   ...fallbackPopularProducts,
   ...fallbackOfferProducts,
   ...fallbackDiscountProducts,
-].map((p) => ({ ...p, images: [] as string[] }));
+].map((p) => ({ ...p, images: [] as string[], brand: null as string | null }));
 
 const getCategoryData = cache(async (slug: string) => {
   try {
@@ -176,6 +175,7 @@ interface CategoryViewProps {
     image: string | null;
     btu: number | null;
     technology: string;
+    brand: string | null;
     energyClass: string | null;
     rating: number;
     reviewCount: number;
@@ -195,15 +195,19 @@ function CategoryView({ category, products: baseProducts, sort, page, filters }:
     .reverse()
     .map((value) => ({ value, count: baseProducts.filter((p) => p.energyClass === value).length }));
 
-  const priceBracketOptions = PRICE_BRACKETS.map((b) => ({
-    key: b.key,
-    label: b.label,
-    count: baseProducts.filter((p) => p.price >= b.min && p.price < b.max).length,
-  })).filter((b) => b.count > 0);
+  const priceBounds = baseProducts.reduce(
+    (acc, p) => ({ min: Math.min(acc.min, p.price), max: Math.max(acc.max, p.price) }),
+    { min: baseProducts[0]?.price ?? 0, max: baseProducts[0]?.price ?? 0 }
+  );
 
   const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology)))
     .sort()
     .map((value) => ({ value, count: baseProducts.filter((p) => p.technology === value).length }));
+
+  const brandOptions = Array.from(new Set(baseProducts.map((p) => p.brand).filter((v): v is string => Boolean(v))))
+    .sort()
+    .map((value) => ({ value, count: baseProducts.filter((p) => p.brand === value).length }));
+
   const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
 
   const sorted = sortProducts(products, sort);
@@ -271,7 +275,8 @@ function CategoryView({ category, products: baseProducts, sort, page, filters }:
               sort={sort}
               technologies={technologyOptions}
               energyClasses={energyClassOptions}
-              priceBrackets={priceBracketOptions}
+              brands={brandOptions}
+              priceBounds={priceBounds}
               offersCount={offersCount}
             />
 
@@ -312,7 +317,9 @@ function CategoryView({ category, products: baseProducts, sort, page, filters }:
                   ...(filters.offersOnly ? { oferte: "1" } : {}),
                   ...(filters.technologies.length > 0 ? { tehnologie: filters.technologies.join(",") } : {}),
                   ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),
-                  ...(filters.priceBracket ? { pret: filters.priceBracket } : {}),
+                  ...(filters.brands.length > 0 ? { brand: filters.brands.join(",") } : {}),
+                  ...(filters.priceMin !== null ? { pretMin: String(filters.priceMin) } : {}),
+                  ...(filters.priceMax !== null ? { pretMax: String(filters.priceMax) } : {}),
                 }}
               />
             </div>
