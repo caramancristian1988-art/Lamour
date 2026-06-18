@@ -7,21 +7,21 @@ import { getSectionFlags } from "@/lib/siteSettings";
 const fallbackServiciiPrincipale = [
   {
     id: "fallback-1",
-    image: "/IMG_2838.PNG",
+    image: "/IMG_2963.PNG",
     title: "Instalare condiționere",
     description: "Montaj rapid și sigur pentru apartamente, case, birouri și spații comerciale.",
     href: "/servicii/instalare",
   },
   {
     id: "fallback-2",
-    image: "/IMG_2839.PNG",
+    image: "/IMG_2968.PNG",
     title: "Mentenanță & curățare",
     description: "Curățare profesională, igienizare, încărcare freon și verificări complete.",
     href: "/servicii/mentenanta",
   },
   {
     id: "fallback-3",
-    image: "/IMG_2840.PNG",
+    image: "/IMG_2964.PNG",
     title: "Reparații",
     description: "Diagnosticare rapidă și reparații pentru orice tip de problemă.",
     href: "/servicii/diagnosticare",
@@ -31,21 +31,21 @@ const fallbackServiciiPrincipale = [
 const fallbackServiciiAvansate = [
   {
     id: "fallback-4",
-    image: "/IMG_2841.PNG",
+    image: "/IMG_2965.PNG",
     title: "Consultanță",
     description: "Te ajutăm să alegi sistemul potrivit pentru nevoile și bugetul tău.",
     href: "/servicii/consultanta",
   },
   {
     id: "fallback-5",
-    image: "/IMG_2843.PNG",
+    image: "/IMG_2966.PNG",
     title: "Sisteme multisplit",
     description: "Climatizare pentru mai multe camere cu o singură unitate exterioară.",
     href: "/servicii/multisplit",
   },
   {
     id: "fallback-6",
-    image: "/IMG_2842.PNG",
+    image: "/IMG_2967.PNG",
     title: "Sisteme comerciale HVAC",
     description: "Soluții profesionale pentru spații comerciale, birouri, hale și clădiri mari.",
     href: "/servicii/comerciale",
