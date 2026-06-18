@@ -55,7 +55,7 @@ export default function ProductCard({
   showDiscount,
 }: ProductCardProps) {
   const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
-  const displayBadge = badge ?? (discount ? `Reducere -${discount}%` : null);
+  const displayBadge = badge ?? (discount ? `-${discount}%` : null);
 
   const specs = [
     btu ? `${(btu / 1000).toFixed(0)}000 BTU` : null,
@@ -87,7 +87,7 @@ export default function ProductCard({
 
         {/* Badge */}
         {displayBadge && (
-          <span className="absolute top-2 left-2 right-11 sm:top-4 sm:left-4 sm:right-auto bg-[#c7092b] text-white text-[10px] sm:text-xs font-bold rounded-md px-2 sm:px-3 py-1 uppercase tracking-wide truncate">
+          <span className="absolute top-2 left-2 sm:top-4 sm:left-4 max-w-[calc(100%-2.75rem)] sm:max-w-[70%] bg-[#c7092b] text-white text-[10px] sm:text-xs font-bold rounded-md px-2 sm:px-3 py-1 uppercase tracking-wide truncate">
             {displayBadge}
           </span>
         )}

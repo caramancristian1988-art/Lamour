@@ -85,8 +85,8 @@ export default function StickyHeader({
             {produseEnabled && (
               <AllCategoriesMenu
                 label="Categorii"
-                className="flex-1 min-w-0"
-                buttonClassName="w-full flex items-center justify-center gap-1.5 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold px-3 h-11 rounded-xl transition-colors uppercase tracking-wide"
+                className="shrink-0"
+                buttonClassName="flex items-center justify-center gap-1.5 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold px-3 h-11 rounded-xl transition-colors uppercase tracking-wide whitespace-nowrap"
                 categories={productsDropdown}
               />
             )}
