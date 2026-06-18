@@ -181,7 +181,7 @@ export default async function DesprePage() {
               <div className="relative">
                 <div className="relative h-[220px] sm:h-[300px] lg:h-[360px] rounded-2xl overflow-hidden shadow-xl">
                   <Image
-                    src="/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png"
+                    src="/IMG_2937.PNG"
                     alt="Aparat de aer condiționat în living elegant"
                     fill
                     className="object-cover object-center"
