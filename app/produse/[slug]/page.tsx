@@ -175,7 +175,7 @@ interface CategoryViewProps {
     oldPrice: number | null;
     image: string | null;
     btu: number | null;
-    inverter: boolean;
+    technology: string;
     energyClass: string | null;
     rating: number;
     reviewCount: number;
@@ -201,7 +201,9 @@ function CategoryView({ category, products: baseProducts, sort, page, filters }:
     count: baseProducts.filter((p) => p.price >= b.min && p.price < b.max).length,
   })).filter((b) => b.count > 0);
 
-  const inverterCount = baseProducts.filter((p) => p.inverter).length;
+  const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology)))
+    .sort()
+    .map((value) => ({ value, count: baseProducts.filter((p) => p.technology === value).length }));
   const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
 
   const sorted = sortProducts(products, sort);
@@ -267,9 +269,9 @@ function CategoryView({ category, products: baseProducts, sort, page, filters }:
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
               sort={sort}
+              technologies={technologyOptions}
               energyClasses={energyClassOptions}
               priceBrackets={priceBracketOptions}
-              inverterCount={inverterCount}
               offersCount={offersCount}
             />
 
@@ -308,7 +310,7 @@ function CategoryView({ category, products: baseProducts, sort, page, filters }:
                 hasMore={hasMore}
                 extraParams={{
                   ...(filters.offersOnly ? { oferte: "1" } : {}),
-                  ...(filters.inverterOnly ? { inverter: "1" } : {}),
+                  ...(filters.technologies.length > 0 ? { tehnologie: filters.technologies.join(",") } : {}),
                   ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),
                   ...(filters.priceBracket ? { pret: filters.priceBracket } : {}),
                 }}
@@ -335,12 +337,12 @@ interface ProductViewProps {
     image: string | null;
     images?: string[];
     btu: number | null;
-    inverter: boolean;
+    technology: string;
     energyClass: string | null;
     rating: number;
     reviewCount: number;
     badge: string | null;
-    inStock: boolean;
+    availability: string;
   };
   category: { id: string; name: string; slug: string } | null;
   related: Array<{
@@ -351,7 +353,7 @@ interface ProductViewProps {
     oldPrice: number | null;
     image: string | null;
     btu: number | null;
-    inverter: boolean;
+    technology: string;
     energyClass: string | null;
     rating: number;
     reviewCount: number;
@@ -376,11 +378,12 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
 
   const specs = [
     product.btu ? { label: "Capacitate", value: `${(product.btu / 1000).toFixed(0)}000 BTU` } : null,
-    { label: "Tehnologie", value: product.inverter ? "Inverter" : "On/Off" },
+    { label: "Tehnologie", value: product.technology },
     product.energyClass ? { label: "Clasă energetică", value: product.energyClass } : null,
     category ? { label: "Categorie", value: category.name } : null,
   ].filter(Boolean) as { label: string; value: string }[];
 
+  const inStock = product.availability !== "Stoc epuizat";
   const subtitle = specs.map((s) => s.value).join(" / ");
   const galleryImages = product.images && product.images.length > 0
     ? product.images
@@ -432,7 +435,7 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
                 oldPrice: product.oldPrice,
                 image: displayImage,
                 btu: product.btu,
-                inverter: product.inverter,
+                technology: product.technology,
                 energyClass: product.energyClass,
                 rating: product.rating,
                 reviewCount: product.reviewCount,
@@ -457,9 +460,9 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
             <div className="border border-gray-100 rounded-2xl divide-y divide-gray-100 overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3.5 bg-[#f6f8fb]">
                 <span className="text-sm font-bold text-[#1d2353]">Disponibilitate</span>
-                <span className={`text-sm font-bold flex items-center gap-1.5 ${product.inStock ? "text-green-600" : "text-gray-400"}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${product.inStock ? "bg-green-500" : "bg-gray-400"}`} />
-                  {product.inStock ? "În stoc" : "Stoc epuizat"}
+                <span className={`text-sm font-bold flex items-center gap-1.5 ${inStock ? "text-green-600" : "text-gray-400"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-green-500" : "bg-gray-400"}`} />
+                  {product.availability}
                 </span>
               </div>
               {specs.map((spec) => (
@@ -502,9 +505,9 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
                   name={displayName}
                   price={product.price}
                   image={displayImage}
-                  inStock={product.inStock}
+                  inStock={inStock}
                   className={`w-full h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors mb-3 ${
-                    product.inStock
+                    inStock
                       ? "bg-[#c7092b] hover:bg-[#a5071f] text-white"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed"
                   }`}
@@ -512,7 +515,7 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  {product.inStock ? "Adaugă în coș" : "Stoc epuizat"}
+                  {inStock ? "Adaugă în coș" : "Stoc epuizat"}
                 </AddToCartButton>
                 <Link
                   href="/contact"

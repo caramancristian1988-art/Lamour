@@ -39,10 +39,10 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
       <p className="text-sm font-bold text-[#1d2353] shrink-0">{product.price.toLocaleString("ro-MD")} MDL</p>
       <span
         className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shrink-0 ${
-          product.inStock ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+          product.availability === "Stoc epuizat" ? "bg-gray-100 text-gray-500" : "bg-green-100 text-green-700"
         }`}
       >
-        {product.inStock ? "În stoc" : "Stoc epuizat"}
+        {product.availability}
       </span>
       <div className="flex items-center gap-1 shrink-0">
         <Link

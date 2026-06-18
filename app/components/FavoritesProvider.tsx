@@ -9,7 +9,7 @@ export interface FavoriteItem {
   oldPrice?: number | null;
   image?: string | null;
   btu?: number | null;
-  inverter?: boolean;
+  technology?: string | null;
   energyClass?: string | null;
   rating: number;
   reviewCount: number;

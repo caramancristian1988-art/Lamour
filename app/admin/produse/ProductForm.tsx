@@ -23,10 +23,10 @@ interface ProductDefaults {
   image?: string | null;
   images?: string[];
   btu?: number | null;
-  inverter?: boolean;
+  technology?: string;
   energyClass?: string | null;
   badge?: string | null;
-  inStock?: boolean;
+  availability?: string;
   categoryId?: string;
 }
 
@@ -56,6 +56,18 @@ export default function ProductForm({
     defaults?.badge && !defaultBadges.includes(defaults.badge)
       ? [...defaultBadges, defaults.badge]
       : defaultBadges;
+
+  const defaultTechnologies = ["Inverter", "On/Off"];
+  const technologyOptions =
+    defaults?.technology && !defaultTechnologies.includes(defaults.technology)
+      ? [...defaultTechnologies, defaults.technology]
+      : defaultTechnologies;
+
+  const defaultAvailabilities = ["În stoc", "Stoc epuizat", "La comandă"];
+  const availabilityOptions =
+    defaults?.availability && !defaultAvailabilities.includes(defaults.availability)
+      ? [...defaultAvailabilities, defaults.availability]
+      : defaultAvailabilities;
 
   return (
     <form action={formAction} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4 max-w-2xl">
@@ -124,15 +136,27 @@ export default function ProductForm({
         onDelete={async () => {}}
       />
 
-      <div className="flex items-center gap-6">
-        <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
-          <input type="checkbox" name="inverter" defaultChecked={defaults?.inverter ?? false} className="w-4 h-4 accent-[#c7092b]" />
-          Inverter
-        </label>
-        <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
-          <input type="checkbox" name="inStock" defaultChecked={defaults?.inStock ?? true} className="w-4 h-4 accent-[#c7092b]" />
-          În stoc
-        </label>
+      <div className="grid grid-cols-2 gap-4">
+        <ManagedSelect
+          name="technology"
+          label="Tehnologie"
+          defaultOptions={technologyOptions.map((value) => ({ value, label: value }))}
+          defaultValue={defaults?.technology ?? "On/Off"}
+          addPlaceholder="ex: Dual Inverter"
+          deleteConfirmText="Sigur vrei să ștergi această tehnologie din listă?"
+          onAdd={async (label) => ({ option: { value: label, label } })}
+          onDelete={async () => {}}
+        />
+        <ManagedSelect
+          name="availability"
+          label="Disponibilitate"
+          defaultOptions={availabilityOptions.map((value) => ({ value, label: value }))}
+          defaultValue={defaults?.availability ?? "În stoc"}
+          addPlaceholder="ex: La comandă"
+          deleteConfirmText="Sigur vrei să ștergi această opțiune de disponibilitate?"
+          onAdd={async (label) => ({ option: { value: label, label } })}
+          onDelete={async () => {}}
+        />
       </div>
 
       <button

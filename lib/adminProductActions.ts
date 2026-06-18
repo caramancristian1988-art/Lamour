@@ -25,10 +25,10 @@ function readProductFields(formData: FormData) {
   const image = String(formData.get("image") ?? "").trim() || null;
   const images = parseImageLines(formData);
   const btuRaw = String(formData.get("btu") ?? "").trim();
-  const inverter = formData.get("inverter") === "on";
+  const technology = String(formData.get("technology") ?? "").trim() || "On/Off";
   const energyClass = String(formData.get("energyClass") ?? "").trim() || null;
   const badge = String(formData.get("badge") ?? "").trim() || null;
-  const inStock = formData.get("inStock") === "on";
+  const availability = String(formData.get("availability") ?? "").trim() || "În stoc";
   const categoryId = String(formData.get("categoryId") ?? "").trim();
 
   return {
@@ -40,10 +40,10 @@ function readProductFields(formData: FormData) {
     image,
     images,
     btu: btuRaw ? Number(btuRaw) : null,
-    inverter,
+    technology,
     energyClass,
     badge,
-    inStock,
+    availability,
     categoryId,
   };
 }

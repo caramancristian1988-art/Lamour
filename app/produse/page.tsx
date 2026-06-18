@@ -51,12 +51,12 @@ interface ProductRow {
   oldPrice: number | null;
   image: string | null;
   btu: number | null;
-  inverter: boolean;
+  technology: string;
   energyClass: string | null;
   rating: number;
   reviewCount: number;
   badge: string | null;
-  inStock: boolean;
+  availability: string;
   categoryId: string;
   createdAt: Date;
 }
@@ -124,7 +124,9 @@ export default async function ProdusePage({
     count: baseProducts.filter((p) => p.price >= b.min && p.price < b.max).length,
   })).filter((b) => b.count > 0);
 
-  const inverterCount = baseProducts.filter((p) => p.inverter).length;
+  const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology)))
+    .sort()
+    .map((value) => ({ value, count: baseProducts.filter((p) => p.technology === value).length }));
   const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
 
   const sorted = sortProducts(products, sort);
@@ -192,9 +194,9 @@ export default async function ProdusePage({
             <ProductFilterSidebar
               sort={sort}
               categories={categoryOptions}
+              technologies={technologyOptions}
               energyClasses={energyClassOptions}
               priceBrackets={priceBracketOptions}
-              inverterCount={inverterCount}
               offersCount={offersCount}
             />
 
@@ -241,7 +243,7 @@ export default async function ProdusePage({
                   ...(filters.query ? { q: filters.query } : {}),
                   ...(filters.offersOnly ? { oferte: "1" } : {}),
                   ...(filters.categorySlugs.length > 0 ? { cat: filters.categorySlugs.join(",") } : {}),
-                  ...(filters.inverterOnly ? { inverter: "1" } : {}),
+                  ...(filters.technologies.length > 0 ? { tehnologie: filters.technologies.join(",") } : {}),
                   ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),
                   ...(filters.priceBracket ? { pret: filters.priceBracket } : {}),
                 }}

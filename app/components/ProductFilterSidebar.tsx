@@ -17,6 +17,11 @@ interface EnergyOption {
   count: number;
 }
 
+interface TechnologyOption {
+  value: string;
+  count: number;
+}
+
 interface PriceBracketOption {
   key: string;
   label: string;
@@ -26,13 +31,13 @@ interface PriceBracketOption {
 interface Props {
   sort: SortKey;
   categories?: CategoryOption[];
+  technologies: TechnologyOption[];
   energyClasses: EnergyOption[];
   priceBrackets: PriceBracketOption[];
-  inverterCount: number;
   offersCount: number;
 }
 
-export default function ProductFilterSidebar({ sort, categories, energyClasses, priceBrackets, inverterCount, offersCount }: Props) {
+export default function ProductFilterSidebar({ sort, categories, technologies, energyClasses, priceBrackets, offersCount }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -56,7 +61,7 @@ export default function ProductFilterSidebar({ sort, categories, energyClasses, 
   }, [mobileOpen, drawerMounted]);
 
   const selectedCats = searchParams.get("cat")?.split(",").filter(Boolean) ?? [];
-  const inverterOnly = searchParams.get("inverter") === "1";
+  const selectedTechnologies = searchParams.get("tehnologie")?.split(",").filter(Boolean) ?? [];
   const selectedEnergy = searchParams.get("energie")?.split(",").filter(Boolean) ?? [];
   const selectedPrice = searchParams.get("pret");
   const offersOnly = searchParams.get("oferte") === "1";
@@ -103,7 +108,7 @@ export default function ProductFilterSidebar({ sort, categories, energyClasses, 
 
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString());
-    ["cat", "inverter", "energie", "pret", "oferte"].forEach((k) => params.delete(k));
+    ["cat", "tehnologie", "energie", "pret", "oferte"].forEach((k) => params.delete(k));
     go(params);
   }
 
@@ -114,7 +119,9 @@ export default function ProductFilterSidebar({ sort, categories, energyClasses, 
       if (cat) activeChips.push({ key: `cat-${slug}`, label: cat.name, onRemove: () => removeListValue("cat", slug) });
     });
   }
-  if (inverterOnly) activeChips.push({ key: "inverter", label: "Inverter", onRemove: () => removeParam("inverter") });
+  selectedTechnologies.forEach((val) =>
+    activeChips.push({ key: `tehnologie-${val}`, label: val, onRemove: () => removeListValue("tehnologie", val) })
+  );
   selectedEnergy.forEach((val) =>
     activeChips.push({ key: `energie-${val}`, label: `Clasa ${val}`, onRemove: () => removeListValue("energie", val) })
   );
@@ -200,21 +207,25 @@ export default function ProductFilterSidebar({ sort, categories, energyClasses, 
         </div>
       )}
 
-      {inverterCount > 0 && (
+      {technologies.length > 0 && (
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Tip</p>
-          <label className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
-            <span className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={inverterOnly}
-                onChange={() => toggleBoolParam("inverter")}
-                className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
-              />
-              Inverter
-            </span>
-            <span className="text-xs text-gray-400">({inverterCount})</span>
-          </label>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Tehnologie</p>
+          <div className="flex flex-col gap-2.5">
+            {technologies.map((opt) => (
+              <label key={opt.value} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
+                <span className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedTechnologies.includes(opt.value)}
+                    onChange={() => toggleListParam("tehnologie", opt.value)}
+                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
+                  />
+                  {opt.value}
+                </span>
+                <span className="text-xs text-gray-400">({opt.count})</span>
+              </label>
+            ))}
+          </div>
         </div>
       )}
 

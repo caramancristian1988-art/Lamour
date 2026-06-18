@@ -61,7 +61,7 @@ function parseList(value: string | string[] | undefined): string[] {
 
 export interface ProductFilters {
   categorySlugs: string[];
-  inverterOnly: boolean;
+  technologies: string[];
   energyClasses: string[];
   priceBracket: string | null;
   offersOnly: boolean;
@@ -73,7 +73,7 @@ export function parseFilters(query: { [key: string]: string | string[] | undefin
   const q = Array.isArray(query.q) ? query.q[0] : query.q;
   return {
     categorySlugs: parseList(query.cat),
-    inverterOnly: query.inverter === "1",
+    technologies: parseList(query.tehnologie),
     energyClasses: parseList(query.energie),
     priceBracket: PRICE_BRACKETS.some((b) => b.key === priceBracket) ? priceBracket! : null,
     offersOnly: query.oferte === "1",
@@ -84,7 +84,7 @@ export function parseFilters(query: { [key: string]: string | string[] | undefin
 interface FilterableProduct {
   name: string;
   price: number;
-  inverter: boolean;
+  technology: string;
   energyClass: string | null;
   oldPrice: number | null;
 }
@@ -163,8 +163,8 @@ export function applyFilters<T extends FilterableProduct>(
   if (filters.categorySlugs.length > 0 && getCategorySlug) {
     result = result.filter((p) => filters.categorySlugs.includes(getCategorySlug(p)));
   }
-  if (filters.inverterOnly) {
-    result = result.filter((p) => p.inverter);
+  if (filters.technologies.length > 0) {
+    result = result.filter((p) => filters.technologies.includes(p.technology));
   }
   if (filters.energyClasses.length > 0) {
     result = result.filter((p) => p.energyClass && filters.energyClasses.includes(p.energyClass));
@@ -183,7 +183,7 @@ export function applyFilters<T extends FilterableProduct>(
 export function hasActiveFilters(filters: ProductFilters): boolean {
   return (
     filters.categorySlugs.length > 0 ||
-    filters.inverterOnly ||
+    filters.technologies.length > 0 ||
     filters.energyClasses.length > 0 ||
     filters.priceBracket !== null ||
     filters.offersOnly ||

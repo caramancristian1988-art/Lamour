@@ -10,7 +10,7 @@ interface Product {
   oldPrice: number | null;
   image: string | null;
   btu: number | null;
-  inverter: boolean;
+  technology: string;
   energyClass: string | null;
   rating: number;
   reviewCount: number;

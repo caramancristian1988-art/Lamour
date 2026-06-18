@@ -12,7 +12,7 @@ interface ProductCardProps {
   oldPrice?: number | null;
   image?: string | null;
   btu?: number | null;
-  inverter?: boolean;
+  technology?: string | null;
   energyClass?: string | null;
   rating: number;
   reviewCount: number;
@@ -47,7 +47,7 @@ export default function ProductCard({
   oldPrice,
   image,
   btu,
-  inverter,
+  technology,
   energyClass,
   rating,
   reviewCount,
@@ -59,7 +59,7 @@ export default function ProductCard({
 
   const specs = [
     btu ? `${(btu / 1000).toFixed(0)}000 BTU` : null,
-    inverter ? "Inverter" : null,
+    technology || null,
     energyClass ? `Clasa ${energyClass}` : null,
   ]
     .filter(Boolean)
@@ -95,7 +95,7 @@ export default function ProductCard({
         {/* Favorite */}
         <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
           <FavoriteButton
-            product={{ slug, name, price, oldPrice, image, btu, inverter, energyClass, rating, reviewCount, badge }}
+            product={{ slug, name, price, oldPrice, image, btu, technology, energyClass, rating, reviewCount, badge }}
           />
         </div>
 

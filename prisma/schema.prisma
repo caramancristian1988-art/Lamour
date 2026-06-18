@@ -27,12 +27,12 @@ model Product {
   image       String?
   images      String[] @default([])
   btu         Int?
-  inverter    Boolean  @default(false)
+  technology  String   @default("On/Off")
   energyClass String?
   rating      Float    @default(0)
   reviewCount Int      @default(0)
   badge       String?
-  inStock     Boolean  @default(true)
+  availability String  @default("În stoc")
   categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])
   createdAt   DateTime @default(now())
