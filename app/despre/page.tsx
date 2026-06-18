@@ -172,53 +172,6 @@ export default async function DesprePage() {
           </div>
         </section>
 
-        {/* ── POVESTEA NOASTRĂ ── */}
-        <section className="py-10 lg:py-14 bg-white border-t border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center">
-
-              {/* LEFT: Image */}
-              <div className="relative">
-                <div className="relative h-[220px] sm:h-[300px] lg:h-[360px] rounded-2xl overflow-hidden shadow-xl">
-                  <Image
-                    src="/IMG_2937.PNG"
-                    alt="Aparat de aer condiționat în living elegant"
-                    fill
-                    className="object-cover object-center"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                </div>
-              </div>
-
-              {/* RIGHT: Text */}
-              <div>
-                <p className="text-[#c7092b] text-[11px] font-extrabold tracking-widest uppercase mb-3">
-                  Povestea noastră
-                </p>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1d2353] leading-tight mb-6">
-                  Experiență, încredere și dedicare{" "}
-                  <span className="text-[#c7092b]">din 2014</span>
-                </h2>
-                <div className="space-y-4 text-gray-600 text-[15px] leading-relaxed">
-                  <p>
-                    Climat Rapid a apărut din dorința de a oferi clienților soluții de
-                    climatizare eficiente, fiabile și accesibile.
-                  </p>
-                  <p>
-                    De peste 10 ani, am crescut alături de clienții noștri și am
-                    dezvoltat parteneriate solide cu branduri internaționale de top.
-                  </p>
-                  <p>
-                    Fiecare proiect este tratat cu responsabilitate, iar fiecare client
-                    este un partener pe termen lung.
-                  </p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
         {/* ── STATISTICI ── */}
         <section className="bg-[#f8fafc] py-8 border-y border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">

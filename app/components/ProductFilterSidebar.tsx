@@ -313,7 +313,7 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
   return (
     <>
       {/* Mobile trigger */}
-      <div className="lg:hidden mb-5">
+      <div className="lg:hidden mb-3">
         <button
           onClick={openDrawer}
           className="flex items-center gap-2 text-xs font-bold border border-gray-200 rounded-full px-4 py-2.5 text-[#1d2353] transition-transform active:scale-95"

@@ -9,12 +9,12 @@ export const localProductImages: Record<string, string> = {
 };
 
 export const localProductBadges: Record<string, string> = {
-  "daikin-sensira-ftxf35e": "Eficiență A++",
-  "gree-pular-gwh12agc": "Eficiență A++",
-  "sistem-multisplit-midea-2-camere": "Eficiență A++",
-  "sisteme-multisplit-midea-2-camere": "Eficiență A++",
-  "midea-multisplit-2-camere": "Eficiență A++",
-  "mitsubishi-electric-msz-hr35vf": "Eficiență A++",
+  "daikin-sensira-ftxf35e": "A++",
+  "gree-pular-gwh12agc": "A++",
+  "sistem-multisplit-midea-2-camere": "A++",
+  "sisteme-multisplit-midea-2-camere": "A++",
+  "midea-multisplit-2-camere": "A++",
+  "mitsubishi-electric-msz-hr35vf": "A++",
 };
 
 export const localProductNames: Record<string, string> = {

@@ -54,7 +54,7 @@ export default function ProductForm({
       ? [...defaultEnergyClasses, defaults.energyClass]
       : defaultEnergyClasses;
 
-  const defaultBadges = ["Eficiență A++", "Nou", "Reducere", "Cel mai vândut"];
+  const defaultBadges = ["A++", "Nou", "Reducere", "Cel mai vândut"];
   const badgeOptions =
     defaults?.badge && !defaultBadges.includes(defaults.badge)
       ? [...defaultBadges, defaults.badge]

@@ -138,20 +138,19 @@ export default async function ProdusePage({
   return (
     <main className="bg-white">
 
-      {/* Breadcrumb + title */}
+      {/* Breadcrumb */}
       <section className="bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-2">
-          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-1">
+          <nav className="flex items-center gap-1.5 text-xs text-gray-400">
             <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
             <span>›</span>
             <span className="text-gray-600">Produse</span>
           </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1d2353]">Produse</h1>
         </div>
       </section>
 
       {/* ── PRODUCTS GRID ── */}
-      <section className="bg-white py-10">
+      <section className="bg-white pt-2 pb-10 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
@@ -166,11 +165,11 @@ export default async function ProdusePage({
 
             <div className="flex-1 min-w-0">
               {filters.query ? (
-                <p className="text-sm text-gray-500 mb-6">
+                <p className="text-sm text-gray-500 mb-3 sm:mb-6">
                   {products.length} rezultate pentru <span className="font-bold text-[#1d2353]">&ldquo;{filters.query}&rdquo;</span>
                 </p>
               ) : (
-                <p className="text-sm text-gray-400 mb-6">{products.length} produse găsite</p>
+                <p className="text-sm text-gray-400 mb-3 sm:mb-6">{products.length} produse găsite</p>
               )}
 
               {items.length > 0 ? (

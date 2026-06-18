@@ -70,7 +70,7 @@ async function main() {
       energyClass: "A++",
       rating: 4.8,
       reviewCount: 24,
-      badge: "Eficiență A++",
+      badge: "A++",
       categoryId: residential.id,
     },
   });
