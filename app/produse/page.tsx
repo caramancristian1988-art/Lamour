@@ -31,6 +31,12 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
+const KNOWN_BRANDS = [
+  "Daikin", "Mitsubishi Electric", "Gree", "Midea", "Cooper&Hunter", "Electrolux",
+  "LG", "Samsung", "Haier", "Panasonic", "Fujitsu", "Hitachi", "Carrier", "Trane",
+  "Bosch", "Toshiba", "Ariston", "Hisense", "Whirlpool", "Sharp",
+];
+
 interface CategoryRow {
   id: string;
   name: string;
@@ -126,9 +132,23 @@ export default async function ProdusePage({
     .sort()
     .map((value) => ({ value, count: baseProducts.filter((p) => p.technology === value).length }));
 
+  // Brand counts are "optimistic": computed against every other active filter
+  // except the brand filter itself, so picking one brand doesn't hide the rest.
+  const productsForBrandFacet = applyFilters(
+    baseProducts,
+    { ...filters, brands: [] },
+    (p) => categoryById.get(p.categoryId) ?? "",
+    (p) => categoryNameById.get(p.categoryId) ?? ""
+  );
   const brandOptions = Array.from(new Set(baseProducts.map((p) => p.brand).filter((v): v is string => Boolean(v))))
-    .sort()
-    .map((value) => ({ value, count: baseProducts.filter((p) => p.brand === value).length }));
+    .map((value) => ({ value, count: productsForBrandFacet.filter((p) => p.brand === value).length }))
+    .filter((opt) => opt.count > 0)
+    .sort((a, b) => {
+      const aKnown = KNOWN_BRANDS.includes(a.value);
+      const bKnown = KNOWN_BRANDS.includes(b.value);
+      if (aKnown !== bKnown) return aKnown ? -1 : 1;
+      return a.value.localeCompare(b.value);
+    });
 
   const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
 

@@ -164,13 +164,22 @@ export default function MobileMenuButton({
                     style={{ transitionDelay: open ? "75ms" : "0ms" }}
                     className={`transition-all duration-300 ease-out ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}
                   >
-                    <button
-                      onClick={() => setProduseOpen((v) => !v)}
-                      className="w-full flex items-center justify-between px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
-                    >
-                      Produse
-                      <ChevronIcon open={produseOpen} />
-                    </button>
+                    <div className="flex items-center rounded-lg hover:bg-gray-50 transition-colors">
+                      <Link
+                        href="/produse"
+                        onClick={closeMenu}
+                        className="flex-1 px-3 py-3.5 text-[#1d2353] hover:text-[#c7092b] transition-colors text-[15px] font-bold"
+                      >
+                        Produse
+                      </Link>
+                      <button
+                        onClick={() => setProduseOpen((v) => !v)}
+                        aria-label="Arată categoriile de produse"
+                        className="px-3 py-3.5 text-[#1d2353] hover:text-[#c7092b] transition-colors"
+                      >
+                        <ChevronIcon open={produseOpen} />
+                      </button>
+                    </div>
                     <div className={`overflow-hidden transition-all duration-200 ${produseOpen ? "max-h-96" : "max-h-0"}`}>
                       <div className="flex flex-col pb-1">
                         {productsDropdown.map((item) => (
@@ -193,13 +202,22 @@ export default function MobileMenuButton({
                     style={{ transitionDelay: open ? "110ms" : "0ms" }}
                     className={`transition-all duration-300 ease-out ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"}`}
                   >
-                    <button
-                      onClick={() => setServiciiOpen((v) => !v)}
-                      className="w-full flex items-center justify-between px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-colors text-[15px] font-bold"
-                    >
-                      Servicii
-                      <ChevronIcon open={serviciiOpen} />
-                    </button>
+                    <div className="flex items-center rounded-lg hover:bg-gray-50 transition-colors">
+                      <Link
+                        href="/servicii"
+                        onClick={closeMenu}
+                        className="flex-1 px-3 py-3.5 text-[#1d2353] hover:text-[#c7092b] transition-colors text-[15px] font-bold"
+                      >
+                        Servicii
+                      </Link>
+                      <button
+                        onClick={() => setServiciiOpen((v) => !v)}
+                        aria-label="Arată categoriile de servicii"
+                        className="px-3 py-3.5 text-[#1d2353] hover:text-[#c7092b] transition-colors"
+                      >
+                        <ChevronIcon open={serviciiOpen} />
+                      </button>
+                    </div>
                     <div className={`overflow-hidden transition-all duration-200 ${serviciiOpen ? "max-h-96" : "max-h-0"}`}>
                       <div className="flex flex-col pb-1">
                         {servicesDropdown.map((item) => (
