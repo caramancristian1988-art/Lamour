@@ -69,6 +69,20 @@ export default async function AdminRecenziiPage() {
                       <p className="font-bold text-sm text-[#1d2353]">{r.name}</p>
                       <StarRating rating={r.rating} />
                       <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{r.text}</p>
+                      {(r.pros || r.cons) && (
+                        <div className="mt-2 flex flex-col gap-1">
+                          {r.pros && (
+                            <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-2.5 py-1.5">
+                              <span className="font-bold">+ Plusuri:</span> {r.pros}
+                            </p>
+                          )}
+                          {r.cons && (
+                            <p className="text-xs text-[#c7092b] bg-red-50 rounded-lg px-2.5 py-1.5">
+                              <span className="font-bold">− Minusuri:</span> {r.cons}
+                            </p>
+                          )}
+                        </div>
+                      )}
                       {r.product && <p className="text-xs text-gray-400 mt-1">Produs: {r.product}</p>}
                       <div className="flex items-center gap-2 mt-3">
                         <form action={approveReviewAction}>
@@ -117,6 +131,20 @@ export default async function AdminRecenziiPage() {
                       </div>
                       <StarRating rating={r.rating} />
                       <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{r.text}</p>
+                      {(r.pros || r.cons) && (
+                        <div className="mt-2 flex flex-col gap-1">
+                          {r.pros && (
+                            <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-2.5 py-1.5">
+                              <span className="font-bold">+ Plusuri:</span> {r.pros}
+                            </p>
+                          )}
+                          {r.cons && (
+                            <p className="text-xs text-[#c7092b] bg-red-50 rounded-lg px-2.5 py-1.5">
+                              <span className="font-bold">− Minusuri:</span> {r.cons}
+                            </p>
+                          )}
+                        </div>
+                      )}
                       {r.product && <p className="text-xs text-gray-400 mt-1">Produs: {r.product}</p>}
                     </div>
                   </div>
