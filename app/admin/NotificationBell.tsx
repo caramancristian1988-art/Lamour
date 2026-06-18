@@ -41,16 +41,38 @@ export default function NotificationBell({
   align = "right",
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const total = unreadMessages + pendingReviews;
+
+  function openDropdown() {
+    setMounted(true);
+    requestAnimationFrame(() => requestAnimationFrame(() => setOpen(true)));
+  }
+
+  function closeDropdown() {
+    setOpen(false);
+  }
+
+  function toggleDropdown() {
+    if (open) closeDropdown();
+    else openDropdown();
+  }
+
+  useEffect(() => {
+    if (!open && mounted) {
+      const timeout = setTimeout(() => setMounted(false), 150);
+      return () => clearTimeout(timeout);
+    }
+  }, [open, mounted]);
 
   useEffect(() => {
     if (!open) return;
     function onClickOutside(e: MouseEvent) {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) closeDropdown();
     }
     function onEscape(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") closeDropdown();
     }
     document.addEventListener("mousedown", onClickOutside);
     document.addEventListener("keydown", onEscape);
@@ -65,22 +87,37 @@ export default function NotificationBell({
 
   return (
     <div ref={rootRef} className="relative shrink-0">
-      <button onClick={() => setOpen((v) => !v)} aria-label="Notificări" className={`relative p-1.5 ${iconColor} hover:text-white transition-colors`}>
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <button
+        onClick={toggleDropdown}
+        aria-label="Notificări"
+        className={`relative p-1.5 ${iconColor} hover:text-white transition-all active:scale-90`}
+      >
+        <svg
+          className={`w-5 h-5 transition-transform duration-300 ${total > 0 && !open ? "animate-[bell-ring_4s_ease-in-out_infinite]" : ""} ${
+            open ? "rotate-12" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          viewBox="0 0 24 24"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.85 23.85 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
         </svg>
         {total > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 bg-[#c7092b] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+          <span
+            key={total}
+            className="absolute -top-0.5 -right-0.5 bg-[#c7092b] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bump"
+          >
             {total > 9 ? "9+" : total}
           </span>
         )}
       </button>
 
-      {open && (
+      {mounted && (
         <div
-          className={`absolute top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 max-h-[70vh] overflow-y-auto ${
+          className={`absolute top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 max-h-[70vh] overflow-y-auto origin-top transition-all duration-150 ease-out ${
             align === "left" ? "left-0" : "right-0"
-          }`}
+          } ${open ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
         >
           {!hasAny ? (
             <p className="text-sm text-gray-400 text-center py-8">Nicio notificare nouă.</p>
