@@ -80,14 +80,22 @@ export default async function DesprePage() {
               </div>
 
               {/* RIGHT: Image */}
-              <div className="relative w-full -mt-6 lg:mt-0 rounded-t-3xl lg:rounded-none overflow-hidden lg:h-full lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-[52%]" style={{ aspectRatio: "1719/915" }}>
+              <div className="relative z-20 w-full -mt-20 lg:mt-0 rounded-3xl lg:rounded-none overflow-hidden shadow-2xl lg:shadow-none lg:h-full lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-[52%]" style={{ aspectRatio: "1719/915" }}>
+                <Image
+                  src="/IMG_2935.PNG"
+                  alt="Sediul Climat Rapid"
+                  fill
+                  className="object-cover object-center lg:hidden"
+                  priority
+                  sizes="100vw"
+                />
                 <Image
                   src="/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png"
                   alt="Sediul Climat Rapid"
                   fill
-                  className="object-cover object-center lg:object-[center_40%]"
+                  className="hidden lg:block object-cover object-[center_40%]"
                   priority
-                  sizes="(max-width: 1024px) 100vw, 52vw"
+                  sizes="52vw"
                 />
                 {/* Top fade — soft white-to-photo gradient under the overlapping text */}
                 <div
