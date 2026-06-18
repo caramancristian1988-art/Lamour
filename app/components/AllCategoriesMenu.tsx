@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 export interface CategoryLink {
   id: string;
@@ -19,14 +18,52 @@ const fallbackCategories: CategoryLink[] = [
   { id: "accesorii-consumabile", slug: "accesorii-consumabile", name: "Accesorii și consumabile", image: null },
 ];
 
-const servicesDropdown = [
-  { href: "/servicii/instalare", label: "Instalare" },
-  { href: "/servicii/mentenanta", label: "Mentenanță" },
-  { href: "/servicii/diagnosticare", label: "Diagnosticare & Reparații" },
-  { href: "/servicii/consultanta", label: "Consultanță" },
-  { href: "/servicii/multisplit", label: "Sisteme multisplit" },
-  { href: "/servicii/comerciale", label: "Sisteme comerciale HVAC" },
-];
+function CategoryIcon({ slug }: { slug: string }) {
+  switch (slug) {
+    case "conditioane-rezidentiale":
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="6" rx="1.5" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 14v2M11 14v2M15 14v3M7 19h10" />
+        </svg>
+      );
+    case "conditioane-comerciale":
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 11h.01M9 15h.01M15 11h.01M15 15h.01" />
+        </svg>
+      );
+    case "sisteme-multisplit":
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+      );
+    case "conditioane-portabile":
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+          <rect x="3" y="7" width="18" height="13" rx="2" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M7 12h2m6 0h2" />
+        </svg>
+      );
+    case "accesorii-consumabile":
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M14.7 6.3a1 1 0 000-1.4l-2.6-2.6a1 1 0 00-1.4 0L9.3 3.7l4 4 1.4-1.4zM7.9 5.1L2 11v4h4l5.9-5.9-4-4zM17 17l4 4" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+          <rect x="3" y="6" width="18" height="13" rx="2" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+        </svg>
+      );
+  }
+}
 
 interface Props {
   className?: string;
@@ -105,30 +142,10 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors"
               >
-                <span className="relative w-8 h-8 rounded-lg bg-[#f6f8fb] overflow-hidden shrink-0">
-                  {item.image ? (
-                    <Image src={item.image} alt="" fill className="object-cover" />
-                  ) : (
-                    <svg className="w-4 h-4 text-gray-300 absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20 8H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2zM4 6h16V4H4v2z" />
-                    </svg>
-                  )}
+                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#f6f8fb] text-[#c7092b] shrink-0">
+                  <CategoryIcon slug={item.slug} />
                 </span>
                 {item.name}
-              </Link>
-            ))}
-
-            <div className="my-2 border-t border-gray-100" />
-
-            <p className="px-4 pt-1.5 pb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wide">Servicii</p>
-            {servicesDropdown.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors"
-              >
-                {item.label}
               </Link>
             ))}
           </div>
