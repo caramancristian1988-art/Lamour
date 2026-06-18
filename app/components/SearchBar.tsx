@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SearchBar() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
 
   return (
@@ -10,7 +12,7 @@ export default function SearchBar() {
       onSubmit={(e) => {
         e.preventDefault();
         if (query.trim()) {
-          window.location.href = `/produse?q=${encodeURIComponent(query)}`;
+          router.push(`/produse?q=${encodeURIComponent(query)}`);
         }
       }}
       className="w-full"
