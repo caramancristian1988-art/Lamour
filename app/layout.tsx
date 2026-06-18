@@ -9,6 +9,16 @@ import { CartProvider } from "./components/CartProvider";
 import { AuthProvider } from "./components/AuthProvider";
 import { AuthModalProvider } from "./components/AuthModalProvider";
 import AuthModal from "./components/AuthModal";
+import { prisma } from "@/lib/prisma";
+
+async function getProiecteEnabled() {
+  try {
+    const settings = await prisma.settings.findFirst();
+    return settings?.proiecteEnabled ?? false;
+  } catch {
+    return false;
+  }
+}
 
 export const metadata: Metadata = {
   title: "Climat Rapid — Condiționere & Climatizare Moldova",
@@ -25,11 +35,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const proiecteEnabled = await getProiecteEnabled();
+
   return (
     <html lang="ro" className={GeistSans.variable}>
       <body className="min-h-screen flex flex-col">
@@ -40,7 +52,7 @@ export default function RootLayout({
                 <Suspense fallback={null}>
                   <ScrollToTop />
                 </Suspense>
-                <SiteHeader />
+                <SiteHeader proiecteEnabled={proiecteEnabled} />
                 {children}
                 <SiteFooter />
                 <AuthModal />

@@ -5,14 +5,14 @@ import TopBar from "./TopBar";
 import ScrollAwareHeader from "./ScrollAwareHeader";
 import Footer from "./Footer";
 
-export function SiteHeader() {
+export function SiteHeader({ proiecteEnabled = true }: { proiecteEnabled?: boolean }) {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>
       <TopBar />
-      <ScrollAwareHeader />
+      <ScrollAwareHeader proiecteEnabled={proiecteEnabled} />
     </>
   );
 }

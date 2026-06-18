@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
@@ -18,7 +19,18 @@ async function getProjects() {
   }
 }
 
+async function isProiecteEnabled() {
+  try {
+    const settings = await prisma.settings.findFirst();
+    return settings?.proiecteEnabled ?? false;
+  } catch {
+    return false;
+  }
+}
+
 export default async function ProiectePage() {
+  if (!(await isProiecteEnabled())) notFound();
+
   const projects = await getProjects();
 
   return (

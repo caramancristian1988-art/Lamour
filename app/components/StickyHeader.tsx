@@ -24,7 +24,7 @@ const servicesDropdown = [
   { href: "/servicii/comerciale", label: "Sisteme comerciale HVAC" },
 ];
 
-export default function StickyHeader() {
+export default function StickyHeader({ proiecteEnabled = true }: { proiecteEnabled?: boolean }) {
   return (
     <div id="site-header" className="bg-white relative z-40">
 
@@ -61,7 +61,7 @@ export default function StickyHeader() {
                 </svg>
                 <CartBadge className="absolute -top-2 -right-2 w-4 h-4 bg-[#c7092b] rounded-full text-white text-[9px] font-bold flex items-center justify-center" />
               </Link>
-              <MobileMenuButton />
+              <MobileMenuButton proiecteEnabled={proiecteEnabled} />
             </div>
           </div>
           <div className="px-4 pb-3">
@@ -152,7 +152,9 @@ export default function StickyHeader() {
             </div>
           </div>
 
-          <Link href="/proiecte" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Proiecte</Link>
+          {proiecteEnabled && (
+            <Link href="/proiecte" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Proiecte</Link>
+          )}
           <Link href="/despre" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Despre noi</Link>
           <Link href="/blog" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Blog</Link>
           <Link href="/contact" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Contact</Link>

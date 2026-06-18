@@ -20,7 +20,7 @@ const servicesDropdown = [
   { href: "/servicii/comerciale", label: "Sisteme comerciale HVAC" },
 ];
 
-const navLinks = [
+const baseNavLinks = [
   { href: "/proiecte", label: "Proiecte" },
   { href: "/despre", label: "Despre noi" },
   { href: "/blog", label: "Blog" },
@@ -41,7 +41,8 @@ function ChevronIcon({ open }: { open: boolean }) {
   );
 }
 
-export default function MobileMenuButton() {
+export default function MobileMenuButton({ proiecteEnabled = true }: { proiecteEnabled?: boolean }) {
+  const navLinks = proiecteEnabled ? baseNavLinks : baseNavLinks.filter((l) => l.href !== "/proiecte");
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [produseOpen, setProduseOpen] = useState(false);

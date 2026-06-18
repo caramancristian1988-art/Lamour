@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import StickyHeader from "./StickyHeader";
 
-export default function ScrollAwareHeader() {
+export default function ScrollAwareHeader({ proiecteEnabled = true }: { proiecteEnabled?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -34,7 +34,7 @@ export default function ScrollAwareHeader() {
             : "static z-40"
         }
       >
-        <StickyHeader />
+        <StickyHeader proiecteEnabled={proiecteEnabled} />
       </div>
 
       {/* Spacer keeps layout stable when header becomes fixed */}

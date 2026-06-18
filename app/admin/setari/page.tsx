@@ -46,6 +46,22 @@ export default async function AdminSetariPage() {
           </div>
         </div>
 
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Secțiuni site</p>
+          <label className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 cursor-pointer">
+            <span>
+              <span className="block text-sm font-bold text-[#1d2353]">Activează secțiunea Proiecte</span>
+              <span className="block text-xs text-gray-500 mt-0.5">Afișează pagina /proiecte și linkul din meniu pe site.</span>
+            </span>
+            <input
+              type="checkbox"
+              name="proiecteEnabled"
+              defaultChecked={settings?.proiecteEnabled ?? false}
+              className="w-5 h-5 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b] shrink-0"
+            />
+          </label>
+        </div>
+
         <button type="submit" className="self-start bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-2.5 rounded-xl transition-colors text-sm uppercase tracking-wide">
           Salvează setările
         </button>

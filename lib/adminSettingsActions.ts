@@ -15,6 +15,7 @@ export async function updateSettingsAction(formData: FormData) {
     instagram: String(formData.get("instagram") ?? "").trim() || null,
     seoTitle: String(formData.get("seoTitle") ?? "").trim() || null,
     seoDescription: String(formData.get("seoDescription") ?? "").trim() || null,
+    proiecteEnabled: formData.get("proiecteEnabled") === "on",
   };
 
   const existing = await prisma.settings.findFirst();
@@ -25,4 +26,5 @@ export async function updateSettingsAction(formData: FormData) {
   }
 
   revalidatePath("/admin/setari");
+  revalidatePath("/", "layout");
 }
