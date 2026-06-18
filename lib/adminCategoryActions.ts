@@ -5,6 +5,36 @@ import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export async function createCategoryInlineAction(
+  formData: FormData
+): Promise<{ category?: { id: string; name: string }; error?: string }> {
+  await requireAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return { error: "Numele categoriei este obligatoriu." };
+
+  const slug = slugify(name);
+  if (!slug) return { error: "Numele categoriei trebuie să conțină cel puțin o literă." };
+
+  try {
+    const category = await prisma.category.create({ data: { name, slug } });
+    revalidatePath("/admin/produse/categorii");
+    revalidatePath("/produse");
+    return { category: { id: category.id, name: category.name } };
+  } catch {
+    return { error: "Există deja o categorie cu un nume foarte similar." };
+  }
+}
+
 export async function createCategoryAction(formData: FormData) {
   await requireAdmin();
 

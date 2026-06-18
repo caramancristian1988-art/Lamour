@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { AdminInput, AdminTextarea } from "../components/AdminField";
 import ImageUploadField from "../components/ImageUploadField";
 import MultiImageUploadField from "../components/MultiImageUploadField";
 import type { ProductFormState } from "@/lib/adminProductActions";
+import { createCategoryInlineAction } from "@/lib/adminCategoryActions";
 
 interface CategoryOption {
   id: string;
@@ -43,6 +44,37 @@ export default function ProductForm({
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
 
+  const [categoryOptions, setCategoryOptions] = useState(categories);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(defaults?.categoryId ?? "");
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [creatingCategory, setCreatingCategory] = useState(false);
+
+  async function handleCreateCategory() {
+    const name = newCategoryName.trim();
+    if (!name) return;
+
+    setCreatingCategory(true);
+    setCategoryError(null);
+
+    const formData = new FormData();
+    formData.set("name", name);
+    const result = await createCategoryInlineAction(formData);
+
+    setCreatingCategory(false);
+
+    if (result.error || !result.category) {
+      setCategoryError(result.error ?? "Nu am putut crea categoria.");
+      return;
+    }
+
+    setCategoryOptions((prev) => [...prev, result.category!]);
+    setSelectedCategoryId(result.category.id);
+    setNewCategoryName("");
+    setAddingCategory(false);
+  }
+
   return (
     <form action={formAction} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4 max-w-2xl">
       {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
@@ -55,24 +87,72 @@ export default function ProductForm({
       <AdminInput label="Slug" name="slug" required defaultValue={defaults?.slug} placeholder="daikin-sensira-ftxf35e" />
       <AdminTextarea label="Descriere" name="description" defaultValue={defaults?.description ?? ""} placeholder="Descrierea produsului..." rows={3} />
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-bold text-gray-600">Categorie <span className="text-[#c7092b]">*</span></span>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-gray-600">Categorie <span className="text-[#c7092b]">*</span></span>
+          {!addingCategory && (
+            <button
+              type="button"
+              onClick={() => setAddingCategory(true)}
+              className="text-xs font-bold text-[#c7092b] hover:underline"
+            >
+              + Categorie nouă
+            </button>
+          )}
+        </div>
+
         <select
           name="categoryId"
           required
-          defaultValue={defaults?.categoryId ?? ""}
+          value={selectedCategoryId}
+          onChange={(e) => setSelectedCategoryId(e.target.value)}
           className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] bg-white"
         >
           <option value="" disabled>
             Alege o categorie
           </option>
-          {categories.map((c) => (
+          {categoryOptions.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>
           ))}
         </select>
-      </label>
+
+        {addingCategory && (
+          <div className="flex items-center gap-2 mt-1.5">
+            <input
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="Nume categorie nouă"
+              className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#c7092b]"
+            />
+            <button
+              type="button"
+              onClick={handleCreateCategory}
+              disabled={creatingCategory || !newCategoryName.trim()}
+              className="bg-[#1d2353] hover:bg-[#2a3470] disabled:opacity-60 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shrink-0"
+            >
+              {creatingCategory ? "Se adaugă..." : "Adaugă"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAddingCategory(false);
+                setNewCategoryName("");
+                setCategoryError(null);
+              }}
+              className="text-gray-400 hover:text-[#c7092b] transition-colors shrink-0"
+              aria-label="Anulează"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+        {categoryError && <p className="text-xs text-[#c7092b]">{categoryError}</p>}
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <AdminInput label="Preț (MDL)" name="price" type="number" required defaultValue={defaults?.price} placeholder="12999" />
