@@ -190,7 +190,7 @@ export default function AdminSidebar({ userName, notifications }: { userName: st
   return (
     <>
       {/* Mobile top bar */}
-      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between bg-[#1d2353] text-white px-4 py-3">
+      <div className="lg:hidden sticky top-0 z-40 flex items-center justify-between bg-[#1d2353] text-white px-4 py-3">
         <Link href="/admin" className="font-extrabold uppercase tracking-tight">
           Climat <span className="text-[#c7092b]">Rapid</span> <span className="text-white/50 text-xs font-normal">Admin</span>
         </Link>
@@ -230,7 +230,7 @@ export default function AdminSidebar({ userName, notifications }: { userName: st
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 bg-[#1d2353] min-h-screen sticky top-0">
+      <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 bg-[#1d2353] min-h-screen sticky top-0 z-40">
         <SidebarContent userName={userName} notifications={notifications} />
       </aside>
     </>
