@@ -49,14 +49,12 @@ export default async function HomePage() {
         title="Produse"
         highlighted="populare"
         viewAllHref="/produse?sort=rating"
-        bg="bg-[#f8fafc]"
       />
       <ProductsSection
         products={offerProducts}
         title="Oferte"
         highlighted="speciale"
         viewAllHref="/produse?oferte=1"
-        bg="bg-[#f8fafc]"
       />
       <ServicesSection />
       <TrustBar />

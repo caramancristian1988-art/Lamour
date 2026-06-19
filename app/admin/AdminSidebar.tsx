@@ -115,10 +115,12 @@ function SidebarContent({
   userName,
   notifications,
   onNavigate,
+  reserveCloseButtonSpace,
 }: {
   userName: string;
   notifications: Notifications;
   onNavigate?: () => void;
+  reserveCloseButtonSpace?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -129,7 +131,7 @@ function SidebarContent({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-6 py-6 border-b border-white/10 flex items-center justify-between">
+      <div className={`px-6 py-6 border-b border-white/10 flex items-center justify-between ${reserveCloseButtonSpace ? "pr-14" : ""}`}>
         <div>
           <Link href="/admin" className="text-lg font-extrabold uppercase tracking-tight text-white">
             Climat <span className="text-[#c7092b]">Rapid</span>
@@ -233,7 +235,7 @@ export default function AdminSidebar({ userName, notifications }: { userName: st
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <SidebarContent userName={userName} notifications={notifications} onNavigate={() => setOpen(false)} />
+            <SidebarContent userName={userName} notifications={notifications} onNavigate={() => setOpen(false)} reserveCloseButtonSpace />
           </div>
         </div>
       )}
