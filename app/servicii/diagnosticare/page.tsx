@@ -142,8 +142,8 @@ export default async function DiagnosticareReparatiiPage() {
           </p>
         </div>
         <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
-          <div className="relative w-1/2 shrink-0">
-            <Image src={detailImage} alt="Reparații AC" fill className="object-cover object-center" />
+          <div className="relative w-1/2 shrink-0 bg-white">
+            <Image src={detailImage} alt="Reparații AC" fill className="object-contain p-4" />
           </div>
           <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
             {inclus.map((item) => (
