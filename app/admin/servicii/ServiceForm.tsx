@@ -6,6 +6,7 @@ interface ServiceDefaults {
   title?: string;
   description?: string;
   image?: string | null;
+  detailImage?: string | null;
   href?: string | null;
   section?: string;
 }
@@ -31,7 +32,8 @@ export default function ServiceForm({
         defaultValue={defaults?.description}
         placeholder="Montaj rapid și sigur pentru apartamente, case, birouri și spații comerciale."
       />
-      <ImageUploadField name="image" label="Imagine" defaultValue={defaults?.image} />
+      <ImageUploadField name="image" label="Imagine (card listă servicii)" defaultValue={defaults?.image} />
+      <ImageUploadField name="detailImage" label="Imagine (secțiunea Despre serviciu, pe pagina proprie)" defaultValue={defaults?.detailImage} />
       <AdminInput label="Link (href)" name="href" defaultValue={defaults?.href ?? ""} placeholder="/servicii/instalare" />
 
       <label className="flex flex-col gap-1.5">

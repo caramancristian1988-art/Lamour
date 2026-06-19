@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { getPromoProducts } from "@/lib/promoProducts";
+import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 
 const features = [
@@ -55,7 +56,7 @@ const inclus = [
   "Testare după reparație și garanție",
 ];
 
-const pasi = [
+const defaultPasi = [
   { nr: "01", title: "Apel & programare", desc: "Ne descrii problema și stabilim împreună o vizită de diagnosticare.", img: "/IMG_2838.PNG" },
   { nr: "02", title: "Diagnosticare", desc: "Tehnicianul identifică exact cauza defecțiunii și îți prezintă soluția.", img: "/IMG_2840.PNG" },
   { nr: "03", title: "Reparație", desc: "Reparăm aparatul și îl testăm complet înainte de plecare.", img: "/IMG_2848.PNG" },
@@ -71,6 +72,10 @@ export default async function DiagnosticareReparatiiPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/diagnosticare", {
+    detailImage: "/IMG_2964.PNG",
+    steps: defaultPasi,
+  });
 
   return (
     <div className="bg-white text-[#1d2353]">
@@ -138,7 +143,7 @@ export default async function DiagnosticareReparatiiPage() {
         </div>
         <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
           <div className="relative w-1/2 shrink-0">
-            <Image src="/IMG_2848.PNG" alt="Reparații AC" fill className="object-cover object-center" />
+            <Image src={detailImage} alt="Reparații AC" fill className="object-cover object-center" />
           </div>
           <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
             {inclus.map((item) => (

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { getPromoProducts } from "@/lib/promoProducts";
+import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 
 const features = [
@@ -56,7 +57,7 @@ const inclus = [
   "Garanție pentru manoperă și echipamente",
 ];
 
-const pasi = [
+const defaultPasi = [
   { nr: "01", title: "Evaluare", desc: "Stabilim numărul de camere și capacitatea necesară pentru sistem.", img: "/IMG_2843.PNG" },
   { nr: "02", title: "Montaj", desc: "Instalăm unitatea exterioară și unitățile interioare în fiecare cameră.", img: "/IMG_2839.PNG" },
   { nr: "03", title: "Configurare", desc: "Setăm controlul individual și testăm funcționarea fiecărei zone.", img: "/IMG_2840.PNG" },
@@ -72,6 +73,10 @@ export default async function MultisplitPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts("sisteme-multisplit");
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/multisplit", {
+    detailImage: "/IMG_2966.PNG",
+    steps: defaultPasi,
+  });
 
   return (
     <div className="bg-white text-[#1d2353]">
@@ -139,7 +144,7 @@ export default async function MultisplitPage() {
         </div>
         <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
           <div className="relative w-1/2 shrink-0">
-            <Image src="/IMG_2848.PNG" alt="Sisteme multisplit" fill className="object-cover object-center" />
+            <Image src={detailImage} alt="Sisteme multisplit" fill className="object-cover object-center" />
           </div>
           <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
             {inclus.map((item) => (

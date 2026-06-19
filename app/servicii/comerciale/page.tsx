@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { getPromoProducts } from "@/lib/promoProducts";
+import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 
 const features = [
@@ -57,7 +58,7 @@ const inclus = [
   "Contract de mentenanță disponibil",
 ];
 
-const pasi = [
+const defaultPasi = [
   { nr: "01", title: "Audit tehnic", desc: "Evaluăm spațiul, sarcina termică și cerințele specifice afacerii tale.", img: "/IMG_2842.PNG" },
   { nr: "02", title: "Proiectare", desc: "Concepem soluția HVAC optimă pentru clădire, birou sau hală.", img: "/IMG_2839.PNG" },
   { nr: "03", title: "Implementare", desc: "Montăm și punem în funcțiune sistemul, cu testare completă.", img: "/IMG_2840.PNG" },
@@ -73,6 +74,10 @@ export default async function ComercialePage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts("conditioane-comerciale");
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/comerciale", {
+    detailImage: "/IMG_2967.PNG",
+    steps: defaultPasi,
+  });
 
   return (
     <div className="bg-white text-[#1d2353]">
@@ -140,7 +145,7 @@ export default async function ComercialePage() {
         </div>
         <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
           <div className="relative w-1/2 shrink-0">
-            <Image src="/IMG_2848.PNG" alt="Sisteme comerciale HVAC" fill className="object-cover object-center" />
+            <Image src={detailImage} alt="Sisteme comerciale HVAC" fill className="object-cover object-center" />
           </div>
           <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
             {inclus.map((item) => (

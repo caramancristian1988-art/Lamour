@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { getPromoProducts } from "@/lib/promoProducts";
+import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 
 const features = [
@@ -53,7 +54,7 @@ const inclus = [
   "Verificare presiune și performanță",
 ];
 
-const pasi = [
+const defaultPasi = [
   { nr: "01", title: "Programare", desc: "Alegi data și ora, iar tehnicianul vine la tine acasă la timp.", img: "/IMG_2839.PNG" },
   { nr: "02", title: "Inspecție", desc: "Verificăm starea aparatelor și identificăm toate problemele existente.", img: "/IMG_2848.PNG" },
   { nr: "03", title: "Curățare", desc: "Curățăm complet filtrele, schimbătorul de căldură și drenajul.", img: "/IMG_2840.PNG" },
@@ -69,6 +70,10 @@ export default async function MentenantaPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/mentenanta", {
+    detailImage: "/IMG_2968.PNG",
+    steps: defaultPasi,
+  });
 
   return (
     <div className="bg-white text-[#1d2353]">
@@ -136,7 +141,7 @@ export default async function MentenantaPage() {
         </div>
         <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
           <div className="relative w-1/2 shrink-0">
-            <Image src="/IMG_2848.PNG" alt="Mentenanță" fill className="object-cover object-center" />
+            <Image src={detailImage} alt="Mentenanță" fill className="object-cover object-center" />
           </div>
           <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
             {inclus.map((item) => (

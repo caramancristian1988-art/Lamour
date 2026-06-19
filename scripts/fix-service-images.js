@@ -4,22 +4,24 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-const images = {
-  "Instalare condiționere": "/IMG_2963.PNG",
-  "Mentenanță & curățare": "/IMG_2968.PNG",
-  "Reparații": "/IMG_2964.PNG",
-  "Consultanță": "/IMG_2965.PNG",
-  "Sisteme multisplit": "/IMG_2966.PNG",
-  "Sisteme comerciale HVAC": "/IMG_2967.PNG",
+// image: thumbnail shown on the /servicii listing cards (restored to originals)
+// detailImage: photo shown in the "Despre serviciu" section on the service's own page
+const data = {
+  "Instalare condiționere": { image: "/IMG_2838.PNG", detailImage: "/IMG_2963.PNG" },
+  "Mentenanță & curățare": { image: "/IMG_2839.PNG", detailImage: "/IMG_2968.PNG" },
+  "Reparații": { image: "/IMG_2840.PNG", detailImage: "/IMG_2964.PNG" },
+  "Consultanță": { image: "/IMG_2841.PNG", detailImage: "/IMG_2965.PNG" },
+  "Sisteme multisplit": { image: "/IMG_2843.PNG", detailImage: "/IMG_2966.PNG" },
+  "Sisteme comerciale HVAC": { image: "/IMG_2842.PNG", detailImage: "/IMG_2967.PNG" },
 };
 
 async function main() {
-  for (const [title, image] of Object.entries(images)) {
+  for (const [title, fields] of Object.entries(data)) {
     const result = await prisma.service.updateMany({
       where: { title },
-      data: { image },
+      data: fields,
     });
-    console.log(`"${title}" -> ${image}: ${result.count} servicii actualizate`);
+    console.log(`"${title}" -> image: ${fields.image}, detailImage: ${fields.detailImage}: ${result.count} servicii actualizate`);
   }
 }
 

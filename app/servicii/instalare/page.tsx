@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { getPromoProducts } from "@/lib/promoProducts";
+import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 
 const features = [
@@ -56,7 +57,7 @@ const inclus = [
   "Garanție pentru manoperă și echipamente",
 ];
 
-const pasi = [
+const defaultPasi = [
   {
     nr: "01",
     title: "Consultare",
@@ -102,6 +103,10 @@ export default async function InstalareePage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/instalare", {
+    detailImage: "/IMG_2963.PNG",
+    steps: defaultPasi,
+  });
 
   return (
     <div className="bg-white text-[#1d2353]">
@@ -218,7 +223,7 @@ export default async function InstalareePage() {
         {/* Dreapta: shape cu imagine + checklist */}
         <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
           <div className="relative w-1/2 shrink-0">
-            <Image src="/IMG_2848.PNG" alt="Unitate externă AC" fill className="object-cover object-center" />
+            <Image src={detailImage} alt="Unitate externă AC" fill className="object-cover object-center" />
           </div>
           <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
             {inclus.map((item) => (
