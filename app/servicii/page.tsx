@@ -7,21 +7,21 @@ import { getSectionFlags } from "@/lib/siteSettings";
 const fallbackServiciiPrincipale = [
   {
     id: "fallback-1",
-    image: "/IMG_2963.PNG",
+    image: "/IMG_2838.PNG",
     title: "Instalare condiționere",
     description: "Montaj rapid și sigur pentru apartamente, case, birouri și spații comerciale.",
     href: "/servicii/instalare",
   },
   {
     id: "fallback-2",
-    image: "/IMG_2968.PNG",
+    image: "/IMG_2839.PNG",
     title: "Mentenanță & curățare",
     description: "Curățare profesională, igienizare, încărcare freon și verificări complete.",
     href: "/servicii/mentenanta",
   },
   {
     id: "fallback-3",
-    image: "/IMG_2964.PNG",
+    image: "/IMG_2840.PNG",
     title: "Reparații",
     description: "Diagnosticare rapidă și reparații pentru orice tip de problemă.",
     href: "/servicii/diagnosticare",
@@ -31,21 +31,21 @@ const fallbackServiciiPrincipale = [
 const fallbackServiciiAvansate = [
   {
     id: "fallback-4",
-    image: "/IMG_2965.PNG",
+    image: "/IMG_2841.PNG",
     title: "Consultanță",
     description: "Te ajutăm să alegi sistemul potrivit pentru nevoile și bugetul tău.",
     href: "/servicii/consultanta",
   },
   {
     id: "fallback-5",
-    image: "/IMG_2966.PNG",
+    image: "/IMG_2843.PNG",
     title: "Sisteme multisplit",
     description: "Climatizare pentru mai multe camere cu o singură unitate exterioară.",
     href: "/servicii/multisplit",
   },
   {
     id: "fallback-6",
-    image: "/IMG_2967.PNG",
+    image: "/IMG_2842.PNG",
     title: "Sisteme comerciale HVAC",
     description: "Soluții profesionale pentru spații comerciale, birouri, hale și clădiri mari.",
     href: "/servicii/comerciale",
@@ -188,19 +188,15 @@ export default async function ServiciiPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
           {serviciiToate.map((s) => (
             <Link key={s.id} href={s.href ?? "/servicii"} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="relative px-3 sm:px-6 py-3 sm:py-6" style={{ aspectRatio: "4/3" }}>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "1/1", height: "calc(100% - 24px)" }}>
-                    {s.image && (
-                      <Image
-                        src={s.image}
-                        alt={s.title}
-                        fill
-                        className="object-contain group-hover:scale-105 transition-transform duration-300"
-                      />
-                    )}
-                  </div>
-                </div>
+              <div className="relative" style={{ aspectRatio: "4/3" }}>
+                {s.image && (
+                  <Image
+                    src={s.image}
+                    alt={s.title}
+                    fill
+                    className="object-cover object-bottom group-hover:scale-105 transition-transform duration-300"
+                  />
+                )}
               </div>
               <div className="px-3 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-10 flex flex-col gap-2 sm:gap-6">
                 <h3 className="text-sm sm:text-base font-bold group-hover:text-[#c7092b] transition-colors">{s.title}</h3>
