@@ -78,8 +78,37 @@ export default async function MentenantaPage() {
   return (
     <div className="bg-white text-[#1d2353]">
 
-      {/* ── HERO ── */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 min-h-[420px]">
+      {/* ── HERO – MOBILE ── */}
+      <section className="sm:hidden relative overflow-hidden" style={{ height: "90vw", minHeight: 340 }}>
+        <Image src={detailImage} alt="Mentenanță condiționere" fill className="object-cover" priority />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, white 0%, white 38%, transparent 62%)" }} />
+        <div className="absolute inset-x-0 top-0 px-4 pt-4">
+          <nav className="flex items-center gap-1 text-[10px] text-gray-500 mb-3">
+            <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
+            <span>›</span>
+            <Link href="/servicii" className="hover:text-[#c7092b] transition-colors">Servicii</Link>
+            <span>›</span>
+            <span className="text-[#1d2353] font-medium">Mentenanță & curățare</span>
+          </nav>
+          <p className="text-[#c7092b] text-[10px] font-bold tracking-widest uppercase mb-2">SERVICIU</p>
+          <h1 className="text-2xl font-extrabold leading-tight text-[#1d2353]">
+            Mentenanță &<br />
+            <span className="text-[#c7092b]">curățare</span>
+          </h1>
+          <div className="w-8 h-[3px] bg-[#c7092b] mt-3 mb-3" />
+          <p className="text-gray-700 text-xs max-w-[220px] leading-relaxed">
+            Curățare profesională, igienizare, reîncărcare freon și verificări complete pentru aparatele tale de aer condiționat.
+          </p>
+          <div className="flex items-center gap-2 mt-4">
+            <Link href="/contact" className="inline-flex items-center gap-1.5 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-4 py-2.5 rounded-lg text-[11px] uppercase tracking-wide transition-colors">
+              Solicită ofertă
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── HERO – DESKTOP ── */}
+      <section className="hidden sm:grid grid-cols-1 lg:grid-cols-2 min-h-[420px]">
         <div className="flex flex-col justify-center px-6 lg:px-12 py-12 bg-white">
           <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-5">
             <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
@@ -110,8 +139,7 @@ export default async function MentenantaPage() {
           </div>
         </div>
         <div className="relative min-h-[280px] lg:min-h-0">
-          <Image src={detailImage} alt="Mentenanță condiționere" fill className="object-cover sm:hidden" priority />
-          <Image src="/IMG_2848.PNG" alt="Mentenanță condiționere" fill className="hidden sm:block object-cover object-center" priority />
+          <Image src="/IMG_2848.PNG" alt="Mentenanță condiționere" fill className="object-cover object-center" priority />
         </div>
       </section>
 
