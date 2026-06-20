@@ -74,7 +74,7 @@ export default async function ConsultantaPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
-  const { steps: pasi } = await getServiceDetail("/servicii/consultanta", {
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/consultanta", {
     detailImage: "/IMG_2965.PNG",
     steps: defaultPasi,
   });
@@ -114,7 +114,8 @@ export default async function ConsultantaPage() {
           </div>
         </div>
         <div className="relative min-h-[280px] lg:min-h-0">
-          <Image src="/IMG_2848.PNG" alt="Consultanță climatizare" fill className="object-cover object-center" priority />
+          <Image src={detailImage} alt="Consultanță climatizare" fill className="object-cover sm:hidden" priority />
+          <Image src="/IMG_2848.PNG" alt="Consultanță climatizare" fill className="hidden sm:block object-cover object-center" priority />
         </div>
       </section>
 

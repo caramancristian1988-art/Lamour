@@ -70,7 +70,7 @@ export default async function MentenantaPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
-  const { steps: pasi } = await getServiceDetail("/servicii/mentenanta", {
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/mentenanta", {
     detailImage: "/IMG_2968.PNG",
     steps: defaultPasi,
   });
@@ -110,7 +110,8 @@ export default async function MentenantaPage() {
           </div>
         </div>
         <div className="relative min-h-[280px] lg:min-h-0">
-          <Image src="/IMG_2848.PNG" alt="Mentenanță condiționere" fill className="object-cover object-center" priority />
+          <Image src={detailImage} alt="Mentenanță condiționere" fill className="object-cover sm:hidden" priority />
+          <Image src="/IMG_2848.PNG" alt="Mentenanță condiționere" fill className="hidden sm:block object-cover object-center" priority />
         </div>
       </section>
 

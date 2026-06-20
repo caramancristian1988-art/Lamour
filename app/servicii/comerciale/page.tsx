@@ -74,7 +74,7 @@ export default async function ComercialePage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts("conditioane-comerciale");
-  const { steps: pasi } = await getServiceDetail("/servicii/comerciale", {
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/comerciale", {
     detailImage: "/IMG_2967.PNG",
     steps: defaultPasi,
   });
@@ -114,7 +114,8 @@ export default async function ComercialePage() {
           </div>
         </div>
         <div className="relative min-h-[280px] lg:min-h-0">
-          <Image src="/IMG_2848.PNG" alt="Sisteme comerciale HVAC" fill className="object-cover object-center" priority />
+          <Image src={detailImage} alt="Sisteme comerciale HVAC" fill className="object-cover sm:hidden" priority />
+          <Image src="/IMG_2848.PNG" alt="Sisteme comerciale HVAC" fill className="hidden sm:block object-cover object-center" priority />
         </div>
       </section>
 

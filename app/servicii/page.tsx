@@ -188,13 +188,13 @@ export default async function ServiciiPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
           {serviciiToate.map((s) => (
             <Link key={s.id} href={s.href ?? "/servicii"} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="relative" style={{ aspectRatio: "4/3" }}>
+              <div className="relative" style={{ aspectRatio: "1/1" }}>
                 {s.image && (
                   <Image
                     src={s.image}
                     alt={s.title}
                     fill
-                    className="object-cover object-bottom group-hover:scale-105 transition-transform duration-300"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 )}
               </div>

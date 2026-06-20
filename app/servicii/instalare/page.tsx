@@ -103,7 +103,7 @@ export default async function InstalareePage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
-  const { steps: pasi } = await getServiceDetail("/servicii/instalare", {
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/instalare", {
     detailImage: "/IMG_2963.PNG",
     steps: defaultPasi,
   });
@@ -114,10 +114,10 @@ export default async function InstalareePage() {
       {/* ── HERO – MOBILE ── */}
       <section className="sm:hidden relative overflow-hidden" style={{ height: "90vw", minHeight: 340 }}>
         <Image
-          src="/IMG_2848.PNG"
+          src={detailImage}
           alt="Instalare condiționere"
           fill
-          className="object-cover object-[78%_50%]"
+          className="object-cover"
           priority
         />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, white 0%, white 38%, transparent 62%)" }} />

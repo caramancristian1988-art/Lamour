@@ -73,7 +73,7 @@ export default async function MultisplitPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts("sisteme-multisplit");
-  const { steps: pasi } = await getServiceDetail("/servicii/multisplit", {
+  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/multisplit", {
     detailImage: "/IMG_2966.PNG",
     steps: defaultPasi,
   });
@@ -113,7 +113,8 @@ export default async function MultisplitPage() {
           </div>
         </div>
         <div className="relative min-h-[280px] lg:min-h-0">
-          <Image src="/IMG_2848.PNG" alt="Sisteme multisplit" fill className="object-cover object-center" priority />
+          <Image src={detailImage} alt="Sisteme multisplit" fill className="object-cover sm:hidden" priority />
+          <Image src="/IMG_2848.PNG" alt="Sisteme multisplit" fill className="hidden sm:block object-cover object-center" priority />
         </div>
       </section>
 
