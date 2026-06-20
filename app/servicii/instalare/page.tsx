@@ -112,7 +112,7 @@ export default async function InstalareePage() {
     <div className="bg-white text-[#1d2353]">
 
       {/* ── HERO – MOBILE ── */}
-      <section className="sm:hidden relative overflow-hidden" style={{ height: "90vw", minHeight: 340 }}>
+      <section className="sm:hidden relative overflow-hidden" style={{ height: "130vw", minHeight: 420 }}>
         <Image
           src={detailImage}
           alt="Instalare condiționere"
@@ -120,7 +120,7 @@ export default async function InstalareePage() {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, white 0%, white 38%, transparent 62%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, white 0%, white 24%, transparent 46%)" }} />
         <div className="absolute inset-x-0 top-0 px-4 pt-4">
           <nav className="flex items-center gap-1 text-[10px] text-gray-500 mb-3">
             <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
