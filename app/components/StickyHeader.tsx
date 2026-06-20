@@ -52,12 +52,11 @@ export default function StickyHeader({
                 Climat <span className="text-[#c7092b]">Rapid</span>
               </span>
             </Link>
-            <div className="flex items-center gap-3">
-              <AccountMenuLink className="flex items-center gap-1 text-gray-600 hover:text-[#1d2353] transition-colors">
-                <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <div className="flex items-center gap-2.5">
+              <AccountMenuLink className="text-gray-600 hover:text-[#1d2353] transition-colors">
+                <svg className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
                 </svg>
-                <span className="text-xs font-medium whitespace-nowrap">Contul meu</span>
               </AccountMenuLink>
               <Link href="/favorite" className="text-gray-600 hover:text-[#c7092b] transition-colors relative" aria-label="Favorite">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
