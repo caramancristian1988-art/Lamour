@@ -345,6 +345,7 @@ interface ProductViewProps {
     images?: string[];
     btu: number | null;
     technology: string;
+    brand?: string | null;
     energyClass: string | null;
     rating: number;
     reviewCount: number;
@@ -385,6 +386,7 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
   const displayBadge = localProductBadges[product.slug] ?? product.badge ?? (discount ? `-${discount}%` : null);
 
   const specs = [
+    product.brand ? { label: "Brand", value: product.brand } : null,
     product.btu ? { label: "Capacitate", value: `${(product.btu / 1000).toFixed(0)}000 BTU` } : null,
     { label: "Tehnologie", value: product.technology },
     product.energyClass ? { label: "Clasă energetică", value: product.energyClass } : null,
@@ -465,7 +467,8 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
 
           {/* Quick specs */}
           <div className="lg:col-span-4 flex flex-col gap-5">
-            <div className="border border-gray-100 rounded-2xl divide-y divide-gray-100 overflow-hidden">
+            <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353]">Caracteristici tehnice</p>
+            <div className="border border-gray-100 rounded-2xl divide-y divide-gray-100 overflow-hidden -mt-2">
               <div className="flex items-center justify-between px-5 py-3.5 bg-[#f6f8fb]">
                 <span className="text-sm font-bold text-[#1d2353]">Disponibilitate</span>
                 <span className={`text-sm font-bold flex items-center gap-1.5 ${inStock ? "text-green-600" : "text-gray-400"}`}>
@@ -474,9 +477,9 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
                 </span>
               </div>
               {[...specs, ...(product.specifications ?? [])].map((spec, i) => (
-                <div key={`${spec.label}-${i}`} className="flex items-center justify-between px-5 py-3.5">
+                <div key={`${spec.label}-${i}`} className={`flex items-center justify-between px-5 py-3.5 ${i % 2 === 1 ? "bg-[#fafbfc]" : ""}`}>
                   <span className="text-sm text-gray-500">{spec.label}</span>
-                  <span className="text-sm font-bold text-[#1d2353]">{spec.value}</span>
+                  <span className="text-sm font-bold text-[#1d2353] text-right">{spec.value}</span>
                 </div>
               ))}
             </div>
