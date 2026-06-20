@@ -140,10 +140,10 @@ export default async function MentenantaPage() {
           </p>
         </div>
         <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
-          <div className="relative w-2/5 shrink-0" style={{ aspectRatio: "2/3" }}>
-            <Image src={detailImage} alt="Mentenanță" fill className="object-cover object-center" />
+          <div className="relative w-1/2 shrink-0">
+            <Image src={detailImage} alt="Mentenanță" fill className="object-cover object-top" />
           </div>
-          <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-3/5">
+          <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
             {inclus.map((item) => (
               <div key={item} className="flex items-start gap-3">
                 <span className="text-[#c7092b] font-bold text-sm leading-none mt-0.5">✓</span>
