@@ -89,7 +89,7 @@ async function main() {
       energyClass: "A++",
       rating: 4.7,
       reviewCount: 18,
-      badge: "Reducere -10%",
+      badge: "-10%",
       categoryId: residential.id,
     },
   });

@@ -381,7 +381,7 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
   const displayName = localProductNames[product.slug] ?? product.name;
   const displayImage = localProductImages[product.slug] ?? product.image;
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
-  const displayBadge = localProductBadges[product.slug] ?? product.badge ?? (discount ? `Reducere -${discount}%` : null);
+  const displayBadge = localProductBadges[product.slug] ?? product.badge ?? (discount ? `-${discount}%` : null);
 
   const specs = [
     product.btu ? { label: "Capacitate", value: `${(product.btu / 1000).toFixed(0)}000 BTU` } : null,
