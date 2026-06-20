@@ -462,12 +462,12 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
           {/* Gallery */}
-          <div className="lg:col-span-5">
+          <div className="order-1 lg:order-1 lg:col-span-5">
             <ProductGallery images={galleryImages} alt={displayName} badge={displayBadge} />
           </div>
 
           {/* Quick specs */}
-          <div className="lg:col-span-4 flex flex-col gap-5">
+          <div className="order-3 lg:order-2 lg:col-span-4 flex flex-col gap-5">
             <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353]">Caracteristici tehnice</p>
             <ProductSpecsList
               availability={product.availability}
@@ -484,7 +484,7 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
           </div>
 
           {/* Buy box */}
-          <div className="lg:col-span-3">
+          <div className="order-2 lg:order-3 lg:col-span-3">
             <div className="lg:sticky lg:top-24 flex flex-col gap-4">
               <div className="border border-gray-100 rounded-2xl p-5">
                 <div className="flex items-center gap-3 flex-wrap mb-4">
