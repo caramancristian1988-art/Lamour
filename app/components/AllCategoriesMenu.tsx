@@ -80,7 +80,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
         </button>
 
         {open && (
-          <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 py-3 w-80 sm:w-96">
+          <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 py-3 w-[calc(100vw-2rem)] max-w-md lg:w-96">
             <p className="px-5 pt-1.5 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wide">Produse</p>
             <Link
               href="/produse?oferte=1"
