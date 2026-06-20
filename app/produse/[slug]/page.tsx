@@ -13,6 +13,7 @@ import {
   fallbackReviews,
 } from "@/lib/fallbackData";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
+import ProductSpecsList from "../../components/ProductSpecsList";
 import {
   sortProducts,
   paginate,
@@ -468,21 +469,12 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
           {/* Quick specs */}
           <div className="lg:col-span-4 flex flex-col gap-5">
             <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353]">Caracteristici tehnice</p>
-            <div className="border border-gray-100 rounded-2xl divide-y divide-gray-100 overflow-hidden -mt-2">
-              <div className="flex items-center justify-between px-5 py-3.5 bg-[#f6f8fb]">
-                <span className="text-sm font-bold text-[#1d2353]">Disponibilitate</span>
-                <span className={`text-sm font-bold flex items-center gap-1.5 ${inStock ? "text-green-600" : "text-gray-400"}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-green-500" : "bg-gray-400"}`} />
-                  {product.availability}
-                </span>
-              </div>
-              {[...specs, ...(product.specifications ?? [])].map((spec, i) => (
-                <div key={`${spec.label}-${i}`} className={`flex items-center justify-between px-5 py-3.5 ${i % 2 === 1 ? "bg-[#fafbfc]" : ""}`}>
-                  <span className="text-sm text-gray-500">{spec.label}</span>
-                  <span className="text-sm font-bold text-[#1d2353] text-right">{spec.value}</span>
-                </div>
-              ))}
-            </div>
+            <ProductSpecsList
+              availability={product.availability}
+              inStock={inStock}
+              generalSpecs={specs}
+              extraSpecs={product.specifications ?? []}
+            />
 
             {product.description && (
               <p className="text-gray-600 text-[15px] leading-relaxed">
