@@ -59,6 +59,14 @@ model Review {
   createdAt DateTime @default(now())
 }
 
+model Faq {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  question  String
+  answer    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
 model BlogPost {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String

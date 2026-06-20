@@ -71,6 +71,17 @@ const navItems = [
     ),
   },
   {
+    href: "/admin/faq",
+    label: "Întrebări frecvente",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 9a2.5 2.5 0 115 0c0 1.5-2.5 1.75-2.5 3.5" />
+        <path strokeLinecap="round" d="M12 17h.01" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/setari",
     label: "Setări",
     icon: (

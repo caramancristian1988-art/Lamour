@@ -5,13 +5,22 @@ import { prisma } from "@/lib/prisma";
 import { fallbackProducts } from "@/lib/fallbackData";
 import { getSectionFlags } from "@/lib/siteSettings";
 import ProductsSection from "../components/ProductsSection";
-import FaqAccordion from "../components/FaqAccordion";
+import FaqAccordion, { type FaqItem } from "../components/FaqAccordion";
 import ContactForm from "../components/ContactForm";
 
-const FAQS = [
-  "Cât durează instalarea unui aparat de aer condiționat?",
-  "Oferiți garanție pentru produse și instalare?",
-  "Asigurați service și mentenanță?",
+const FALLBACK_FAQS: FaqItem[] = [
+  {
+    question: "Cât durează instalarea unui aparat de aer condiționat?",
+    answer: "Instalarea standard durează în medie 2-3 ore, în funcție de complexitatea sistemului și de configurația spațiului.",
+  },
+  {
+    question: "Oferiți garanție pentru produse și instalare?",
+    answer: "Da, toate produsele vin cu garanție de producător, iar manopera de instalare este garantată de echipa noastră.",
+  },
+  {
+    question: "Asigurați service și mentenanță?",
+    answer: "Da, oferim contracte de mentenanță programată și intervenții de service pentru toate aparatele instalate de noi.",
+  },
 ];
 
 async function getRecommendedProducts() {
@@ -27,11 +36,22 @@ async function getRecommendedProducts() {
   }
 }
 
+async function getFaqs(): Promise<FaqItem[]> {
+  try {
+    const faqs = await prisma.faq.findMany({ orderBy: { order: "asc" } });
+    if (faqs.length === 0) throw new Error("empty");
+    return faqs.map((f) => ({ question: f.question, answer: f.answer }));
+  } catch {
+    return FALLBACK_FAQS;
+  }
+}
+
 export default async function ContactPage() {
   const { contactEnabled } = await getSectionFlags();
   if (!contactEnabled) notFound();
 
   const products = await getRecommendedProducts();
+  const faqs = await getFaqs();
 
   return (
     <div className="bg-white text-[#1B2A4A]">
@@ -220,7 +240,7 @@ export default async function ContactPage() {
       <section id="faq" className="max-w-7xl mx-auto px-4 pb-14">
         <h2 className="text-2xl font-bold mb-2">Întrebări frecvente</h2>
         <div className="w-10 h-[3px] bg-[#E31E24] mb-6" />
-        <FaqAccordion faqs={FAQS} />
+        <FaqAccordion faqs={faqs} />
       </section>
 
       {/* Recommended products */}
