@@ -113,7 +113,7 @@ export default async function MultisplitPage() {
           </div>
         </div>
         <div className="relative min-h-[280px] lg:min-h-0">
-          <Image src="/IMG_2843.PNG" alt="Sisteme multisplit" fill className="object-cover object-center" priority />
+          <Image src="/IMG_2848.PNG" alt="Sisteme multisplit" fill className="object-cover object-center" priority />
         </div>
       </section>
 
@@ -143,10 +143,10 @@ export default async function MultisplitPage() {
           </p>
         </div>
         <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
-          <div className="relative w-1/2 shrink-0 bg-white">
-            <Image src={detailImage} alt="Sisteme multisplit" fill className="object-contain p-4" />
+          <div className="relative w-2/5 shrink-0" style={{ aspectRatio: "2/3" }}>
+            <Image src={detailImage} alt="Sisteme multisplit" fill className="object-cover object-center" />
           </div>
-          <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
+          <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-3/5">
             {inclus.map((item) => (
               <div key={item} className="flex items-start gap-3">
                 <span className="text-[#c7092b] font-bold text-sm leading-none mt-0.5">✓</span>
