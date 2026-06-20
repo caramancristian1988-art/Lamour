@@ -97,7 +97,7 @@ export default async function MentenantaPage() {
           </h1>
           <div className="w-8 h-[3px] bg-[#c7092b] mt-3 mb-3" />
           <p className="text-gray-700 text-xs max-w-[220px] leading-relaxed">
-            Curățare profesională, igienizare, reîncărcare freon și verificări complete pentru aparatele tale de aer condiționat.
+            Curățare, igienizare și verificări complete pentru aparatele tale.
           </p>
           <div className="flex items-center gap-2 mt-4">
             <Link href="/contact" className="inline-flex items-center gap-1.5 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-4 py-2.5 rounded-lg text-[11px] uppercase tracking-wide transition-colors">
