@@ -112,15 +112,15 @@ export default async function InstalareePage() {
     <div className="bg-white text-[#1d2353]">
 
       {/* ── HERO – MOBILE ── */}
-      <section className="sm:hidden relative overflow-hidden" style={{ height: "130vw", minHeight: 420 }}>
+      <section className="sm:hidden relative overflow-hidden" style={{ height: "110vw", minHeight: 400 }}>
         <Image
           src={detailImage}
           alt="Instalare condiționere"
           fill
-          className="object-cover"
+          className="object-cover object-bottom"
           priority
         />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, white 0%, white 24%, transparent 46%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, white 0%, white 44%, transparent 64%)" }} />
         <div className="absolute inset-x-0 top-0 px-4 pt-4">
           <nav className="flex items-center gap-1 text-[10px] text-gray-500 mb-3">
             <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
@@ -245,7 +245,7 @@ export default async function InstalareePage() {
               {/* Step card: image left + text right */}
               <div className="flex items-center gap-0 rounded-xl overflow-hidden border border-gray-100 flex-1 bg-white">
                 <div className="relative w-28 lg:w-36 shrink-0 self-stretch">
-                  <Image src={pas.img} alt={pas.title} fill className="object-cover" />
+                  <Image src={pas.img} alt={pas.title} fill className="object-cover object-bottom" />
                 </div>
                 <div className="px-4 py-4 flex flex-col gap-1">
                   <span className="text-2xl font-extrabold text-[#c7092b] leading-none">{pas.nr}</span>
