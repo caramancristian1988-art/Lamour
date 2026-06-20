@@ -34,9 +34,15 @@ model Product {
   reviewCount Int      @default(0)
   badge       String?
   availability String  @default("În stoc")
+  specifications ProductSpec[]
   categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])
   createdAt   DateTime @default(now())
+}
+
+type ProductSpec {
+  label String
+  value String
 }
 
 model Review {

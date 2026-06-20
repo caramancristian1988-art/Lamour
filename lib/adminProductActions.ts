@@ -16,6 +16,16 @@ function parseImageLines(formData: FormData): string[] {
     .filter(Boolean);
 }
 
+function parseSpecifications(formData: FormData): { label: string; value: string }[] {
+  const labels = formData.getAll("specLabel").map((v) => String(v).trim());
+  const values = formData.getAll("specValue").map((v) => String(v).trim());
+  const specs: { label: string; value: string }[] = [];
+  for (let i = 0; i < labels.length; i++) {
+    if (labels[i] && values[i]) specs.push({ label: labels[i], value: values[i] });
+  }
+  return specs;
+}
+
 function readProductFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
@@ -31,6 +41,7 @@ function readProductFields(formData: FormData) {
   const badge = String(formData.get("badge") ?? "").trim() || null;
   const availability = String(formData.get("availability") ?? "").trim() || "În stoc";
   const categoryId = String(formData.get("categoryId") ?? "").trim();
+  const specifications = parseSpecifications(formData);
 
   return {
     name,
@@ -47,6 +58,7 @@ function readProductFields(formData: FormData) {
     badge,
     availability,
     categoryId,
+    specifications,
   };
 }
 

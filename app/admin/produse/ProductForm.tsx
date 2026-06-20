@@ -5,6 +5,7 @@ import { AdminInput, AdminTextarea } from "../components/AdminField";
 import ImageUploadField from "../components/ImageUploadField";
 import MultiImageUploadField from "../components/MultiImageUploadField";
 import ManagedSelect from "../components/ManagedSelect";
+import SpecificationsEditor from "../components/SpecificationsEditor";
 import type { ProductFormState } from "@/lib/adminProductActions";
 import { createCategoryInlineAction, deleteCategoryInlineAction } from "@/lib/adminCategoryActions";
 
@@ -29,6 +30,7 @@ interface ProductDefaults {
   badge?: string | null;
   availability?: string;
   categoryId?: string;
+  specifications?: { label: string; value: string }[];
 }
 
 const initialState: ProductFormState = {};
@@ -142,6 +144,8 @@ export default function ProductForm({
           onDelete={async () => {}}
         />
       </div>
+
+      <SpecificationsEditor defaultValue={defaults?.specifications} />
 
       <ManagedSelect
         name="badge"

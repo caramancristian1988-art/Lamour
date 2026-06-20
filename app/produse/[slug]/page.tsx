@@ -350,6 +350,7 @@ interface ProductViewProps {
     reviewCount: number;
     badge: string | null;
     availability: string;
+    specifications?: { label: string; value: string }[];
   };
   category: { id: string; name: string; slug: string } | null;
   related: Array<{
@@ -472,8 +473,8 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
                   {product.availability}
                 </span>
               </div>
-              {specs.map((spec) => (
-                <div key={spec.label} className="flex items-center justify-between px-5 py-3.5">
+              {[...specs, ...(product.specifications ?? [])].map((spec, i) => (
+                <div key={`${spec.label}-${i}`} className="flex items-center justify-between px-5 py-3.5">
                   <span className="text-sm text-gray-500">{spec.label}</span>
                   <span className="text-sm font-bold text-[#1d2353]">{spec.value}</span>
                 </div>

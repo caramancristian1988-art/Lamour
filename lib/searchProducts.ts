@@ -33,7 +33,7 @@ async function getSearchableData() {
         ...fallbackPopularProducts,
         ...fallbackOfferProducts,
         ...fallbackDiscountProducts,
-      ].map((p) => ({ ...p, images: [] as string[], brand: null as string | null })),
+      ].map((p) => ({ ...p, images: [] as string[], brand: null as string | null, specifications: [] as { label: string; value: string }[] })),
     };
   }
 }
