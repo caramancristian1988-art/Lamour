@@ -103,7 +103,7 @@ export default async function InstalareePage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
-  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/instalare", {
+  const { steps: pasi } = await getServiceDetail("/servicii/instalare", {
     detailImage: "/IMG_2963.PNG",
     steps: defaultPasi,
   });
@@ -220,19 +220,18 @@ export default async function InstalareePage() {
             Ne ocupăm de întregul proces de instalare, de la evaluare și recomandare până la montajul complet și testarea sistemului. Lucrăm rapid, eficient și oferim garanție pentru manoperă și echipamente.
           </p>
         </div>
-        {/* Dreapta: shape cu imagine + checklist */}
-        <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
-          <div className="relative w-1/2 shrink-0">
-            <Image src={detailImage} alt="Unitate externă AC" fill className="object-cover object-top" />
-          </div>
-          <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
-            {inclus.map((item) => (
-              <div key={item} className="flex items-start gap-3">
-                <span className="text-[#c7092b] font-bold text-sm leading-none mt-0.5">✓</span>
-                <span className="text-sm text-gray-700 leading-snug">{item}</span>
-              </div>
-            ))}
-          </div>
+        {/* Dreapta: checklist */}
+        <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white rounded-2xl shadow-md border border-gray-100">
+          {inclus.map((item) => (
+            <div key={item} className="flex items-center gap-3">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-[#fdf2f3] text-[#c7092b] flex items-center justify-center">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+              <span className="text-sm text-gray-700 leading-snug">{item}</span>
+            </div>
+          ))}
         </div>
       </section>
 

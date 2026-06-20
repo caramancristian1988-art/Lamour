@@ -73,7 +73,7 @@ export default async function MultisplitPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts("sisteme-multisplit");
-  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/multisplit", {
+  const { steps: pasi } = await getServiceDetail("/servicii/multisplit", {
     detailImage: "/IMG_2966.PNG",
     steps: defaultPasi,
   });
@@ -142,18 +142,17 @@ export default async function MultisplitPage() {
             Sistemele multisplit permit conectarea mai multor unități interioare la o singură unitate exterioară, oferind climatizare eficientă pentru mai multe camere fără a încărca fațada clădirii.
           </p>
         </div>
-        <div className="flex items-stretch gap-0 rounded-2xl overflow-hidden shadow-md border border-gray-100">
-          <div className="relative w-1/2 shrink-0">
-            <Image src={detailImage} alt="Sisteme multisplit" fill className="object-cover object-top" />
-          </div>
-          <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white w-1/2">
-            {inclus.map((item) => (
-              <div key={item} className="flex items-start gap-3">
-                <span className="text-[#c7092b] font-bold text-sm leading-none mt-0.5">✓</span>
-                <span className="text-sm text-gray-700 leading-snug">{item}</span>
-              </div>
-            ))}
-          </div>
+        <div className="flex flex-col justify-center gap-4 px-6 py-8 bg-white rounded-2xl shadow-md border border-gray-100">
+          {inclus.map((item) => (
+            <div key={item} className="flex items-center gap-3">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-[#fdf2f3] text-[#c7092b] flex items-center justify-center">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+              <span className="text-sm text-gray-700 leading-snug">{item}</span>
+            </div>
+          ))}
         </div>
       </section>
 
