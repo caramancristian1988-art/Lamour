@@ -5,6 +5,7 @@ import type { SectionFlags, HeaderCategory } from "@/lib/siteSettings";
 import TopBar from "./TopBar";
 import ScrollAwareHeader from "./ScrollAwareHeader";
 import Footer from "./Footer";
+import FloatingContact from "./FloatingContact";
 
 export function SiteHeader(props: Partial<SectionFlags> & { categories?: HeaderCategory[] }) {
   const pathname = usePathname();
@@ -23,4 +24,11 @@ export function SiteFooter() {
   if (pathname?.startsWith("/admin")) return null;
 
   return <Footer />;
+}
+
+export function SiteFloatingContact() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
+
+  return <FloatingContact />;
 }
