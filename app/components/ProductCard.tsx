@@ -52,7 +52,6 @@ export default function ProductCard({
   rating,
   reviewCount,
   badge,
-  showDiscount,
 }: ProductCardProps) {
   const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
   const displayBadge = badge ?? (discount ? `-${discount}%` : null);
@@ -127,11 +126,6 @@ export default function ProductCard({
             <span className="text-base sm:text-lg lg:text-xl font-extrabold text-gray-900">
               {price.toLocaleString("ro-MD")} MDL
             </span>
-            {oldPrice && showDiscount && discount && (
-              <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2 py-0.5 rounded-md">
-                -{discount}%
-              </span>
-            )}
             {oldPrice && (
               <span className="text-sm text-gray-400 line-through">
                 {oldPrice.toLocaleString("ro-MD")} MDL
