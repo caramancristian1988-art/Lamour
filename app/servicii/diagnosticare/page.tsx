@@ -5,6 +5,7 @@ import { getSectionFlags } from "@/lib/siteSettings";
 import { getPromoProducts } from "@/lib/promoProducts";
 import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
+import ServiceStepIcon from "@/app/components/ServiceStepIcon";
 
 const features = [
   {
@@ -192,9 +193,7 @@ export default async function DiagnosticareReparatiiPage() {
           {pasi.map((pas, i) => (
             <div key={pas.nr} className="flex items-stretch gap-3 flex-1">
               <div className="flex items-center gap-0 rounded-xl overflow-hidden border border-gray-100 flex-1 bg-white">
-                <div className="relative w-28 lg:w-36 shrink-0 self-stretch">
-                  <Image src={pas.img} alt={pas.title} fill className="object-cover" />
-                </div>
+                <ServiceStepIcon title={pas.title} className="relative w-28 lg:w-36 shrink-0 self-stretch" />
                 <div className="px-4 py-4 flex flex-col gap-1">
                   <span className="text-2xl font-extrabold text-[#c7092b] leading-none">{pas.nr}</span>
                   <p className="font-bold text-sm mt-1">{pas.title}</p>
