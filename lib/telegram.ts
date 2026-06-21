@@ -94,17 +94,14 @@ export function buildContactMessageText(message: {
 }
 
 const STATUS_BUTTON_ROWS: { value: string; label: string }[][] = [
-  [{ value: "sunat", label: "📞 Sunat" }, { value: "nu_raspunde", label: "🚫 Nu răspunde" }, { value: "ocupat", label: "🔁 Ocupat" }],
-  [{ value: "se_gandeste", label: "🤔 Gândește" }, { value: "in_lucru", label: "🛠 În lucru" }, { value: "task_creat", label: "📋 Task" }],
-  [{ value: "comanda_confirmata", label: "🧾 Confirmat" }, { value: "asteptam_plata", label: "⏳ Aștept plata" }, { value: "achitat", label: "💰 Achitat" }],
-  [{ value: "programat", label: "🗓 Programat" }, { value: "rezolvat", label: "✅ Rezolvat" }],
-  [{ value: "anulat", label: "❌ Anulat" }, { value: "nu_interesat", label: "👎 Neinteresat" }],
+  [{ value: "sunat", label: "📞 Sunat" }, { value: "nu_raspunde", label: "🚫 Nu răspunde" }],
+  [{ value: "se_gandeste", label: "🤔 Se gândește" }, { value: "programat", label: "🗓 Programat" }],
+  [{ value: "in_lucru", label: "🛠 În lucru" }, { value: "achitat", label: "💰 Achitat" }],
+  [{ value: "anulat", label: "❌ Anulat" }],
 ];
 
 const CLIENT_TYPE_BUTTON_ROWS: { value: string; label: string }[][] = [
-  [{ value: "nou", label: "🆕 Nou" }, { value: "recurent", label: "🔄 Recurent" }, { value: "vip", label: "💎 VIP" }],
-  [{ value: "cald", label: "🔥 Cald" }, { value: "rece", label: "🧊 Rece" }, { value: "comercial", label: "🏢 Comercial" }],
-  [{ value: "dificil", label: "😤 Dificil" }],
+  [{ value: "nou", label: "🆕" }, { value: "cald", label: "🔥" }, { value: "rece", label: "🧊" }, { value: "vip", label: "💎" }],
 ];
 
 export const STATUS_BUTTONS = STATUS_BUTTON_ROWS.flat();

@@ -21,17 +21,11 @@ const STATUS_ACCENT_COLORS: Record<string, string> = {
   in_asteptare: "#f59e0b",
   sunat: "#3b82f6",
   nu_raspunde: "#f97316",
-  ocupat: "#f97316",
   se_gandeste: "#eab308",
-  in_lucru: "#0ea5e9",
-  task_creat: "#64748b",
-  comanda_confirmata: "#06b6d4",
-  asteptam_plata: "#a855f7",
-  achitat: "#14b8a6",
   programat: "#6366f1",
-  rezolvat: "#22c55e",
+  in_lucru: "#0ea5e9",
+  achitat: "#14b8a6",
   anulat: "#9ca3af",
-  nu_interesat: "#ef4444",
 };
 
 export default async function AdminMesajePage() {
