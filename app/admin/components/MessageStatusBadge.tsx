@@ -8,6 +8,7 @@ const STATUS_STYLES: Record<string, { badge: string; dot: string }> = {
   in_asteptare: { badge: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-400" },
   sunat: { badge: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-400" },
   nu_raspunde: { badge: "bg-orange-50 text-orange-700 border-orange-200", dot: "bg-orange-400" },
+  asteptam_plata: { badge: "bg-purple-50 text-purple-700 border-purple-200", dot: "bg-purple-400" },
   rezolvat: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
 };
 

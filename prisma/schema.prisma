@@ -110,15 +110,16 @@ model Project {
 }
 
 model ContactMessage {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  phone     String
-  email     String?
-  message   String?
-  source    String   @default("Pagina de contact")
-  read      Boolean  @default(false)
-  status    String   @default("in_asteptare")
-  createdAt DateTime @default(now())
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  phone             String
+  email             String?
+  message           String?
+  source            String   @default("Pagina de contact")
+  read              Boolean  @default(false)
+  status            String   @default("in_asteptare")
+  telegramMessageId Int?
+  createdAt         DateTime @default(now())
 }
 
 model Settings {
