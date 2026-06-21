@@ -147,7 +147,6 @@ model ContactMessage {
   source            String   @default("Pagina de contact")
   read              Boolean  @default(false)
   status            String   @default("in_asteptare")
-  clientType        String?
   mood              String?
   telegramMessageId Int?
   createdAt         DateTime @default(now())

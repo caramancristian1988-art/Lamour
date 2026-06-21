@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 import { MESSAGE_STATUSES } from "./messageStatuses";
-import { CLIENT_TYPES } from "./clientTypes";
 import { MOODS } from "./moods";
 import { sendTelegramMessage, editTelegramMessage, buildContactMessageText, buildMessageButtons } from "./telegram";
 
@@ -65,13 +64,11 @@ async function syncTelegramMessage(updated: {
   message: string | null;
   source: string;
   status: string;
-  clientType: string | null;
   mood: string | null;
   telegramMessageId: number | null;
 }) {
   if (!updated.telegramMessageId) return;
   const statusLabel = MESSAGE_STATUSES.find((s) => s.value === updated.status)?.label ?? updated.status;
-  const clientTypeLabel = CLIENT_TYPES.find((c) => c.value === updated.clientType)?.label ?? null;
   const moodLabel = MOODS.find((m) => m.value === updated.mood)?.label ?? null;
   const text = buildContactMessageText({
     name: updated.name,
@@ -80,7 +77,6 @@ async function syncTelegramMessage(updated: {
     message: updated.message,
     source: updated.source,
     statusLabel,
-    clientTypeLabel,
     moodLabel,
   });
   await editTelegramMessage(updated.telegramMessageId, text, buildMessageButtons(updated.id));
@@ -92,16 +88,6 @@ export async function setMessageStatusAction(formData: FormData) {
   const status = String(formData.get("status") ?? "");
   if (!id || !MESSAGE_STATUSES.some((s) => s.value === status)) return;
   const updated = await prisma.contactMessage.update({ where: { id }, data: { status, read: true } });
-  await syncTelegramMessage(updated);
-  revalidatePath("/admin/mesaje");
-}
-
-export async function setClientTypeAction(formData: FormData) {
-  await requireAdmin();
-  const id = String(formData.get("id") ?? "");
-  const clientType = String(formData.get("clientType") ?? "");
-  if (!id || !CLIENT_TYPES.some((c) => c.value === clientType)) return;
-  const updated = await prisma.contactMessage.update({ where: { id }, data: { clientType } });
   await syncTelegramMessage(updated);
   revalidatePath("/admin/mesaje");
 }

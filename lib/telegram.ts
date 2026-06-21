@@ -76,7 +76,6 @@ export function buildContactMessageText(message: {
   message: string | null;
   source: string;
   statusLabel: string;
-  clientTypeLabel?: string | null;
   moodLabel?: string | null;
 }): string {
   const lines = [
@@ -89,7 +88,6 @@ export function buildContactMessageText(message: {
     ``,
     `🔗 Sursă: ${escapeHtml(message.source)}`,
     `📌 Status: <b>${escapeHtml(message.statusLabel)}</b>`,
-    message.clientTypeLabel ? `🏷 Tip client: <b>${escapeHtml(message.clientTypeLabel)}</b>` : null,
     message.moodLabel ? `🙂 Reacție: <b>${escapeHtml(message.moodLabel)}</b>` : null,
   ].filter((l) => l !== null);
   return lines.join("\n");
@@ -101,16 +99,11 @@ const STATUS_BUTTON_ROWS: { value: string; label: string }[][] = [
   [{ value: "anulat", label: "❌ Anulat" }],
 ];
 
-const CLIENT_TYPE_BUTTON_ROWS: { value: string; label: string }[][] = [
-  [{ value: "nou", label: "🆕" }, { value: "cald", label: "🔥" }, { value: "rece", label: "🧊" }, { value: "vip", label: "💎" }],
-];
-
 const MOOD_BUTTON_ROWS: { value: string; label: string }[][] = [
   [{ value: "incantat", label: "🤑" }, { value: "fericit", label: "😁" }, { value: "nervos", label: "😠" }, { value: "furios", label: "🤬" }],
 ];
 
 export const STATUS_BUTTONS = STATUS_BUTTON_ROWS.flat();
-export const CLIENT_TYPE_BUTTONS = CLIENT_TYPE_BUTTON_ROWS.flat();
 export const MOOD_BUTTONS = MOOD_BUTTON_ROWS.flat();
 
 function rowsToButtons(rows: { value: string; label: string }[][], prefix: string, messageId: string): InlineButton[][] {
@@ -122,9 +115,5 @@ export function buildStatusButtons(messageId: string): InlineButton[][] {
 }
 
 export function buildMessageButtons(messageId: string): InlineButton[][] {
-  return [
-    ...rowsToButtons(STATUS_BUTTON_ROWS, "status", messageId),
-    ...rowsToButtons(CLIENT_TYPE_BUTTON_ROWS, "client", messageId),
-    ...rowsToButtons(MOOD_BUTTON_ROWS, "mood", messageId),
-  ];
+  return [...rowsToButtons(STATUS_BUTTON_ROWS, "status", messageId), ...rowsToButtons(MOOD_BUTTON_ROWS, "mood", messageId)];
 }

@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import DeleteButton from "../components/DeleteButton";
 import MessageStatusBadge from "../components/MessageStatusBadge";
-import ClientTypeBadge from "../components/ClientTypeBadge";
 import MoodBadge from "../components/MoodBadge";
 import { markMessageReadAction, deleteMessageAction } from "@/lib/adminMessageActions";
 
@@ -71,7 +70,6 @@ export default async function AdminMesajePage() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <MessageStatusBadge id={m.id} status={m.status} />
-                  <ClientTypeBadge id={m.id} clientType={m.clientType} />
                   <MoodBadge id={m.id} mood={m.mood} />
                   {!m.read && (
                     <form action={markMessageReadAction}>
