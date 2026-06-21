@@ -6,48 +6,16 @@ import { getPromoProducts } from "@/lib/promoProducts";
 import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
+import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
-const features = [
-  {
-    title: "Tehnicieni certificați",
-    desc: "Personal calificat cu experiență în toate brandurile de climatizare.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Produse profesionale",
-    desc: "Folosim soluții de curățare și igienizare certificate și sigure.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Garanție inclusă",
-    desc: "Oferim garanție pentru toate lucrările de mentenanță efectuate.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        <path d="M9 12l2 2 4-4"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Programare flexibilă",
-    desc: "Alegem împreună data și ora care ți se potrivesc cel mai bine.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-      </svg>
-    ),
-  },
+const defaultFeatures = [
+  { title: "Tehnicieni certificați", desc: "Personal calificat cu experiență în toate brandurile de climatizare.", icon: "award" },
+  { title: "Produse profesionale", desc: "Folosim soluții de curățare și igienizare certificate și sigure.", icon: "package" },
+  { title: "Garanție inclusă", desc: "Oferim garanție pentru toate lucrările de mentenanță efectuate.", icon: "shield" },
+  { title: "Programare flexibilă", desc: "Alegem împreună data și ora care ți se potrivesc cel mai bine.", icon: "calendar" },
 ];
 
-const inclus = [
+const defaultInclus = [
   "Curățare filtre și schimbător de căldură",
   "Igienizare cu soluții antibacteriene",
   "Verificare și reîncărcare freon",
@@ -61,7 +29,7 @@ const defaultPasi = [
   { nr: "03", title: "Curățare", desc: "Curățăm complet filtrele, schimbătorul de căldură și drenajul.", img: "/IMG_2840.PNG" },
 ];
 
-const testimoniale = [
+const defaultTestimoniale = [
   { text: "Curățare impecabilă! Aparatul funcționează mult mai bine acum și consumă mai puțin. Recomand cu drag!", name: "Mihai D.", city: "Chișinău", initials: "MD" },
   { text: "Tehnicianul a fost foarte profesionist și atent. A explicat tot ce a făcut. Serviciu excelent!", name: "Elena R.", city: "Bălți", initials: "ER" },
   { text: "Am un abonament anual și sunt foarte mulțumit. Aparatele mele sunt mereu în stare perfectă.", name: "Ion P.", city: "Chișinău", initials: "IP" },
@@ -71,9 +39,18 @@ export default async function MentenantaPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
-  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/mentenanta", {
+  const {
+    detailImage,
+    steps: pasi,
+    features,
+    checklist: inclus,
+    testimonials: testimoniale,
+  } = await getServiceDetail("/servicii/mentenanta", {
     detailImage: "/IMG_2968.PNG",
     steps: defaultPasi,
+    features: defaultFeatures,
+    checklist: defaultInclus,
+    testimonials: defaultTestimoniale,
   });
 
   return (
@@ -149,7 +126,7 @@ export default async function MentenantaPage() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-100">
           {features.map((f) => (
             <div key={f.title} className="flex flex-col gap-2 p-6">
-              {f.icon}
+              <ServiceFeatureIcon icon={f.icon} />
               <p className="font-bold text-sm text-[#1d2353] mt-1">{f.title}</p>
               <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
             </div>

@@ -6,51 +6,16 @@ import { getPromoProducts } from "@/lib/promoProducts";
 import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
+import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
-const features = [
-  {
-    title: "Echipă autorizată",
-    desc: "Tehnicieni calificați și mereu la curent cu noile tehnologii.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Montaj rapid și curat",
-    desc: "Respectăm timpul tău și lăsăm spațiul curat după instalare.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M12 6v6l4 2"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Garanție inclusă",
-    desc: "Oferim garanție pentru manoperă și echipamente.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        <path d="M9 12l2 2 4-4"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Suport dedicat",
-    desc: "Îți suntem alături înainte, în timpul și după instalare.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
-        <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-      </svg>
-    ),
-  },
+const defaultFeatures = [
+  { title: "Echipă autorizată", desc: "Tehnicieni calificați și mereu la curent cu noile tehnologii.", icon: "award" },
+  { title: "Montaj rapid și curat", desc: "Respectăm timpul tău și lăsăm spațiul curat după instalare.", icon: "clock" },
+  { title: "Garanție inclusă", desc: "Oferim garanție pentru manoperă și echipamente.", icon: "shield" },
+  { title: "Suport dedicat", desc: "Îți suntem alături înainte, în timpul și după instalare.", icon: "support" },
 ];
 
-const inclus = [
+const defaultInclus = [
   "Consultanță și recomandare personalizată",
   "Montaj efectuat conform standardelor",
   "Verificare completă și testare sistem",
@@ -79,7 +44,7 @@ const defaultPasi = [
   },
 ];
 
-const testimoniale = [
+const defaultTestimoniale = [
   {
     text: "Servicii excelente! Montajul a fost realizat rapid și foarte curat. Echipa a fost profesionistă și atentă la detalii.",
     name: "Andrei M.",
@@ -104,9 +69,18 @@ export default async function InstalareePage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
-  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/instalare", {
+  const {
+    detailImage,
+    steps: pasi,
+    features,
+    checklist: inclus,
+    testimonials: testimoniale,
+  } = await getServiceDetail("/servicii/instalare", {
     detailImage: "/IMG_2963.PNG",
     steps: defaultPasi,
+    features: defaultFeatures,
+    checklist: defaultInclus,
+    testimonials: defaultTestimoniale,
   });
 
   return (
@@ -200,7 +174,7 @@ export default async function InstalareePage() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-100">
           {features.map((f) => (
             <div key={f.title} className="flex flex-col gap-2 p-6">
-              {f.icon}
+              <ServiceFeatureIcon icon={f.icon} />
               <p className="font-bold text-sm text-[#1d2353] mt-1">{f.title}</p>
               <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
             </div>

@@ -6,52 +6,16 @@ import { getPromoProducts } from "@/lib/promoProducts";
 import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
+import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
-const features = [
-  {
-    title: "Experți certificați",
-    desc: "Consultanți cu experiență vastă în sisteme de climatizare.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Recomandare personalizată",
-    desc: "Analizăm spațiul tău și propunem soluția optimă pentru nevoile tale.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="7"/>
-        <path d="M21 21l-4.35-4.35"/>
-        <path d="M8.5 11h5"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Fără costuri ascunse",
-    desc: "Consultanța este transparentă, fără obligații sau taxe surpriză.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        <path d="M9 12l2 2 4-4"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Suport complet",
-    desc: "Te ghidăm de la alegerea sistemului până la instalarea finală.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
-        <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-      </svg>
-    ),
-  },
+const defaultFeatures = [
+  { title: "Experți certificați", desc: "Consultanți cu experiență vastă în sisteme de climatizare.", icon: "award" },
+  { title: "Recomandare personalizată", desc: "Analizăm spațiul tău și propunem soluția optimă pentru nevoile tale.", icon: "search-plus" },
+  { title: "Fără costuri ascunse", desc: "Consultanța este transparentă, fără obligații sau taxe surpriză.", icon: "shield" },
+  { title: "Suport complet", desc: "Te ghidăm de la alegerea sistemului până la instalarea finală.", icon: "support" },
 ];
 
-const inclus = [
+const defaultInclus = [
   "Evaluare gratuită a spațiului tău",
   "Recomandare sistem potrivit bugetului",
   "Comparație modele și eficiență energetică",
@@ -65,7 +29,7 @@ const defaultPasi = [
   { nr: "03", title: "Recomandare", desc: "Îți prezentăm cele mai potrivite soluții, cu prețuri și beneficii.", img: "/IMG_2840.PNG" },
 ];
 
-const testimoniale = [
+const defaultTestimoniale = [
   { text: "Consultanța a fost extrem de utilă. Mi-au recomandat exact ce aveam nevoie, fără să mă convingă să cumpăr mai mult.", name: "Radu T.", city: "Chișinău", initials: "RT" },
   { text: "Foarte profesioniști, mi-au explicat clar diferențele dintre modele. Am ales cu încredere!", name: "Cristina M.", city: "Orhei", initials: "CM" },
   { text: "Mulțumesc pentru recomandare, sistemul ales se potrivește perfect spațiului meu.", name: "Sergiu V.", city: "Chișinău", initials: "SV" },
@@ -75,9 +39,18 @@ export default async function ConsultantaPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
-  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/consultanta", {
+  const {
+    detailImage,
+    steps: pasi,
+    features,
+    checklist: inclus,
+    testimonials: testimoniale,
+  } = await getServiceDetail("/servicii/consultanta", {
     detailImage: "/IMG_2965.PNG",
     steps: defaultPasi,
+    features: defaultFeatures,
+    checklist: defaultInclus,
+    testimonials: defaultTestimoniale,
   });
 
   return (
@@ -153,7 +126,7 @@ export default async function ConsultantaPage() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-100">
           {features.map((f) => (
             <div key={f.title} className="flex flex-col gap-2 p-6">
-              {f.icon}
+              <ServiceFeatureIcon icon={f.icon} />
               <p className="font-bold text-sm text-[#1d2353] mt-1">{f.title}</p>
               <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
             </div>

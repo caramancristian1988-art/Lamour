@@ -8,8 +8,17 @@ const STATUS_STYLES: Record<string, { badge: string; dot: string }> = {
   in_asteptare: { badge: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-400" },
   sunat: { badge: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-400" },
   nu_raspunde: { badge: "bg-orange-50 text-orange-700 border-orange-200", dot: "bg-orange-400" },
+  ocupat: { badge: "bg-orange-50 text-orange-700 border-orange-200", dot: "bg-orange-400" },
+  se_gandeste: { badge: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-400" },
+  in_lucru: { badge: "bg-sky-50 text-sky-700 border-sky-200", dot: "bg-sky-400" },
+  task_creat: { badge: "bg-slate-50 text-slate-700 border-slate-200", dot: "bg-slate-400" },
+  comanda_confirmata: { badge: "bg-cyan-50 text-cyan-700 border-cyan-200", dot: "bg-cyan-400" },
   asteptam_plata: { badge: "bg-purple-50 text-purple-700 border-purple-200", dot: "bg-purple-400" },
+  achitat: { badge: "bg-teal-50 text-teal-700 border-teal-200", dot: "bg-teal-400" },
+  programat: { badge: "bg-indigo-50 text-indigo-700 border-indigo-200", dot: "bg-indigo-400" },
   rezolvat: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
+  anulat: { badge: "bg-gray-100 text-gray-500 border-gray-200", dot: "bg-gray-400" },
+  nu_interesat: { badge: "bg-red-50 text-red-700 border-red-200", dot: "bg-red-400" },
 };
 
 export default function MessageStatusBadge({ id, status }: { id: string; status: string }) {

@@ -6,52 +6,16 @@ import { getPromoProducts } from "@/lib/promoProducts";
 import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
+import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
-const features = [
-  {
-    title: "Capacități mari",
-    desc: "Sisteme dimensionate pentru spații comerciale, hale și birouri.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M3 21V8l9-5 9 5v13"/>
-        <path d="M9 21V12h6v9"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Proiectare personalizată",
-    desc: "Calcul de sarcină termică și soluție adaptată clădirii tale.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M4 19h16M4 19V7l5-3 5 3v12M14 19v-7l5-3v10"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Mentenanță programată",
-    desc: "Contracte de service pentru funcționare continuă, fără pauze.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M12 8v4l3 2"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Echipă specializată",
-    desc: "Tehnicieni autorizați pentru instalații comerciale complexe.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <circle cx="9" cy="7" r="3"/>
-        <circle cx="17" cy="9" r="2.5"/>
-        <path d="M3 21v-2a5 5 0 015-5h2a5 5 0 015 5v2"/>
-        <path d="M16 21v-1.5a4 4 0 00-2-3.464"/>
-      </svg>
-    ),
-  },
+const defaultFeatures = [
+  { title: "Capacități mari", desc: "Sisteme dimensionate pentru spații comerciale, hale și birouri.", icon: "building" },
+  { title: "Proiectare personalizată", desc: "Calcul de sarcină termică și soluție adaptată clădirii tale.", icon: "blueprint" },
+  { title: "Mentenanță programată", desc: "Contracte de service pentru funcționare continuă, fără pauze.", icon: "clock-alt" },
+  { title: "Echipă specializată", desc: "Tehnicieni autorizați pentru instalații comerciale complexe.", icon: "users" },
 ];
 
-const inclus = [
+const defaultInclus = [
   "Evaluare tehnică a spațiului comercial",
   "Proiectare sistem HVAC personalizat",
   "Montaj de către echipă specializată",
@@ -65,7 +29,7 @@ const defaultPasi = [
   { nr: "03", title: "Implementare", desc: "Montăm și punem în funcțiune sistemul, cu testare completă.", img: "/IMG_2840.PNG" },
 ];
 
-const testimoniale = [
+const defaultTestimoniale = [
   { text: "Au proiectat și montat sistemul HVAC pentru biroul nostru de 300mp fără nicio problemă. Echipă foarte profesionistă.", name: "Andrei P.", city: "Chișinău", initials: "AP" },
   { text: "Sistem comercial montat în hala noastră de producție, funcționează impecabil de la instalare.", name: "Olesea D.", city: "Bălți", initials: "OD" },
   { text: "Contractul de mentenanță ne-a scutit de bătăi de cap, totul e verificat periodic.", name: "Mihai R.", city: "Chișinău", initials: "MR" },
@@ -75,9 +39,18 @@ export default async function ComercialePage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts("conditioane-comerciale");
-  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/comerciale", {
+  const {
+    detailImage,
+    steps: pasi,
+    features,
+    checklist: inclus,
+    testimonials: testimoniale,
+  } = await getServiceDetail("/servicii/comerciale", {
     detailImage: "/IMG_2967.PNG",
     steps: defaultPasi,
+    features: defaultFeatures,
+    checklist: defaultInclus,
+    testimonials: defaultTestimoniale,
   });
 
   return (
@@ -153,7 +126,7 @@ export default async function ComercialePage() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-100">
           {features.map((f) => (
             <div key={f.title} className="flex flex-col gap-2 p-6">
-              {f.icon}
+              <ServiceFeatureIcon icon={f.icon} />
               <p className="font-bold text-sm text-[#1d2353] mt-1">{f.title}</p>
               <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
             </div>

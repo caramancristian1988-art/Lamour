@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import DeleteButton from "../components/DeleteButton";
 import MessageStatusBadge from "../components/MessageStatusBadge";
+import ClientTypeBadge from "../components/ClientTypeBadge";
 import { markMessageReadAction, deleteMessageAction } from "@/lib/adminMessageActions";
 
 async function getMessages() {
@@ -20,7 +21,17 @@ const STATUS_ACCENT_COLORS: Record<string, string> = {
   in_asteptare: "#f59e0b",
   sunat: "#3b82f6",
   nu_raspunde: "#f97316",
+  ocupat: "#f97316",
+  se_gandeste: "#eab308",
+  in_lucru: "#0ea5e9",
+  task_creat: "#64748b",
+  comanda_confirmata: "#06b6d4",
+  asteptam_plata: "#a855f7",
+  achitat: "#14b8a6",
+  programat: "#6366f1",
   rezolvat: "#22c55e",
+  anulat: "#9ca3af",
+  nu_interesat: "#ef4444",
 };
 
 export default async function AdminMesajePage() {
@@ -65,6 +76,7 @@ export default async function AdminMesajePage() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <MessageStatusBadge id={m.id} status={m.status} />
+                  <ClientTypeBadge id={m.id} clientType={m.clientType} />
                   {!m.read && (
                     <form action={markMessageReadAction}>
                       <input type="hidden" name="id" value={m.id} />

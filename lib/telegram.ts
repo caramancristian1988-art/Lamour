@@ -76,6 +76,7 @@ export function buildContactMessageText(message: {
   message: string | null;
   source: string;
   statusLabel: string;
+  clientTypeLabel?: string | null;
 }): string {
   const lines = [
     `📩 <b>Mesaj nou</b>`,
@@ -87,6 +88,7 @@ export function buildContactMessageText(message: {
     ``,
     `🔗 Sursă: ${escapeHtml(message.source)}`,
     `📌 Status: <b>${escapeHtml(message.statusLabel)}</b>`,
+    message.clientTypeLabel ? `🏷 Tip client: <b>${escapeHtml(message.clientTypeLabel)}</b>` : null,
   ].filter((l) => l !== null);
   return lines.join("\n");
 }
@@ -94,13 +96,41 @@ export function buildContactMessageText(message: {
 export const STATUS_BUTTONS: { value: string; label: string }[] = [
   { value: "sunat", label: "📞 L-am sunat" },
   { value: "nu_raspunde", label: "🚫 Nu răspunde" },
+  { value: "ocupat", label: "🔁 Ocupat, revin" },
+  { value: "se_gandeste", label: "🤔 Se gândește" },
+  { value: "in_lucru", label: "🛠 În lucru" },
+  { value: "task_creat", label: "📋 Task creat" },
+  { value: "comanda_confirmata", label: "🧾 Comandă confirmată" },
   { value: "asteptam_plata", label: "⏳ Aștept plata" },
+  { value: "achitat", label: "💰 Achitat" },
+  { value: "programat", label: "🗓 Programat" },
   { value: "rezolvat", label: "✅ Rezolvat" },
+  { value: "anulat", label: "❌ Anulat" },
+  { value: "nu_interesat", label: "👎 Nu e interesat" },
 ];
 
+export const CLIENT_TYPE_BUTTONS: { value: string; label: string }[] = [
+  { value: "nou", label: "🆕 Client nou" },
+  { value: "recurent", label: "🔄 Client recurent" },
+  { value: "cald", label: "🔥 Client cald" },
+  { value: "rece", label: "🧊 Client rece" },
+  { value: "vip", label: "💎 Client VIP" },
+  { value: "comercial", label: "🏢 Client comercial" },
+  { value: "dificil", label: "😤 Client dificil" },
+];
+
+function chunkButtons(items: { value: string; label: string }[], prefix: string, messageId: string): InlineButton[][] {
+  const rows: InlineButton[][] = [];
+  for (let i = 0; i < items.length; i += 2) {
+    rows.push(items.slice(i, i + 2).map((b) => ({ text: b.label, callback_data: `${prefix}:${messageId}:${b.value}` })));
+  }
+  return rows;
+}
+
 export function buildStatusButtons(messageId: string): InlineButton[][] {
-  return [
-    [STATUS_BUTTONS[0], STATUS_BUTTONS[1]].map((b) => ({ text: b.label, callback_data: `status:${messageId}:${b.value}` })),
-    [STATUS_BUTTONS[2], STATUS_BUTTONS[3]].map((b) => ({ text: b.label, callback_data: `status:${messageId}:${b.value}` })),
-  ];
+  return chunkButtons(STATUS_BUTTONS, "status", messageId);
+}
+
+export function buildMessageButtons(messageId: string): InlineButton[][] {
+  return [...chunkButtons(STATUS_BUTTONS, "status", messageId), ...chunkButtons(CLIENT_TYPE_BUTTONS, "client", messageId)];
 }

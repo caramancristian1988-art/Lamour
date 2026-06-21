@@ -101,6 +101,35 @@ model ServiceStep {
   createdAt   DateTime @default(now())
 }
 
+model ServiceFeature {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  serviceId   String   @db.ObjectId
+  order       Int      @default(0)
+  title       String
+  description String
+  icon        String   @default("award")
+  createdAt   DateTime @default(now())
+}
+
+model ServiceChecklistItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  serviceId String   @db.ObjectId
+  order     Int      @default(0)
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model ServiceTestimonial {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  serviceId String   @db.ObjectId
+  order     Int      @default(0)
+  text      String
+  name      String
+  city      String
+  initials  String
+  createdAt DateTime @default(now())
+}
+
 model Project {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
@@ -118,6 +147,7 @@ model ContactMessage {
   source            String   @default("Pagina de contact")
   read              Boolean  @default(false)
   status            String   @default("in_asteptare")
+  clientType        String?
   telegramMessageId Int?
   createdAt         DateTime @default(now())
 }

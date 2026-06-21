@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUSES } from "@/lib/messageStatuses";
-import { editTelegramMessage, answerCallbackQuery, buildContactMessageText, buildStatusButtons } from "@/lib/telegram";
+import { CLIENT_TYPES } from "@/lib/clientTypes";
+import { editTelegramMessage, answerCallbackQuery, buildContactMessageText, buildMessageButtons } from "@/lib/telegram";
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get("x-telegram-bot-api-secret-token");
@@ -18,17 +19,23 @@ export async function POST(request: NextRequest) {
   }
 
   const data = String(callbackQuery.data ?? "");
-  const [prefix, id, status] = data.split(":");
+  const [prefix, id, value] = data.split(":");
 
-  if (prefix !== "status" || !id || !MESSAGE_STATUSES.some((s) => s.value === status)) {
+  const isStatus = prefix === "status" && MESSAGE_STATUSES.some((s) => s.value === value);
+  const isClientType = prefix === "client" && CLIENT_TYPES.some((c) => c.value === value);
+
+  if (!id || (!isStatus && !isClientType)) {
     await answerCallbackQuery(callbackQuery.id, "Acțiune necunoscută.");
     return NextResponse.json({ ok: true });
   }
 
   try {
-    const updated = await prisma.contactMessage.update({ where: { id }, data: { status, read: true } });
+    const updated = isStatus
+      ? await prisma.contactMessage.update({ where: { id }, data: { status: value, read: true } })
+      : await prisma.contactMessage.update({ where: { id }, data: { clientType: value } });
 
-    const statusLabel = MESSAGE_STATUSES.find((s) => s.value === status)?.label ?? status;
+    const statusLabel = MESSAGE_STATUSES.find((s) => s.value === updated.status)?.label ?? updated.status;
+    const clientTypeLabel = CLIENT_TYPES.find((c) => c.value === updated.clientType)?.label ?? null;
     const text = buildContactMessageText({
       name: updated.name,
       phone: updated.phone,
@@ -36,12 +43,13 @@ export async function POST(request: NextRequest) {
       message: updated.message,
       source: updated.source,
       statusLabel,
+      clientTypeLabel,
     });
 
     if (updated.telegramMessageId) {
-      await editTelegramMessage(updated.telegramMessageId, text, buildStatusButtons(updated.id));
+      await editTelegramMessage(updated.telegramMessageId, text, buildMessageButtons(updated.id));
     }
-    await answerCallbackQuery(callbackQuery.id, `Status: ${statusLabel}`);
+    await answerCallbackQuery(callbackQuery.id, isStatus ? `Status: ${statusLabel}` : `Tip client: ${clientTypeLabel}`);
     revalidatePath("/admin/mesaje");
   } catch {
     await answerCallbackQuery(callbackQuery.id, "Mesajul nu mai există.");

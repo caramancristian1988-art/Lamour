@@ -6,51 +6,16 @@ import { getPromoProducts } from "@/lib/promoProducts";
 import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
+import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
-const features = [
-  {
-    title: "O unitate, mai multe camere",
-    desc: "Climatizezi întreaga locuință cu o singură unitate exterioară.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <rect x="3" y="3" width="7" height="7" rx="1"/>
-        <rect x="14" y="3" width="7" height="7" rx="1"/>
-        <rect x="3" y="14" width="7" height="7" rx="1"/>
-        <rect x="14" y="14" width="7" height="7" rx="1"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Control independent",
-    desc: "Fiecare cameră are propriul termostat și setări individuale.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M12 8v4l3 2"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Eficiență energetică",
-    desc: "Consum redus comparativ cu mai multe unități independente.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Montaj estetic",
-    desc: "O singură unitate exterioară, fără a încărca fațada clădirii.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1V9.5z"/>
-      </svg>
-    ),
-  },
+const defaultFeatures = [
+  { title: "O unitate, mai multe camere", desc: "Climatizezi întreaga locuință cu o singură unitate exterioară.", icon: "grid" },
+  { title: "Control independent", desc: "Fiecare cameră are propriul termostat și setări individuale.", icon: "clock-alt" },
+  { title: "Eficiență energetică", desc: "Consum redus comparativ cu mai multe unități independente.", icon: "bolt" },
+  { title: "Montaj estetic", desc: "O singură unitate exterioară, fără a încărca fațada clădirii.", icon: "home" },
 ];
 
-const inclus = [
+const defaultInclus = [
   "Consultanță pentru numărul de camere",
   "Montaj unitate exterioară și interioare",
   "Configurare control individual pe cameră",
@@ -64,7 +29,7 @@ const defaultPasi = [
   { nr: "03", title: "Configurare", desc: "Setăm controlul individual și testăm funcționarea fiecărei zone.", img: "/IMG_2840.PNG" },
 ];
 
-const testimoniale = [
+const defaultTestimoniale = [
   { text: "Soluția multisplit a fost perfecta pentru apartamentul nostru. Doar o unitate exterioară și toate camerele climatizate!", name: "Tatiana B.", city: "Chișinău", initials: "TB" },
   { text: "Montaj rapid, fără bătăi de cap. Fiecare cameră are temperatura ei, exact cum voiam.", name: "Igor C.", city: "Bălți", initials: "IC" },
   { text: "Recomand cu încredere sistemele multisplit, mai ales pentru case cu mai multe camere.", name: "Natalia S.", city: "Chișinău", initials: "NS" },
@@ -74,9 +39,18 @@ export default async function MultisplitPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts("sisteme-multisplit");
-  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/multisplit", {
+  const {
+    detailImage,
+    steps: pasi,
+    features,
+    checklist: inclus,
+    testimonials: testimoniale,
+  } = await getServiceDetail("/servicii/multisplit", {
     detailImage: "/IMG_2966.PNG",
     steps: defaultPasi,
+    features: defaultFeatures,
+    checklist: defaultInclus,
+    testimonials: defaultTestimoniale,
   });
 
   return (
@@ -152,7 +126,7 @@ export default async function MultisplitPage() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-100">
           {features.map((f) => (
             <div key={f.title} className="flex flex-col gap-2 p-6">
-              {f.icon}
+              <ServiceFeatureIcon icon={f.icon} />
               <p className="font-bold text-sm text-[#1d2353] mt-1">{f.title}</p>
               <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
             </div>

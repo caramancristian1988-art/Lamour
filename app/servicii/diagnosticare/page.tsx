@@ -6,50 +6,16 @@ import { getPromoProducts } from "@/lib/promoProducts";
 import { getServiceDetail } from "@/lib/serviceDetail";
 import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
+import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
-const features = [
-  {
-    title: "Diagnosticare rapidă",
-    desc: "Identificăm problema în cel mai scurt timp posibil.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Piese originale",
-    desc: "Folosim exclusiv componente originale sau certificate.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Garanție reparație",
-    desc: "Toate reparațiile sunt acoperite de garanție.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        <path d="M9 12l2 2 4-4"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Suport tehnic",
-    desc: "Suntem disponibili pentru orice întrebare după reparație.",
-    icon: (
-      <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
-        <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-      </svg>
-    ),
-  },
+const defaultFeatures = [
+  { title: "Diagnosticare rapidă", desc: "Identificăm problema în cel mai scurt timp posibil.", icon: "search" },
+  { title: "Piese originale", desc: "Folosim exclusiv componente originale sau certificate.", icon: "wrench" },
+  { title: "Garanție reparație", desc: "Toate reparațiile sunt acoperite de garanție.", icon: "shield" },
+  { title: "Suport tehnic", desc: "Suntem disponibili pentru orice întrebare după reparație.", icon: "support" },
 ];
 
-const inclus = [
+const defaultInclus = [
   "Diagnosticare completă a sistemului",
   "Identificare și reparare scurgeri freon",
   "Înlocuire componente defecte",
@@ -63,7 +29,7 @@ const defaultPasi = [
   { nr: "03", title: "Reparație", desc: "Reparăm aparatul și îl testăm complet înainte de plecare.", img: "/IMG_2848.PNG" },
 ];
 
-const testimoniale = [
+const defaultTestimoniale = [
   { text: "Au reparat aparatul în aceeași zi! Tehnicianul a fost foarte profesionist și a explicat tot ce a făcut.", name: "Radu M.", city: "Chișinău", initials: "RM" },
   { text: "Preț corect și transparență totală. Au prezentat oferta înainte de a începe și au respectat-o.", name: "Ioana S.", city: "Bălți", initials: "IS" },
   { text: "Am sunat dimineața și după-amiaza aparatul funcționa perfect. Recomand cu toată încrederea!", name: "Doru N.", city: "Chișinău", initials: "DN" },
@@ -73,9 +39,18 @@ export default async function DiagnosticareReparatiiPage() {
   const { serviciiEnabled } = await getSectionFlags();
   if (!serviciiEnabled) notFound();
   const produse = await getPromoProducts();
-  const { detailImage, steps: pasi } = await getServiceDetail("/servicii/diagnosticare", {
+  const {
+    detailImage,
+    steps: pasi,
+    features,
+    checklist: inclus,
+    testimonials: testimoniale,
+  } = await getServiceDetail("/servicii/diagnosticare", {
     detailImage: "/IMG_2964.PNG",
     steps: defaultPasi,
+    features: defaultFeatures,
+    checklist: defaultInclus,
+    testimonials: defaultTestimoniale,
   });
 
   return (
@@ -151,7 +126,7 @@ export default async function DiagnosticareReparatiiPage() {
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-gray-100">
           {features.map((f) => (
             <div key={f.title} className="flex flex-col gap-2 p-6">
-              {f.icon}
+              <ServiceFeatureIcon icon={f.icon} />
               <p className="font-bold text-sm text-[#1d2353] mt-1">{f.title}</p>
               <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
             </div>
