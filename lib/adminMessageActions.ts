@@ -5,6 +5,7 @@ import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 import { MESSAGE_STATUSES } from "./messageStatuses";
 import { CLIENT_TYPES } from "./clientTypes";
+import { MOODS } from "./moods";
 import { sendTelegramMessage, editTelegramMessage, buildContactMessageText, buildMessageButtons } from "./telegram";
 
 export interface ContactFormState {
@@ -65,11 +66,13 @@ async function syncTelegramMessage(updated: {
   source: string;
   status: string;
   clientType: string | null;
+  mood: string | null;
   telegramMessageId: number | null;
 }) {
   if (!updated.telegramMessageId) return;
   const statusLabel = MESSAGE_STATUSES.find((s) => s.value === updated.status)?.label ?? updated.status;
   const clientTypeLabel = CLIENT_TYPES.find((c) => c.value === updated.clientType)?.label ?? null;
+  const moodLabel = MOODS.find((m) => m.value === updated.mood)?.label ?? null;
   const text = buildContactMessageText({
     name: updated.name,
     phone: updated.phone,
@@ -78,6 +81,7 @@ async function syncTelegramMessage(updated: {
     source: updated.source,
     statusLabel,
     clientTypeLabel,
+    moodLabel,
   });
   await editTelegramMessage(updated.telegramMessageId, text, buildMessageButtons(updated.id));
 }
@@ -98,6 +102,16 @@ export async function setClientTypeAction(formData: FormData) {
   const clientType = String(formData.get("clientType") ?? "");
   if (!id || !CLIENT_TYPES.some((c) => c.value === clientType)) return;
   const updated = await prisma.contactMessage.update({ where: { id }, data: { clientType } });
+  await syncTelegramMessage(updated);
+  revalidatePath("/admin/mesaje");
+}
+
+export async function setMoodAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const mood = String(formData.get("mood") ?? "");
+  if (!id || !MOODS.some((m) => m.value === mood)) return;
+  const updated = await prisma.contactMessage.update({ where: { id }, data: { mood } });
   await syncTelegramMessage(updated);
   revalidatePath("/admin/mesaje");
 }
