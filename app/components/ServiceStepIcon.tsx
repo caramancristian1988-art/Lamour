@@ -1,9 +1,9 @@
-const BLUE = "#4da3ff";
-const RED = "#ff4d4d";
+const BLUE = "#1d2353";
+const RED = "#c7092b";
 
 function Icon({ children }: { children: React.ReactNode }) {
   return (
-    <svg className="w-10 h-10 sm:w-12 sm:h-12" fill="none" viewBox="0 0 24 24" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+    <svg className="w-16 h-16 sm:w-20 sm:h-20" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
       {children}
     </svg>
   );
@@ -134,7 +134,7 @@ const fallback = (
 
 export default function ServiceStepIcon({ title, className }: { title: string; className?: string }) {
   return (
-    <div className={`flex items-center justify-center bg-[#0b1228] ${className ?? ""}`}>
+    <div className={`flex items-center justify-center bg-white ${className ?? ""}`}>
       {icons[title] ?? fallback}
     </div>
   );
