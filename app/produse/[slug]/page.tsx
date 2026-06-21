@@ -14,6 +14,7 @@ import {
 } from "@/lib/fallbackData";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 import ProductSpecsList from "../../components/ProductSpecsList";
+import ProductOfferModal from "../../components/ProductOfferModal";
 import {
   sortProducts,
   paginate,
@@ -520,12 +521,7 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
                   </svg>
                   {inStock ? "Adaugă în coș" : "Stoc epuizat"}
                 </AddToCartButton>
-                <Link
-                  href="/contact"
-                  className="w-full h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide"
-                >
-                  Cere ofertă
-                </Link>
+                <ProductOfferModal productName={displayName} productImage={displayImage} />
               </div>
 
               <div className="bg-[#1d2353] rounded-2xl divide-y divide-white/10 overflow-hidden">
