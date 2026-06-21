@@ -93,44 +93,31 @@ export function buildContactMessageText(message: {
   return lines.join("\n");
 }
 
-export const STATUS_BUTTONS: { value: string; label: string }[] = [
-  { value: "sunat", label: "📞 L-am sunat" },
-  { value: "nu_raspunde", label: "🚫 Nu răspunde" },
-  { value: "ocupat", label: "🔁 Ocupat, revin" },
-  { value: "se_gandeste", label: "🤔 Se gândește" },
-  { value: "in_lucru", label: "🛠 În lucru" },
-  { value: "task_creat", label: "📋 Task creat" },
-  { value: "comanda_confirmata", label: "🧾 Comandă confirmată" },
-  { value: "asteptam_plata", label: "⏳ Aștept plata" },
-  { value: "achitat", label: "💰 Achitat" },
-  { value: "programat", label: "🗓 Programat" },
-  { value: "rezolvat", label: "✅ Rezolvat" },
-  { value: "anulat", label: "❌ Anulat" },
-  { value: "nu_interesat", label: "👎 Nu e interesat" },
+const STATUS_BUTTON_ROWS: { value: string; label: string }[][] = [
+  [{ value: "sunat", label: "📞 Sunat" }, { value: "nu_raspunde", label: "🚫 Nu răspunde" }, { value: "ocupat", label: "🔁 Ocupat" }],
+  [{ value: "se_gandeste", label: "🤔 Gândește" }, { value: "in_lucru", label: "🛠 În lucru" }, { value: "task_creat", label: "📋 Task" }],
+  [{ value: "comanda_confirmata", label: "🧾 Confirmat" }, { value: "asteptam_plata", label: "⏳ Aștept plata" }, { value: "achitat", label: "💰 Achitat" }],
+  [{ value: "programat", label: "🗓 Programat" }, { value: "rezolvat", label: "✅ Rezolvat" }],
+  [{ value: "anulat", label: "❌ Anulat" }, { value: "nu_interesat", label: "👎 Neinteresat" }],
 ];
 
-export const CLIENT_TYPE_BUTTONS: { value: string; label: string }[] = [
-  { value: "nou", label: "🆕 Client nou" },
-  { value: "recurent", label: "🔄 Client recurent" },
-  { value: "cald", label: "🔥 Client cald" },
-  { value: "rece", label: "🧊 Client rece" },
-  { value: "vip", label: "💎 Client VIP" },
-  { value: "comercial", label: "🏢 Client comercial" },
-  { value: "dificil", label: "😤 Client dificil" },
+const CLIENT_TYPE_BUTTON_ROWS: { value: string; label: string }[][] = [
+  [{ value: "nou", label: "🆕 Nou" }, { value: "recurent", label: "🔄 Recurent" }, { value: "vip", label: "💎 VIP" }],
+  [{ value: "cald", label: "🔥 Cald" }, { value: "rece", label: "🧊 Rece" }, { value: "comercial", label: "🏢 Comercial" }],
+  [{ value: "dificil", label: "😤 Dificil" }],
 ];
 
-function chunkButtons(items: { value: string; label: string }[], prefix: string, messageId: string): InlineButton[][] {
-  const rows: InlineButton[][] = [];
-  for (let i = 0; i < items.length; i += 2) {
-    rows.push(items.slice(i, i + 2).map((b) => ({ text: b.label, callback_data: `${prefix}:${messageId}:${b.value}` })));
-  }
-  return rows;
+export const STATUS_BUTTONS = STATUS_BUTTON_ROWS.flat();
+export const CLIENT_TYPE_BUTTONS = CLIENT_TYPE_BUTTON_ROWS.flat();
+
+function rowsToButtons(rows: { value: string; label: string }[][], prefix: string, messageId: string): InlineButton[][] {
+  return rows.map((row) => row.map((b) => ({ text: b.label, callback_data: `${prefix}:${messageId}:${b.value}` })));
 }
 
 export function buildStatusButtons(messageId: string): InlineButton[][] {
-  return chunkButtons(STATUS_BUTTONS, "status", messageId);
+  return rowsToButtons(STATUS_BUTTON_ROWS, "status", messageId);
 }
 
 export function buildMessageButtons(messageId: string): InlineButton[][] {
-  return [...chunkButtons(STATUS_BUTTONS, "status", messageId), ...chunkButtons(CLIENT_TYPE_BUTTONS, "client", messageId)];
+  return [...rowsToButtons(STATUS_BUTTON_ROWS, "status", messageId), ...rowsToButtons(CLIENT_TYPE_BUTTON_ROWS, "client", messageId)];
 }
