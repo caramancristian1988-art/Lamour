@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
-import { AdminInput, AdminTextarea } from "../components/AdminField";
+import { AdminInput } from "../components/AdminField";
 import SaveButton from "../components/SaveButton";
 import { updateSettingsAction } from "@/lib/adminSettingsActions";
 
@@ -26,7 +26,7 @@ export default async function AdminSetariPage() {
 
   return (
     <div>
-      <AdminPageHeader title="Setări" description="Datele companiei și SEO global, folosite pe tot site-ul." />
+      <AdminPageHeader title="Setări" description="Datele companiei, folosite pe tot site-ul." />
 
       <form action={updateSettingsAction} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-6 max-w-2xl">
         <div>
@@ -45,14 +45,6 @@ export default async function AdminSetariPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AdminInput label="Link Facebook" name="facebook" defaultValue={settings?.facebook ?? ""} placeholder="https://facebook.com/climatrapid" />
             <AdminInput label="Link Instagram" name="instagram" defaultValue={settings?.instagram ?? ""} placeholder="https://instagram.com/climatrapid" />
-          </div>
-        </div>
-
-        <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">SEO global</p>
-          <div className="flex flex-col gap-4">
-            <AdminInput label="Titlu SEO" name="seoTitle" defaultValue={settings?.seoTitle ?? ""} placeholder="Climat Rapid — Condiționere & Climatizare Moldova" />
-            <AdminTextarea label="Descriere SEO" name="seoDescription" defaultValue={settings?.seoDescription ?? ""} placeholder="Magazin online de condiționere și sisteme de climatizare în Moldova." rows={3} />
           </div>
         </div>
 
