@@ -30,6 +30,7 @@ import ProductGallery from "../../components/ProductGallery";
 import FavoriteButton from "../../components/FavoriteButton";
 import ProductFilterSidebar from "../../components/ProductFilterSidebar";
 import ReviewsGrid from "../../components/ReviewsGrid";
+import FaqAccordion from "../../components/FaqAccordion";
 import { getSectionFlags } from "@/lib/siteSettings";
 
 export const revalidate = 3600;
@@ -59,14 +60,15 @@ const getProductData = cache(async (slug: string) => {
   try {
     const product = await prisma.product.findUnique({ where: { slug }, include: { category: true } });
     if (!product) return null;
-    const [related, reviews] = await Promise.all([
+    const [related, reviews, faqs] = await Promise.all([
       prisma.product.findMany({
         where: { categoryId: product.categoryId, NOT: { id: product.id } },
         take: 4,
       }),
       prisma.review.findMany({ where: { product: product.name, approved: true } }),
+      prisma.productFaq.findMany({ where: { productId: product.id }, orderBy: { order: "asc" } }),
     ]);
-    return { product, category: product.category, related, reviews };
+    return { product, category: product.category, related, reviews, faqs };
   } catch {
     const product = allFallbackProducts.find((p) => p.slug === slug);
     if (!product) return null;
@@ -75,7 +77,7 @@ const getProductData = cache(async (slug: string) => {
       .filter((p) => p.categoryId === product.categoryId && p.id !== product.id)
       .slice(0, 4);
     const reviews = fallbackReviews.filter((r) => r.product === product.name);
-    return { product, category, related, reviews };
+    return { product, category, related, reviews, faqs: [] };
   }
 });
 
@@ -375,9 +377,14 @@ interface ProductViewProps {
     cons?: string | null;
     product: string | null;
   }>;
+  faqs: Array<{
+    id: string;
+    question: string;
+    answer: string;
+  }>;
 }
 
-function ProductView({ product, category, related, reviews }: ProductViewProps) {
+function ProductView({ product, category, related, reviews, faqs }: ProductViewProps) {
   const displayName = localProductNames[product.slug] ?? product.name;
   const displayImage = localProductImages[product.slug] ?? product.image;
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
@@ -556,6 +563,16 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
           <ReviewsGrid reviews={reviews} productSlug={product.slug} productName={product.name} />
         </div>
       </section>
+
+      {/* Product FAQ — optional, only shown if an admin added questions */}
+      {faqs.length > 0 && (
+        <section className="bg-white py-12">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
+            <h2 className="text-2xl font-extrabold text-[#1d2353] mb-8">Întrebări frecvente</h2>
+            <FaqAccordion faqs={faqs.map((f) => ({ question: f.question, answer: f.answer }))} />
+          </div>
+        </section>
+      )}
 
       {/* Related products */}
       {related.length > 0 && (
