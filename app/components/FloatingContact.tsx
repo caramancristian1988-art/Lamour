@@ -77,14 +77,19 @@ export default function FloatingContact() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Contactează-ne"
-        className="w-14 h-14 rounded-full bg-[#c7092b] hover:bg-[#a5071f] text-white shadow-xl flex items-center justify-center transition-colors"
+        className="relative w-14 h-14 rounded-full bg-[#c7092b] hover:bg-[#a5071f] text-white shadow-xl flex items-center justify-center transition-colors"
       >
+        {!open && <span className="absolute inset-0 rounded-full bg-[#c7092b]/60 animate-ping" />}
         {open ? (
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className="relative w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="relative w-6 h-6 animate-[bell-ring_4s_ease-in-out_infinite]"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
           </svg>
         )}
