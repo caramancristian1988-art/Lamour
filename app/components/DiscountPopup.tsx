@@ -7,9 +7,8 @@ import Image from "next/image";
 import { logPopupEvent } from "@/lib/popupStatActions";
 import { getPopupProduct, getPopupCountdownMinutes } from "@/lib/popupProduct";
 
-const SESSION_KEY = "discountPopupShown";
+const SESSION_KEY = "discountPopupState";
 const SHOW_DELAY_MS = 6000;
-const DEFAULT_COUNTDOWN_SECONDS = 10 * 60;
 const ROTATE_INTERVAL_MS = 45000;
 const HIDDEN_PATH_PREFIXES = ["/admin", "/cont", "/login", "/register", "/cos"];
 
@@ -22,6 +21,27 @@ export interface PopupProduct {
   rating: number;
   reviewCount: number;
   review: { name: string; text: string; rating: number } | null;
+}
+
+interface StoredState {
+  product: PopupProduct;
+  expiresAt: number;
+  triggered: true;
+}
+
+function readStored(): StoredState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? (JSON.parse(raw) as StoredState) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(state: StoredState) {
+  if (typeof window === "undefined") return;
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(state));
 }
 
 function StarRating({ rating, animated }: { rating: number; animated?: boolean }) {
@@ -49,20 +69,35 @@ export default function DiscountPopup() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [product, setProduct] = useState<PopupProduct | null>(null);
-  const [secondsLeft, setSecondsLeft] = useState(DEFAULT_COUNTDOWN_SECONDS);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
 
+  // On mount: resume a still-running offer (minimized) from a previous page
+  // in this session, or — if this session never triggered one — start the
+  // normal first-visit delay before showing the full popup.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (sessionStorage.getItem(SESSION_KEY)) return;
+    const stored = readStored();
+    if (stored) {
+      const remaining = Math.round((stored.expiresAt - Date.now()) / 1000);
+      if (remaining > 0) {
+        setProduct(stored.product);
+        setExpiresAt(stored.expiresAt);
+        setSecondsLeft(remaining);
+        setMinimized(true);
+      }
+      return;
+    }
 
     const timer = setTimeout(() => {
       Promise.all([getPopupProduct(), getPopupCountdownMinutes()]).then(([p, minutes]) => {
         if (!p) return;
+        const expiry = Date.now() + minutes * 60 * 1000;
         setProduct(p);
+        setExpiresAt(expiry);
         setSecondsLeft(minutes * 60);
         setOpen(true);
-        sessionStorage.setItem(SESSION_KEY, "1");
+        writeStored({ product: p, expiresAt: expiry, triggered: true });
       });
     }, SHOW_DELAY_MS);
     return () => clearTimeout(timer);
@@ -76,28 +111,40 @@ export default function DiscountPopup() {
     };
   }, [open]);
 
+  // Single master countdown — survives minimizing/reopening/rotating offers,
+  // and once it hits zero the widget disappears for the rest of the session.
   useEffect(() => {
-    if (!product || secondsLeft <= 0) return;
+    if (!expiresAt) return;
     const interval = setInterval(() => {
-      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
+      const remaining = Math.round((expiresAt - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setSecondsLeft(0);
+        setOpen(false);
+        setMinimized(false);
+        setProduct(null);
+        setExpiresAt(null);
+        return;
+      }
+      setSecondsLeft(remaining);
     }, 1000);
     return () => clearInterval(interval);
-  }, [product, secondsLeft]);
+  }, [expiresAt]);
 
-  // While minimized, cycle through admin-selected offers — the ring around
-  // the icon fills up over ROTATE_INTERVAL_MS, then swaps to a new offer.
+  // While minimized, cycle through admin-selected offers for variety — the
+  // ring around the icon fills up over ROTATE_INTERVAL_MS. The master
+  // countdown above keeps running regardless of which offer is shown.
   useEffect(() => {
-    if (!minimized) return;
+    if (!minimized || !expiresAt) return;
     const interval = setInterval(() => {
-      Promise.all([getPopupProduct(), getPopupCountdownMinutes()]).then(([p, minutes]) => {
+      getPopupProduct().then((p) => {
         if (!p) return;
         setProduct(p);
-        setSecondsLeft(minutes * 60);
         setCycleKey((k) => k + 1);
+        writeStored({ product: p, expiresAt, triggered: true });
       });
     }, ROTATE_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [minimized]);
+  }, [minimized, expiresAt]);
 
   if (!product) return null;
   if (HIDDEN_PATH_PREFIXES.some((p) => pathname?.startsWith(p))) return null;
