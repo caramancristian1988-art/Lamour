@@ -30,6 +30,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
   const productsDropdown = categories && categories.length > 0 ? categories : fallbackCategories;
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const justOpenedRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -64,7 +65,19 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
 
       <div ref={rootRef} className={`relative z-50 ${className ?? "shrink-0"}`}>
         <button
-          onClick={() => setOpen((v) => !v)}
+          onPointerDown={() => {
+            if (!open) {
+              justOpenedRef.current = true;
+              setOpen(true);
+            }
+          }}
+          onClick={() => {
+            if (justOpenedRef.current) {
+              justOpenedRef.current = false;
+              return;
+            }
+            setOpen((v) => !v);
+          }}
           className={
             buttonClassName ??
             "flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white text-sm font-bold px-5 py-3 rounded-xl transition-colors uppercase tracking-wide"
@@ -80,13 +93,19 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
         </button>
 
         {open && (
-          <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 py-3 w-[calc(100vw-2rem)] max-w-md lg:w-96">
+          <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 py-3 w-[calc(100vw-2rem)] max-w-md lg:w-96 max-h-[70vh] overflow-y-auto overscroll-contain">
             <p className="px-5 pt-1.5 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wide">Produse</p>
             <Link
               href="/produse?oferte=1"
               onClick={() => setOpen(false)}
-              className="block px-5 py-3 text-base font-bold text-[#c7092b] hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-4 px-5 py-3 text-base font-bold text-[#c7092b] hover:bg-gray-50 transition-colors"
             >
+              <span className="relative w-14 h-14 rounded-xl bg-[#f6f8fb] overflow-hidden shrink-0 flex items-center justify-center">
+                <svg className="w-7 h-7 text-[#c7092b] -rotate-12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.169.659 1.591l9.581 9.581c.699.699 1.831.699 2.53 0l7.182-7.182a1.79 1.79 0 000-2.53L13.16 3.659A2.25 2.25 0 0011.568 3H9.568z" />
+                  <circle cx="6.75" cy="6.75" r="1.1" fill="#f6f8fb" />
+                </svg>
+              </span>
               Oferte Speciale
             </Link>
             {productsDropdown.map((item) => (

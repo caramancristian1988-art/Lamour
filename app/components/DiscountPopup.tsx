@@ -10,6 +10,7 @@ import { getPopupProduct } from "@/lib/popupProduct";
 const SESSION_KEY = "discountPopupShown";
 const SHOW_DELAY_MS = 6000;
 const COUNTDOWN_SECONDS = 10 * 60;
+const ROTATE_INTERVAL_MS = 45000;
 const HIDDEN_PATH_PREFIXES = ["/admin", "/cont", "/login", "/register", "/cos"];
 
 export interface PopupProduct {
@@ -20,15 +21,19 @@ export interface PopupProduct {
   oldPrice: number | null;
   rating: number;
   reviewCount: number;
+  review: { name: string; text: string; rating: number } | null;
 }
 
-function StarRating({ rating }: { rating: number }) {
+function StarRating({ rating, animated }: { rating: number; animated?: boolean }) {
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((star) => (
         <svg
           key={star}
-          className={`w-4 h-4 ${star <= Math.round(rating) ? "text-amber-400" : "text-gray-200"}`}
+          style={animated ? { animationDelay: `${star * 90}ms`, animationFillMode: "backwards" } : undefined}
+          className={`w-4 h-4 ${star <= Math.round(rating) ? "text-amber-400" : "text-gray-200"} ${
+            animated ? "animate-star-pop" : ""
+          }`}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -45,6 +50,7 @@ export default function DiscountPopup() {
   const [minimized, setMinimized] = useState(false);
   const [product, setProduct] = useState<PopupProduct | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
+  const [cycleKey, setCycleKey] = useState(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -77,6 +83,20 @@ export default function DiscountPopup() {
     return () => clearInterval(interval);
   }, [product, secondsLeft]);
 
+  // While minimized, cycle through admin-selected offers — the ring around
+  // the icon fills up over ROTATE_INTERVAL_MS, then swaps to a new offer.
+  useEffect(() => {
+    if (!minimized) return;
+    const interval = setInterval(() => {
+      getPopupProduct().then((p) => {
+        if (!p) return;
+        setProduct(p);
+        setCycleKey((k) => k + 1);
+      });
+    }, ROTATE_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [minimized]);
+
   if (!product) return null;
   if (HIDDEN_PATH_PREFIXES.some((p) => pathname?.startsWith(p))) return null;
   if (!open && !minimized) return null;
@@ -85,6 +105,7 @@ export default function DiscountPopup() {
     logPopupEvent(product!.slug, "close");
     setOpen(false);
     setMinimized(true);
+    setCycleKey((k) => k + 1);
   }
 
   function reopen() {
@@ -101,11 +122,26 @@ export default function DiscountPopup() {
       <button
         onClick={reopen}
         aria-label="Revino la ofertă"
-        className="fixed bottom-4 right-4 z-[70] flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold pl-3 pr-4 py-3 rounded-full shadow-2xl transition-all hover:scale-105 animate-pop"
+        className="fixed bottom-24 right-5 z-[70] flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold pl-2.5 pr-4 py-2.5 rounded-full shadow-2xl transition-all hover:scale-105 animate-pop"
       >
-        <span className="relative flex items-center justify-center w-6 h-6 shrink-0">
-          <span className="absolute inset-0 rounded-full bg-white/30 animate-ping" />
-          <svg className="relative w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        <span className="relative flex items-center justify-center w-7 h-7 shrink-0">
+          <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 28 28">
+            <circle cx="14" cy="14" r="12" fill="none" stroke="white" strokeOpacity="0.25" strokeWidth="2" />
+            <circle
+              key={cycleKey}
+              cx="14"
+              cy="14"
+              r="12"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              pathLength={1}
+              strokeDasharray="1 1"
+              style={{ animation: `popup-ring ${ROTATE_INTERVAL_MS}ms linear forwards` }}
+            />
+          </svg>
+          <svg className="relative w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
             <circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none" />
           </svg>
@@ -156,7 +192,7 @@ export default function DiscountPopup() {
             <div className="min-w-0 flex flex-col justify-center">
               <p className="text-base font-bold text-[#1d2353] leading-snug line-clamp-2">{product.name}</p>
               <div className="flex items-center gap-1.5 mt-2">
-                <StarRating rating={product.rating} />
+                <StarRating rating={product.rating} animated />
                 <span className="text-sm text-gray-400">({product.reviewCount})</span>
               </div>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -171,6 +207,16 @@ export default function DiscountPopup() {
               </div>
             </div>
           </div>
+
+          {product.review && (
+            <div className="bg-[#f6f8fb] rounded-xl px-4 py-3 mb-6">
+              <StarRating rating={product.review.rating} animated />
+              <p className="text-sm text-gray-700 italic leading-snug mt-1.5 line-clamp-2">
+                „{product.review.text}”
+              </p>
+              <p className="text-xs text-gray-400 font-semibold mt-1.5">— {product.review.name}</p>
+            </div>
+          )}
 
           <Link
             href={`/produse/${product.slug}`}

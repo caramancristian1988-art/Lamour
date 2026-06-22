@@ -9,6 +9,7 @@
   --font-sans: "Inter", system-ui, sans-serif;
   --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-bump: bump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-star-pop: star-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes pop {
@@ -22,6 +23,29 @@
   }
   100% {
     transform: scale(1);
+  }
+}
+
+@keyframes popup-ring {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes star-pop {
+  0% {
+    transform: scale(0) rotate(-15deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.3) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
   }
 }
 

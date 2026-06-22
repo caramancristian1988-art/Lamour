@@ -1,8 +1,9 @@
+import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import DeleteButton from "../components/DeleteButton";
-import { AdminInput, AdminTextarea } from "../components/AdminField";
+import { AdminInput, AdminTextarea, AdminSelect } from "../components/AdminField";
 import ImageUploadField from "../components/ImageUploadField";
 import {
   createAdminReviewAction,
@@ -13,14 +14,31 @@ import {
 
 async function getReviews() {
   try {
-    const reviews = await prisma.review.findMany({ orderBy: { createdAt: "desc" } });
+    const [reviews, categories, products] = await Promise.all([
+      prisma.review.findMany({ orderBy: { createdAt: "desc" } }),
+      prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
+      prisma.product.findMany({ orderBy: { name: "asc" } }),
+    ]);
     return {
       pending: reviews.filter((r) => !r.approved),
       approved: reviews.filter((r) => r.approved),
+      categories,
+      products,
     };
   } catch {
-    return { pending: [], approved: [] };
+    return { pending: [], approved: [], categories: [], products: [] };
   }
+}
+
+function EditLink({ id }: { id: string }) {
+  return (
+    <Link
+      href={`/admin/recenzii/${id}`}
+      className="text-xs font-bold text-gray-400 hover:text-[#c7092b] transition-colors shrink-0"
+    >
+      Editează
+    </Link>
+  );
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -48,7 +66,7 @@ function ReviewAvatar({ name, image }: { name: string; image: string | null }) {
 }
 
 export default async function AdminRecenziiPage() {
-  const { pending, approved } = await getReviews();
+  const { pending, approved, categories, products } = await getReviews();
 
   return (
     <div>
@@ -66,7 +84,10 @@ export default async function AdminRecenziiPage() {
                   <div key={r.id} className="bg-white border border-[#c7092b]/30 rounded-2xl p-4 flex items-start gap-3">
                     <ReviewAvatar name={r.name} image={r.image} />
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-[#1d2353]">{r.name}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-bold text-sm text-[#1d2353]">{r.name}</p>
+                        <EditLink id={r.id} />
+                      </div>
                       <StarRating rating={r.rating} />
                       <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{r.text}</p>
                       {(r.pros || r.cons) && (
@@ -127,7 +148,10 @@ export default async function AdminRecenziiPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-bold text-sm text-[#1d2353]">{r.name}</p>
-                        <DeleteButton action={deleteAdminReviewAction} id={r.id} confirmText="Sigur vrei să ștergi această recenzie?" />
+                        <div className="flex items-center gap-3 shrink-0">
+                          <EditLink id={r.id} />
+                          <DeleteButton action={deleteAdminReviewAction} id={r.id} confirmText="Sigur vrei să ștergi această recenzie?" />
+                        </div>
                       </div>
                       <StarRating rating={r.rating} />
                       <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{r.text}</p>
@@ -169,6 +193,20 @@ export default async function AdminRecenziiPage() {
               <option value="1">1 stea</option>
             </select>
           </label>
+          <AdminSelect label="Produs (opțional)" name="product" defaultValue="">
+            <option value="">— Fără produs —</option>
+            {categories.map((category) => {
+              const categoryProducts = products.filter((p) => p.categoryId === category.id);
+              if (categoryProducts.length === 0) return null;
+              return (
+                <optgroup key={category.id} label={category.name}>
+                  {categoryProducts.map((p) => (
+                    <option key={p.id} value={p.name}>{p.name}</option>
+                  ))}
+                </optgroup>
+              );
+            })}
+          </AdminSelect>
           <ImageUploadField name="image" label="Imagine client (opțional)" />
           <button type="submit" className="self-start bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-2.5 rounded-xl transition-colors text-sm uppercase tracking-wide mt-2">
             Adaugă recenzie

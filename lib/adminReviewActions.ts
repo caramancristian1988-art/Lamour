@@ -11,11 +11,41 @@ export async function createAdminReviewAction(formData: FormData) {
   const text = String(formData.get("text") ?? "").trim();
   const rating = Number(formData.get("rating") ?? 0);
   const image = String(formData.get("image") ?? "").trim() || null;
+  const product = String(formData.get("product") ?? "").trim() || null;
 
   if (!name || !text || !rating || rating < 1 || rating > 5) return;
 
-  await prisma.review.create({ data: { name, text, rating, image, product: null, approved: true } });
+  await prisma.review.create({ data: { name, text, rating, image, product, approved: true } });
+  await recomputeProductRating(product);
   revalidatePath("/admin/recenzii");
+  if (product) revalidatePath("/produse");
+}
+
+export async function updateAdminReviewAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim() || null;
+  const text = String(formData.get("text") ?? "").trim();
+  const rating = Number(formData.get("rating") ?? 0);
+  const pros = String(formData.get("pros") ?? "").trim() || null;
+  const cons = String(formData.get("cons") ?? "").trim() || null;
+  const product = String(formData.get("product") ?? "").trim() || null;
+  const image = String(formData.get("image") ?? "").trim() || null;
+
+  if (!id || !name || !text || !rating || rating < 1 || rating > 5) return;
+
+  const existing = await prisma.review.findUnique({ where: { id } });
+  if (!existing) return;
+
+  await prisma.review.update({ where: { id }, data: { name, email, text, rating, pros, cons, product, image } });
+
+  await recomputeProductRating(existing.product);
+  if (product !== existing.product) await recomputeProductRating(product);
+
+  revalidatePath("/admin/recenzii");
+  revalidatePath("/produse");
 }
 
 async function recomputeProductRating(productName: string | null) {
