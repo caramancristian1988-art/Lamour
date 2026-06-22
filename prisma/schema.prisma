@@ -86,6 +86,7 @@ model Service {
   description String
   image       String?
   detailImage String?
+  heroImageDesktop String?
   href        String?
   section     String   @default("principale")
   order       Int      @default(0)

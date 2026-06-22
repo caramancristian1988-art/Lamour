@@ -10,8 +10,22 @@ import { deleteProductAction } from "@/lib/adminProductActions";
 
 const PER_PAGE = 10;
 
-async function getData(catFilter: string, sort: string, page: number) {
-  const where: Prisma.ProductWhereInput = catFilter ? { categoryId: catFilter } : {};
+const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
+
+async function getData(catFilter: string, sort: string, page: number, search: string) {
+  const where: Prisma.ProductWhereInput = {
+    ...(catFilter ? { categoryId: catFilter } : {}),
+    ...(search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { slug: { contains: search, mode: "insensitive" } },
+            { brand: { contains: search, mode: "insensitive" } },
+            ...(OBJECT_ID_RE.test(search) ? [{ id: search }] : []),
+          ],
+        }
+      : {}),
+  };
 
   const orderBy: Prisma.ProductOrderByWithRelationInput =
     sort === "name-asc"
@@ -91,9 +105,10 @@ export default async function AdminProdusePage({
 
   const catFilter = typeof query.cat === "string" ? query.cat : "";
   const sort = typeof query.sort === "string" ? query.sort : "newest";
+  const search = typeof query.q === "string" ? query.q.trim() : "";
   const page = Math.max(1, Number(query.page) || 1);
 
-  const { products, total, categories } = await getData(catFilter, sort, page);
+  const { products, total, categories } = await getData(catFilter, sort, page, search);
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   return (

@@ -41,12 +41,14 @@ export default async function ConsultantaPage() {
   const produse = await getPromoProducts();
   const {
     detailImage,
+    heroImageDesktop,
     steps: pasi,
     features,
     checklist: inclus,
     testimonials: testimoniale,
   } = await getServiceDetail("/servicii/consultanta", {
     detailImage: "/IMG_2965.PNG",
+    heroImageDesktop: "/IMG_2848.PNG",
     steps: defaultPasi,
     features: defaultFeatures,
     checklist: defaultInclus,
@@ -117,7 +119,7 @@ export default async function ConsultantaPage() {
           </div>
         </div>
         <div className="relative min-h-[280px] lg:min-h-0">
-          <Image src="/IMG_2848.PNG" alt="Consultanță climatizare" fill className="object-cover object-center" priority />
+          <Image src={heroImageDesktop} alt="Consultanță climatizare" fill className="object-cover object-center" priority />
         </div>
       </section>
 

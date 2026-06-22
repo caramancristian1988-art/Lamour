@@ -41,12 +41,14 @@ export default async function ComercialePage() {
   const produse = await getPromoProducts("conditioane-comerciale");
   const {
     detailImage,
+    heroImageDesktop,
     steps: pasi,
     features,
     checklist: inclus,
     testimonials: testimoniale,
   } = await getServiceDetail("/servicii/comerciale", {
     detailImage: "/IMG_2967.PNG",
+    heroImageDesktop: "/IMG_2848.PNG",
     steps: defaultPasi,
     features: defaultFeatures,
     checklist: defaultInclus,
@@ -117,7 +119,7 @@ export default async function ComercialePage() {
           </div>
         </div>
         <div className="relative min-h-[280px] lg:min-h-0">
-          <Image src="/IMG_2848.PNG" alt="Sisteme comerciale HVAC" fill className="object-cover object-center" priority />
+          <Image src={heroImageDesktop} alt="Sisteme comerciale HVAC" fill className="object-cover object-center" priority />
         </div>
       </section>
 

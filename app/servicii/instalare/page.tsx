@@ -71,12 +71,14 @@ export default async function InstalareePage() {
   const produse = await getPromoProducts();
   const {
     detailImage,
+    heroImageDesktop,
     steps: pasi,
     features,
     checklist: inclus,
     testimonials: testimoniale,
   } = await getServiceDetail("/servicii/instalare", {
     detailImage: "/IMG_2963.PNG",
+    heroImageDesktop: "/IMG_2848.PNG",
     steps: defaultPasi,
     features: defaultFeatures,
     checklist: defaultInclus,
@@ -123,7 +125,7 @@ export default async function InstalareePage() {
       {/* ── HERO – DESKTOP ── */}
       <section className="hidden sm:flex relative min-h-[420px] overflow-hidden">
         <Image
-          src="/IMG_2848.PNG"
+          src={heroImageDesktop}
           alt="Instalare condiționere"
           fill
           className="object-cover object-center"

@@ -12,12 +12,13 @@ export async function createServiceAction(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const image = String(formData.get("image") ?? "").trim() || null;
   const detailImage = String(formData.get("detailImage") ?? "").trim() || null;
+  const heroImageDesktop = String(formData.get("heroImageDesktop") ?? "").trim() || null;
   const href = String(formData.get("href") ?? "").trim() || null;
   const section = String(formData.get("section") ?? "principale").trim();
 
   if (!title || !description) return;
 
-  await prisma.service.create({ data: { title, description, image, detailImage, href, section } });
+  await prisma.service.create({ data: { title, description, image, detailImage, heroImageDesktop, href, section } });
   revalidatePath("/admin/servicii");
   if (href) revalidatePath(href);
   redirect("/admin/servicii");
@@ -31,12 +32,13 @@ export async function updateServiceAction(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const image = String(formData.get("image") ?? "").trim() || null;
   const detailImage = String(formData.get("detailImage") ?? "").trim() || null;
+  const heroImageDesktop = String(formData.get("heroImageDesktop") ?? "").trim() || null;
   const href = String(formData.get("href") ?? "").trim() || null;
   const section = String(formData.get("section") ?? "principale").trim();
 
   if (!id || !title || !description) return;
 
-  await prisma.service.update({ where: { id }, data: { title, description, image, detailImage, href, section } });
+  await prisma.service.update({ where: { id }, data: { title, description, image, detailImage, heroImageDesktop, href, section } });
   revalidatePath("/admin/servicii");
   if (href) revalidatePath(href);
   redirect("/admin/servicii");

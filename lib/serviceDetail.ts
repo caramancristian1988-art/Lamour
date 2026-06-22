@@ -22,6 +22,7 @@ export interface ServiceTestimonialData {
 
 export interface ServiceDetailFallback {
   detailImage: string;
+  heroImageDesktop: string;
   steps: ServiceStepData[];
   features: ServiceFeatureData[];
   checklist: string[];
@@ -42,6 +43,7 @@ export async function getServiceDetail(href: string, fallback: ServiceDetailFall
 
     return {
       detailImage: service.detailImage ?? fallback.detailImage,
+      heroImageDesktop: service.heroImageDesktop ?? fallback.heroImageDesktop,
       steps: steps.length > 0
         ? steps.map((s, i) => ({
             nr: String(i + 1).padStart(2, "0"),

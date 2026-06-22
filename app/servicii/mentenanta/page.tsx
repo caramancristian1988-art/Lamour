@@ -41,12 +41,14 @@ export default async function MentenantaPage() {
   const produse = await getPromoProducts();
   const {
     detailImage,
+    heroImageDesktop,
     steps: pasi,
     features,
     checklist: inclus,
     testimonials: testimoniale,
   } = await getServiceDetail("/servicii/mentenanta", {
     detailImage: "/IMG_2968.PNG",
+    heroImageDesktop: "/IMG_2848.PNG",
     steps: defaultPasi,
     features: defaultFeatures,
     checklist: defaultInclus,
@@ -117,7 +119,7 @@ export default async function MentenantaPage() {
           </div>
         </div>
         <div className="relative min-h-[280px] lg:min-h-0">
-          <Image src="/IMG_2848.PNG" alt="Mentenanță condiționere" fill className="object-cover object-center" priority />
+          <Image src={heroImageDesktop} alt="Mentenanță condiționere" fill className="object-cover object-center" priority />
         </div>
       </section>
 
