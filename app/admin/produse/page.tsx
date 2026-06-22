@@ -82,6 +82,17 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
       </span>
       <div className="flex items-center gap-1 shrink-0">
         <Link
+          href={`/produse/${product.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-400 hover:text-[#c7092b] transition-colors p-1.5 rounded-lg hover:bg-[#fdf2f3]"
+          aria-label="Vezi pe site"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </Link>
+        <Link
           href={`/admin/produse/${product.id}`}
           className="text-gray-400 hover:text-[#c7092b] transition-colors p-1.5 rounded-lg hover:bg-[#fdf2f3]"
           aria-label="Editează"
