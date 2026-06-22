@@ -105,14 +105,24 @@ export default function ReviewsGrid({
         <WriteReviewCard productSlug={productSlug} productName={productName} />
       </div>
 
-      {hasMore && (
-        <div className="flex justify-center mt-6">
-          <button
-            onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-            className="bg-white border border-gray-200 hover:border-[#c7092b] hover:text-[#c7092b] text-[#1d2353] font-bold px-6 py-3 rounded-xl transition-colors text-sm uppercase tracking-wide"
-          >
-            Mai multe recenzii
-          </button>
+      {(hasMore || visibleCount > PAGE_SIZE) && (
+        <div className="flex justify-center gap-3 mt-6">
+          {hasMore && (
+            <button
+              onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+              className="bg-white border border-gray-200 hover:border-[#c7092b] hover:text-[#c7092b] text-[#1d2353] font-bold px-6 py-3 rounded-xl transition-colors text-sm uppercase tracking-wide"
+            >
+              Mai multe recenzii
+            </button>
+          )}
+          {visibleCount > PAGE_SIZE && (
+            <button
+              onClick={() => setVisibleCount(PAGE_SIZE)}
+              className="text-gray-400 hover:text-[#c7092b] font-bold px-6 py-3 rounded-xl transition-colors text-sm uppercase tracking-wide"
+            >
+              Mai puține recenzii
+            </button>
+          )}
         </div>
       )}
     </>
