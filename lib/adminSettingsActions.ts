@@ -8,11 +8,6 @@ export async function updateSettingsAction(formData: FormData) {
   await requireAdmin();
 
   const data = {
-    phone: String(formData.get("phone") ?? "").trim() || null,
-    email: String(formData.get("email") ?? "").trim() || null,
-    address: String(formData.get("address") ?? "").trim() || null,
-    facebook: String(formData.get("facebook") ?? "").trim() || null,
-    instagram: String(formData.get("instagram") ?? "").trim() || null,
     produseEnabled: formData.get("produseEnabled") === "on",
     serviciiEnabled: formData.get("serviciiEnabled") === "on",
     proiecteEnabled: formData.get("proiecteEnabled") === "on",
