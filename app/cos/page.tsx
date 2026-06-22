@@ -3,11 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "../components/CartProvider";
-import CartOrderModal from "../components/CartOrderModal";
 
 export default function CosPage() {
   const { items, cartCount, removeFromCart, updateQuantity } = useCart();
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const savings = items.reduce((sum, i) => sum + (i.oldPrice ? (i.oldPrice - i.price) * i.quantity : 0), 0);
 
   return (
     <main className="bg-white min-h-[60vh]">
@@ -53,9 +53,21 @@ export default function CosPage() {
                         <Link href={`/produse/${item.slug}`} className="font-bold text-sm text-[#0f172a] hover:text-[#c7092b] transition-colors line-clamp-2">
                           {item.name}
                         </Link>
-                        <p className="text-sm font-extrabold text-gray-900 mt-1">
-                          {item.price.toLocaleString("ro-MD")} MDL
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap mt-1">
+                          <p className="text-sm font-extrabold text-gray-900">
+                            {item.price.toLocaleString("ro-MD")} MDL
+                          </p>
+                          {item.oldPrice && (
+                            <>
+                              <p className="text-xs text-gray-400 line-through">
+                                {item.oldPrice.toLocaleString("ro-MD")} MDL
+                              </p>
+                              <span className="text-[11px] font-bold text-white bg-[#c7092b] px-1.5 py-0.5 rounded">
+                                -{Math.round((1 - item.price / item.oldPrice) * 100)}%
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -106,12 +118,23 @@ export default function CosPage() {
                   <span>Subtotal</span>
                   <span className="font-bold text-gray-900">{subtotal.toLocaleString("ro-MD")} MDL</span>
                 </div>
+                {savings > 0 && (
+                  <div className="flex items-center justify-between text-sm text-emerald-600 mb-2">
+                    <span>Economisești</span>
+                    <span className="font-bold">−{savings.toLocaleString("ro-MD")} MDL</span>
+                  </div>
+                )}
                 <p className="text-xs text-gray-400 mb-4">Costul instalării și livrării se stabilește la confirmarea comenzii.</p>
                 <div className="flex items-center justify-between border-t border-gray-100 pt-4 mb-6">
                   <span className="font-bold text-[#1d2353]">Total</span>
                   <span className="font-extrabold text-xl text-[#1d2353]">{subtotal.toLocaleString("ro-MD")} MDL</span>
                 </div>
-                <CartOrderModal items={items} subtotal={subtotal} />
+                <Link
+                  href="/finalizare-comanda"
+                  className="w-full flex items-center justify-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold h-12 rounded-xl transition-colors text-sm uppercase tracking-wide"
+                >
+                  Finalizează comanda
+                </Link>
                 <Link
                   href="/produse"
                   className="w-full flex items-center justify-center gap-2 mt-3 text-[#1d2353] hover:text-[#c7092b] font-bold h-12 rounded-xl transition-colors text-sm"

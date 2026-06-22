@@ -508,6 +508,7 @@ function ProductView({ product, category, related, reviews }: ProductViewProps) 
                   slug={product.slug}
                   name={displayName}
                   price={product.price}
+                  oldPrice={product.oldPrice}
                   image={displayImage}
                   inStock={inStock}
                   className={`w-full h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors mb-3 ${

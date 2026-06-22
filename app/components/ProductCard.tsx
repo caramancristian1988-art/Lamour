@@ -138,6 +138,7 @@ export default function ProductCard({
               slug={slug}
               name={name}
               price={price}
+              oldPrice={oldPrice ?? null}
               image={image ?? null}
               className="flex-1 h-9 sm:h-11 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold rounded-lg sm:rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-gray-200 disabled:text-gray-400"
             >

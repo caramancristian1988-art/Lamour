@@ -6,6 +6,7 @@ export interface CartItem {
   slug: string;
   name: string;
   price: number;
+  oldPrice: number | null;
   image: string | null;
   quantity: number;
 }
@@ -16,6 +17,7 @@ interface CartContextValue {
   addToCart: (item: Omit<CartItem, "quantity">) => void;
   removeFromCart: (slug: string) => void;
   updateQuantity: (slug: string, quantity: number) => void;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -55,10 +57,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     persist(items.map((i) => (i.slug === slug ? { ...i, quantity } : i)));
   }
 
+  function clearCart() {
+    persist([]);
+  }
+
   const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, cartCount, addToCart, removeFromCart, updateQuantity }}>
+    <CartContext.Provider value={{ items, cartCount, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
