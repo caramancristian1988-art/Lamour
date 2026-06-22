@@ -99,3 +99,55 @@ export async function updatePopupProductsAction(formData: FormData) {
 
   revalidatePath("/admin/popup");
 }
+
+const DEFAULT_COUNTDOWN_MINUTES = 10;
+
+// Settings.popupCountdownMinutes was added before the Prisma client could be
+// regenerated locally, so it's read/written via raw commands for now — safe
+// to switch to the typed prisma.settings API once a generate succeeds.
+export async function getPopupCountdownMinutes(): Promise<number> {
+  try {
+    const result = (await prisma.$runCommandRaw({ find: "Settings", filter: {}, limit: 1 })) as {
+      cursor?: { firstBatch?: { popupCountdownMinutes?: number }[] };
+    };
+    return result.cursor?.firstBatch?.[0]?.popupCountdownMinutes ?? DEFAULT_COUNTDOWN_MINUTES;
+  } catch {
+    return DEFAULT_COUNTDOWN_MINUTES;
+  }
+}
+
+export async function updatePopupTimerAction(formData: FormData) {
+  await requireAdmin();
+
+  const raw = Number(formData.get("countdownMinutes"));
+  const minutes = Math.max(1, Math.min(180, Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_COUNTDOWN_MINUTES));
+
+  const result = (await prisma.$runCommandRaw({ find: "Settings", filter: {}, limit: 1 })) as {
+    cursor?: { firstBatch?: { _id: { $oid: string } }[] };
+  };
+  const existing = result.cursor?.firstBatch?.[0];
+
+  if (existing) {
+    await prisma.$runCommandRaw({
+      update: "Settings",
+      updates: [{ q: { _id: { $oid: existing._id.$oid } }, u: { $set: { popupCountdownMinutes: minutes } } }],
+    });
+  } else {
+    await prisma.$runCommandRaw({
+      insert: "Settings",
+      documents: [
+        {
+          popupCountdownMinutes: minutes,
+          produseEnabled: true,
+          serviciiEnabled: true,
+          proiecteEnabled: false,
+          despreEnabled: true,
+          blogEnabled: true,
+          contactEnabled: true,
+        },
+      ],
+    });
+  }
+
+  revalidatePath("/admin/popup");
+}

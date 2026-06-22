@@ -5,7 +5,12 @@ import AdminPageHeader from "../components/AdminPageHeader";
 import SaveButton from "../components/SaveButton";
 import AdminProductFilters from "../produse/AdminProductFilters";
 import AdminPagination from "../components/AdminPagination";
-import { getPopupEnabledProductIds, updatePopupProductsAction } from "@/lib/popupProduct";
+import {
+  getPopupEnabledProductIds,
+  updatePopupProductsAction,
+  getPopupCountdownMinutes,
+  updatePopupTimerAction,
+} from "@/lib/popupProduct";
 
 const PER_PAGE = 9;
 
@@ -51,7 +56,10 @@ export default async function AdminPopupPage({
   const sort = typeof query.sort === "string" ? query.sort : "newest";
   const page = Math.max(1, Number(query.page) || 1);
 
-  const { products, total, categories, enabledIds } = await getData(catFilter, sort, page);
+  const [{ products, total, categories, enabledIds }, countdownMinutes] = await Promise.all([
+    getData(catFilter, sort, page),
+    getPopupCountdownMinutes(),
+  ]);
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   return (
@@ -60,6 +68,24 @@ export default async function AdminPopupPage({
         title="Pop-up ofertă"
         description="Alege ce produse pot apărea în pop-up-ul cu reducere de pe site. La fiecare vizită se arată unul ales aleatoriu din lista bifată. Dacă nu bifezi niciun produs, se arată automat unul cu reducere."
       />
+
+      <form
+        action={updatePopupTimerAction}
+        className="bg-white border border-gray-100 rounded-2xl p-6 mb-6 flex flex-wrap items-end gap-4"
+      >
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-bold text-gray-600">Durată numărătoare inversă (minute)</span>
+          <input
+            type="number"
+            name="countdownMinutes"
+            min={1}
+            max={180}
+            defaultValue={countdownMinutes}
+            className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] w-40"
+          />
+        </label>
+        <SaveButton label="Salvează durata" />
+      </form>
 
       <AdminProductFilters categories={categories} />
       <p className="text-xs text-gray-400 mb-4">{total} produse găsite</p>

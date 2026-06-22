@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { logPopupEvent } from "@/lib/popupStatActions";
-import { getPopupProduct } from "@/lib/popupProduct";
+import { getPopupProduct, getPopupCountdownMinutes } from "@/lib/popupProduct";
 
 const SESSION_KEY = "discountPopupShown";
 const SHOW_DELAY_MS = 6000;
-const COUNTDOWN_SECONDS = 10 * 60;
+const DEFAULT_COUNTDOWN_SECONDS = 10 * 60;
 const ROTATE_INTERVAL_MS = 45000;
 const HIDDEN_PATH_PREFIXES = ["/admin", "/cont", "/login", "/register", "/cos"];
 
@@ -49,7 +49,7 @@ export default function DiscountPopup() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [product, setProduct] = useState<PopupProduct | null>(null);
-  const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
+  const [secondsLeft, setSecondsLeft] = useState(DEFAULT_COUNTDOWN_SECONDS);
   const [cycleKey, setCycleKey] = useState(0);
 
   useEffect(() => {
@@ -57,9 +57,10 @@ export default function DiscountPopup() {
     if (sessionStorage.getItem(SESSION_KEY)) return;
 
     const timer = setTimeout(() => {
-      getPopupProduct().then((p) => {
+      Promise.all([getPopupProduct(), getPopupCountdownMinutes()]).then(([p, minutes]) => {
         if (!p) return;
         setProduct(p);
+        setSecondsLeft(minutes * 60);
         setOpen(true);
         sessionStorage.setItem(SESSION_KEY, "1");
       });
@@ -88,9 +89,10 @@ export default function DiscountPopup() {
   useEffect(() => {
     if (!minimized) return;
     const interval = setInterval(() => {
-      getPopupProduct().then((p) => {
+      Promise.all([getPopupProduct(), getPopupCountdownMinutes()]).then(([p, minutes]) => {
         if (!p) return;
         setProduct(p);
+        setSecondsLeft(minutes * 60);
         setCycleKey((k) => k + 1);
       });
     }, ROTATE_INTERVAL_MS);
