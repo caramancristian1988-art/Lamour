@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { logPopupEvent } from "@/lib/popupStatActions";
 import { getPopupProduct, getPopupCountdownMinutes } from "@/lib/popupProduct";
+import { useFloatingUI } from "./FloatingUIState";
 
 const SESSION_KEY = "discountPopupState";
 const SHOW_DELAY_MS = 6000;
@@ -72,6 +73,7 @@ export default function DiscountPopup() {
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
+  const { contactMenuOpen } = useFloatingUI();
 
   // On mount: resume a still-running offer (minimized) from a previous page
   // in this session, or — if this session never triggered one — start the
@@ -171,7 +173,9 @@ export default function DiscountPopup() {
       <button
         onClick={reopen}
         aria-label="Revino la ofertă"
-        className="fixed bottom-5 left-5 z-[70] flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold pl-2.5 pr-4 py-2.5 rounded-full shadow-2xl transition-all hover:scale-105 animate-pop"
+        className={`fixed right-5 z-[70] flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold pl-2.5 pr-4 py-2.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 animate-pop ${
+          contactMenuOpen ? "bottom-[290px]" : "bottom-24"
+        }`}
       >
         <span className="relative flex items-center justify-center w-7 h-7 shrink-0">
           <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 28 28">

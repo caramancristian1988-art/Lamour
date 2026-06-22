@@ -9,6 +9,7 @@ import { CartProvider } from "./components/CartProvider";
 import { AuthProvider } from "./components/AuthProvider";
 import { AuthModalProvider } from "./components/AuthModalProvider";
 import AuthModal from "./components/AuthModal";
+import { FloatingUIProvider } from "./components/FloatingUIState";
 import { getSectionFlags, getHeaderCategories } from "@/lib/siteSettings";
 
 export const metadata: Metadata = {
@@ -47,8 +48,10 @@ export default async function RootLayout({
                 <SiteHeader {...sectionFlags} categories={headerCategories} />
                 {children}
                 <SiteFooter />
-                <SiteFloatingContact />
-                <SiteDiscountPopup />
+                <FloatingUIProvider>
+                  <SiteFloatingContact />
+                  <SiteDiscountPopup />
+                </FloatingUIProvider>
                 <AuthModal />
               </CartProvider>
             </FavoritesProvider>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFloatingUI } from "./FloatingUIState";
 
 const PHONE_DISPLAY = "0745 123 456";
 const PHONE_TEL = "tel:0745123456";
@@ -10,6 +11,11 @@ const VIBER_HREF = "viber://chat?number=40745123456";
 export default function FloatingContact() {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const { setContactMenuOpen } = useFloatingUI();
+
+  useEffect(() => {
+    setContactMenuOpen(open);
+  }, [open, setContactMenuOpen]);
 
   useEffect(() => {
     if (!open) return;
