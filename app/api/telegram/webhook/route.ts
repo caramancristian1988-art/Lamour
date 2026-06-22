@@ -3,7 +3,15 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUSES } from "@/lib/messageStatuses";
 import { MOODS } from "@/lib/moods";
-import { editTelegramMessage, answerCallbackQuery, buildContactMessageText, buildMessageButtons } from "@/lib/telegram";
+import {
+  editTelegramMessage,
+  editTelegramReplyMarkup,
+  answerCallbackQuery,
+  buildContactMessageText,
+  buildMessageButtons,
+  buildConfirmButtons,
+  STATUSES_REQUIRING_CONFIRMATION,
+} from "@/lib/telegram";
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get("x-telegram-bot-api-secret-token");
@@ -21,18 +29,52 @@ export async function POST(request: NextRequest) {
   const data = String(callbackQuery.data ?? "");
   const [prefix, id, value] = data.split(":");
 
+  if (!id) {
+    await answerCallbackQuery(callbackQuery.id, "Acțiune necunoscută.");
+    return NextResponse.json({ ok: true });
+  }
+
+  // Pressing "Achitat" or "Anulat" first asks for confirmation instead of applying immediately.
+  if (prefix === "status" && MESSAGE_STATUSES.some((s) => s.value === value) && STATUSES_REQUIRING_CONFIRMATION.includes(value)) {
+    try {
+      const message = await prisma.contactMessage.findUnique({ where: { id } });
+      if (message?.telegramMessageId) {
+        await editTelegramReplyMarkup(message.telegramMessageId, buildConfirmButtons(id, value));
+      }
+      await answerCallbackQuery(callbackQuery.id);
+    } catch {
+      await answerCallbackQuery(callbackQuery.id, "Mesajul nu mai există.");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  if (prefix === "cancel") {
+    try {
+      const message = await prisma.contactMessage.findUnique({ where: { id } });
+      if (message?.telegramMessageId) {
+        await editTelegramReplyMarkup(message.telegramMessageId, buildMessageButtons(id));
+      }
+      await answerCallbackQuery(callbackQuery.id, "Anulat.");
+    } catch {
+      await answerCallbackQuery(callbackQuery.id, "Mesajul nu mai există.");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   const isStatus = prefix === "status" && MESSAGE_STATUSES.some((s) => s.value === value);
+  const isConfirm = prefix === "confirm" && MESSAGE_STATUSES.some((s) => s.value === value);
   const isMood = prefix === "mood" && MOODS.some((m) => m.value === value);
 
-  if (!id || (!isStatus && !isMood)) {
+  if (!isStatus && !isConfirm && !isMood) {
     await answerCallbackQuery(callbackQuery.id, "Acțiune necunoscută.");
     return NextResponse.json({ ok: true });
   }
 
   try {
-    const updated = isStatus
-      ? await prisma.contactMessage.update({ where: { id }, data: { status: value, read: true } })
-      : await prisma.contactMessage.update({ where: { id }, data: { mood: value } });
+    const updated =
+      isStatus || isConfirm
+        ? await prisma.contactMessage.update({ where: { id }, data: { status: value, read: true } })
+        : await prisma.contactMessage.update({ where: { id }, data: { mood: value } });
 
     const statusLabel = MESSAGE_STATUSES.find((s) => s.value === updated.status)?.label ?? updated.status;
     const moodLabel = MOODS.find((m) => m.value === updated.mood)?.label ?? null;
@@ -47,9 +89,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (updated.telegramMessageId) {
-      await editTelegramMessage(updated.telegramMessageId, text, buildMessageButtons(updated.id));
+      // A confirmed Achitat/Anulat is final — clear all buttons instead of restoring the full set.
+      const buttons = isConfirm ? [] : buildMessageButtons(updated.id);
+      await editTelegramMessage(updated.telegramMessageId, text, buttons);
     }
-    const confirmText = isStatus ? `Status: ${statusLabel}` : `Reacție: ${moodLabel}`;
+    const confirmText = isMood ? `Reacție: ${moodLabel}` : `Status: ${statusLabel}`;
     await answerCallbackQuery(callbackQuery.id, confirmText);
     revalidatePath("/admin/mesaje");
   } catch {

@@ -5,7 +5,13 @@ import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 import { MESSAGE_STATUSES } from "./messageStatuses";
 import { MOODS } from "./moods";
-import { sendTelegramMessage, editTelegramMessage, buildContactMessageText, buildMessageButtons } from "./telegram";
+import {
+  sendTelegramMessage,
+  editTelegramMessage,
+  buildContactMessageText,
+  buildMessageButtons,
+  STATUSES_REQUIRING_CONFIRMATION,
+} from "./telegram";
 
 export interface ContactFormState {
   error?: string;
@@ -79,7 +85,8 @@ async function syncTelegramMessage(updated: {
     statusLabel,
     moodLabel,
   });
-  await editTelegramMessage(updated.telegramMessageId, text, buildMessageButtons(updated.id));
+  const buttons = STATUSES_REQUIRING_CONFIRMATION.includes(updated.status) ? [] : buildMessageButtons(updated.id);
+  await editTelegramMessage(updated.telegramMessageId, text, buttons);
 }
 
 export async function setMessageStatusAction(formData: FormData) {

@@ -50,6 +50,26 @@ export async function editTelegramMessage(messageId: number, text: string, butto
   }
 }
 
+export async function editTelegramReplyMarkup(messageId: number, buttons: InlineButton[][]): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+
+  try {
+    await fetch(`${TELEGRAM_API}/bot${token}/editMessageReplyMarkup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        message_id: messageId,
+        reply_markup: { inline_keyboard: buttons },
+      }),
+    });
+  } catch {
+    // ignore
+  }
+}
+
 export async function answerCallbackQuery(callbackQueryId: string, text?: string): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return;
@@ -116,4 +136,15 @@ export function buildStatusButtons(messageId: string): InlineButton[][] {
 
 export function buildMessageButtons(messageId: string): InlineButton[][] {
   return [...rowsToButtons(STATUS_BUTTON_ROWS, "status", messageId), ...rowsToButtons(MOOD_BUTTON_ROWS, "mood", messageId)];
+}
+
+export const STATUSES_REQUIRING_CONFIRMATION = ["achitat", "anulat"];
+
+export function buildConfirmButtons(messageId: string, value: string): InlineButton[][] {
+  return [
+    [
+      { text: "✅ Da", callback_data: `confirm:${messageId}:${value}` },
+      { text: "❌ Nu", callback_data: `cancel:${messageId}` },
+    ],
+  ];
 }
