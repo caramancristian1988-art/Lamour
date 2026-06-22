@@ -171,7 +171,7 @@ export default function DiscountPopup() {
       <button
         onClick={reopen}
         aria-label="Revino la ofertă"
-        className="fixed bottom-24 right-5 z-[70] flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold pl-2.5 pr-4 py-2.5 rounded-full shadow-2xl transition-all hover:scale-105 animate-pop"
+        className="fixed bottom-5 left-5 z-[70] flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold pl-2.5 pr-4 py-2.5 rounded-full shadow-2xl transition-all hover:scale-105 animate-pop"
       >
         <span className="relative flex items-center justify-center w-7 h-7 shrink-0">
           <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 28 28">
