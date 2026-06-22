@@ -76,7 +76,7 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
           <div
             key={m.id}
             style={{ borderLeftColor: STATUS_ACCENT_COLORS[m.status] ?? STATUS_ACCENT_COLORS.in_asteptare }}
-            className={`bg-white border rounded-xl border-l-4 transition-colors overflow-hidden ${
+            className={`bg-white border rounded-xl border-l-4 transition-colors ${
               m.read ? "border-gray-100" : "border-[#c7092b]/30"
             }`}
           >
@@ -117,11 +117,11 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
             {/* Expanded details */}
             <div
               className={`grid transition-all duration-200 ease-out ${
-                expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
               }`}
               style={{ display: "grid" }}
             >
-              <div className="overflow-hidden">
+              <div className={expanded ? "overflow-visible" : "overflow-hidden"}>
                 <div className="px-3 pb-3 pt-1 border-t border-gray-100">
                   <div className="flex items-center gap-3 text-xs text-gray-500 mt-2 flex-wrap">
                     <a href={`tel:${m.phone}`} className="hover:text-[#c7092b] transition-colors">{m.phone}</a>
