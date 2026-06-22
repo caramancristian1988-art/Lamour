@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "../components/CartProvider";
+import CartOrderModal from "../components/CartOrderModal";
 
 export default function CosPage() {
   const { items, cartCount, removeFromCart, updateQuantity } = useCart();
@@ -110,12 +111,7 @@ export default function CosPage() {
                   <span className="font-bold text-[#1d2353]">Total</span>
                   <span className="font-extrabold text-xl text-[#1d2353]">{subtotal.toLocaleString("ro-MD")} MDL</span>
                 </div>
-                <Link
-                  href="/contact"
-                  className="w-full flex items-center justify-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold h-12 rounded-xl transition-colors text-sm uppercase tracking-wide"
-                >
-                  Finalizează comanda
-                </Link>
+                <CartOrderModal items={items} subtotal={subtotal} />
                 <Link
                   href="/produse"
                   className="w-full flex items-center justify-center gap-2 mt-3 text-[#1d2353] hover:text-[#c7092b] font-bold h-12 rounded-xl transition-colors text-sm"
