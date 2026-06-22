@@ -121,24 +121,24 @@ export default function DiscountPopup() {
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70" onClick={close} aria-hidden />
 
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
         <button
           onClick={close}
           aria-label="Închide"
-          className="absolute top-3 right-3 z-10 text-white/80 hover:text-white transition-colors"
+          className="absolute top-4 right-4 z-10 text-white/80 hover:text-white transition-colors"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <div className="bg-gradient-to-br from-[#c7092b] to-[#8b0520] px-6 pt-8 pb-5 text-center">
-          <p className="text-white/80 text-xs font-bold uppercase tracking-widest mb-1">Ofertă limitată</p>
-          <p className="text-white text-2xl font-extrabold leading-tight">
+        <div className="bg-gradient-to-br from-[#c7092b] to-[#8b0520] px-8 pt-10 pb-7 text-center">
+          <p className="text-white/80 text-sm font-bold uppercase tracking-widest mb-2">Ofertă limitată</p>
+          <p className="text-white text-3xl sm:text-4xl font-extrabold leading-tight">
             {discount ? `-${discount}% doar azi!` : "Ofertă specială!"}
           </p>
-          <div className="inline-flex items-center gap-1.5 mt-3 bg-black/20 rounded-full px-4 py-1.5 text-white text-sm font-bold tabular-nums">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <div className="inline-flex items-center gap-2 mt-4 bg-black/20 rounded-full px-5 py-2 text-white text-base font-bold tabular-nums">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="9" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 2" />
             </svg>
@@ -146,25 +146,25 @@ export default function DiscountPopup() {
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="flex gap-4 mb-5">
-            <div className="relative w-24 h-24 shrink-0 bg-[#f6f8fb] rounded-xl overflow-hidden">
+        <div className="p-8">
+          <div className="flex gap-5 mb-7">
+            <div className="relative w-32 h-32 shrink-0 bg-[#f6f8fb] rounded-xl overflow-hidden">
               {product.image && (
                 <Image src={product.image} alt={product.name} fill className="object-contain p-2" />
               )}
             </div>
             <div className="min-w-0 flex flex-col justify-center">
-              <p className="text-sm font-bold text-[#1d2353] leading-snug line-clamp-2">{product.name}</p>
-              <div className="flex items-center gap-1.5 mt-1.5">
+              <p className="text-base font-bold text-[#1d2353] leading-snug line-clamp-2">{product.name}</p>
+              <div className="flex items-center gap-1.5 mt-2">
                 <StarRating rating={product.rating} />
-                <span className="text-xs text-gray-400">({product.reviewCount})</span>
+                <span className="text-sm text-gray-400">({product.reviewCount})</span>
               </div>
-              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <span className="text-lg font-extrabold text-[#c7092b]">
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className="text-2xl font-extrabold text-[#c7092b]">
                   {product.price.toLocaleString("ro-MD")} MDL
                 </span>
                 {product.oldPrice && (
-                  <span className="text-xs text-gray-400 line-through">
+                  <span className="text-sm text-gray-400 line-through">
                     {product.oldPrice.toLocaleString("ro-MD")} MDL
                   </span>
                 )}
@@ -178,13 +178,13 @@ export default function DiscountPopup() {
               logPopupEvent(product.slug, "click");
               setOpen(false);
             }}
-            className="block w-full text-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide"
+            className="block w-full text-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold py-3.5 rounded-xl transition-colors text-sm uppercase tracking-wide"
           >
             Vezi produsul
           </Link>
           <button
             onClick={close}
-            className="w-full text-center text-gray-400 hover:text-gray-600 text-xs mt-3 transition-colors"
+            className="w-full text-center text-gray-400 hover:text-gray-600 text-sm mt-3 transition-colors"
           >
             Nu, mulțumesc
           </button>
