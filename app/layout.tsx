@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
-import { SiteHeader, SiteFooter, SiteFloatingContact } from "./components/SiteChrome";
+import { SiteHeader, SiteFooter, SiteFloatingContact, SiteDiscountPopup } from "./components/SiteChrome";
 import ScrollToTop from "./components/ScrollToTop";
 import { FavoritesProvider } from "./components/FavoritesProvider";
 import { CartProvider } from "./components/CartProvider";
@@ -48,6 +48,7 @@ export default async function RootLayout({
                 {children}
                 <SiteFooter />
                 <SiteFloatingContact />
+                <SiteDiscountPopup />
                 <AuthModal />
               </CartProvider>
             </FavoritesProvider>

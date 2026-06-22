@@ -6,6 +6,7 @@ import TopBar from "./TopBar";
 import ScrollAwareHeader from "./ScrollAwareHeader";
 import Footer from "./Footer";
 import FloatingContact from "./FloatingContact";
+import DiscountPopup from "./DiscountPopup";
 
 export function SiteHeader(props: Partial<SectionFlags> & { categories?: HeaderCategory[] }) {
   const pathname = usePathname();
@@ -31,4 +32,8 @@ export function SiteFloatingContact() {
   if (pathname?.startsWith("/admin")) return null;
 
   return <FloatingContact />;
+}
+
+export function SiteDiscountPopup() {
+  return <DiscountPopup />;
 }

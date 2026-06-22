@@ -71,6 +71,15 @@ const navItems = [
     ),
   },
   {
+    href: "/admin/popup",
+    label: "Pop-up ofertă",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 015 12c0-3.314 2.686-6 6-6h.5l4.7-2.6a1 1 0 011.5.872v15.456a1 1 0 01-1.5.872L11.5 18H6a3.989 3.989 0 01-1.838-.448" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/faq",
     label: "Întrebări frecvente",
     icon: (
