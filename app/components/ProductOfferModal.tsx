@@ -85,6 +85,12 @@ function OfferFormPanel({
           placeholder="Telefon"
           className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
         />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email (opțional)"
+          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
+        />
         <textarea
           name="message"
           placeholder="Mesaj suplimentar (opțional)"
