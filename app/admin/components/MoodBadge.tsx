@@ -4,7 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { setMoodAction } from "@/lib/adminMessageActions";
 import { MOODS } from "@/lib/moods";
 
-export default function MoodBadge({ id, mood }: { id: string; mood: string | null }) {
+export default function MoodBadge({
+  id,
+  mood,
+  onChange,
+}: {
+  id: string;
+  mood: string | null;
+  onChange?: (value: string) => void;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const current = MOODS.find((m) => m.value === mood) ?? null;
@@ -17,13 +25,15 @@ export default function MoodBadge({ id, mood }: { id: string; mood: string | nul
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  async function handleSelect(value: string) {
+  function handleSelect(value: string) {
     setOpen(false);
     if (value === current?.value) return;
+    // Optimistic: reflect the change instantly, persist in the background.
+    onChange?.(value);
     const formData = new FormData();
     formData.set("id", id);
     formData.set("mood", value);
-    await setMoodAction(formData);
+    setMoodAction(formData);
   }
 
   return (

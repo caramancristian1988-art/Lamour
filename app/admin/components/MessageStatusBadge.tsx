@@ -15,7 +15,15 @@ const STATUS_STYLES: Record<string, { badge: string; dot: string }> = {
   anulat: { badge: "bg-gray-100 text-gray-500 border-gray-200", dot: "bg-gray-400" },
 };
 
-export default function MessageStatusBadge({ id, status }: { id: string; status: string }) {
+export default function MessageStatusBadge({
+  id,
+  status,
+  onChange,
+}: {
+  id: string;
+  status: string;
+  onChange?: (value: string) => void;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const current = MESSAGE_STATUSES.find((s) => s.value === status) ?? MESSAGE_STATUSES[0];
@@ -29,13 +37,15 @@ export default function MessageStatusBadge({ id, status }: { id: string; status:
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  async function handleSelect(value: string) {
+  function handleSelect(value: string) {
     setOpen(false);
     if (value === current.value) return;
+    // Optimistic: reflect the change instantly, persist in the background.
+    onChange?.(value);
     const formData = new FormData();
     formData.set("id", id);
     formData.set("status", value);
-    await setMessageStatusAction(formData);
+    setMessageStatusAction(formData);
   }
 
   return (
