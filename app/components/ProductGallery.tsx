@@ -15,13 +15,13 @@ export default function ProductGallery({ images, alt, badge }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative h-[280px] sm:h-[380px] lg:h-[440px] rounded-2xl border border-gray-100 bg-white overflow-hidden flex items-center justify-center">
+      <div className="relative h-[360px] sm:h-[460px] lg:h-[560px] rounded-2xl border border-gray-100 bg-white overflow-hidden flex items-center justify-center">
         {images.length > 0 ? (
           <Image
             src={images[active]}
             alt={alt}
             fill
-            className="object-contain p-6"
+            className="object-contain p-3"
             sizes="(max-width: 1024px) 100vw, 50vw"
             priority
           />
