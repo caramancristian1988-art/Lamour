@@ -9,14 +9,22 @@ import { deleteProductFaqAction } from "@/lib/adminProductFaqActions";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [product, categories, brandRows, faqs] = await Promise.all([
+  const [product, categories, brandRows] = await Promise.all([
     prisma.product.findUnique({ where: { id } }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.product.findMany({ where: { brand: { not: null } }, distinct: ["brand"], select: { brand: true }, orderBy: { brand: "asc" } }),
-    prisma.productFaq.findMany({ where: { productId: id }, orderBy: { order: "asc" } }),
   ]);
   if (!product) notFound();
   const brands = brandRows.map((b) => b.brand!).filter(Boolean);
+
+  // Isolated from the Promise.all above so a hiccup fetching FAQs can't 500
+  // the whole edit page.
+  let faqs: Awaited<ReturnType<typeof prisma.productFaq.findMany>> = [];
+  try {
+    faqs = await prisma.productFaq.findMany({ where: { productId: id }, orderBy: { order: "asc" } });
+  } catch {
+    faqs = [];
+  }
 
   return (
     <div>

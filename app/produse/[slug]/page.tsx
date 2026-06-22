@@ -60,14 +60,21 @@ const getProductData = cache(async (slug: string) => {
   try {
     const product = await prisma.product.findUnique({ where: { slug }, include: { category: true } });
     if (!product) return null;
-    const [related, reviews, faqs] = await Promise.all([
+    const [related, reviews] = await Promise.all([
       prisma.product.findMany({
         where: { categoryId: product.categoryId, NOT: { id: product.id } },
         take: 4,
       }),
       prisma.review.findMany({ where: { product: product.name, approved: true } }),
-      prisma.productFaq.findMany({ where: { productId: product.id }, orderBy: { order: "asc" } }),
     ]);
+    // Fetched separately so a hiccup here (e.g. a not-yet-migrated client)
+    // can't take down the whole product page and fall back to demo data.
+    let faqs: Awaited<ReturnType<typeof prisma.productFaq.findMany>> = [];
+    try {
+      faqs = await prisma.productFaq.findMany({ where: { productId: product.id }, orderBy: { order: "asc" } });
+    } catch {
+      faqs = [];
+    }
     return { product, category: product.category, related, reviews, faqs };
   } catch {
     const product = allFallbackProducts.find((p) => p.slug === slug);
