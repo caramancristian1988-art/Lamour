@@ -23,3 +23,52 @@ export async function getPopupStats(): Promise<{ clicks: number; closes: number 
     return { clicks: 0, closes: 0 };
   }
 }
+
+export interface PopupProductStat {
+  slug: string;
+  name: string;
+  image: string | null;
+  clicks: number;
+  closes: number;
+}
+
+// Per-product breakdown so an admin can see which offers actually get
+// engagement (clicks toward the product) versus get dismissed (closes).
+export async function getPopupStatsByProduct(): Promise<PopupProductStat[]> {
+  try {
+    const grouped = await prisma.popupEvent.groupBy({
+      by: ["productSlug", "event"],
+      _count: { _all: true },
+    });
+
+    const bySlug = new Map<string, { clicks: number; closes: number }>();
+    for (const row of grouped) {
+      const entry = bySlug.get(row.productSlug) ?? { clicks: 0, closes: 0 };
+      if (row.event === "click") entry.clicks = row._count._all;
+      else entry.closes = row._count._all;
+      bySlug.set(row.productSlug, entry);
+    }
+
+    const slugs = Array.from(bySlug.keys());
+    if (slugs.length === 0) return [];
+
+    const products = await prisma.product.findMany({ where: { slug: { in: slugs } } });
+    const productBySlug = new Map(products.map((p) => [p.slug, p]));
+
+    return slugs
+      .map((slug) => {
+        const counts = bySlug.get(slug)!;
+        const product = productBySlug.get(slug);
+        return {
+          slug,
+          name: product?.name ?? slug,
+          image: product?.image ?? null,
+          clicks: counts.clicks,
+          closes: counts.closes,
+        };
+      })
+      .sort((a, b) => b.clicks - a.clicks);
+  } catch {
+    return [];
+  }
+}

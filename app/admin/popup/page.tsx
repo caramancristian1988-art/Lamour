@@ -11,6 +11,7 @@ import {
   getPopupCountdownMinutes,
   updatePopupTimerAction,
 } from "@/lib/popupProduct";
+import { getPopupStatsByProduct } from "@/lib/popupStatActions";
 
 const PER_PAGE = 9;
 
@@ -56,9 +57,10 @@ export default async function AdminPopupPage({
   const sort = typeof query.sort === "string" ? query.sort : "newest";
   const page = Math.max(1, Number(query.page) || 1);
 
-  const [{ products, total, categories, enabledIds }, countdownMinutes] = await Promise.all([
+  const [{ products, total, categories, enabledIds }, countdownMinutes, productStats] = await Promise.all([
     getData(catFilter, sort, page),
     getPopupCountdownMinutes(),
+    getPopupStatsByProduct(),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
@@ -86,6 +88,46 @@ export default async function AdminPopupPage({
         </label>
         <SaveButton label="Salvează durata" />
       </form>
+
+      <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
+        <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-1">Interacțiuni pe ofertă</p>
+        <p className="text-xs text-gray-400 mb-4">
+          Câte persoane au dat click pe „Vezi produsul" față de câte au închis pop-up-ul, per produs — un semn că oferta atrage interes.
+        </p>
+        {productStats.length === 0 ? (
+          <p className="text-sm text-gray-500">Încă nu există interacțiuni înregistrate cu pop-up-ul.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {productStats.map((stat) => {
+              const total = stat.clicks + stat.closes;
+              const clickRate = total > 0 ? Math.round((stat.clicks / total) * 100) : 0;
+              return (
+                <div key={stat.slug} className="flex items-center gap-4 px-3 py-2.5 border border-gray-100 rounded-xl">
+                  <div className="relative w-10 h-10 rounded-lg bg-[#f6f8fb] overflow-hidden shrink-0">
+                    {stat.image && <Image src={stat.image} alt={stat.name} fill className="object-contain p-1" />}
+                  </div>
+                  <p className="text-sm font-bold text-[#1d2353] truncate flex-1 min-w-0">{stat.name}</p>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 shrink-0">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                    {stat.clicks} click-uri
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 shrink-0">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    {stat.closes} închideri
+                  </div>
+                  <span className="text-xs font-bold text-[#1d2353] bg-[#fdf2f3] px-2.5 py-1 rounded-full shrink-0">
+                    {clickRate}%
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       <AdminProductFilters categories={categories} />
       <p className="text-xs text-gray-400 mb-4">{total} produse găsite</p>
