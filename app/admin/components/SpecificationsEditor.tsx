@@ -7,9 +7,23 @@ interface Spec {
   value: string;
 }
 
+const DEFAULT_SPEC_TEMPLATE: Spec[] = [
+  { label: "Model", value: "" },
+  { label: "Agent frigorific", value: "" },
+  { label: "Țara de fabricație", value: "" },
+  { label: "Garanție", value: "" },
+  { label: "Nivel de zgomot (interior)", value: "" },
+  { label: "Nivel de zgomot (exterior)", value: "" },
+  { label: "Debit de aer", value: "" },
+  { label: "Dimensiuni unitate interioară", value: "" },
+  { label: "Greutate unitate interioară", value: "" },
+  { label: "Dimensiuni unitate exterioară", value: "" },
+  { label: "Greutate unitate exterioară", value: "" },
+];
+
 export default function SpecificationsEditor({ defaultValue }: { defaultValue?: Spec[] }) {
   const [rows, setRows] = useState<Spec[]>(
-    defaultValue && defaultValue.length > 0 ? defaultValue : [{ label: "", value: "" }]
+    defaultValue && defaultValue.length > 0 ? defaultValue : DEFAULT_SPEC_TEMPLATE
   );
 
   function updateRow(i: number, field: "label" | "value", val: string) {
@@ -24,9 +38,25 @@ export default function SpecificationsEditor({ defaultValue }: { defaultValue?: 
     setRows((prev) => prev.filter((_, idx) => idx !== i));
   }
 
+  function resetToTemplate() {
+    setRows(DEFAULT_SPEC_TEMPLATE);
+  }
+
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-bold text-[#1d2353]">Specificații tehnice (opțional)</label>
+      <div className="flex items-center justify-between gap-2">
+        <label className="text-sm font-bold text-[#1d2353]">Specificații tehnice (opțional)</label>
+        <button
+          type="button"
+          onClick={resetToTemplate}
+          className="text-xs font-bold text-gray-400 hover:text-[#c7092b] transition-colors"
+        >
+          Structură standard
+        </button>
+      </div>
+      <p className="text-xs text-gray-400 -mt-1">
+        Rândurile rămase fără valoare nu se salvează — șterge-le pe cele care nu se aplică acestui produs.
+      </p>
       <div className="flex flex-col gap-2">
         {rows.map((row, i) => (
           <div key={i} className="flex items-center gap-2">
