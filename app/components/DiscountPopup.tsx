@@ -11,7 +11,7 @@ import { useFloatingUI } from "./FloatingUIState";
 const SESSION_KEY = "discountPopupState";
 const SHOW_DELAY_MS = 6000;
 const ROTATE_INTERVAL_MS = 45000;
-const HIDDEN_PATH_PREFIXES = ["/admin", "/cont", "/login", "/register", "/cos"];
+const HIDDEN_PATH_PREFIXES = ["/admin", "/cont", "/login", "/register", "/cos", "/produse/"];
 
 export interface PopupProduct {
   slug: string;
