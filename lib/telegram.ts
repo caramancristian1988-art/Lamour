@@ -89,6 +89,25 @@ function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+function getSiteUrl(): string {
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
+
+// Wraps any mentioned product names in an HTML link to that product's page,
+// so tapping the (already-visible) product name in Telegram jumps straight
+// to it — no extra/visible URL text cluttering the message.
+function linkifyProducts(text: string, products: { name: string; slug: string }[]): string {
+  let result = text;
+  for (const p of products) {
+    const escapedName = escapeHtml(p.name);
+    if (!escapedName || !result.includes(escapedName)) continue;
+    const url = `${getSiteUrl()}/produse/${p.slug}`;
+    result = result.split(escapedName).join(`<a href="${url}">${escapedName}</a>`);
+  }
+  return result;
+}
+
 export function buildContactMessageText(message: {
   name: string;
   phone: string;
@@ -97,16 +116,21 @@ export function buildContactMessageText(message: {
   source: string;
   statusLabel: string;
   moodLabel?: string | null;
+  products?: { name: string; slug: string }[];
 }): string {
+  const products = message.products ?? [];
+  const escapedMessage = message.message ? escapeHtml(message.message) : null;
+  const escapedSource = escapeHtml(message.source);
+
   const lines = [
     `📩 <b>Mesaj nou</b>`,
     ``,
     `👤 ${escapeHtml(message.name)}`,
     `📞 ${escapeHtml(message.phone)}`,
     message.email ? `✉️ ${escapeHtml(message.email)}` : null,
-    message.message ? `\n${escapeHtml(message.message)}` : null,
+    escapedMessage ? `\n${linkifyProducts(escapedMessage, products)}` : null,
     ``,
-    `🔗 Sursă: ${escapeHtml(message.source)}`,
+    `🔗 Sursă: ${linkifyProducts(escapedSource, products)}`,
     `📌 Status: <b>${escapeHtml(message.statusLabel)}</b>`,
     message.moodLabel ? `🙂 Reacție: <b>${escapeHtml(message.moodLabel)}</b>` : null,
   ].filter((l) => l !== null);

@@ -18,6 +18,19 @@ export interface ContactFormState {
   success?: boolean;
 }
 
+// Finds which real products are mentioned by name in a message's source
+// and/or body, so the Telegram notification can link straight to them.
+async function findMentionedProducts(...texts: (string | null)[]): Promise<{ name: string; slug: string }[]> {
+  try {
+    const haystack = texts.filter(Boolean).join(" \n ");
+    if (!haystack) return [];
+    const products = await prisma.product.findMany({ select: { name: true, slug: true } });
+    return products.filter((p) => haystack.includes(p.name));
+  } catch {
+    return [];
+  }
+}
+
 export async function submitContactMessageAction(
   _prevState: ContactFormState,
   formData: FormData
@@ -44,7 +57,8 @@ export async function submitContactMessageAction(
   }
 
   const statusLabel = MESSAGE_STATUSES.find((s) => s.value === created.status)?.label ?? created.status;
-  const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel });
+  const products = await findMentionedProducts(source, message);
+  const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel, products });
   const telegramMessageId = await sendTelegramMessage(text, buildMessageButtons(created.id));
   if (telegramMessageId) {
     await prisma.contactMessage.update({ where: { id: created.id }, data: { telegramMessageId } });
@@ -76,6 +90,7 @@ async function syncTelegramMessage(updated: {
   if (!updated.telegramMessageId) return;
   const statusLabel = MESSAGE_STATUSES.find((s) => s.value === updated.status)?.label ?? updated.status;
   const moodLabel = MOODS.find((m) => m.value === updated.mood)?.label ?? null;
+  const products = await findMentionedProducts(updated.source, updated.message);
   const text = buildContactMessageText({
     name: updated.name,
     phone: updated.phone,
@@ -84,6 +99,7 @@ async function syncTelegramMessage(updated: {
     source: updated.source,
     statusLabel,
     moodLabel,
+    products,
   });
   const buttons = STATUSES_REQUIRING_CONFIRMATION.includes(updated.status) ? [] : buildMessageButtons(updated.id);
   await editTelegramMessage(updated.telegramMessageId, text, buttons);
