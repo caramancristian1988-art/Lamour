@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/lib/authActions";
-import NotificationBell from "./NotificationBell";
 
 const navItems = [
   {
@@ -151,23 +150,19 @@ function SidebarContent({
 }) {
   const pathname = usePathname();
 
-  const totalNotifications = notifications.unreadMessages + notifications.pendingReviews;
   const badgeFor: Record<string, number> = {
-    "/admin/notificari": totalNotifications,
+    "/admin/notificari": notifications.unreadMessages + notifications.pendingReviews,
     "/admin/mesaje": notifications.unreadMessages,
     "/admin/recenzii": notifications.pendingReviews,
   };
 
   return (
     <div className="flex flex-col h-full">
-      <div className={`px-6 py-6 border-b border-white/10 flex items-center justify-between ${reserveCloseButtonSpace ? "pr-14" : ""}`}>
-        <div>
-          <Link href="/admin" className="text-lg font-extrabold uppercase tracking-tight text-white">
-            Climat <span className="text-[#c7092b]">Rapid</span>
-          </Link>
-          <p className="text-[11px] text-white/50 mt-1">Panou de administrare</p>
-        </div>
-        <NotificationBell total={totalNotifications} variant="dark" />
+      <div className={`px-6 py-6 border-b border-white/10 ${reserveCloseButtonSpace ? "pr-14" : ""}`}>
+        <Link href="/admin" className="text-lg font-extrabold uppercase tracking-tight text-white">
+          Climat <span className="text-[#c7092b]">Rapid</span>
+        </Link>
+        <p className="text-[11px] text-white/50 mt-1">Panou de administrare</p>
       </div>
 
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
@@ -227,14 +222,11 @@ export default function AdminSidebar({ userName, notifications }: { userName: st
         <Link href="/admin" className="font-extrabold uppercase tracking-tight">
           Climat <span className="text-[#c7092b]">Rapid</span> <span className="text-white/50 text-xs font-normal">Admin</span>
         </Link>
-        <div className="flex items-center gap-1">
-          <NotificationBell total={notifications.unreadMessages + notifications.pendingReviews} variant="dark" />
-          <button onClick={() => setOpen(true)} aria-label="Meniu admin" className="p-1.5">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
+        <button onClick={() => setOpen(true)} aria-label="Meniu admin" className="p-1.5">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
 
       {/* Mobile drawer */}

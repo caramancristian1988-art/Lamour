@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import MessageStatusBadge from "../components/MessageStatusBadge";
 import MoodBadge from "../components/MoodBadge";
+import LinkedProductText from "../components/LinkedProductText";
 import { markMessageReadAction, deleteMessageAction } from "@/lib/adminMessageActions";
 
 interface Message {
@@ -165,7 +166,7 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                     <a href={`tel:${m.phone}`} className="hover:text-[#c7092b] transition-colors">{m.phone}</a>
                     {m.email && <a href={`mailto:${m.email}`} className="hover:text-[#c7092b] transition-colors">{m.email}</a>}
                     <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full uppercase">
-                      {m.source}
+                      <LinkedProductText text={m.source} products={m.products} />
                     </span>
                   </div>
 
@@ -216,7 +217,11 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                     </button>
                   </div>
 
-                  {m.message && <p className="text-sm text-gray-600 mt-3 leading-relaxed whitespace-pre-line">{m.message}</p>}
+                  {m.message && (
+                    <p className="text-sm text-gray-600 mt-3 leading-relaxed whitespace-pre-line">
+                      <LinkedProductText text={m.message} products={m.products} />
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

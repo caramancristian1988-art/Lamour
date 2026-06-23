@@ -28,13 +28,16 @@ export interface PopupProductStat {
   slug: string;
   name: string;
   image: string | null;
+  categoryId: string | null;
+  categoryName: string | null;
   clicks: number;
   closes: number;
 }
 
 // Per-product breakdown so an admin can see which offers actually get
 // engagement (clicks toward the product) versus get dismissed (closes).
-export async function getPopupStatsByProduct(): Promise<PopupProductStat[]> {
+// Optionally scoped to a single category.
+export async function getPopupStatsByProduct(categoryId?: string): Promise<PopupProductStat[]> {
   try {
     const grouped = await prisma.popupEvent.groupBy({
       by: ["productSlug", "event"],
@@ -52,7 +55,7 @@ export async function getPopupStatsByProduct(): Promise<PopupProductStat[]> {
     const slugs = Array.from(bySlug.keys());
     if (slugs.length === 0) return [];
 
-    const products = await prisma.product.findMany({ where: { slug: { in: slugs } } });
+    const products = await prisma.product.findMany({ where: { slug: { in: slugs } }, include: { category: true } });
     const productBySlug = new Map(products.map((p) => [p.slug, p]));
 
     return slugs
@@ -63,10 +66,13 @@ export async function getPopupStatsByProduct(): Promise<PopupProductStat[]> {
           slug,
           name: product?.name ?? slug,
           image: product?.image ?? null,
+          categoryId: product?.categoryId ?? null,
+          categoryName: product?.category?.name ?? null,
           clicks: counts.clicks,
           closes: counts.closes,
         };
       })
+      .filter((stat) => !categoryId || stat.categoryId === categoryId)
       .sort((a, b) => b.clicks - a.clicks);
   } catch {
     return [];

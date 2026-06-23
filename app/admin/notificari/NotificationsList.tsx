@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import LinkedProductText from "../components/LinkedProductText";
 import { markMessageReadAction } from "@/lib/adminMessageActions";
 import { approveReviewAction, rejectReviewAction } from "@/lib/adminReviewActions";
 
@@ -120,8 +121,14 @@ export default function NotificationsList({ messages: initialMessages, reviews: 
                     <p className="font-bold text-sm text-[#1d2353]">{entry.data.name}</p>
                     <p className="text-[11px] text-gray-400">{formatDate(entry.data.createdAt)}</p>
                   </div>
-                  <p className="text-xs text-gray-400 mt-0.5">{entry.data.phone} · {entry.data.source}</p>
-                  {entry.data.message && <p className="text-sm text-gray-600 mt-1.5 leading-relaxed line-clamp-2">{entry.data.message}</p>}
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {entry.data.phone} · <LinkedProductText text={entry.data.source} products={entry.data.products} />
+                  </p>
+                  {entry.data.message && (
+                    <p className="text-sm text-gray-600 mt-1.5 leading-relaxed line-clamp-2">
+                      <LinkedProductText text={entry.data.message} products={entry.data.products} />
+                    </p>
+                  )}
 
                   {entry.data.products.length > 0 && (
                     <div className="flex flex-col gap-1.5 mt-2">

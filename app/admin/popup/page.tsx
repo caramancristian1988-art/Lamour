@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -14,6 +15,20 @@ import {
 import { getPopupStatsByProduct } from "@/lib/popupStatActions";
 
 const PER_PAGE = 9;
+const STATS_PER_PAGE = 9;
+
+function buildHref(current: Record<string, string | string[] | undefined>, overrides: Record<string, string | null>) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(current)) {
+    if (typeof value === "string") params.set(key, value);
+  }
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value === null) params.delete(key);
+    else params.set(key, value);
+  }
+  const qs = params.toString();
+  return qs ? `?${qs}` : "?";
+}
 
 async function getData(catFilter: string, sort: string, page: number) {
   const where: Prisma.ProductWhereInput = catFilter ? { categoryId: catFilter } : {};
@@ -57,12 +72,18 @@ export default async function AdminPopupPage({
   const sort = typeof query.sort === "string" ? query.sort : "newest";
   const page = Math.max(1, Number(query.page) || 1);
 
-  const [{ products, total, categories, enabledIds }, countdownMinutes, productStats] = await Promise.all([
+  const statCat = typeof query.statCat === "string" ? query.statCat : "";
+  const statPage = Math.max(1, Number(query.statPage) || 1);
+
+  const [{ products, total, categories, enabledIds }, countdownMinutes, allProductStats] = await Promise.all([
     getData(catFilter, sort, page),
     getPopupCountdownMinutes(),
-    getPopupStatsByProduct(),
+    getPopupStatsByProduct(statCat || undefined),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+
+  const statTotalPages = Math.max(1, Math.ceil(allProductStats.length / STATS_PER_PAGE));
+  const productStats = allProductStats.slice((statPage - 1) * STATS_PER_PAGE, statPage * STATS_PER_PAGE);
 
   return (
     <div>
@@ -94,8 +115,31 @@ export default async function AdminPopupPage({
         <p className="text-xs text-gray-400 mb-4">
           Câte persoane au dat click pe „Vezi produsul" față de câte au închis pop-up-ul, per produs — un semn că oferta atrage interes.
         </p>
+
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <Link
+            href={buildHref(query, { statCat: null, statPage: null })}
+            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+              !statCat ? "bg-[#1d2353] text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+            }`}
+          >
+            Toate categoriile
+          </Link>
+          {categories.map((c) => (
+            <Link
+              key={c.id}
+              href={buildHref(query, { statCat: c.id, statPage: null })}
+              className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+                statCat === c.id ? "bg-[#1d2353] text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              }`}
+            >
+              {c.name}
+            </Link>
+          ))}
+        </div>
+
         {productStats.length === 0 ? (
-          <p className="text-sm text-gray-500">Încă nu există interacțiuni înregistrate cu pop-up-ul.</p>
+          <p className="text-sm text-gray-500">Încă nu există interacțiuni înregistrate cu pop-up-ul{statCat ? " pentru această categorie" : ""}.</p>
         ) : (
           <div className="flex flex-col gap-2">
             {productStats.map((stat) => {
@@ -125,6 +169,32 @@ export default async function AdminPopupPage({
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {statTotalPages > 1 && (
+          <div className="flex items-center justify-between mt-4">
+            <Link
+              href={buildHref(query, { statPage: statPage > 2 ? String(statPage - 1) : null })}
+              aria-disabled={statPage <= 1}
+              className={`text-xs font-bold text-[#1d2353] border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors ${
+                statPage <= 1 ? "opacity-40 pointer-events-none" : ""
+              }`}
+            >
+              ← Anterior
+            </Link>
+            <span className="text-xs text-gray-400">
+              Pagina {statPage} din {statTotalPages}
+            </span>
+            <Link
+              href={buildHref(query, { statPage: String(statPage + 1) })}
+              aria-disabled={statPage >= statTotalPages}
+              className={`text-xs font-bold text-[#1d2353] border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors ${
+                statPage >= statTotalPages ? "opacity-40 pointer-events-none" : ""
+              }`}
+            >
+              Următor →
+            </Link>
           </div>
         )}
       </div>
