@@ -8,30 +8,13 @@ export const metadata = {
 
 async function getNotifications() {
   try {
-    const [unreadMessages, pendingReviews, recentMessages, recentReviews] = await Promise.all([
+    const [unreadMessages, pendingReviews] = await Promise.all([
       prisma.contactMessage.count({ where: { read: false } }),
       prisma.review.count({ where: { approved: false } }),
-      prisma.contactMessage.findMany({ where: { read: false }, orderBy: { createdAt: "desc" }, take: 5 }),
-      prisma.review.findMany({ where: { approved: false }, orderBy: { createdAt: "desc" }, take: 5 }),
     ]);
-    return {
-      unreadMessages,
-      pendingReviews,
-      recentMessages: recentMessages.map((m) => ({
-        id: m.id,
-        name: m.name,
-        phone: m.phone,
-        createdAt: m.createdAt.toISOString(),
-      })),
-      recentReviews: recentReviews.map((r) => ({
-        id: r.id,
-        name: r.name,
-        text: r.text,
-        createdAt: r.createdAt.toISOString(),
-      })),
-    };
+    return { unreadMessages, pendingReviews };
   } catch {
-    return { unreadMessages: 0, pendingReviews: 0, recentMessages: [], recentReviews: [] };
+    return { unreadMessages: 0, pendingReviews: 0 };
   }
 }
 

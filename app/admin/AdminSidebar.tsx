@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/lib/authActions";
-import NotificationBell, { type NotificationMessage, type NotificationReview } from "./NotificationBell";
+import NotificationBell from "./NotificationBell";
 
 const navItems = [
   {
@@ -13,6 +13,15 @@ const navItems = [
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10m-9 11h4" />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/notificari",
+    label: "Notificări",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.85 23.85 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
       </svg>
     ),
   },
@@ -114,8 +123,6 @@ const navItems = [
 interface Notifications {
   unreadMessages: number;
   pendingReviews: number;
-  recentMessages: NotificationMessage[];
-  recentReviews: NotificationReview[];
 }
 
 function NavBadge({ count, active }: { count: number; active: boolean }) {
@@ -144,7 +151,9 @@ function SidebarContent({
 }) {
   const pathname = usePathname();
 
+  const totalNotifications = notifications.unreadMessages + notifications.pendingReviews;
   const badgeFor: Record<string, number> = {
+    "/admin/notificari": totalNotifications,
     "/admin/mesaje": notifications.unreadMessages,
     "/admin/recenzii": notifications.pendingReviews,
   };
@@ -158,14 +167,7 @@ function SidebarContent({
           </Link>
           <p className="text-[11px] text-white/50 mt-1">Panou de administrare</p>
         </div>
-        <NotificationBell
-          unreadMessages={notifications.unreadMessages}
-          pendingReviews={notifications.pendingReviews}
-          recentMessages={notifications.recentMessages}
-          recentReviews={notifications.recentReviews}
-          variant="dark"
-          align="left"
-        />
+        <NotificationBell total={totalNotifications} variant="dark" />
       </div>
 
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
@@ -226,13 +228,7 @@ export default function AdminSidebar({ userName, notifications }: { userName: st
           Climat <span className="text-[#c7092b]">Rapid</span> <span className="text-white/50 text-xs font-normal">Admin</span>
         </Link>
         <div className="flex items-center gap-1">
-          <NotificationBell
-            unreadMessages={notifications.unreadMessages}
-            pendingReviews={notifications.pendingReviews}
-            recentMessages={notifications.recentMessages}
-            recentReviews={notifications.recentReviews}
-            variant="dark"
-          />
+          <NotificationBell total={notifications.unreadMessages + notifications.pendingReviews} variant="dark" />
           <button onClick={() => setOpen(true)} aria-label="Meniu admin" className="p-1.5">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />

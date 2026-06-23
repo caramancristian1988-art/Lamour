@@ -91,6 +91,7 @@ export async function markMessageReadAction(formData: FormData) {
   if (!id) return;
   await prisma.contactMessage.update({ where: { id }, data: { read: true } });
   revalidatePath("/admin/mesaje");
+  revalidatePath("/admin/notificari");
 }
 
 async function syncTelegramMessage(updated: {
@@ -149,4 +150,5 @@ export async function deleteMessageAction(formData: FormData) {
   if (!id) return;
   await prisma.contactMessage.delete({ where: { id } });
   revalidatePath("/admin/mesaje");
+  revalidatePath("/admin/notificari");
 }
