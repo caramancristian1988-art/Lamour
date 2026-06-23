@@ -6,6 +6,7 @@ import AdminPageHeader from "../components/AdminPageHeader";
 import SaveButton from "../components/SaveButton";
 import AdminProductFilters from "../produse/AdminProductFilters";
 import AdminPagination from "../components/AdminPagination";
+import PopupStatsFilters from "./PopupStatsFilters";
 import {
   getPopupEnabledProductIds,
   updatePopupProductsAction,
@@ -73,12 +74,13 @@ export default async function AdminPopupPage({
   const page = Math.max(1, Number(query.page) || 1);
 
   const statCat = typeof query.statCat === "string" ? query.statCat : "";
+  const statQ = typeof query.statQ === "string" ? query.statQ : "";
   const statPage = Math.max(1, Number(query.statPage) || 1);
 
   const [{ products, total, categories, enabledIds }, countdownMinutes, allProductStats] = await Promise.all([
     getData(catFilter, sort, page),
     getPopupCountdownMinutes(),
-    getPopupStatsByProduct(statCat || undefined),
+    getPopupStatsByProduct(statCat || undefined, statQ || undefined),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
@@ -116,30 +118,12 @@ export default async function AdminPopupPage({
           Câte persoane au dat click pe „Vezi produsul" față de câte au închis pop-up-ul, per produs — un semn că oferta atrage interes.
         </p>
 
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <Link
-            href={buildHref(query, { statCat: null, statPage: null })}
-            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
-              !statCat ? "bg-[#1d2353] text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-            }`}
-          >
-            Toate categoriile
-          </Link>
-          {categories.map((c) => (
-            <Link
-              key={c.id}
-              href={buildHref(query, { statCat: c.id, statPage: null })}
-              className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
-                statCat === c.id ? "bg-[#1d2353] text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-              }`}
-            >
-              {c.name}
-            </Link>
-          ))}
-        </div>
+        <PopupStatsFilters categories={categories} />
 
         {productStats.length === 0 ? (
-          <p className="text-sm text-gray-500">Încă nu există interacțiuni înregistrate cu pop-up-ul{statCat ? " pentru această categorie" : ""}.</p>
+          <p className="text-sm text-gray-500">
+            Încă nu există interacțiuni înregistrate cu pop-up-ul{statCat || statQ ? " pentru acest filtru" : ""}.
+          </p>
         ) : (
           <div className="flex flex-col gap-2">
             {productStats.map((stat) => {
@@ -176,6 +160,7 @@ export default async function AdminPopupPage({
           <div className="flex items-center justify-between mt-4">
             <Link
               href={buildHref(query, { statPage: statPage > 2 ? String(statPage - 1) : null })}
+              scroll={false}
               aria-disabled={statPage <= 1}
               className={`text-xs font-bold text-[#1d2353] border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors ${
                 statPage <= 1 ? "opacity-40 pointer-events-none" : ""
@@ -188,6 +173,7 @@ export default async function AdminPopupPage({
             </span>
             <Link
               href={buildHref(query, { statPage: String(statPage + 1) })}
+              scroll={false}
               aria-disabled={statPage >= statTotalPages}
               className={`text-xs font-bold text-[#1d2353] border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors ${
                 statPage >= statTotalPages ? "opacity-40 pointer-events-none" : ""
@@ -215,7 +201,7 @@ export default async function AdminPopupPage({
           </div>
         )}
 
-        <SaveButton label="Salvează selecția" />
+        <SaveButton key={`${page}-${catFilter}-${sort}`} label="Salvează selecția" />
       </form>
 
       <AdminPagination page={page} totalPages={totalPages} />

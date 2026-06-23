@@ -13,7 +13,7 @@ export default function AdminPagination({ page, totalPages }: { page: number; to
     const params = new URLSearchParams(searchParams.toString());
     if (target <= 1) params.delete("page");
     else params.set("page", String(target));
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   return (

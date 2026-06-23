@@ -36,8 +36,8 @@ export interface PopupProductStat {
 
 // Per-product breakdown so an admin can see which offers actually get
 // engagement (clicks toward the product) versus get dismissed (closes).
-// Optionally scoped to a single category.
-export async function getPopupStatsByProduct(categoryId?: string): Promise<PopupProductStat[]> {
+// Optionally scoped to a single category and/or filtered by name.
+export async function getPopupStatsByProduct(categoryId?: string, search?: string): Promise<PopupProductStat[]> {
   try {
     const grouped = await prisma.popupEvent.groupBy({
       by: ["productSlug", "event"],
@@ -73,6 +73,7 @@ export async function getPopupStatsByProduct(categoryId?: string): Promise<Popup
         };
       })
       .filter((stat) => !categoryId || stat.categoryId === categoryId)
+      .filter((stat) => !search || stat.name.toLowerCase().includes(search.toLowerCase()))
       .sort((a, b) => b.clicks - a.clicks);
   } catch {
     return [];
