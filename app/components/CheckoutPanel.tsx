@@ -49,6 +49,7 @@ export default function CheckoutPanel() {
     submitData.set("phone", phone);
     submitData.set("message", message);
     submitData.set("source", "Comandă din coș");
+    submitData.set("productSlugs", items.map((i) => i.slug).join(","));
 
     setStatus("pending");
     const result = await submitContactMessageAction({}, submitData);

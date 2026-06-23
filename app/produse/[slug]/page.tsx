@@ -532,7 +532,7 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
                   </svg>
                   {inStock ? "Adaugă în coș" : "Stoc epuizat"}
                 </AddToCartButton>
-                <ProductOfferModal productName={displayName} productImage={displayImage} />
+                <ProductOfferModal productId={product.id} productName={displayName} productImage={displayImage} />
               </div>
 
               <div className="bg-[#1d2353] rounded-2xl divide-y divide-white/10 overflow-hidden">

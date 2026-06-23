@@ -7,10 +7,12 @@ import { submitContactMessageAction, type ContactFormState } from "@/lib/adminMe
 const initialState: ContactFormState = {};
 
 function OfferFormPanel({
+  productId,
   productName,
   productImage,
   onSuccess,
 }: {
+  productId: string;
   productName: string;
   productImage: string | null;
   onSuccess: () => void;
@@ -64,6 +66,7 @@ function OfferFormPanel({
 
       <form action={formAction} className="flex flex-col gap-3.5">
         <input type="hidden" name="source" value={`Cere consultație – ${productName}`} />
+        <input type="hidden" name="productId" value={productId} />
 
         {state.error && (
           <p className="text-sm text-[#c7092b] bg-[#fdf2f3] border border-[#fbd5d9] rounded-lg px-4 py-2.5 text-center">
@@ -111,11 +114,13 @@ function OfferFormPanel({
 }
 
 export default function ProductOfferModal({
+  productId,
   productName,
   productImage,
   className,
   children,
 }: {
+  productId: string;
   productName: string;
   productImage: string | null;
   className?: string;
@@ -185,7 +190,7 @@ export default function ProductOfferModal({
               </svg>
             </button>
 
-            <OfferFormPanel key={openCount} productName={productName} productImage={productImage} onSuccess={closeModal} />
+            <OfferFormPanel key={openCount} productId={productId} productName={productName} productImage={productImage} onSuccess={closeModal} />
           </div>
         </div>
       )}

@@ -160,6 +160,7 @@ model ContactMessage {
   status            String   @default("in_asteptare")
   mood              String?
   telegramMessageId Int?
+  productIds        String[] @default([]) @db.ObjectId
   createdAt         DateTime @default(now())
 }
 

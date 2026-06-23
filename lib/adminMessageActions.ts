@@ -18,14 +18,29 @@ export interface ContactFormState {
   success?: boolean;
 }
 
-// Finds which real products are mentioned by name in a message's source
-// and/or body, so the Telegram notification can link straight to them.
-async function findMentionedProducts(...texts: (string | null)[]): Promise<{ name: string; slug: string }[]> {
+// Resolves the actual product(s) tied to a message — by id (single product
+// requests) or by slug (cart orders, which can list several) — so the
+// Telegram link and admin "Vezi produsul" link point at the real product
+// instead of relying on fuzzy name matching.
+async function resolveProducts(formData: FormData): Promise<{ id: string; name: string; slug: string }[]> {
   try {
-    const haystack = texts.filter(Boolean).join(" \n ");
-    if (!haystack) return [];
-    const products = await prisma.product.findMany({ select: { name: true, slug: true } });
-    return products.filter((p) => haystack.includes(p.name));
+    const productId = String(formData.get("productId") ?? "").trim();
+    if (productId) {
+      return await prisma.product.findMany({ where: { id: productId }, select: { id: true, name: true, slug: true } });
+    }
+    const slugsRaw = String(formData.get("productSlugs") ?? "").trim();
+    const slugs = slugsRaw ? slugsRaw.split(",").map((s) => s.trim()).filter(Boolean) : [];
+    if (slugs.length === 0) return [];
+    return await prisma.product.findMany({ where: { slug: { in: slugs } }, select: { id: true, name: true, slug: true } });
+  } catch {
+    return [];
+  }
+}
+
+async function getProductsByIds(productIds: string[]): Promise<{ id: string; name: string; slug: string }[]> {
+  if (productIds.length === 0) return [];
+  try {
+    return await prisma.product.findMany({ where: { id: { in: productIds } }, select: { id: true, name: true, slug: true } });
   } catch {
     return [];
   }
@@ -49,15 +64,17 @@ export async function submitContactMessageAction(
   const message = [subject && `Subiect: ${subject}`, messageText].filter(Boolean).join("\n\n") || null;
   const source = sourcePath === "/contact" ? "Pagina de contact" : sourcePath || "Pagina de contact";
 
+  const products = await resolveProducts(formData);
+  const productIds = products.map((p) => p.id);
+
   let created;
   try {
-    created = await prisma.contactMessage.create({ data: { name, phone, email: email || null, message, source } });
+    created = await prisma.contactMessage.create({ data: { name, phone, email: email || null, message, source, productIds } });
   } catch {
     return { error: "Nu am putut trimite mesajul. Încearcă din nou." };
   }
 
   const statusLabel = MESSAGE_STATUSES.find((s) => s.value === created.status)?.label ?? created.status;
-  const products = await findMentionedProducts(source, message);
   const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel, products });
   const telegramMessageId = await sendTelegramMessage(text, buildMessageButtons(created.id));
   if (telegramMessageId) {
@@ -86,11 +103,12 @@ async function syncTelegramMessage(updated: {
   status: string;
   mood: string | null;
   telegramMessageId: number | null;
+  productIds: string[];
 }) {
   if (!updated.telegramMessageId) return;
   const statusLabel = MESSAGE_STATUSES.find((s) => s.value === updated.status)?.label ?? updated.status;
   const moodLabel = MOODS.find((m) => m.value === updated.mood)?.label ?? null;
-  const products = await findMentionedProducts(updated.source, updated.message);
+  const products = await getProductsByIds(updated.productIds);
   const text = buildContactMessageText({
     name: updated.name,
     phone: updated.phone,

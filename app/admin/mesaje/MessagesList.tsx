@@ -17,7 +17,7 @@ interface Message {
   status: string;
   mood: string | null;
   createdAt: Date;
-  productSlug: string | null;
+  products: { id: string; name: string; slug: string }[];
 }
 
 function isOfferRequest(source: string) {
@@ -167,20 +167,30 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                     <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full uppercase">
                       {m.source}
                     </span>
-                    {m.productSlug && (
-                      <Link
-                        href={`/produse/${m.productSlug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-[#c7092b] bg-[#fdf2f3] px-2 py-0.5 rounded-full uppercase hover:bg-[#c7092b] hover:text-white transition-colors"
-                      >
-                        Vezi produsul
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </Link>
-                    )}
                   </div>
+
+                  {m.products.length > 0 && (
+                    <div className="flex flex-col gap-1.5 mt-2">
+                      {m.products.map((p) => (
+                        <Link
+                          key={p.id}
+                          href={`/produse/${p.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-[10px] font-bold text-[#c7092b] bg-[#fdf2f3] px-2 py-1 rounded-full hover:bg-[#c7092b] hover:text-white transition-colors w-fit"
+                        >
+                          <span className="uppercase">Vezi produsul</span>
+                          <span className="opacity-70 truncate max-w-[160px]">{p.name}</span>
+                          <span className="font-mono opacity-50 normal-case" title={p.id}>
+                            ID: {p.id}
+                          </span>
+                          <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-2 mt-3 flex-wrap">
                     <MessageStatusBadge id={m.id} status={m.status} onChange={(status) => patchMessage(m.id, { status })} />
