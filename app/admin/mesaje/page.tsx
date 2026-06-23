@@ -37,7 +37,7 @@ export default async function AdminMesajePage() {
 
   return (
     <div>
-      <AdminPageHeader title="Mesaje Contact" description="Mesajele primite prin formularul de contact." />
+      <AdminPageHeader title="Cereri și comenzi" description="Cereri de ofertă, mesaje de contact și comenzi din coș, într-un singur loc." />
       <MessagesList messages={messages} />
     </div>
   );

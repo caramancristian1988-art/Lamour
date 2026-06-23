@@ -21,8 +21,12 @@ interface Message {
   products: { id: string; name: string; slug: string }[];
 }
 
-function isOfferRequest(source: string) {
-  return source.startsWith("Cere consultație");
+type Category = "oferte" | "contact" | "comenzi";
+
+function categoryOf(source: string): Category {
+  if (source.startsWith("Cere consultație")) return "oferte";
+  if (source === "Comandă din coș") return "comenzi";
+  return "contact";
 }
 
 const STATUS_ACCENT_COLORS: Record<string, string> = {
@@ -43,7 +47,7 @@ function formatDate(date: Date) {
 export default function MessagesList({ messages: initialMessages }: { messages: Message[] }) {
   const [messages, setMessages] = useState(initialMessages);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [tab, setTab] = useState<"oferte" | "contact">("oferte");
+  const [tab, setTab] = useState<Category>("oferte");
 
   function patchMessage(id: string, patch: Partial<Message>) {
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
@@ -76,31 +80,32 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
     );
   }
 
-  const offerMessages = messages.filter((m) => isOfferRequest(m.source));
-  const contactMessages = messages.filter((m) => !isOfferRequest(m.source));
-  const visibleMessages = tab === "oferte" ? offerMessages : contactMessages;
+  const offerMessages = messages.filter((m) => categoryOf(m.source) === "oferte");
+  const contactMessages = messages.filter((m) => categoryOf(m.source) === "contact");
+  const orderMessages = messages.filter((m) => categoryOf(m.source) === "comenzi");
+  const visibleMessages = tab === "oferte" ? offerMessages : tab === "comenzi" ? orderMessages : contactMessages;
+
+  const tabs: { value: Category; label: string; count: number }[] = [
+    { value: "oferte", label: "Cereri ofertă", count: offerMessages.length },
+    { value: "contact", label: "Contact", count: contactMessages.length },
+    { value: "comenzi", label: "Comenzi din coș", count: orderMessages.length },
+  ];
 
   return (
     <div>
-      <div className="flex gap-2 mb-4">
-        <button
-          type="button"
-          onClick={() => setTab("oferte")}
-          className={`text-sm font-bold px-4 py-2 rounded-xl transition-colors ${
-            tab === "oferte" ? "bg-[#c7092b] text-white" : "bg-white border border-gray-200 text-gray-500 hover:text-[#1d2353]"
-          }`}
-        >
-          Cereri ofertă <span className="opacity-70">({offerMessages.length})</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("contact")}
-          className={`text-sm font-bold px-4 py-2 rounded-xl transition-colors ${
-            tab === "contact" ? "bg-[#c7092b] text-white" : "bg-white border border-gray-200 text-gray-500 hover:text-[#1d2353]"
-          }`}
-        >
-          Mesaje contact <span className="opacity-70">({contactMessages.length})</span>
-        </button>
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {tabs.map((t) => (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => setTab(t.value)}
+            className={`text-sm font-bold px-4 py-2 rounded-xl transition-colors ${
+              tab === t.value ? "bg-[#c7092b] text-white" : "bg-white border border-gray-200 text-gray-500 hover:text-[#1d2353]"
+            }`}
+          >
+            {t.label} <span className="opacity-70">({t.count})</span>
+          </button>
+        ))}
       </div>
 
       {visibleMessages.length === 0 ? (
