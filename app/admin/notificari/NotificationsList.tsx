@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import LinkedProductText from "../components/LinkedProductText";
+import CopyableId from "../components/CopyableId";
 import { markMessageReadAction } from "@/lib/adminMessageActions";
 import { approveReviewAction, rejectReviewAction } from "@/lib/adminReviewActions";
 
@@ -133,16 +134,22 @@ export default function NotificationsList({ messages: initialMessages, reviews: 
                   {entry.data.products.length > 0 && (
                     <div className="flex flex-col gap-1.5 mt-2">
                       {entry.data.products.map((p) => (
-                        <Link
+                        <div
                           key={p.id}
-                          href={`/produse/${p.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-[10px] font-bold text-[#c7092b] bg-[#fdf2f3] px-2 py-1 rounded-full hover:bg-[#c7092b] hover:text-white transition-colors w-fit"
+                          className="inline-flex items-center gap-2 text-[10px] font-bold text-[#c7092b] bg-[#fdf2f3] px-2 py-1 rounded-full w-fit"
                         >
-                          <span className="uppercase">Vezi produsul</span>
-                          <span className="opacity-70 truncate max-w-[160px]">{p.name}</span>
-                        </Link>
+                          <Link
+                            href={`/produse/${p.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 hover:underline transition-colors"
+                          >
+                            <span className="uppercase">Vezi produsul</span>
+                            <span className="opacity-70 truncate max-w-[160px]">{p.name}</span>
+                          </Link>
+                          <span className="opacity-30">|</span>
+                          <CopyableId id={p.id} className="inline-flex items-center gap-1 font-mono opacity-70 normal-case hover:opacity-100 transition-opacity" />
+                        </div>
                       ))}
                     </div>
                   )}

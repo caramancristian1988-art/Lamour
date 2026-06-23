@@ -6,6 +6,7 @@ import AdminPageHeader from "../components/AdminPageHeader";
 import DeleteButton from "../components/DeleteButton";
 import AdminProductFilters from "./AdminProductFilters";
 import AdminPagination from "../components/AdminPagination";
+import CopyableId from "../components/CopyableId";
 import { deleteProductAction } from "@/lib/adminProductActions";
 
 const PER_PAGE = 10;
@@ -70,7 +71,10 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-bold text-sm text-[#1d2353] truncate">{product.name}</p>
-        <p className="text-xs text-gray-500 truncate">{product.category?.name ?? "Fără categorie"}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-gray-500 truncate">{product.category?.name ?? "Fără categorie"}</p>
+          <CopyableId id={product.id} />
+        </div>
       </div>
       <p className="text-sm font-bold text-[#1d2353] shrink-0">{product.price.toLocaleString("ro-MD")} MDL</p>
       <span
