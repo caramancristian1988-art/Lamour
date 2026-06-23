@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ViewTransition } from "react";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
@@ -120,41 +121,43 @@ export default async function AdminPopupPage({
 
         <PopupStatsFilters categories={categories} />
 
-        {productStats.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            Încă nu există interacțiuni înregistrate cu pop-up-ul{statCat || statQ ? " pentru acest filtru" : ""}.
-          </p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {productStats.map((stat) => {
-              const total = stat.clicks + stat.closes;
-              const clickRate = total > 0 ? Math.round((stat.clicks / total) * 100) : 0;
-              return (
-                <div key={stat.slug} className="flex items-center gap-4 px-3 py-2.5 border border-gray-100 rounded-xl">
-                  <div className="relative w-10 h-10 rounded-lg bg-[#f6f8fb] overflow-hidden shrink-0">
-                    {stat.image && <Image src={stat.image} alt={stat.name} fill className="object-contain p-1" />}
+        <ViewTransition key={statPage} name="popup-stats" enter="auto" share="auto" default="none">
+          {productStats.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              Încă nu există interacțiuni înregistrate cu pop-up-ul{statCat || statQ ? " pentru acest filtru" : ""}.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {productStats.map((stat) => {
+                const total = stat.clicks + stat.closes;
+                const clickRate = total > 0 ? Math.round((stat.clicks / total) * 100) : 0;
+                return (
+                  <div key={stat.slug} className="flex items-center gap-4 px-3 py-2.5 border border-gray-100 rounded-xl">
+                    <div className="relative w-10 h-10 rounded-lg bg-[#f6f8fb] overflow-hidden shrink-0">
+                      {stat.image && <Image src={stat.image} alt={stat.name} fill className="object-contain p-1" />}
+                    </div>
+                    <p className="text-sm font-bold text-[#1d2353] truncate flex-1 min-w-0">{stat.name}</p>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 shrink-0">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                      {stat.clicks} click-uri
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 shrink-0">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      {stat.closes} închideri
+                    </div>
+                    <span className="text-xs font-bold text-[#1d2353] bg-[#fdf2f3] px-2.5 py-1 rounded-full shrink-0">
+                      {clickRate}%
+                    </span>
                   </div>
-                  <p className="text-sm font-bold text-[#1d2353] truncate flex-1 min-w-0">{stat.name}</p>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 shrink-0">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                    {stat.clicks} click-uri
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 shrink-0">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    {stat.closes} închideri
-                  </div>
-                  <span className="text-xs font-bold text-[#1d2353] bg-[#fdf2f3] px-2.5 py-1 rounded-full shrink-0">
-                    {clickRate}%
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </ViewTransition>
 
         {statTotalPages > 1 && (
           <div className="flex items-center justify-between mt-4">
@@ -191,15 +194,17 @@ export default async function AdminPopupPage({
       <form action={updatePopupProductsAction} className="bg-white border border-gray-100 rounded-2xl p-6">
         <input type="hidden" name="allIds" value={products.map((p) => p.id).join(",")} />
 
-        {products.length === 0 ? (
-          <p className="text-sm text-gray-500">Nu există produse pentru acest filtru.</p>
-        ) : (
-          <div className="flex flex-col gap-2 mb-6">
-            {products.map((product) => (
-              <ProductRow key={product.id} product={product} checked={enabledIds.has(product.id)} />
-            ))}
-          </div>
-        )}
+        <ViewTransition key={page} name="popup-products" enter="auto" share="auto" default="none">
+          {products.length === 0 ? (
+            <p className="text-sm text-gray-500">Nu există produse pentru acest filtru.</p>
+          ) : (
+            <div className="flex flex-col gap-2 mb-6">
+              {products.map((product) => (
+                <ProductRow key={product.id} product={product} checked={enabledIds.has(product.id)} />
+              ))}
+            </div>
+          )}
+        </ViewTransition>
 
         <SaveButton key={`${page}-${catFilter}-${sort}`} label="Salvează selecția" />
       </form>

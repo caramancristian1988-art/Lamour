@@ -10,6 +10,7 @@
   --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-bump: bump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-star-pop: star-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-page-fade: page-fade 0.25s ease-out;
 }
 
 @keyframes pop {
@@ -46,6 +47,17 @@
   }
   100% {
     transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes page-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -101,4 +113,13 @@ body {
   color: #111827;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Mobile Safari/Chrome zoom in on focus when an input's font-size is under 16px. */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
