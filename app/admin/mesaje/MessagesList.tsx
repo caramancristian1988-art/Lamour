@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import MessageStatusBadge from "../components/MessageStatusBadge";
 import MoodBadge from "../components/MoodBadge";
 import { markMessageReadAction, deleteMessageAction } from "@/lib/adminMessageActions";
@@ -16,6 +17,11 @@ interface Message {
   status: string;
   mood: string | null;
   createdAt: Date;
+  productSlug: string | null;
+}
+
+function isOfferRequest(source: string) {
+  return source.startsWith("Cere consultație");
 }
 
 const STATUS_ACCENT_COLORS: Record<string, string> = {
@@ -36,6 +42,7 @@ function formatDate(date: Date) {
 export default function MessagesList({ messages: initialMessages }: { messages: Message[] }) {
   const [messages, setMessages] = useState(initialMessages);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [tab, setTab] = useState<"oferte" | "contact">("oferte");
 
   function patchMessage(id: string, patch: Partial<Message>) {
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
@@ -68,9 +75,40 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
     );
   }
 
+  const offerMessages = messages.filter((m) => isOfferRequest(m.source));
+  const contactMessages = messages.filter((m) => !isOfferRequest(m.source));
+  const visibleMessages = tab === "oferte" ? offerMessages : contactMessages;
+
   return (
-    <div className="flex flex-col gap-2">
-      {messages.map((m) => {
+    <div>
+      <div className="flex gap-2 mb-4">
+        <button
+          type="button"
+          onClick={() => setTab("oferte")}
+          className={`text-sm font-bold px-4 py-2 rounded-xl transition-colors ${
+            tab === "oferte" ? "bg-[#c7092b] text-white" : "bg-white border border-gray-200 text-gray-500 hover:text-[#1d2353]"
+          }`}
+        >
+          Cereri ofertă <span className="opacity-70">({offerMessages.length})</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("contact")}
+          className={`text-sm font-bold px-4 py-2 rounded-xl transition-colors ${
+            tab === "contact" ? "bg-[#c7092b] text-white" : "bg-white border border-gray-200 text-gray-500 hover:text-[#1d2353]"
+          }`}
+        >
+          Mesaje contact <span className="opacity-70">({contactMessages.length})</span>
+        </button>
+      </div>
+
+      {visibleMessages.length === 0 ? (
+        <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center text-gray-500">
+          Nu există mesaje în această categorie.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {visibleMessages.map((m) => {
         const expanded = expandedId === m.id;
         return (
           <div
@@ -129,6 +167,19 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                     <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full uppercase">
                       {m.source}
                     </span>
+                    {m.productSlug && (
+                      <Link
+                        href={`/produse/${m.productSlug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-[#c7092b] bg-[#fdf2f3] px-2 py-0.5 rounded-full uppercase hover:bg-[#c7092b] hover:text-white transition-colors"
+                      >
+                        Vezi produsul
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </Link>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -161,7 +212,9 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
             </div>
           </div>
         );
-      })}
+          })}
+        </div>
+      )}
     </div>
   );
 }
