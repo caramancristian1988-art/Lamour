@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ViewTransition } from "react";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
@@ -8,6 +7,7 @@ import SaveButton from "../components/SaveButton";
 import AdminProductFilters from "../produse/AdminProductFilters";
 import AdminPagination from "../components/AdminPagination";
 import PopupStatsFilters from "./PopupStatsFilters";
+import PageFade from "../components/PageFade";
 import {
   getPopupEnabledProductIds,
   updatePopupProductsAction,
@@ -121,7 +121,7 @@ export default async function AdminPopupPage({
 
         <PopupStatsFilters categories={categories} />
 
-        <ViewTransition key={statPage} name="popup-stats" enter="auto" share="auto" default="none">
+        <PageFade pageKey={`${statCat}-${statQ}-${statPage}`}>
           {productStats.length === 0 ? (
             <p className="text-sm text-gray-500">
               Încă nu există interacțiuni înregistrate cu pop-up-ul{statCat || statQ ? " pentru acest filtru" : ""}.
@@ -157,7 +157,7 @@ export default async function AdminPopupPage({
               })}
             </div>
           )}
-        </ViewTransition>
+        </PageFade>
 
         {statTotalPages > 1 && (
           <div className="flex items-center justify-between mt-4">
@@ -194,7 +194,7 @@ export default async function AdminPopupPage({
       <form action={updatePopupProductsAction} className="bg-white border border-gray-100 rounded-2xl p-6">
         <input type="hidden" name="allIds" value={products.map((p) => p.id).join(",")} />
 
-        <ViewTransition key={page} name="popup-products" enter="auto" share="auto" default="none">
+        <PageFade pageKey={`${catFilter}-${sort}-${page}`}>
           {products.length === 0 ? (
             <p className="text-sm text-gray-500">Nu există produse pentru acest filtru.</p>
           ) : (
@@ -204,7 +204,7 @@ export default async function AdminPopupPage({
               ))}
             </div>
           )}
-        </ViewTransition>
+        </PageFade>
 
         <SaveButton key={`${page}-${catFilter}-${sort}`} label="Salvează selecția" />
       </form>
