@@ -32,7 +32,7 @@ export default async function DesprePage() {
     <main className="bg-white">
 
         {/* ── HERO SECTION — MOBILE ── */}
-        <section className="sm:hidden relative h-[360px] overflow-hidden">
+        <section className="sm:hidden relative h-[500px] overflow-hidden">
           <Image
             src="/IMG_2935.PNG"
             alt="Sediul Climat Rapid"
@@ -41,10 +41,13 @@ export default async function DesprePage() {
             priority
             sizes="100vw"
           />
+          {/* Top gradient — keeps title readable */}
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, white 0%, white 35%, rgba(255,255,255,0.55) 55%, transparent 80%)" }}
+            style={{ background: "linear-gradient(to bottom, white 0%, white 28%, rgba(255,255,255,0.35) 48%, transparent 65%)" }}
           />
+
+          {/* Title at top */}
           <div className="absolute inset-x-0 top-0 px-4 pt-4">
             <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-4">
               <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
@@ -61,29 +64,31 @@ export default async function DesprePage() {
             </h1>
             <div className="w-10 h-1 bg-[#c7092b] rounded-full" />
           </div>
-        </section>
 
-        {/* Mobile-only intro text + CTAs, below the hero image */}
-        <section className="sm:hidden bg-white px-4 pt-6 pb-2">
-          <p className="text-gray-600 text-[15px] leading-relaxed mb-6">
-            Suntem o companie din Moldova specializată în soluții complete de
-            climatizare pentru locuințe și afaceri. De la consultanță și vânzare
-            până la instalare și mentenanță, ne asigurăm că ai parte de confort
-            în fiecare sezon.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/produse"
-              className="inline-flex items-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm uppercase tracking-wide"
-            >
-              Vezi produsele
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex items-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold px-6 py-3 rounded-lg transition-all text-sm uppercase tracking-wide"
-            >
-              Contactează-ne
-            </Link>
+          {/* Semi-transparent card anchored to bottom of hero */}
+          <div className="absolute inset-x-4 bottom-4 rounded-2xl overflow-hidden">
+            <div className="bg-white/80 backdrop-blur-md px-5 py-5 shadow-xl">
+              <p className="text-[#1d2353] text-[14px] leading-relaxed mb-4">
+                Suntem o companie din Moldova specializată în soluții complete de
+                climatizare pentru locuințe și afaceri. De la consultanță și vânzare
+                până la instalare și mentenanță, ne asigurăm că ai parte de confort
+                în fiecare sezon.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/produse"
+                  className="inline-flex items-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-5 py-2.5 rounded-lg transition-colors text-sm uppercase tracking-wide"
+                >
+                  Vezi produsele
+                </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold px-5 py-2.5 rounded-lg transition-all text-sm uppercase tracking-wide"
+                >
+                  Contactează-ne
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 
