@@ -41,10 +41,10 @@ export default async function DesprePage() {
             priority
             sizes="100vw"
           />
-          {/* Top gradient — keeps title readable, fades quickly so image shows below */}
+          {/* Top gradient — covers only the title area, transparent below */}
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, white 0%, white 20%, rgba(255,255,255,0.6) 32%, rgba(255,255,255,0.1) 46%, transparent 55%)" }}
+            style={{ background: "linear-gradient(to bottom, white 0%, white 33%, rgba(255,255,255,0.25) 42%, transparent 50%)" }}
           />
 
           {/* Title at top */}
