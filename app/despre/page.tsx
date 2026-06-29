@@ -37,14 +37,14 @@ export default async function DesprePage() {
             src="/IMG_2935.PNG"
             alt="Sediul Climat Rapid"
             fill
-            className="object-cover object-top"
+            className="object-cover object-center"
             priority
             sizes="100vw"
           />
-          {/* Top gradient — keeps title readable */}
+          {/* Top gradient — keeps title readable, fades quickly so image shows below */}
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{ background: "linear-gradient(to bottom, white 0%, white 28%, rgba(255,255,255,0.35) 48%, transparent 65%)" }}
+            style={{ background: "linear-gradient(to bottom, white 0%, white 20%, rgba(255,255,255,0.6) 32%, rgba(255,255,255,0.1) 46%, transparent 55%)" }}
           />
 
           {/* Title at top */}
