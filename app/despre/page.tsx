@@ -37,7 +37,7 @@ export default async function DesprePage() {
             src="/IMG_2935.PNG"
             alt="Sediul Climat Rapid"
             fill
-            className="object-cover object-center"
+            className="object-cover object-top"
             priority
             sizes="100vw"
           />
