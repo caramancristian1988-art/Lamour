@@ -48,8 +48,8 @@ export default async function AdminServiciiPage() {
         <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
           <div className="divide-y divide-gray-100">
             {services.map((s) => (
-              <div key={s.id} className="flex items-center gap-4 p-4">
-                <div className="relative w-14 h-14 rounded-xl bg-[#f6f8fb] overflow-hidden shrink-0">
+              <div key={s.id} className="flex items-start gap-3 p-4">
+                <div className="relative w-12 h-12 rounded-xl bg-[#f6f8fb] overflow-hidden shrink-0 mt-0.5">
                   {s.image ? (
                     <Image src={s.image} alt={s.title} fill className="object-cover" />
                   ) : (
@@ -61,23 +61,25 @@ export default async function AdminServiciiPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm text-[#1d2353] truncate">{s.title}</p>
-                  <p className="text-xs text-gray-500 truncate">{s.description}</p>
-                </div>
-                <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full uppercase shrink-0">
-                  {sectionLabels[s.section] ?? s.section}
-                </span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Link
-                    href={`/admin/servicii/${s.id}`}
-                    className="text-gray-400 hover:text-[#c7092b] transition-colors p-1.5 rounded-lg hover:bg-[#fdf2f3]"
-                    aria-label="Editează"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 113 3L12 13l-4 1 1-4 8.5-8.5z" />
-                    </svg>
-                  </Link>
-                  <DeleteButton action={deleteServiceAction} id={s.id} confirmText="Sigur vrei să ștergi acest serviciu?" />
+                  <p className="font-bold text-sm text-[#1d2353] line-clamp-2 leading-snug">{s.title}</p>
+                  <p className="text-xs text-gray-400 line-clamp-1 mt-0.5">{s.description}</p>
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full uppercase">
+                      {sectionLabels[s.section] ?? s.section}
+                    </span>
+                    <div className="ml-auto flex items-center gap-0.5">
+                      <Link
+                        href={`/admin/servicii/${s.id}`}
+                        className="text-gray-400 hover:text-[#c7092b] transition-colors p-1.5 rounded-lg hover:bg-[#fdf2f3]"
+                        aria-label="Editează"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 113 3L12 13l-4 1 1-4 8.5-8.5z" />
+                        </svg>
+                      </Link>
+                      <DeleteButton action={deleteServiceAction} id={s.id} confirmText="Sigur vrei să ștergi acest serviciu?" />
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

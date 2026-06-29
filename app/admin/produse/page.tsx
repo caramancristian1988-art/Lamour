@@ -57,8 +57,8 @@ async function getData(catFilter: string, sort: string, page: number, search: st
 
 function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typeof getData>>["products"][number]; deleteAction: typeof deleteProductAction }) {
   return (
-    <div className="flex items-center gap-4 p-4">
-      <div className="relative w-14 h-14 rounded-xl bg-[#f6f8fb] overflow-hidden shrink-0">
+    <div className="flex items-start gap-3 p-4">
+      <div className="relative w-12 h-12 rounded-xl bg-[#f6f8fb] overflow-hidden shrink-0 mt-0.5">
         {product.image ? (
           <Image src={product.image} alt={product.name} fill className="object-contain" />
         ) : (
@@ -70,42 +70,44 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-sm text-[#1d2353] truncate">{product.name}</p>
-        <div className="flex items-center gap-2">
-          <p className="text-xs text-gray-500 truncate">{product.category?.name ?? "Fără categorie"}</p>
+        <p className="font-bold text-sm text-[#1d2353] line-clamp-2 leading-snug">{product.name}</p>
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          <p className="text-xs text-gray-400">{product.category?.name ?? "Fără categorie"}</p>
           <CopyableId id={product.id} />
         </div>
-      </div>
-      <p className="text-sm font-bold text-[#1d2353] shrink-0">{product.price.toLocaleString("ro-MD")} MDL</p>
-      <span
-        className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase shrink-0 ${
-          product.availability === "Stoc epuizat" ? "bg-gray-100 text-gray-500" : "bg-green-100 text-green-700"
-        }`}
-      >
-        {product.availability}
-      </span>
-      <div className="flex items-center gap-1 shrink-0">
-        <Link
-          href={`/produse/${product.slug}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gray-400 hover:text-[#c7092b] transition-colors p-1.5 rounded-lg hover:bg-[#fdf2f3]"
-          aria-label="Vezi pe site"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </Link>
-        <Link
-          href={`/admin/produse/${product.id}`}
-          className="text-gray-400 hover:text-[#c7092b] transition-colors p-1.5 rounded-lg hover:bg-[#fdf2f3]"
-          aria-label="Editează"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 113 3L12 13l-4 1 1-4 8.5-8.5z" />
-          </svg>
-        </Link>
-        <DeleteButton action={deleteAction} id={product.id} confirmText="Sigur vrei să ștergi acest produs?" />
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <span className="text-sm font-bold text-[#1d2353]">{product.price.toLocaleString("ro-MD")} MDL</span>
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+              product.availability === "Stoc epuizat" ? "bg-gray-100 text-gray-500" : "bg-green-100 text-green-700"
+            }`}
+          >
+            {product.availability}
+          </span>
+          <div className="ml-auto flex items-center gap-0.5">
+            <Link
+              href={`/produse/${product.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-[#c7092b] transition-colors p-1.5 rounded-lg hover:bg-[#fdf2f3]"
+              aria-label="Vezi pe site"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </Link>
+            <Link
+              href={`/admin/produse/${product.id}`}
+              className="text-gray-400 hover:text-[#c7092b] transition-colors p-1.5 rounded-lg hover:bg-[#fdf2f3]"
+              aria-label="Editează"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 113 3L12 13l-4 1 1-4 8.5-8.5z" />
+              </svg>
+            </Link>
+            <DeleteButton action={deleteAction} id={product.id} confirmText="Sigur vrei să ștergi acest produs?" />
+          </div>
+        </div>
       </div>
     </div>
   );
