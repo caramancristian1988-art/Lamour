@@ -38,7 +38,7 @@ export default async function DesprePage() {
             alt="Sediul Climat Rapid"
             fill
             className="object-cover"
-            style={{ objectPosition: "center 75%" }}
+            style={{ objectPosition: "center 90%" }}
             priority
             sizes="100vw"
           />
@@ -68,7 +68,7 @@ export default async function DesprePage() {
 
           {/* Semi-transparent card anchored to bottom of hero */}
           <div className="absolute inset-x-4 bottom-4 rounded-2xl overflow-hidden">
-            <div className="bg-white/80 backdrop-blur-md px-5 py-5 shadow-xl">
+            <div className="bg-white/55 backdrop-blur-md px-5 py-5 shadow-xl">
               <p className="text-[#1d2353] text-[14px] leading-relaxed mb-4">
                 Suntem o companie din Moldova specializată în soluții complete de
                 climatizare pentru locuințe și afaceri. De la consultanță și vânzare
