@@ -129,36 +129,38 @@ export default function ManagedSelect({
       </select>
 
       {adding && (
-        <div className="flex items-center gap-2 mt-1.5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1.5">
           <input
             type="text"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             placeholder={addPlaceholder}
-            className="flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#c7092b]"
+            className="min-w-0 flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#c7092b]"
           />
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={busy || !newLabel.trim()}
-            className="bg-[#1d2353] hover:bg-[#2a3470] disabled:opacity-60 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shrink-0"
-          >
-            {busy ? "Se adaugă..." : "Adaugă"}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setAdding(false);
-              setNewLabel("");
-              setError(null);
-            }}
-            className="text-gray-400 hover:text-[#c7092b] transition-colors shrink-0"
-            aria-label="Anulează"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={busy || !newLabel.trim()}
+              className="flex-1 sm:flex-none bg-[#1d2353] hover:bg-[#2a3470] disabled:opacity-60 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors"
+            >
+              {busy ? "Se adaugă..." : "Adaugă"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAdding(false);
+                setNewLabel("");
+                setError(null);
+              }}
+              className="text-gray-400 hover:text-[#c7092b] transition-colors shrink-0"
+              aria-label="Anulează"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
       {error && <p className="text-xs text-[#c7092b]">{error}</p>}
