@@ -412,14 +412,18 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
     { label: "Tehnologie", value: product.technology },
     product.energyClass ? { label: "Clasă energetică", value: product.energyClass } : null,
     category ? { label: "Categorie", value: category.name } : null,
+    { label: "Disponibilitate", value: product.availability },
+    { label: "Garanție", value: "2 ani" },
+    product.rating > 0 ? { label: "Rating", value: `${product.rating.toFixed(1)} (${product.reviewCount} recenzii)` } : null,
   ].filter(Boolean) as { label: string; value: string }[];
 
   const inStock = product.availability !== "Stoc epuizat";
   const highlightLabels = ["Capacitate", "Tehnologie", "Clasă energetică"];
   const highlightSpecs = specs.filter((s) => highlightLabels.includes(s.label));
   // Admin-entered specs are the most product-specific, so they lead the quick
-  // panel; general fields (brand/capacity/technology/...) fill the rest.
-  const topPanelSpecs = [...(product.specifications ?? []), ...specs].slice(0, 6);
+  // panel; general fields fill the rest. Availability is excluded — it's
+  // already shown as the colored badge next to the panel header.
+  const topPanelSpecs = [...(product.specifications ?? []), ...specs.filter((s) => s.label !== "Disponibilitate")].slice(0, 6);
   const galleryImages = product.images && product.images.length > 0
     ? product.images
     : displayImage
