@@ -109,7 +109,7 @@ export default async function ProdusePage({
     baseProducts,
     filters,
     (p) => categoryById.get(p.categoryId) ?? "",
-    (p) => categoryNameById.get(p.categoryId) ?? ""
+    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.id.slice(-6)}`
   );
 
   const categoryOptions = categories.map((cat) => ({

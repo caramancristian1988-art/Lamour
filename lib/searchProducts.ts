@@ -45,7 +45,12 @@ export async function searchProducts(query: string, limit = 6): Promise<SearchRe
   const { categories, products } = await getSearchableData();
   const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
   const filters = parseFilters({ q: trimmed });
-  const matched = applyFilters(products, filters, undefined, (p) => categoryNameById.get(p.categoryId) ?? "");
+  const matched = applyFilters(
+    products,
+    filters,
+    undefined,
+    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.id.slice(-6)}`
+  );
 
   return matched.slice(0, limit).map((p) => ({
     slug: p.slug,
