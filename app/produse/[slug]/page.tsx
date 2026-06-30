@@ -435,11 +435,18 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
   const inStock = product.availability !== "Stoc epuizat";
   const highlightLabels = ["Capacitate", "Tehnologie", "Clasă energetică"];
   const highlightSpecs = specs.filter((s) => highlightLabels.includes(s.label));
-  // The quick panel stays tight — just the handful of specs that matter for
-  // a fast scan. Everything (general + admin-entered) still shows in full
-  // further down in the "Caracteristici" section.
+  // The quick panel leads with the handful of specs that matter for a fast
+  // scan, then tops up from the admin-entered specifications (if any) so
+  // every product shows at least MIN_TOP_SPECS rows when the data exists.
+  // Everything still shows in full further down in "Caracteristici".
+  const MIN_TOP_SPECS = 5;
   const topPanelLabels = ["Capacitate", "Tehnologie", "Clasă energetică", "Brand"];
-  const topPanelSpecs = specs.filter((s) => topPanelLabels.includes(s.label));
+  const essentialTopSpecs = specs.filter((s) => topPanelLabels.includes(s.label));
+  const extraTopSpecsNeeded = Math.max(0, MIN_TOP_SPECS - essentialTopSpecs.length);
+  const topPanelSpecs = [
+    ...essentialTopSpecs,
+    ...(product.specifications ?? []).slice(0, extraTopSpecsNeeded),
+  ];
   const installmentsEnabled = ratesEnabled && product.installmentsEnabled !== false;
   const galleryImages = product.images && product.images.length > 0
     ? product.images
