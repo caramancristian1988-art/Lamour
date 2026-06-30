@@ -88,6 +88,43 @@ export default async function AdminSetariPage() {
           </label>
         </div>
 
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Rețele sociale</p>
+          <p className="text-xs text-gray-400 mb-3">Linkurile către care duc iconițele din footer. Lasă gol ca să ascunzi o iconiță.</p>
+          <div className="flex flex-col gap-2.5">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-bold text-[#1d2353]">Facebook</span>
+              <input
+                type="url"
+                name="facebook"
+                defaultValue={settings?.facebook ?? ""}
+                placeholder="https://www.facebook.com/..."
+                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-bold text-[#1d2353]">Instagram</span>
+              <input
+                type="url"
+                name="instagram"
+                defaultValue={settings?.instagram ?? "https://www.instagram.com/climatrapid_srl/"}
+                placeholder="https://www.instagram.com/..."
+                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-bold text-[#1d2353]">TikTok</span>
+              <input
+                type="url"
+                name="tiktok"
+                defaultValue={settings?.tiktok ?? ""}
+                placeholder="https://www.tiktok.com/@..."
+                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
+              />
+            </label>
+          </div>
+        </div>
+
         <SaveButton />
       </form>
     </div>

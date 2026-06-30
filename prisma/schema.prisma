@@ -179,6 +179,7 @@ model Settings {
   address     String?
   facebook    String?
   instagram   String?
+  tiktok      String?
   seoTitle    String?
   seoDescription String?
   produseEnabled  Boolean @default(true)

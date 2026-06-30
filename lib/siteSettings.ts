@@ -42,6 +42,32 @@ export const getSectionFlags = cache(async (): Promise<SectionFlags> => {
   }
 });
 
+export interface SocialLinks {
+  facebook: string | null;
+  instagram: string | null;
+  tiktok: string | null;
+}
+
+const SOCIAL_DEFAULTS: SocialLinks = {
+  facebook: null,
+  instagram: "https://www.instagram.com/climatrapid_srl/",
+  tiktok: null,
+};
+
+export const getSocialLinks = cache(async (): Promise<SocialLinks> => {
+  try {
+    const settings = await prisma.settings.findFirst();
+    if (!settings) return SOCIAL_DEFAULTS;
+    return {
+      facebook: settings.facebook || SOCIAL_DEFAULTS.facebook,
+      instagram: settings.instagram || SOCIAL_DEFAULTS.instagram,
+      tiktok: settings.tiktok || SOCIAL_DEFAULTS.tiktok,
+    };
+  } catch {
+    return SOCIAL_DEFAULTS;
+  }
+});
+
 export interface HeaderCategory {
   id: string;
   slug: string;
