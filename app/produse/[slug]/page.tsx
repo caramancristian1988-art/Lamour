@@ -424,10 +424,11 @@ async function ProductView({ product, category, related, reviews, faqs }: Produc
   const inStock = product.availability !== "Stoc epuizat";
   const highlightLabels = ["Capacitate", "Tehnologie", "Clasă energetică"];
   const highlightSpecs = specs.filter((s) => highlightLabels.includes(s.label));
-  // Admin-entered specs are the most product-specific, so they lead the quick
-  // panel; general fields fill the rest. Availability is excluded — it's
-  // already shown as the colored badge next to the panel header.
-  const topPanelSpecs = [...(product.specifications ?? []), ...specs.filter((s) => s.label !== "Disponibilitate")];
+  // The quick panel stays tight — just the handful of specs that matter for
+  // a fast scan. Everything (general + admin-entered) still shows in full
+  // further down in the "Caracteristici" section.
+  const topPanelLabels = ["Capacitate", "Tehnologie", "Clasă energetică", "Brand"];
+  const topPanelSpecs = specs.filter((s) => topPanelLabels.includes(s.label));
   const installmentsEnabled = product.installmentsEnabled !== false;
   const galleryImages = product.images && product.images.length > 0
     ? product.images
