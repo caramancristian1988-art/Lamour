@@ -30,7 +30,9 @@ import FavoriteButton from "../../components/FavoriteButton";
 import ProductFilterSidebar from "../../components/ProductFilterSidebar";
 import ReviewsGrid from "../../components/ReviewsGrid";
 import FaqAccordion from "../../components/FaqAccordion";
+import ProductOfferBanner from "../../components/ProductOfferBanner";
 import { getSectionFlags } from "@/lib/siteSettings";
+import { getPopupCountdownMinutes } from "@/lib/popupProduct";
 
 export const revalidate = 3600;
 
@@ -401,11 +403,13 @@ interface ProductViewProps {
   }>;
 }
 
-function ProductView({ product, category, related, reviews, faqs }: ProductViewProps) {
+async function ProductView({ product, category, related, reviews, faqs }: ProductViewProps) {
   const displayName = localProductNames[product.slug] ?? product.name;
   const displayImage = localProductImages[product.slug] ?? product.image;
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
   const displayBadge = localProductBadges[product.slug] ?? product.badge ?? (discount ? `-${discount}%` : null);
+  const productCode = product.id.slice(-6).toUpperCase();
+  const countdownMinutes = discount ? await getPopupCountdownMinutes() : 0;
 
   const specs = [
     product.brand ? { label: "Brand", value: product.brand } : null,
@@ -472,28 +476,31 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
               </div>
             )}
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="flex items-center gap-2">
-              <StarRating rating={product.rating} />
-              <span className="text-sm text-gray-500">
-                {product.rating.toFixed(1)} ({product.reviewCount} recenzii)
-              </span>
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <StarRating rating={product.rating} />
+                <span className="text-sm text-gray-500">
+                  {product.rating.toFixed(1)} ({product.reviewCount} recenzii)
+                </span>
+              </div>
+              <FavoriteButton
+                product={{
+                  slug: product.slug,
+                  name: displayName,
+                  price: product.price,
+                  oldPrice: product.oldPrice,
+                  image: displayImage,
+                  btu: product.btu,
+                  technology: product.technology,
+                  energyClass: product.energyClass,
+                  rating: product.rating,
+                  reviewCount: product.reviewCount,
+                  badge: displayBadge,
+                }}
+              />
             </div>
-            <FavoriteButton
-              product={{
-                slug: product.slug,
-                name: displayName,
-                price: product.price,
-                oldPrice: product.oldPrice,
-                image: displayImage,
-                btu: product.btu,
-                technology: product.technology,
-                energyClass: product.energyClass,
-                rating: product.rating,
-                reviewCount: product.reviewCount,
-                badge: displayBadge,
-              }}
-            />
+            <p className="text-xs text-gray-400">Cod produs: {productCode}</p>
           </div>
         </div>
       </section>
@@ -528,6 +535,10 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
               <p className="text-gray-600 text-[15px] leading-relaxed">
                 {product.description}
               </p>
+            )}
+
+            {discount && countdownMinutes > 0 && (
+              <ProductOfferBanner discount={discount} countdownMinutes={countdownMinutes} />
             )}
 
             <div className="border border-gray-100 rounded-2xl p-5">
