@@ -18,6 +18,7 @@ interface ProductCardProps {
   reviewCount: number;
   badge?: string | null;
   showDiscount?: boolean;
+  installmentsEnabled?: boolean;
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -52,8 +53,10 @@ export default function ProductCard({
   rating,
   reviewCount,
   badge,
+  installmentsEnabled,
 }: ProductCardProps) {
   const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
+  const discountAmount = oldPrice ? Math.round(oldPrice - price) : null;
   const displayBadge = badge ?? (discount ? `-${discount}%` : null);
 
   const specs = [
@@ -122,16 +125,35 @@ export default function ProductCard({
 
         {/* Price + actions — pinned to bottom */}
         <div className="mt-auto">
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <div className="mb-2">
+            {oldPrice && discount && (
+              <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                <span className="text-xs text-gray-400 line-through">
+                  {oldPrice.toLocaleString("ro-MD")} MDL
+                </span>
+                <span className="inline-flex items-center bg-[#c7092b] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded">
+                  -{discountAmount?.toLocaleString("ro-MD")} MDL
+                </span>
+                <span className="inline-flex items-center bg-[#fdf2f3] text-[#c7092b] text-[10px] font-extrabold px-1.5 py-0.5 rounded">
+                  -{discount}%
+                </span>
+              </div>
+            )}
             <span className="text-base sm:text-lg lg:text-xl font-extrabold text-gray-900">
               {price.toLocaleString("ro-MD")} MDL
             </span>
-            {oldPrice && (
-              <span className="text-sm text-gray-400 line-through">
-                {oldPrice.toLocaleString("ro-MD")} MDL
-              </span>
-            )}
           </div>
+
+          {installmentsEnabled !== false && (
+            <div className="inline-flex items-center gap-1.5 bg-[#eef1fb] rounded-md px-2 py-1 mb-3">
+              <span className="bg-[#1d2353] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wide">
+                Rate
+              </span>
+              <span className="text-[10px] font-bold text-[#1d2353]">
+                de la {Math.ceil(price / 12).toLocaleString("ro-MD")} lei/lună
+              </span>
+            </div>
+          )}
 
           <div className="flex items-center gap-1.5 sm:gap-2">
             <AddToCartButton
