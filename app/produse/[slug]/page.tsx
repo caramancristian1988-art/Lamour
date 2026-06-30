@@ -407,6 +407,7 @@ async function ProductView({ product, category, related, reviews, faqs }: Produc
   const displayName = localProductNames[product.slug] ?? product.name;
   const displayImage = localProductImages[product.slug] ?? product.image;
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
+  const discountAmount = product.oldPrice ? Math.round(product.oldPrice - product.price) : null;
   const displayBadge = localProductBadges[product.slug] ?? product.badge ?? (discount ? `-${discount}%` : null);
   const productCode = product.id.slice(-6).toUpperCase();
   const countdownMinutes = discount ? await getPopupCountdownMinutes() : 0;
@@ -542,34 +543,35 @@ async function ProductView({ product, category, related, reviews, faqs }: Produc
             )}
 
             <div className="border border-gray-100 rounded-2xl p-5">
-              <div className="flex items-start justify-between gap-3 flex-wrap mb-1">
-                <div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-2xl font-extrabold text-gray-900">
-                      {product.price.toLocaleString("ro-MD")} MDL
-                    </span>
-                    {discount && (
-                      <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2.5 py-1 rounded-md">
-                        -{discount}%
-                      </span>
-                    )}
-                  </div>
-                  {product.oldPrice && (
-                    <p className="text-sm text-gray-400 line-through mt-1">
+              <div className="mb-1">
+                {product.oldPrice && discount && (
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span className="text-sm text-gray-400 line-through">
                       {product.oldPrice.toLocaleString("ro-MD")} MDL
-                    </p>
-                  )}
-                </div>
-                {installmentsEnabled && (
-                  <div className="text-right">
-                    <p className="text-[11px] text-gray-400">de la</p>
-                    <p className="text-sm font-bold text-[#1d2353] whitespace-nowrap">
-                      {Math.ceil(product.price / 12).toLocaleString("ro-MD")} lei/lună
-                    </p>
+                    </span>
+                    <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2.5 py-1 rounded-md">
+                      -{discountAmount?.toLocaleString("ro-MD")} MDL
+                    </span>
+                    <span className="inline-flex items-center bg-[#fdf2f3] text-[#c7092b] text-xs font-extrabold px-2.5 py-1 rounded-md">
+                      -{discount}%
+                    </span>
                   </div>
                 )}
+                <span className="text-2xl font-extrabold text-gray-900">
+                  {product.price.toLocaleString("ro-MD")} MDL
+                </span>
               </div>
-              {installmentsEnabled && <p className="text-[11px] text-gray-400 mb-4">*estimativ, în 12 rate</p>}
+
+              {installmentsEnabled && (
+                <div className="inline-flex items-center gap-2 bg-[#eef1fb] rounded-lg px-3 py-2 mb-4">
+                  <span className="bg-[#1d2353] text-white text-[10px] font-extrabold px-2 py-1 rounded uppercase tracking-wide">
+                    Rate
+                  </span>
+                  <span className="text-xs font-bold text-[#1d2353]">
+                    în 12 luni, de la {Math.ceil(product.price / 12).toLocaleString("ro-MD")} lei/lună
+                  </span>
+                </div>
+              )}
 
               <div className="flex items-stretch gap-3 mb-3">
                 <AddToCartButton
