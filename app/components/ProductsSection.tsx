@@ -29,7 +29,7 @@ interface Props {
 }
 
 export default async function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", bg = "bg-white", showDiscount = false }: Props) {
-  const { ratesEnabled } = await getSectionFlags();
+  const { ratesEnabled, installmentMonths } = await getSectionFlags();
   return (
     <section className={`py-16 ${bg}`}>
       <div className="max-w-7xl mx-auto px-4">
@@ -60,6 +60,7 @@ export default async function ProductsSection({ products, title = "Produse", hig
               badge={localProductBadges[product.slug] ?? product.badge}
               showDiscount={showDiscount}
               installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
+              installmentMonths={installmentMonths}
             />
           ))}
         </div>

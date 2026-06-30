@@ -93,7 +93,7 @@ export default async function ProdusePage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { produseEnabled, ratesEnabled } = await getSectionFlags();
+  const { produseEnabled, ratesEnabled, installmentMonths } = await getSectionFlags();
   if (!produseEnabled) notFound();
 
   const query = await searchParams;
@@ -204,6 +204,7 @@ export default async function ProdusePage({
                       badge={localProductBadges[product.slug] ?? product.badge}
                       showDiscount={filters.offersOnly}
                       installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
+                      installmentMonths={installmentMonths}
                     />
                   ))}
                 </div>

@@ -15,6 +15,7 @@ export async function updateSettingsAction(formData: FormData) {
     blogEnabled: formData.get("blogEnabled") === "on",
     contactEnabled: formData.get("contactEnabled") === "on",
     ratesEnabled: formData.get("ratesEnabled") === "on",
+    installmentMonths: Math.max(1, Math.min(60, Number(formData.get("installmentMonths")) || 4)),
   };
 
   const existing = await prisma.settings.findFirst();

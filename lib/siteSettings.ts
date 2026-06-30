@@ -9,6 +9,7 @@ export interface SectionFlags {
   blogEnabled: boolean;
   contactEnabled: boolean;
   ratesEnabled: boolean;
+  installmentMonths: number;
 }
 
 const DEFAULTS: SectionFlags = {
@@ -19,6 +20,7 @@ const DEFAULTS: SectionFlags = {
   blogEnabled: true,
   contactEnabled: true,
   ratesEnabled: true,
+  installmentMonths: 4,
 };
 
 export const getSectionFlags = cache(async (): Promise<SectionFlags> => {
@@ -33,6 +35,7 @@ export const getSectionFlags = cache(async (): Promise<SectionFlags> => {
       blogEnabled: settings.blogEnabled ?? DEFAULTS.blogEnabled,
       contactEnabled: settings.contactEnabled ?? DEFAULTS.contactEnabled,
       ratesEnabled: settings.ratesEnabled ?? DEFAULTS.ratesEnabled,
+      installmentMonths: settings.installmentMonths ?? DEFAULTS.installmentMonths,
     };
   } catch {
     return DEFAULTS;

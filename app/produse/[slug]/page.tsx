@@ -154,7 +154,7 @@ export default async function ProduseSlugPage({
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { produseEnabled, ratesEnabled } = await getSectionFlags();
+  const { produseEnabled, ratesEnabled, installmentMonths } = await getSectionFlags();
   if (!produseEnabled) notFound();
 
   const { slug } = await params;
@@ -169,13 +169,14 @@ export default async function ProduseSlugPage({
         page={parsePage(query.page)}
         filters={parseFilters(query)}
         ratesEnabled={ratesEnabled}
+        installmentMonths={installmentMonths}
       />
     );
   }
 
   const productData = await getProductData(slug);
   if (productData) {
-    return <ProductView {...productData} ratesEnabled={ratesEnabled} />;
+    return <ProductView {...productData} ratesEnabled={ratesEnabled} installmentMonths={installmentMonths} />;
   }
 
   notFound();
@@ -206,9 +207,10 @@ interface CategoryViewProps {
   page: number;
   filters: ReturnType<typeof parseFilters>;
   ratesEnabled: boolean;
+  installmentMonths: number;
 }
 
-function CategoryView({ category, products: baseProducts, sort, page, filters, ratesEnabled }: CategoryViewProps) {
+function CategoryView({ category, products: baseProducts, sort, page, filters, ratesEnabled, installmentMonths }: CategoryViewProps) {
   const products = applyFilters(baseProducts, filters);
 
   const energyClassOptions = Array.from(new Set(baseProducts.map((p) => p.energyClass).filter((v): v is string => Boolean(v))))
@@ -315,6 +317,7 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
                       badge={localProductBadges[product.slug] ?? product.badge}
                       showDiscount={filters.offersOnly}
                       installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
+                      installmentMonths={installmentMonths}
                     />
                   ))}
                 </div>
@@ -407,9 +410,10 @@ interface ProductViewProps {
     answer: string;
   }>;
   ratesEnabled: boolean;
+  installmentMonths: number;
 }
 
-async function ProductView({ product, category, related, reviews, faqs, ratesEnabled }: ProductViewProps) {
+async function ProductView({ product, category, related, reviews, faqs, ratesEnabled, installmentMonths }: ProductViewProps) {
   const displayName = localProductNames[product.slug] ?? product.name;
   const displayImage = localProductImages[product.slug] ?? product.image;
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
@@ -574,7 +578,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                     Rate
                   </span>
                   <span className="text-xs font-bold text-[#1d2353]">
-                    în 12 luni, de la {Math.ceil(product.price / 12).toLocaleString("ro-MD")} lei/lună
+                    în {installmentMonths} luni, de la {Math.ceil(product.price / installmentMonths).toLocaleString("ro-MD")} lei/lună
                   </span>
                 </div>
               )}
@@ -723,6 +727,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                   image={localProductImages[p.slug] ?? p.image}
                   badge={localProductBadges[p.slug] ?? p.badge}
                   installmentsEnabled={ratesEnabled && p.installmentsEnabled !== false}
+                  installmentMonths={installmentMonths}
                 />
               ))}
             </div>

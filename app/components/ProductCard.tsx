@@ -19,6 +19,7 @@ interface ProductCardProps {
   badge?: string | null;
   showDiscount?: boolean;
   installmentsEnabled?: boolean;
+  installmentMonths?: number;
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -54,6 +55,7 @@ export default function ProductCard({
   reviewCount,
   badge,
   installmentsEnabled,
+  installmentMonths = 4,
 }: ProductCardProps) {
   const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
   const discountAmount = oldPrice ? Math.round(oldPrice - price) : null;
@@ -150,7 +152,7 @@ export default function ProductCard({
                 Rate
               </span>
               <span className="text-[10px] font-bold text-[#1d2353]">
-                de la {Math.ceil(price / 12).toLocaleString("ro-MD")} lei/lună
+                de la {Math.ceil(price / installmentMonths).toLocaleString("ro-MD")} lei/lună
               </span>
             </div>
           )}

@@ -69,6 +69,23 @@ export default async function AdminSetariPage() {
               className="w-5 h-5 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b] shrink-0"
             />
           </label>
+
+          <label className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 mt-2.5">
+            <span>
+              <span className="block text-sm font-bold text-[#1d2353]">Număr de rate</span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                Numărul de luni folosit la calculul estimării lunare (ex: preț ÷ {settings?.installmentMonths ?? 4} = lei/lună).
+              </span>
+            </span>
+            <input
+              type="number"
+              name="installmentMonths"
+              min={1}
+              max={60}
+              defaultValue={settings?.installmentMonths ?? 4}
+              className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:border-[#c7092b] shrink-0"
+            />
+          </label>
         </div>
 
         <SaveButton />
