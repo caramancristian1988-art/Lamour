@@ -487,31 +487,29 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
               </div>
             )}
           </div>
-          <div className="flex flex-col items-start sm:items-end gap-1.5 shrink-0 w-full sm:w-auto">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <StarRating rating={product.rating} />
-                <span className="text-sm text-gray-500">
-                  {product.rating.toFixed(1)} ({product.reviewCount} recenzii)
-                </span>
-              </div>
-              <FavoriteButton
-                product={{
-                  slug: product.slug,
-                  name: displayName,
-                  price: product.price,
-                  oldPrice: product.oldPrice,
-                  image: displayImage,
-                  btu: product.btu,
-                  technology: product.technology,
-                  energyClass: product.energyClass,
-                  rating: product.rating,
-                  reviewCount: product.reviewCount,
-                  badge: displayBadge,
-                }}
-              />
+          <div className="flex items-center gap-3 flex-wrap shrink-0">
+            <div className="flex items-center gap-2">
+              <StarRating rating={product.rating} />
+              <span className="text-sm text-gray-500">
+                {product.rating.toFixed(1)} ({product.reviewCount} recenzii)
+              </span>
             </div>
-            <p className="text-xs text-gray-400">Cod produs: {productCode}</p>
+            <span className="text-xs text-gray-400">Cod produs: {productCode}</span>
+            <FavoriteButton
+              product={{
+                slug: product.slug,
+                name: displayName,
+                price: product.price,
+                oldPrice: product.oldPrice,
+                image: displayImage,
+                btu: product.btu,
+                technology: product.technology,
+                energyClass: product.energyClass,
+                rating: product.rating,
+                reviewCount: product.reviewCount,
+                badge: displayBadge,
+              }}
+            />
           </div>
         </div>
       </section>
