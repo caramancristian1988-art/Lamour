@@ -66,17 +66,20 @@ export default async function DesprePage() {
             <div className="w-10 h-1 bg-[#c7092b] rounded-full" />
           </div>
 
+          {/* Bottom gradient — keeps the buttons readable over the photo */}
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+
           {/* CTAs anchored to bottom of hero — no card, no paragraph */}
-          <div className="absolute inset-x-4 bottom-4 flex flex-wrap gap-2">
+          <div className="absolute inset-x-4 bottom-5 flex flex-col gap-2.5">
             <Link
               href="/produse"
-              className="inline-flex items-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-5 py-2.5 rounded-lg transition-colors text-xs uppercase tracking-wide shadow-lg"
+              className="flex items-center justify-center h-12 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold rounded-xl transition-colors text-sm uppercase tracking-wide shadow-lg"
             >
               Vezi produsele
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center border-2 border-[#1d2353] bg-white/80 backdrop-blur-sm text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold px-5 py-2.5 rounded-lg transition-all text-xs uppercase tracking-wide shadow-lg"
+              className="flex items-center justify-center h-12 border-2 border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-[#1d2353] font-bold rounded-xl transition-all text-sm uppercase tracking-wide shadow-lg"
             >
               Contactează-ne
             </Link>
