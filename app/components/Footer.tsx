@@ -12,8 +12,8 @@ const footerLinks = {
   "SUPORT": [
     { label: "Contact", href: "/contact" },
     { label: "Întrebări frecvente", href: "/faq" },
-    { label: "Livrare și plată", href: "/livrare" },
-    { label: "Retur produse", href: "/retur" },
+    { label: "Livrare și plată", href: "/contact" },
+    { label: "Retur produse", href: "/contact" },
   ],
   "CATEGORII": [
     { label: "Condiționere rezidențiale", href: "/produse?cat=conditioane-rezidentiale" },

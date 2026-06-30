@@ -59,9 +59,9 @@ export default function TermeniPage() {
           <section>
             <h2 className="text-lg font-extrabold text-[#1d2353] mb-3">4. Livrare</h2>
             <p>
-              Livrăm produse în Chișinău și în toată Republica Moldova. Detalii complete privind termenele și
-              costurile de livrare sunt disponibile pe pagina{" "}
-              <Link href="/livrare" className="text-[#c7092b] hover:underline">Livrare și plată</Link>.
+              Livrăm produse în Chișinău și în toată Republica Moldova. Pentru detalii privind termenele și
+              costurile de livrare, te rugăm să ne{" "}
+              <Link href="/contact" className="text-[#c7092b] hover:underline">contactezi</Link>.
             </p>
           </section>
 
@@ -89,10 +89,9 @@ export default function TermeniPage() {
           <section>
             <h2 className="text-lg font-extrabold text-[#1d2353] mb-3">7. Retur</h2>
             <p>
-              Politica de retur este detaliată pe pagina{" "}
-              <Link href="/retur" className="text-[#c7092b] hover:underline">Retur produse</Link>.
               Clientul are dreptul de a returna produsul în termen de 14 zile de la primire, dacă nu a fost utilizat
-              și se află în ambalajul original.
+              și se află în ambalajul original. Pentru a iniția un retur,{" "}
+              <Link href="/contact" className="text-[#c7092b] hover:underline">contactează-ne</Link>.
             </p>
           </section>
 
@@ -128,9 +127,6 @@ export default function TermeniPage() {
         <div className="mt-12 border-t border-gray-100 pt-8 flex flex-col sm:flex-row gap-4">
           <Link href="/confidentialitate" className="text-sm text-[#c7092b] hover:underline font-medium">
             Politica de confidențialitate →
-          </Link>
-          <Link href="/livrare" className="text-sm text-[#c7092b] hover:underline font-medium">
-            Livrare și plată →
           </Link>
           <Link href="/contact" className="text-sm text-[#c7092b] hover:underline font-medium">
             Contactează-ne →
