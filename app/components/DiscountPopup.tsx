@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -78,6 +78,7 @@ export default function DiscountPopup() {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const swipedRef = useRef(false);
   const { contactMenuOpen } = useFloatingUI();
 
   // On mount: resume a still-running offer (minimized) from a previous page
@@ -242,13 +243,13 @@ export default function DiscountPopup() {
         {products.length > 1 && (
           <div className="absolute top-0 inset-x-0 z-20 flex gap-1 p-2.5">
             {products.map((_, i) => (
-              <div key={i} className="h-1 flex-1 rounded-full bg-white/35 overflow-hidden">
+              <div key={i} className="h-1.5 flex-1 rounded-full bg-gray-200 overflow-hidden">
                 {i < activeIndex ? (
-                  <div className="h-full w-full bg-white rounded-full" />
+                  <div className="h-full w-full bg-[#c7092b] rounded-full" />
                 ) : i === activeIndex ? (
                   <div
                     key={activeIndex}
-                    className="h-full bg-white rounded-full"
+                    className="h-full bg-[#c7092b] rounded-full"
                     style={{ animation: `popup-story ${STORY_INTERVAL_MS}ms linear forwards` }}
                   />
                 ) : null}
@@ -260,21 +261,34 @@ export default function DiscountPopup() {
         <button
           onClick={close}
           aria-label="Închide"
-          className="absolute top-6 right-4 z-20 text-white/90 hover:text-white transition-colors drop-shadow-md"
+          className="absolute top-6 right-3 z-20 w-8 h-8 rounded-full bg-white shadow-lg border border-gray-100 text-gray-400 hover:text-[#c7092b] flex items-center justify-center transition-colors"
         >
-          <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        {/* Large product image — replaces the old red banner */}
-        <div
-          className="relative w-full h-[320px] sm:h-[380px] bg-white touch-pan-y"
+        {/* Large product image — tap to view the product, replaces the old red banner */}
+        <Link
+          href={`/produse/${product.slug}`}
+          onClick={(e) => {
+            if (swipedRef.current) {
+              e.preventDefault();
+              swipedRef.current = false;
+              return;
+            }
+            logPopupEvent(product.slug, "click");
+            setOpen(false);
+          }}
+          className="relative block w-full h-[320px] sm:h-[380px] bg-white touch-pan-y"
           onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
           onTouchEnd={(e) => {
             if (touchStartX === null) return;
             const deltaX = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(deltaX) > 40) goTo(activeIndex + (deltaX < 0 ? 1 : -1));
+            if (Math.abs(deltaX) > 40) {
+              swipedRef.current = true;
+              goTo(activeIndex + (deltaX < 0 ? 1 : -1));
+            }
             setTouchStartX(null);
           }}
         >
@@ -286,31 +300,29 @@ export default function DiscountPopup() {
             <>
               <button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   goTo(activeIndex - 1);
                 }}
                 aria-label="Oferta anterioară"
-                className="absolute inset-y-0 left-0 w-1/3 flex items-center justify-start pl-3 group"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-100 text-[#1d2353] hover:text-[#c7092b] flex items-center justify-center transition-colors"
               >
-                <span className="w-9 h-9 rounded-full bg-black/0 group-hover:bg-black/25 text-white/0 group-hover:text-white flex items-center justify-center transition-all">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
               </button>
               <button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   goTo(activeIndex + 1);
                 }}
                 aria-label="Oferta următoare"
-                className="absolute inset-y-0 right-0 w-1/3 flex items-center justify-end pr-3 group"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-lg border border-gray-100 text-[#1d2353] hover:text-[#c7092b] flex items-center justify-center transition-colors"
               >
-                <span className="w-9 h-9 rounded-full bg-black/0 group-hover:bg-black/25 text-white/0 group-hover:text-white flex items-center justify-center transition-all">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             </>
           )}
@@ -328,7 +340,7 @@ export default function DiscountPopup() {
             </svg>
             {minutes}:{seconds}
           </div>
-        </div>
+        </Link>
 
         <div className="p-6 sm:p-8">
           <div className="mb-5">
