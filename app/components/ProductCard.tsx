@@ -65,7 +65,7 @@ export default function ProductCard({
     .join(", ");
 
   return (
-    <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-full flex flex-col transition-all duration-300 hover:border-gray-200 hover:shadow-xl hover:-translate-y-1">
+    <div className="group bg-white rounded-2xl border border-transparent shadow-sm overflow-hidden h-full flex flex-col transition-all duration-300 hover:border-gray-200 active:border-gray-200 focus-within:border-gray-200 hover:shadow-xl hover:-translate-y-1">
       {/* Image area */}
       <div className="relative h-[180px] sm:h-[240px] lg:h-[280px] flex items-center justify-center bg-white overflow-hidden">
         <Link href={`/produse/${slug}`} className="w-full h-full flex items-center justify-center">
