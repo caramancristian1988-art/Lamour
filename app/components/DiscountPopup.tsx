@@ -279,6 +279,7 @@ export default function DiscountPopup() {
             }
             logPopupEvent(product.slug, "click");
             setOpen(false);
+            setMinimized(true);
           }}
           className="relative block w-full h-[320px] sm:h-[380px] bg-white touch-pan-y"
           onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
@@ -384,6 +385,7 @@ export default function DiscountPopup() {
             onClick={() => {
               logPopupEvent(product.slug, "click");
               setOpen(false);
+              setMinimized(true);
             }}
             className="block w-full text-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold py-3.5 rounded-xl transition-colors text-sm uppercase tracking-wide"
           >
