@@ -6,8 +6,10 @@ import StickyHeader from "./StickyHeader";
 
 export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categories?: HeaderCategory[] }) {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const headerRef = useRef<HTMLDivElement>(null);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     // Capture header height for the spacer
@@ -15,25 +17,38 @@ export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categ
       setHeaderHeight(headerRef.current.offsetHeight);
     }
 
-    const onScroll = () => setScrolled(window.scrollY > 0);
+    const onScroll = () => {
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 0);
+
+      if (currentScrollY <= headerHeight) {
+        // Always show near the top — avoids jitter right at the boundary
+        setHidden(false);
+      } else if (currentScrollY > lastScrollY.current) {
+        setHidden(true); // scrolling down
+      } else if (currentScrollY < lastScrollY.current) {
+        setHidden(false); // scrolling up
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
 
     // Set initial state
     onScroll();
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [headerHeight]);
 
   return (
     <>
-      {/* Static above hero at scroll 0, fixed at top when scrolled */}
+      {/* Static above hero at scroll 0, fixed at top when scrolled — slides
+          out of view on scroll-down, slides back in on scroll-up. */}
       <div
         ref={headerRef}
-        className={
-          scrolled
-            ? "fixed top-0 left-0 right-0 z-50 shadow-md"
-            : "static z-40"
-        }
+        className={`transition-transform duration-300 ${
+          scrolled ? "fixed top-0 left-0 right-0 z-50 shadow-md" : "static z-40"
+        } ${hidden ? "-translate-y-full" : "translate-y-0"}`}
       >
         <StickyHeader {...props} />
       </div>
