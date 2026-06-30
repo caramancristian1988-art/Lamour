@@ -607,19 +607,22 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="flex flex-col items-center gap-1.5">
                 <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1.647 7.412A2 2 0 008.607 17h6.786a2 2 0 001.96-1.588L19 8M10 12h4" />
+                  <path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                  <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <p className="text-[11px] text-gray-500 leading-snug">Livrare gratuită în Chișinău</p>
               </div>
               <div className="flex flex-col items-center gap-1.5">
                 <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M3 13l1.5-5h11L17 13m-14 0v5a1 1 0 001 1h1m12-6v6m0 0a1 1 0 001-1v-5m-1 6h-1m-10 0a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM17 8h2l2 3v2h-4" />
+                  <path d="M3 16V6a1 1 0 011-1h9v11M3 16h13M3 16a2 2 0 104 0 2 2 0 00-4 0zm13 0a2 2 0 104 0 2 2 0 00-4 0zm0 0h2v-5h-4" />
+                  <path d="M13 8h3.5L19 11v5" />
                 </svg>
                 <p className="text-[11px] text-gray-500 leading-snug">Livrare în toată Moldova, 24h</p>
               </div>
               <div className="flex flex-col items-center gap-1.5">
                 <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+                  <path d="M9.25 12l1.85 1.85L14.75 10" />
                 </svg>
                 <p className="text-[11px] text-gray-500 leading-snug">Garanție 2 ani</p>
               </div>
