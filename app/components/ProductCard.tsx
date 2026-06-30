@@ -91,7 +91,7 @@ export default function ProductCard({
 
         {/* Badge */}
         {displayBadge && (
-          <span className="absolute top-2 left-2 sm:top-4 sm:left-4 max-w-[calc(100%-2.75rem)] sm:max-w-[70%] bg-[#c7092b] text-white text-[10px] sm:text-xs font-bold rounded-md px-2 sm:px-3 py-1 uppercase tracking-wide truncate">
+          <span className="absolute top-2 left-2 sm:top-4 sm:left-4 max-w-[calc(100%-2.75rem)] sm:max-w-[70%] bg-[#c7092b] text-white text-[10px] sm:text-xs font-bold rounded-full px-2.5 sm:px-3.5 py-1 uppercase tracking-wide truncate shadow-sm">
             {displayBadge}
           </span>
         )}
@@ -133,10 +133,10 @@ export default function ProductCard({
                 <span className="text-xs text-gray-400 line-through">
                   {oldPrice.toLocaleString("ro-MD")} MDL
                 </span>
-                <span className="inline-flex items-center bg-[#c7092b] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded">
+                <span className="inline-flex items-center bg-[#c7092b] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
                   -{discountAmount?.toLocaleString("ro-MD")} MDL
                 </span>
-                <span className="inline-flex items-center bg-[#fdf2f3] text-[#c7092b] text-[10px] font-extrabold px-1.5 py-0.5 rounded">
+                <span className="inline-flex items-center bg-[#fdf2f3] text-[#c7092b] text-[10px] font-extrabold px-2 py-0.5 rounded-full">
                   -{discount}%
                 </span>
               </div>
@@ -147,8 +147,8 @@ export default function ProductCard({
           </div>
 
           {installmentsEnabled !== false && (
-            <div className="inline-flex items-center gap-1.5 bg-[#eef1fb] rounded-md px-2 py-1 mb-3">
-              <span className="bg-[#1d2353] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wide">
+            <div className="inline-flex items-center gap-1.5 bg-[#eef1fb] rounded-full px-2.5 py-1 mb-3">
+              <span className="bg-[#1d2353] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
                 Rate
               </span>
               <span className="text-[10px] font-bold text-[#1d2353]">
@@ -164,7 +164,7 @@ export default function ProductCard({
               price={price}
               oldPrice={oldPrice ?? null}
               image={image ?? null}
-              className="flex-1 h-9 sm:h-11 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold rounded-lg sm:rounded-xl transition-colors flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-gray-200 disabled:text-gray-400"
+              className="flex-1 h-9 sm:h-11 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-gray-200 disabled:text-gray-400 active:scale-95 hover:shadow-md"
             >
               <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -173,7 +173,7 @@ export default function ProductCard({
             </AddToCartButton>
             <button
               onClick={() => { window.location.href = `/produse/${slug}`; }}
-              className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center border border-gray-200 rounded-lg sm:rounded-xl shrink-0 text-gray-400 hover:border-[#c7092b] hover:text-[#c7092b] transition-colors"
+              className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center border border-gray-200 rounded-full shrink-0 text-gray-400 hover:border-[#c7092b] hover:text-[#c7092b] hover:shadow-md transition-all active:scale-95"
             >
               <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>

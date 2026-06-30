@@ -10,7 +10,7 @@ export default function FavoriteButton({ product }: { product: FavoriteItem }) {
     <button
       onClick={() => toggleFavorite(product)}
       aria-label={liked ? "Elimină din favorite" : "Adaugă la favorite"}
-      className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all active:scale-90 ${
+      className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all active:scale-90 shadow-sm ${
         liked
           ? "bg-[#c7092b] text-white shadow-md"
           : "bg-white border border-gray-200 text-gray-400 hover:border-[#c7092b] hover:text-[#c7092b]"
