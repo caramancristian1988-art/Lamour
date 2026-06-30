@@ -195,7 +195,7 @@ export default async function MultisplitPage() {
         products={produse}
         title="Reduceri"
         highlighted="la produse"
-        viewAllHref="/produse?reducere=true"
+        viewAllHref="/produse/sisteme-multisplit?oferte=1"
         showDiscount
       />
 

@@ -195,7 +195,7 @@ export default async function MentenantaPage() {
         products={produse}
         title="Reduceri"
         highlighted="la produse"
-        viewAllHref="/produse?reducere=true"
+        viewAllHref="/produse?oferte=1"
         showDiscount
       />
 

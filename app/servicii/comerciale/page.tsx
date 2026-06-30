@@ -195,7 +195,7 @@ export default async function ComercialePage() {
         products={produse}
         title="Reduceri"
         highlighted="la produse"
-        viewAllHref="/produse?reducere=true"
+        viewAllHref="/produse/conditioane-comerciale?oferte=1"
         showDiscount
       />
 
