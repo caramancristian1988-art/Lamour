@@ -417,6 +417,9 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
   const inStock = product.availability !== "Stoc epuizat";
   const highlightLabels = ["Capacitate", "Tehnologie", "Clasă energetică"];
   const highlightSpecs = specs.filter((s) => highlightLabels.includes(s.label));
+  // Admin-entered specs are the most product-specific, so they lead the quick
+  // panel; general fields (brand/capacity/technology/...) fill the rest.
+  const topPanelSpecs = [...(product.specifications ?? []), ...specs].slice(0, 6);
   const galleryImages = product.images && product.images.length > 0
     ? product.images
     : displayImage
@@ -509,7 +512,7 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
                 </span>
               </div>
               <div className="flex flex-col gap-2.5">
-                {specs.map((spec, i) => (
+                {topPanelSpecs.map((spec, i) => (
                   <QuickSpecRow key={`${spec.label}-${i}`} label={spec.label} value={spec.value} />
                 ))}
               </div>
