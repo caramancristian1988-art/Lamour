@@ -1,11 +1,11 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../../components/AdminPageHeader";
 import DeleteButton from "../../components/DeleteButton";
 import ServiceForm from "../ServiceForm";
 import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
+import ServiceStepIcon from "@/app/components/ServiceStepIcon";
 import { updateServiceAction } from "@/lib/adminServiceActions";
 import { deleteServiceStepAction } from "@/lib/adminServiceStepActions";
 import { deleteServiceFeatureAction } from "@/lib/adminServiceFeatureActions";
@@ -54,16 +54,10 @@ export default async function EditServicePage({ params }: { params: Promise<{ id
         ) : (
           <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden max-w-xl">
             <div className="divide-y divide-gray-100">
-              {steps.map((step, i) => (
+              {steps.map((step) => (
                 <div key={step.id} className="flex items-center gap-4 p-4">
-                  <div className="relative w-14 h-14 rounded-xl bg-[#f6f8fb] overflow-hidden shrink-0">
-                    {step.image ? (
-                      <Image src={step.image} alt={step.title} fill className="object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300 font-bold">
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
-                    )}
+                  <div className="relative w-14 h-14 rounded-xl bg-[#f6f8fb] overflow-hidden shrink-0 flex items-center justify-center [&>div>svg]:w-8 [&>div>svg]:h-8">
+                    <ServiceStepIcon title={step.title} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-[#1d2353] truncate">{step.title}</p>
