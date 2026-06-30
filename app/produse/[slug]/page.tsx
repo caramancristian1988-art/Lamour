@@ -418,7 +418,6 @@ async function ProductView({ product, category, related, reviews, faqs }: Produc
     product.energyClass ? { label: "Clasă energetică", value: product.energyClass } : null,
     category ? { label: "Categorie", value: category.name } : null,
     { label: "Disponibilitate", value: product.availability },
-    { label: "Garanție", value: "2 ani" },
     product.rating > 0 ? { label: "Rating", value: `${product.rating.toFixed(1)} (${product.reviewCount} recenzii)` } : null,
   ].filter(Boolean) as { label: string; value: string }[];
 
