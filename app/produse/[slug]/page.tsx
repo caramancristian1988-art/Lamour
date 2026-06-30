@@ -415,7 +415,8 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
   ].filter(Boolean) as { label: string; value: string }[];
 
   const inStock = product.availability !== "Stoc epuizat";
-  const subtitle = specs.map((s) => s.value).join(" / ");
+  const highlightLabels = ["Capacitate", "Tehnologie", "Clasă energetică"];
+  const highlightSpecs = specs.filter((s) => highlightLabels.includes(s.label));
   const galleryImages = product.images && product.images.length > 0
     ? product.images
     : displayImage
@@ -446,10 +447,21 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-[#1d2353] leading-tight mb-1">
+            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-[#1d2353] leading-tight mb-2">
               {displayName}
             </h1>
-            {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+            {highlightSpecs.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {highlightSpecs.map((spec) => (
+                  <span
+                    key={spec.label}
+                    className="inline-flex items-center bg-[#f6f8fb] border border-gray-100 rounded-full px-3 py-1.5 text-xs font-bold text-[#1d2353]"
+                  >
+                    {spec.value}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-2">
