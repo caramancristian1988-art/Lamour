@@ -24,8 +24,9 @@ const icons: Record<string, React.ReactNode> = {
   ),
   "Apel & programare": (
     <Icon>
-      <path stroke={BLUE} d="M4 4h6l2 5-2.5 1.5a11 11 0 005 5L16 13l5 2v6c0 1-1 2-2 2A16 16 0 014 6c0-1 1-2 2-2z" />
-      <path stroke={RED} d="M18 3l2 2-2 2M20 5h-5" />
+      <path stroke={BLUE} d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+      <rect x="13" y="1.5" width="9.5" height="8" rx="1.2" stroke={RED} />
+      <path stroke={RED} d="M13 4.5h9.5M15.5 1.5v2M20 1.5v2" />
     </Icon>
   ),
   "Evaluare": (
@@ -69,17 +70,17 @@ const icons: Record<string, React.ReactNode> = {
   ),
   "Diagnosticare": (
     <Icon>
-      <path stroke={BLUE} d="M5 3v6a4 4 0 008 0V3" />
-      <path stroke={BLUE} d="M5 6H3M13 6h2" />
-      <circle cx="17.5" cy="16.5" r="3.5" stroke={RED} />
-      <path stroke={RED} d="M9 9v3a4 4 0 004 4h1" />
+      <circle cx="10.5" cy="10.5" r="7" stroke={BLUE} />
+      <path stroke={BLUE} d="M7.5 10.5h6M10.5 7.5v6" />
+      <path stroke={RED} strokeLinecap="round" d="M16 16L21.5 21.5" strokeWidth={2} />
+      <circle cx="10.5" cy="10.5" r="2.5" stroke={RED} />
     </Icon>
   ),
   "Reparație": (
     <Icon>
-      <path stroke={BLUE} d="M14.5 9.5L20 4l-1.5 4L21 9l-4 1.5z" />
-      <path stroke={BLUE} d="M14.5 9.5L5 19l-2 2 2-2 9.5-9.5z" />
-      <path stroke={RED} d="M3 21l2-2M5 21l-2-2" />
+      <path stroke={BLUE} d="M20.01 6.36a4 4 0 01-4.72 3.9L8 18a2.5 2.5 0 01-3.54-3.54l7.27-7.27A4 4 0 0117.65 2l-2.65 2.65 1.35 1.35L19 3.35a4 4 0 011.01 3z" />
+      <path stroke={RED} d="M9 14.5l1.5 1.5" />
+      <path stroke={RED} d="M12 11.5l1.5 1.5" />
     </Icon>
   ),
   "Montaj": (
