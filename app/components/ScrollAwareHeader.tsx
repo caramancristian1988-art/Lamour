@@ -43,12 +43,16 @@ export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categ
   return (
     <>
       {/* Static above hero at scroll 0, fixed at top when scrolled — slides
-          out of view on scroll-down, slides back in on scroll-up. */}
+          out of view on scroll-down, slides back in on scroll-up. Animated
+          via `top` (not `transform`) because a transform on this wrapper
+          would turn it into a containing block for any `position: fixed`
+          descendants (the categories dropdown backdrop, mobile menu drawer),
+          breaking them — they'd be confined to this box instead of the
+          viewport. */}
       <div
         ref={headerRef}
-        className={`transition-transform duration-300 ${
-          scrolled ? "fixed top-0 left-0 right-0 z-50 shadow-md" : "static z-40"
-        } ${hidden ? "-translate-y-full" : "translate-y-0"}`}
+        className={`transition-[top] duration-300 ${scrolled ? "fixed left-0 right-0 z-50 shadow-md" : "static z-40"}`}
+        style={scrolled ? { top: hidden ? -headerHeight : 0 } : undefined}
       >
         <StickyHeader {...props} />
       </div>
