@@ -142,7 +142,7 @@ export default function StickyHeader({
           {produseEnabled && <AllCategoriesMenu categories={productsDropdown} />}
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center justify-between">
           {produseEnabled && (
             <div className="relative group">
               <Link href="/produse" className="flex items-center gap-1 py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">
