@@ -68,6 +68,37 @@ export const getSocialLinks = cache(async (): Promise<SocialLinks> => {
   }
 });
 
+export interface ContactInfo {
+  phone: string;
+  phoneTel: string;
+  phoneDigits: string;
+  email: string;
+}
+
+const CONTACT_DEFAULTS: ContactInfo = {
+  phone: "+373 69 000 000",
+  phoneTel: "+37369000000",
+  phoneDigits: "37369000000",
+  email: "contact@climatrapid.md",
+};
+
+export const getContactInfo = cache(async (): Promise<ContactInfo> => {
+  try {
+    const settings = await prisma.settings.findFirst();
+    if (!settings) return CONTACT_DEFAULTS;
+    const phone = settings.phone || CONTACT_DEFAULTS.phone;
+    const phoneTel = phone.replace(/[^\d+]/g, "");
+    return {
+      phone,
+      phoneTel,
+      phoneDigits: phoneTel.replace(/^\+/, ""),
+      email: settings.email || CONTACT_DEFAULTS.email,
+    };
+  } catch {
+    return CONTACT_DEFAULTS;
+  }
+});
+
 export interface HeaderCategory {
   id: string;
   slug: string;

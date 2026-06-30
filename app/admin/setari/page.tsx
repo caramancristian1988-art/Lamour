@@ -29,6 +29,36 @@ export default async function AdminSetariPage() {
 
       <form action={updateSettingsAction} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-6 max-w-2xl">
         <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Date de contact</p>
+          <p className="text-xs text-gray-400 mb-3">
+            Telefonul și emailul afișate peste tot pe site (bara de sus, butonul flotant, paginile de servicii și contact),
+            plus linkurile WhatsApp și Viber, generate automat din același număr.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-bold text-[#1d2353]">Telefon</span>
+              <input
+                type="tel"
+                name="phone"
+                defaultValue={settings?.phone ?? "+373 69 000 000"}
+                placeholder="+373 69 000 000"
+                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-bold text-[#1d2353]">Email</span>
+              <input
+                type="email"
+                name="email"
+                defaultValue={settings?.email ?? "contact@climatrapid.md"}
+                placeholder="contact@climatrapid.md"
+                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div>
           <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Secțiuni site</p>
           <p className="text-xs text-gray-400 mb-3">Dezactivează o secțiune ca să nu mai fie accesibilă pe site (pagina dă 404 și linkul din meniu e ascuns).</p>
           <div className="flex flex-col gap-2.5">

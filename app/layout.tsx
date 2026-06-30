@@ -10,7 +10,7 @@ import { AuthProvider } from "./components/AuthProvider";
 import { AuthModalProvider } from "./components/AuthModalProvider";
 import AuthModal from "./components/AuthModal";
 import { FloatingUIProvider } from "./components/FloatingUIState";
-import { getSectionFlags, getHeaderCategories, getSocialLinks } from "@/lib/siteSettings";
+import { getSectionFlags, getHeaderCategories, getSocialLinks, getContactInfo } from "@/lib/siteSettings";
 
 export const metadata: Metadata = {
   title: "Climat Rapid — Condiționere & Climatizare Moldova",
@@ -35,6 +35,7 @@ export default async function RootLayout({
   const sectionFlags = await getSectionFlags();
   const headerCategories = await getHeaderCategories();
   const socialLinks = await getSocialLinks();
+  const contactInfo = await getContactInfo();
 
   return (
     <html lang="ro" className={GeistSans.variable}>
@@ -46,11 +47,11 @@ export default async function RootLayout({
                 <Suspense fallback={null}>
                   <ScrollToTop />
                 </Suspense>
-                <SiteHeader {...sectionFlags} categories={headerCategories} />
+                <SiteHeader {...sectionFlags} {...contactInfo} categories={headerCategories} />
                 {children}
                 <SiteFooter {...socialLinks} />
                 <FloatingUIProvider>
-                  <SiteFloatingContact />
+                  <SiteFloatingContact {...contactInfo} />
                   <SiteDiscountPopup />
                 </FloatingUIProvider>
                 <AuthModal />

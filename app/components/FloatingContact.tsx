@@ -3,12 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import { useFloatingUI } from "./FloatingUIState";
 
-const PHONE_DISPLAY = "0745 123 456";
-const PHONE_TEL = "tel:0745123456";
-const WHATSAPP_HREF = "https://wa.me/40745123456";
-const VIBER_HREF = "viber://chat?number=40745123456";
+export default function FloatingContact({
+  phone = "+373 69 000 000",
+  phoneTel = "+37369000000",
+  phoneDigits = "37369000000",
+}: {
+  phone?: string;
+  phoneTel?: string;
+  phoneDigits?: string;
+}) {
+  const PHONE_DISPLAY = phone;
+  const PHONE_TEL = `tel:${phoneTel}`;
+  const WHATSAPP_HREF = `https://wa.me/${phoneDigits}`;
+  const VIBER_HREF = `viber://chat?number=${phoneDigits}`;
 
-export default function FloatingContact() {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const { setContactMenuOpen } = useFloatingUI();

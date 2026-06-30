@@ -19,6 +19,8 @@ export async function updateSettingsAction(formData: FormData) {
     facebook: String(formData.get("facebook") ?? "").trim() || null,
     instagram: String(formData.get("instagram") ?? "").trim() || null,
     tiktok: String(formData.get("tiktok") ?? "").trim() || null,
+    phone: String(formData.get("phone") ?? "").trim() || null,
+    email: String(formData.get("email") ?? "").trim() || null,
   };
 
   const existing = await prisma.settings.findFirst();

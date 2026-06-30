@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fallbackProducts } from "@/lib/fallbackData";
-import { getSectionFlags } from "@/lib/siteSettings";
+import { getSectionFlags, getContactInfo } from "@/lib/siteSettings";
 import ProductsSection from "../components/ProductsSection";
 import FaqAccordion, { type FaqItem } from "../components/FaqAccordion";
 import ContactForm from "../components/ContactForm";
@@ -52,6 +52,7 @@ export default async function ContactPage() {
 
   const products = await getRecommendedProducts();
   const faqs = await getFaqs();
+  const { phone, phoneTel, phoneDigits, email } = await getContactInfo();
 
   return (
     <div className="bg-white text-[#1B2A4A]">
@@ -120,9 +121,9 @@ export default async function ContactPage() {
               </svg>
             </div>
             <p className="font-bold text-sm">Telefon</p>
-            <p className="text-[#E31E24] font-bold text-sm">0745 123 456</p>
+            <p className="text-[#E31E24] font-bold text-sm">{phone}</p>
             <a
-              href="tel:0745123456"
+              href={`tel:${phoneTel}`}
               className="w-full border border-[#1B2A4A] text-[#1B2A4A] text-xs font-bold py-2.5 rounded hover:bg-[#1B2A4A] hover:text-white transition-colors"
             >
               SUNĂ ACUM
@@ -136,9 +137,9 @@ export default async function ContactPage() {
               </svg>
             </div>
             <p className="font-bold text-sm">WhatsApp</p>
-            <p className="text-green-500 font-bold text-sm">0745 123 456</p>
+            <p className="text-green-500 font-bold text-sm">{phone}</p>
             <a
-              href="https://wa.me/40745123456"
+              href={`https://wa.me/${phoneDigits}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full border border-green-500 text-green-500 text-xs font-bold py-2.5 rounded hover:bg-green-500 hover:text-white transition-colors"
@@ -154,9 +155,9 @@ export default async function ContactPage() {
               </svg>
             </div>
             <p className="font-bold text-sm">Viber</p>
-            <p className="text-purple-500 font-bold text-sm">0745 123 456</p>
+            <p className="text-purple-500 font-bold text-sm">{phone}</p>
             <a
-              href="viber://chat?number=40745123456"
+              href={`viber://chat?number=${phoneDigits}`}
               className="w-full border border-purple-500 text-purple-500 text-xs font-bold py-2.5 rounded hover:bg-purple-500 hover:text-white transition-colors"
             >
               SCRIE PE VIBER
@@ -171,10 +172,10 @@ export default async function ContactPage() {
             </div>
             <p className="font-bold text-sm">Email</p>
             <p className="text-[#E31E24] font-bold text-xs">
-              contact@climatrapid.md
+              {email}
             </p>
             <a
-              href="mailto:contact@climatrapid.md"
+              href={`mailto:${email}`}
               className="w-full border border-[#1B2A4A] text-[#1B2A4A] text-xs font-bold py-2.5 rounded hover:bg-[#1B2A4A] hover:text-white transition-colors"
             >
               TRIMITE EMAIL
