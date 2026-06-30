@@ -479,27 +479,28 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
 
       {/* Top section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
           {/* Gallery */}
-          <div className="order-1 lg:order-1 lg:col-span-5">
+          <div>
             <ProductGallery images={galleryImages} alt={displayName} badge={displayBadge} />
           </div>
 
-          {/* Quick specs */}
-          <div className="order-3 lg:order-2 lg:col-span-4 flex flex-col gap-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353]">Caracteristici tehnice</p>
-              <span className={`text-xs font-bold flex items-center gap-1.5 ${inStock ? "text-green-600" : "text-gray-400"}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-green-500" : "bg-gray-400"}`} />
-                {product.availability}
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-2.5">
-              {specs.map((spec, i) => (
-                <QuickSpecRow key={`${spec.label}-${i}`} label={spec.label} value={spec.value} />
-              ))}
+          {/* Right column: quick specs → price box → delivery info, stacked */}
+          <div className="flex flex-col gap-6">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353]">Caracteristici tehnice</p>
+                <span className={`text-xs font-bold flex items-center gap-1.5 ${inStock ? "text-green-600" : "text-gray-400"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-green-500" : "bg-gray-400"}`} />
+                  {product.availability}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {specs.map((spec, i) => (
+                  <QuickSpecRow key={`${spec.label}-${i}`} label={spec.label} value={spec.value} />
+                ))}
+              </div>
             </div>
 
             {product.description && (
@@ -507,39 +508,36 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
                 {product.description}
               </p>
             )}
-          </div>
 
-          {/* Buy box */}
-          <div className="order-2 lg:order-3 lg:col-span-3">
-            <div className="lg:sticky lg:top-24 flex flex-col gap-4">
-              <div className="border border-gray-100 rounded-2xl p-5">
-                <div className="flex items-start justify-between gap-3 flex-wrap mb-1">
-                  <div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-2xl font-extrabold text-gray-900">
-                        {product.price.toLocaleString("ro-MD")} MDL
+            <div className="border border-gray-100 rounded-2xl p-5">
+              <div className="flex items-start justify-between gap-3 flex-wrap mb-1">
+                <div>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-2xl font-extrabold text-gray-900">
+                      {product.price.toLocaleString("ro-MD")} MDL
+                    </span>
+                    {discount && (
+                      <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2.5 py-1 rounded-md">
+                        -{discount}%
                       </span>
-                      {discount && (
-                        <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2.5 py-1 rounded-md">
-                          -{discount}%
-                        </span>
-                      )}
-                    </div>
-                    {product.oldPrice && (
-                      <p className="text-sm text-gray-400 line-through mt-1">
-                        {product.oldPrice.toLocaleString("ro-MD")} MDL
-                      </p>
                     )}
                   </div>
-                  <div className="text-right">
-                    <p className="text-[11px] text-gray-400">de la</p>
-                    <p className="text-sm font-bold text-[#1d2353] whitespace-nowrap">
-                      {Math.ceil(product.price / 12).toLocaleString("ro-MD")} lei/lună
+                  {product.oldPrice && (
+                    <p className="text-sm text-gray-400 line-through mt-1">
+                      {product.oldPrice.toLocaleString("ro-MD")} MDL
                     </p>
-                  </div>
+                  )}
                 </div>
-                <p className="text-[11px] text-gray-400 mb-4">*estimativ, în 12 rate</p>
+                <div className="text-right">
+                  <p className="text-[11px] text-gray-400">de la</p>
+                  <p className="text-sm font-bold text-[#1d2353] whitespace-nowrap">
+                    {Math.ceil(product.price / 12).toLocaleString("ro-MD")} lei/lună
+                  </p>
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-400 mb-4">*estimativ, în 12 rate</p>
 
+              <div className="flex items-stretch gap-3 mb-3">
                 <AddToCartButton
                   slug={product.slug}
                   name={displayName}
@@ -547,13 +545,13 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
                   oldPrice={product.oldPrice}
                   image={displayImage}
                   inStock={inStock}
-                  className={`w-full h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors mb-3 ${
+                  className={`flex-[3] h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors ${
                     inStock
                       ? "bg-[#c7092b] hover:bg-[#a5071f] text-white"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   {inStock ? "Adaugă în coș" : "Stoc epuizat"}
@@ -565,42 +563,40 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
                   productImage={displayImage}
                   title="Cumpără în rate"
                   sourceLabel="Cerere achiziție în rate"
-                  className="w-full h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide mb-3"
+                  className="flex-[2] h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide text-center"
                 >
                   Cumpără în rate
                 </ProductOfferModal>
-
-                <ProductOfferModal
-                  productId={product.id}
-                  productName={displayName}
-                  productImage={displayImage}
-                  className="w-full text-center text-gray-400 hover:text-[#c7092b] text-sm transition-colors"
-                >
-                  Cere consultație
-                </ProductOfferModal>
               </div>
 
-              <div className="bg-[#f6f8fb] rounded-2xl p-5">
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                      <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1.647 7.412A2 2 0 008.607 17h6.786a2 2 0 001.96-1.588L19 8M10 12h4" />
-                    </svg>
-                    <p className="text-[11px] text-gray-500 leading-snug">Livrare gratuită în Chișinău</p>
-                  </div>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                      <path d="M3 13l1.5-5h11L17 13m-14 0v5a1 1 0 001 1h1m12-6v6m0 0a1 1 0 001-1v-5m-1 6h-1m-10 0a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM17 8h2l2 3v2h-4" />
-                    </svg>
-                    <p className="text-[11px] text-gray-500 leading-snug">Livrare în toată Moldova, 24h</p>
-                  </div>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                      <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
-                    </svg>
-                    <p className="text-[11px] text-gray-500 leading-snug">Garanție 2 ani</p>
-                  </div>
-                </div>
+              <ProductOfferModal
+                productId={product.id}
+                productName={displayName}
+                productImage={displayImage}
+                className="w-full text-center text-gray-400 hover:text-[#c7092b] text-sm transition-colors"
+              >
+                Cere consultație
+              </ProductOfferModal>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="flex flex-col items-center gap-1.5">
+                <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1.647 7.412A2 2 0 008.607 17h6.786a2 2 0 001.96-1.588L19 8M10 12h4" />
+                </svg>
+                <p className="text-[11px] text-gray-500 leading-snug">Livrare gratuită în Chișinău</p>
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
+                <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M3 13l1.5-5h11L17 13m-14 0v5a1 1 0 001 1h1m12-6v6m0 0a1 1 0 001-1v-5m-1 6h-1m-10 0a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM17 8h2l2 3v2h-4" />
+                </svg>
+                <p className="text-[11px] text-gray-500 leading-snug">Livrare în toată Moldova, 24h</p>
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
+                <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+                </svg>
+                <p className="text-[11px] text-gray-500 leading-snug">Garanție 2 ani</p>
               </div>
             </div>
           </div>
