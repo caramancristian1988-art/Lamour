@@ -71,6 +71,50 @@ export async function getPopupProduct(): Promise<PopupProduct | null> {
   }
 }
 
+// Picks up to `count` distinct discounted products for the popup's story
+// carousel. Same candidate pool/priority as getPopupProduct, just sampled
+// without replacement instead of a single pick.
+export async function getPopupProducts(count: number): Promise<PopupProduct[]> {
+  try {
+    let candidates = await prisma.product.findMany({ where: { popupEnabled: true, oldPrice: { not: null } } });
+    if (candidates.length === 0) {
+      candidates = await prisma.product.findMany({ where: { oldPrice: { not: null } } });
+    }
+    if (candidates.length === 0) {
+      const shuffled = [...fallbackOfferProducts].sort(() => Math.random() - 0.5).slice(0, count);
+      return shuffled.map((pick) => ({
+        slug: pick.slug,
+        name: pick.name,
+        image: pick.image,
+        price: pick.price,
+        oldPrice: pick.oldPrice,
+        rating: pick.rating,
+        reviewCount: pick.reviewCount,
+        review: FALLBACK_REVIEW,
+      }));
+    }
+
+    const shuffled = [...candidates].sort(() => Math.random() - 0.5).slice(0, count);
+    return await Promise.all(
+      shuffled.map(async (pick) => {
+        const review = await findBestReview(pick.name);
+        return {
+          slug: pick.slug,
+          name: pick.name,
+          image: pick.image,
+          price: pick.price,
+          oldPrice: pick.oldPrice,
+          rating: pick.rating,
+          reviewCount: pick.reviewCount,
+          review,
+        };
+      })
+    );
+  } catch {
+    return [randomFallback()];
+  }
+}
+
 export async function getPopupEnabledProductIds(): Promise<Set<string>> {
   try {
     const products = await prisma.product.findMany({ where: { popupEnabled: true }, select: { id: true } });

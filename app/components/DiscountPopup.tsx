@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { logPopupEvent } from "@/lib/popupStatActions";
-import { getPopupProduct, getPopupCountdownMinutes } from "@/lib/popupProduct";
+import { getPopupProducts, getPopupCountdownMinutes } from "@/lib/popupProduct";
 import { useFloatingUI } from "./FloatingUIState";
 
 const SESSION_KEY = "discountPopupState";
 const SHOW_DELAY_MS = 6000;
 const ROTATE_INTERVAL_MS = 45000;
+const STORY_INTERVAL_MS = 7000;
+const STORY_COUNT = 5;
 const HIDDEN_PATH_PREFIXES = ["/admin", "/cont", "/login", "/register", "/cos", "/produse/"];
 
 export interface PopupProduct {
@@ -25,7 +27,8 @@ export interface PopupProduct {
 }
 
 interface StoredState {
-  product: PopupProduct;
+  products: PopupProduct[];
+  activeIndex: number;
   expiresAt: number;
   triggered: true;
 }
@@ -69,7 +72,8 @@ export default function DiscountPopup() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
-  const [product, setProduct] = useState<PopupProduct | null>(null);
+  const [products, setProducts] = useState<PopupProduct[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
@@ -83,7 +87,8 @@ export default function DiscountPopup() {
     if (stored) {
       const remaining = Math.round((stored.expiresAt - Date.now()) / 1000);
       if (remaining > 0) {
-        setProduct(stored.product);
+        setProducts(stored.products);
+        setActiveIndex(stored.activeIndex);
         setExpiresAt(stored.expiresAt);
         setSecondsLeft(remaining);
         setMinimized(true);
@@ -92,18 +97,26 @@ export default function DiscountPopup() {
     }
 
     const timer = setTimeout(() => {
-      Promise.all([getPopupProduct(), getPopupCountdownMinutes()]).then(([p, minutes]) => {
-        if (!p) return;
+      Promise.all([getPopupProducts(STORY_COUNT), getPopupCountdownMinutes()]).then(([list, minutes]) => {
+        if (!list || list.length === 0) return;
         const expiry = Date.now() + minutes * 60 * 1000;
-        setProduct(p);
+        setProducts(list);
+        setActiveIndex(0);
         setExpiresAt(expiry);
         setSecondsLeft(minutes * 60);
         setOpen(true);
-        writeStored({ product: p, expiresAt: expiry, triggered: true });
       });
     }, SHOW_DELAY_MS);
     return () => clearTimeout(timer);
   }, []);
+
+  // Persist whenever the offer set or position changes, so reopening or
+  // navigating across pages resumes at the same story.
+  useEffect(() => {
+    if (products.length > 0 && expiresAt) {
+      writeStored({ products, activeIndex, expiresAt, triggered: true });
+    }
+  }, [products, activeIndex, expiresAt]);
 
   useEffect(() => {
     if (!open) return;
@@ -113,8 +126,8 @@ export default function DiscountPopup() {
     };
   }, [open]);
 
-  // Single master countdown — survives minimizing/reopening/rotating offers,
-  // and once it hits zero the widget disappears for the rest of the session.
+  // Single master countdown — survives minimizing/reopening/navigating
+  // offers, and once it hits zero the widget disappears for the session.
   useEffect(() => {
     if (!expiresAt) return;
     const interval = setInterval(() => {
@@ -123,7 +136,7 @@ export default function DiscountPopup() {
         setSecondsLeft(0);
         setOpen(false);
         setMinimized(false);
-        setProduct(null);
+        setProducts([]);
         setExpiresAt(null);
         return;
       }
@@ -132,28 +145,35 @@ export default function DiscountPopup() {
     return () => clearInterval(interval);
   }, [expiresAt]);
 
-  // While minimized, cycle through admin-selected offers for variety — the
-  // ring around the icon fills up over ROTATE_INTERVAL_MS. The master
-  // countdown above keeps running regardless of which offer is shown.
+  // While minimized, slowly cycle through the fetched offers for variety —
+  // the ring around the icon fills up over ROTATE_INTERVAL_MS.
   useEffect(() => {
-    if (!minimized || !expiresAt) return;
+    if (!minimized || !expiresAt || products.length <= 1) return;
     const interval = setInterval(() => {
-      getPopupProduct().then((p) => {
-        if (!p) return;
-        setProduct(p);
-        setCycleKey((k) => k + 1);
-        writeStored({ product: p, expiresAt, triggered: true });
-      });
+      setActiveIndex((i) => (i + 1) % products.length);
+      setCycleKey((k) => k + 1);
     }, ROTATE_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [minimized, expiresAt]);
+  }, [minimized, expiresAt, products.length]);
 
-  if (!product) return null;
+  // While the full popup is open, auto-advance through offers story-style —
+  // the progress segment for the active offer fills over STORY_INTERVAL_MS.
+  useEffect(() => {
+    if (!open || products.length <= 1) return;
+    const timer = setTimeout(() => {
+      setActiveIndex((i) => (i + 1) % products.length);
+    }, STORY_INTERVAL_MS);
+    return () => clearTimeout(timer);
+  }, [open, activeIndex, products.length]);
+
+  if (products.length === 0) return null;
   if (HIDDEN_PATH_PREFIXES.some((p) => pathname?.startsWith(p))) return null;
   if (!open && !minimized) return null;
 
+  const product = products[activeIndex];
+
   function close() {
-    logPopupEvent(product!.slug, "close");
+    logPopupEvent(product.slug, "close");
     setOpen(false);
     setMinimized(true);
     setCycleKey((k) => k + 1);
@@ -162,6 +182,10 @@ export default function DiscountPopup() {
   function reopen() {
     setMinimized(false);
     setOpen(true);
+  }
+
+  function goTo(i: number) {
+    setActiveIndex(((i % products.length) + products.length) % products.length);
   }
 
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
@@ -180,19 +204,21 @@ export default function DiscountPopup() {
         <span className="relative flex items-center justify-center w-7 h-7 shrink-0">
           <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 28 28">
             <circle cx="14" cy="14" r="12" fill="none" stroke="white" strokeOpacity="0.25" strokeWidth="2" />
-            <circle
-              key={cycleKey}
-              cx="14"
-              cy="14"
-              r="12"
-              fill="none"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              pathLength={1}
-              strokeDasharray="1 1"
-              style={{ animation: `popup-ring ${ROTATE_INTERVAL_MS}ms linear forwards` }}
-            />
+            {products.length > 1 && (
+              <circle
+                key={cycleKey}
+                cx="14"
+                cy="14"
+                r="12"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                pathLength={1}
+                strokeDasharray="1 1"
+                style={{ animation: `popup-ring ${ROTATE_INTERVAL_MS}ms linear forwards` }}
+              />
+            )}
           </svg>
           <svg className="relative w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
@@ -211,53 +237,105 @@ export default function DiscountPopup() {
       <div className="absolute inset-0 bg-black/70" onClick={close} aria-hidden />
 
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        {/* Stories-style progress bar */}
+        {products.length > 1 && (
+          <div className="absolute top-0 inset-x-0 z-20 flex gap-1 p-2.5">
+            {products.map((_, i) => (
+              <div key={i} className="h-1 flex-1 rounded-full bg-white/35 overflow-hidden">
+                {i < activeIndex ? (
+                  <div className="h-full w-full bg-white rounded-full" />
+                ) : i === activeIndex ? (
+                  <div
+                    key={activeIndex}
+                    className="h-full bg-white rounded-full"
+                    style={{ animation: `popup-story ${STORY_INTERVAL_MS}ms linear forwards` }}
+                  />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        )}
+
         <button
           onClick={close}
           aria-label="Închide"
-          className="absolute top-4 right-4 z-10 text-white/80 hover:text-white transition-colors"
+          className="absolute top-6 right-4 z-20 text-white/90 hover:text-white transition-colors drop-shadow-md"
         >
           <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <div className="bg-gradient-to-br from-[#c7092b] to-[#8b0520] px-8 pt-10 pb-7 text-center">
-          <p className="text-white/80 text-sm font-bold uppercase tracking-widest mb-2">Ofertă limitată</p>
-          <p className="text-white text-3xl sm:text-4xl font-extrabold leading-tight">
-            {discount ? `-${discount}% doar azi!` : "Ofertă specială!"}
-          </p>
-          <div className="inline-flex items-center gap-2 mt-4 bg-black/20 rounded-full px-5 py-2 text-white text-base font-bold tabular-nums">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        {/* Large product image — replaces the old red banner */}
+        <div className="relative w-full h-[260px] sm:h-[300px] bg-[#f6f8fb]">
+          {product.image && (
+            <Image key={activeIndex} src={product.image} alt={product.name} fill className="object-contain p-8" priority />
+          )}
+
+          {products.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goTo(activeIndex - 1);
+                }}
+                aria-label="Oferta anterioară"
+                className="absolute inset-y-0 left-0 w-1/3 flex items-center justify-start pl-3 group"
+              >
+                <span className="w-9 h-9 rounded-full bg-black/0 group-hover:bg-black/25 text-white/0 group-hover:text-white flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goTo(activeIndex + 1);
+                }}
+                aria-label="Oferta următoare"
+                className="absolute inset-y-0 right-0 w-1/3 flex items-center justify-end pr-3 group"
+              >
+                <span className="w-9 h-9 rounded-full bg-black/0 group-hover:bg-black/25 text-white/0 group-hover:text-white flex items-center justify-center transition-all">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </button>
+            </>
+          )}
+
+          {discount && (
+            <div className="absolute top-9 left-3 bg-[#c7092b] text-white text-sm font-extrabold px-3 py-1.5 rounded-full shadow-lg pointer-events-none">
+              -{discount}%
+            </div>
+          )}
+
+          <div className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 bg-black/55 backdrop-blur-sm rounded-full px-3 py-1.5 text-white text-xs font-bold tabular-nums pointer-events-none">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="9" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 2" />
             </svg>
-            Oferta expiră în {minutes}:{seconds}
+            {minutes}:{seconds}
           </div>
         </div>
 
-        <div className="p-8">
-          <div className="flex gap-5 mb-7">
-            <div className="relative w-32 h-32 shrink-0 bg-[#f6f8fb] rounded-xl overflow-hidden">
-              {product.image && (
-                <Image src={product.image} alt={product.name} fill className="object-contain p-2" />
-              )}
+        <div className="p-6 sm:p-8">
+          <div className="mb-5">
+            <p className="text-base font-bold text-[#1d2353] leading-snug line-clamp-2">{product.name}</p>
+            <div className="flex items-center gap-1.5 mt-2">
+              <StarRating rating={product.rating} animated />
+              <span className="text-sm text-gray-400">({product.reviewCount})</span>
             </div>
-            <div className="min-w-0 flex flex-col justify-center">
-              <p className="text-base font-bold text-[#1d2353] leading-snug line-clamp-2">{product.name}</p>
-              <div className="flex items-center gap-1.5 mt-2">
-                <StarRating rating={product.rating} animated />
-                <span className="text-sm text-gray-400">({product.reviewCount})</span>
-              </div>
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <span className="text-2xl font-extrabold text-[#c7092b]">
-                  {product.price.toLocaleString("ro-MD")} MDL
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <span className="text-2xl font-extrabold text-[#c7092b]">
+                {product.price.toLocaleString("ro-MD")} MDL
+              </span>
+              {product.oldPrice && (
+                <span className="text-sm text-gray-400 line-through">
+                  {product.oldPrice.toLocaleString("ro-MD")} MDL
                 </span>
-                {product.oldPrice && (
-                  <span className="text-sm text-gray-400 line-through">
-                    {product.oldPrice.toLocaleString("ro-MD")} MDL
-                  </span>
-                )}
-              </div>
+              )}
             </div>
           </div>
 
