@@ -6,7 +6,6 @@ import MobileMenuButton from "./MobileMenuButton";
 import FavoritesBadge from "./FavoritesBadge";
 import CartBadge from "./CartBadge";
 import AllCategoriesMenu from "./AllCategoriesMenu";
-import HomeLink from "./HomeLink";
 import AccountMenuLink from "./AccountMenuLink";
 
 const fallbackProductsDropdown = [
@@ -141,9 +140,6 @@ export default function StickyHeader({
 
         <div className="flex items-center gap-10">
           {produseEnabled && <AllCategoriesMenu categories={productsDropdown} />}
-          <HomeLink className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide whitespace-nowrap">
-            Acasă
-          </HomeLink>
         </div>
 
         <div className="flex items-center gap-6">

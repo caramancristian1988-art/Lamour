@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { SectionFlags } from "@/lib/siteSettings";
 
 const productsDropdown = [
@@ -53,7 +52,6 @@ export default function MobileMenuButton({
 }: Partial<SectionFlags>) {
   const flags = { produseEnabled, serviciiEnabled, proiecteEnabled, despreEnabled, blogEnabled, contactEnabled };
   const navLinks = baseNavLinks.filter((l) => flags[l.flag]);
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [produseOpen, setProduseOpen] = useState(false);
@@ -150,23 +148,6 @@ export default function MobileMenuButton({
             <div className="flex-1 overflow-y-auto">
               {/* Nav */}
               <nav className="flex flex-col px-2 py-3">
-                <Link
-                  href="/"
-                  onClick={(e) => {
-                    closeMenu();
-                    if (pathname === "/") {
-                      e.preventDefault();
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                  }}
-                  style={{ transitionDelay: open ? "40ms" : "0ms" }}
-                  className={`px-3 py-3.5 rounded-lg text-[#1d2353] hover:bg-gray-50 hover:text-[#c7092b] transition-all duration-300 ease-out text-[15px] font-bold ${
-                    open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
-                  }`}
-                >
-                  Acasă
-                </Link>
-
                 {produseEnabled && (
                   <div
                     style={{ transitionDelay: open ? "75ms" : "0ms" }}
