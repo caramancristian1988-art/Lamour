@@ -66,30 +66,20 @@ export default async function DesprePage() {
             <div className="w-10 h-1 bg-[#c7092b] rounded-full" />
           </div>
 
-          {/* Semi-transparent card anchored to bottom of hero */}
-          <div className="absolute inset-x-4 bottom-4 rounded-xl overflow-hidden">
-            <div className="bg-white/55 backdrop-blur-md px-4 py-3.5 shadow-xl">
-              <p className="text-[#1d2353] text-[12px] leading-relaxed mb-3">
-                Suntem o companie din Moldova specializată în soluții complete de
-                climatizare pentru locuințe și afaceri. De la consultanță și vânzare
-                până la instalare și mentenanță, ne asigurăm că ai parte de confort
-                în fiecare sezon.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href="/produse"
-                  className="inline-flex items-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-4 py-2 rounded-lg transition-colors text-[11px] uppercase tracking-wide"
-                >
-                  Vezi produsele
-                </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold px-4 py-2 rounded-lg transition-all text-[11px] uppercase tracking-wide"
-                >
-                  Contactează-ne
-                </Link>
-              </div>
-            </div>
+          {/* CTAs anchored to bottom of hero — no card, no paragraph */}
+          <div className="absolute inset-x-4 bottom-4 flex flex-wrap gap-2">
+            <Link
+              href="/produse"
+              className="inline-flex items-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-5 py-2.5 rounded-lg transition-colors text-xs uppercase tracking-wide shadow-lg"
+            >
+              Vezi produsele
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center border-2 border-[#1d2353] bg-white/80 backdrop-blur-sm text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold px-5 py-2.5 rounded-lg transition-all text-xs uppercase tracking-wide shadow-lg"
+            >
+              Contactează-ne
+            </Link>
           </div>
         </section>
 
