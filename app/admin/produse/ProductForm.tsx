@@ -29,6 +29,7 @@ interface ProductDefaults {
   energyClass?: string | null;
   badge?: string | null;
   availability?: string;
+  installmentsEnabled?: boolean;
   categoryId?: string;
   specifications?: { label: string; value: string }[];
 }
@@ -180,6 +181,16 @@ export default function ProductForm({
           onDelete={async () => {}}
         />
       </div>
+
+      <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+        <input
+          type="checkbox"
+          name="installmentsEnabled"
+          defaultChecked={defaults?.installmentsEnabled ?? true}
+          className="w-4 h-4 accent-[#c7092b]"
+        />
+        Disponibil în rate (afișează butonul &quot;Cumpără în rate&quot;)
+      </label>
 
       <button
         type="submit"

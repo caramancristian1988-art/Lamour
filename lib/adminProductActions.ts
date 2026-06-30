@@ -40,6 +40,7 @@ function readProductFields(formData: FormData) {
   const energyClass = String(formData.get("energyClass") ?? "").trim() || null;
   const badge = String(formData.get("badge") ?? "").trim() || null;
   const availability = String(formData.get("availability") ?? "").trim() || "În stoc";
+  const installmentsEnabled = formData.get("installmentsEnabled") === "on";
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const specifications = parseSpecifications(formData);
 
@@ -57,6 +58,7 @@ function readProductFields(formData: FormData) {
     energyClass,
     badge,
     availability,
+    installmentsEnabled,
     categoryId,
     specifications,
   };

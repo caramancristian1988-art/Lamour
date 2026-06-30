@@ -35,6 +35,7 @@ model Product {
   badge       String?
   availability String  @default("În stoc")
   popupEnabled Boolean @default(false)
+  installmentsEnabled Boolean @default(true)
   specifications ProductSpec[]
   categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])

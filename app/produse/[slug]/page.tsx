@@ -367,6 +367,7 @@ interface ProductViewProps {
     reviewCount: number;
     badge: string | null;
     availability: string;
+    installmentsEnabled?: boolean;
     specifications?: { label: string; value: string }[];
   };
   category: { id: string; name: string; slug: string } | null;
@@ -423,7 +424,8 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
   // Admin-entered specs are the most product-specific, so they lead the quick
   // panel; general fields fill the rest. Availability is excluded — it's
   // already shown as the colored badge next to the panel header.
-  const topPanelSpecs = [...(product.specifications ?? []), ...specs.filter((s) => s.label !== "Disponibilitate")].slice(0, 6);
+  const topPanelSpecs = [...(product.specifications ?? []), ...specs.filter((s) => s.label !== "Disponibilitate")];
+  const installmentsEnabled = product.installmentsEnabled !== false;
   const galleryImages = product.images && product.images.length > 0
     ? product.images
     : displayImage
@@ -547,14 +549,16 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
                     </p>
                   )}
                 </div>
-                <div className="text-right">
-                  <p className="text-[11px] text-gray-400">de la</p>
-                  <p className="text-sm font-bold text-[#1d2353] whitespace-nowrap">
-                    {Math.ceil(product.price / 12).toLocaleString("ro-MD")} lei/lună
-                  </p>
-                </div>
+                {installmentsEnabled && (
+                  <div className="text-right">
+                    <p className="text-[11px] text-gray-400">de la</p>
+                    <p className="text-sm font-bold text-[#1d2353] whitespace-nowrap">
+                      {Math.ceil(product.price / 12).toLocaleString("ro-MD")} lei/lună
+                    </p>
+                  </div>
+                )}
               </div>
-              <p className="text-[11px] text-gray-400 mb-4">*estimativ, în 12 rate</p>
+              {installmentsEnabled && <p className="text-[11px] text-gray-400 mb-4">*estimativ, în 12 rate</p>}
 
               <div className="flex items-stretch gap-3 mb-3">
                 <AddToCartButton
@@ -564,7 +568,7 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
                   oldPrice={product.oldPrice}
                   image={displayImage}
                   inStock={inStock}
-                  className={`flex-[3] h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors ${
+                  className={`${installmentsEnabled ? "flex-[3]" : "flex-1"} h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors ${
                     inStock
                       ? "bg-[#c7092b] hover:bg-[#a5071f] text-white"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -576,16 +580,18 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
                   {inStock ? "Adaugă în coș" : "Stoc epuizat"}
                 </AddToCartButton>
 
-                <ProductOfferModal
-                  productId={product.id}
-                  productName={displayName}
-                  productImage={displayImage}
-                  title="Cumpără în rate"
-                  sourceLabel="Cerere achiziție în rate"
-                  className="flex-[2] h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide text-center"
-                >
-                  Cumpără în rate
-                </ProductOfferModal>
+                {installmentsEnabled && (
+                  <ProductOfferModal
+                    productId={product.id}
+                    productName={displayName}
+                    productImage={displayImage}
+                    title="Cumpără în rate"
+                    sourceLabel="Cerere achiziție în rate"
+                    className="flex-[2] h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide text-center"
+                  >
+                    Cumpără în rate
+                  </ProductOfferModal>
+                )}
               </div>
 
               <ProductOfferModal
