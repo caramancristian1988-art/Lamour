@@ -15,6 +15,7 @@ interface Product {
   rating: number;
   reviewCount: number;
   badge: string | null;
+  installmentsEnabled?: boolean;
 }
 
 interface Props {
