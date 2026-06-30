@@ -608,7 +608,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                     productImage={displayImage}
                     title="Cumpără în rate"
                     sourceLabel="Cerere achiziție în rate"
-                    className="flex-[2] h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide text-center"
+                    className="flex-[2] h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all duration-300 text-sm uppercase tracking-wide text-center hover:-translate-y-0.5 hover:shadow-md active:scale-95 active:translate-y-0"
                   >
                     Cumpără în rate
                   </ProductOfferModal>
@@ -619,9 +619,21 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                 productId={product.id}
                 productName={displayName}
                 productImage={displayImage}
-                className="w-full text-center text-gray-400 hover:text-[#c7092b] text-sm transition-colors"
+                className="group w-full flex items-center justify-center gap-1.5 text-gray-400 hover:text-[#c7092b] text-sm transition-colors active:scale-95"
               >
-                Cere consultație
+                <svg
+                  className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="relative">
+                  Cere consultație
+                  <span className="absolute left-0 -bottom-0.5 w-0 h-px bg-[#c7092b] transition-all duration-300 group-hover:w-full" />
+                </span>
               </ProductOfferModal>
             </div>
 
