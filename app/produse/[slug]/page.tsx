@@ -13,7 +13,6 @@ import {
   fallbackReviews,
 } from "@/lib/fallbackData";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
-import ProductSpecsList from "../../components/ProductSpecsList";
 import ProductOfferModal from "../../components/ProductOfferModal";
 import {
   sortProducts,
@@ -117,6 +116,16 @@ export async function generateMetadata({
   }
 
   return { title: "Pagina nu a fost găsită | Climat Rapid" };
+}
+
+function QuickSpecRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline gap-2 text-sm">
+      <span className="text-gray-500 shrink-0">{label}</span>
+      <span className="flex-1 border-b border-dotted border-gray-300 translate-y-[-3px]" />
+      <span className="font-bold text-[#1d2353] text-right shrink-0">{value}</span>
+    </div>
+  );
 }
 
 function StarRating({ rating, size = "w-5 h-5" }: { rating: number; size?: string }) {
@@ -479,13 +488,19 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
 
           {/* Quick specs */}
           <div className="order-3 lg:order-2 lg:col-span-4 flex flex-col gap-5">
-            <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353]">Caracteristici tehnice</p>
-            <ProductSpecsList
-              availability={product.availability}
-              inStock={inStock}
-              generalSpecs={specs}
-              extraSpecs={product.specifications ?? []}
-            />
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353]">Caracteristici tehnice</p>
+              <span className={`text-xs font-bold flex items-center gap-1.5 ${inStock ? "text-green-600" : "text-gray-400"}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-green-500" : "bg-gray-400"}`} />
+                {product.availability}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              {specs.map((spec, i) => (
+                <QuickSpecRow key={`${spec.label}-${i}`} label={spec.label} value={spec.value} />
+              ))}
+            </div>
 
             {product.description && (
               <p className="text-gray-600 text-[15px] leading-relaxed">
@@ -498,21 +513,32 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
           <div className="order-2 lg:order-3 lg:col-span-3">
             <div className="lg:sticky lg:top-24 flex flex-col gap-4">
               <div className="border border-gray-100 rounded-2xl p-5">
-                <div className="flex items-center gap-3 flex-wrap mb-4">
-                  <span className="text-2xl font-extrabold text-gray-900">
-                    {product.price.toLocaleString("ro-MD")} MDL
-                  </span>
-                  {discount && (
-                    <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2.5 py-1 rounded-md">
-                      -{discount}%
-                    </span>
-                  )}
+                <div className="flex items-start justify-between gap-3 flex-wrap mb-1">
+                  <div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-2xl font-extrabold text-gray-900">
+                        {product.price.toLocaleString("ro-MD")} MDL
+                      </span>
+                      {discount && (
+                        <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2.5 py-1 rounded-md">
+                          -{discount}%
+                        </span>
+                      )}
+                    </div>
+                    {product.oldPrice && (
+                      <p className="text-sm text-gray-400 line-through mt-1">
+                        {product.oldPrice.toLocaleString("ro-MD")} MDL
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] text-gray-400">de la</p>
+                    <p className="text-sm font-bold text-[#1d2353] whitespace-nowrap">
+                      {Math.ceil(product.price / 12).toLocaleString("ro-MD")} lei/lună
+                    </p>
+                  </div>
                 </div>
-                {product.oldPrice && (
-                  <p className="text-sm text-gray-400 line-through mb-4">
-                    {product.oldPrice.toLocaleString("ro-MD")} MDL
-                  </p>
-                )}
+                <p className="text-[11px] text-gray-400 mb-4">*estimativ, în 12 rate</p>
 
                 <AddToCartButton
                   slug={product.slug}
@@ -532,33 +558,90 @@ function ProductView({ product, category, related, reviews, faqs }: ProductViewP
                   </svg>
                   {inStock ? "Adaugă în coș" : "Stoc epuizat"}
                 </AddToCartButton>
-                <ProductOfferModal productId={product.id} productName={displayName} productImage={displayImage} />
+
+                <ProductOfferModal
+                  productId={product.id}
+                  productName={displayName}
+                  productImage={displayImage}
+                  title="Cumpără în rate"
+                  sourceLabel="Cerere achiziție în rate"
+                  className="w-full h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide mb-3"
+                >
+                  Cumpără în rate
+                </ProductOfferModal>
+
+                <ProductOfferModal
+                  productId={product.id}
+                  productName={displayName}
+                  productImage={displayImage}
+                  className="w-full text-center text-gray-400 hover:text-[#c7092b] text-sm transition-colors"
+                >
+                  Cere consultație
+                </ProductOfferModal>
               </div>
 
-              <div className="bg-[#1d2353] rounded-2xl divide-y divide-white/10 overflow-hidden">
-                <div className="flex items-center gap-3 px-5 py-3.5 text-sm text-white/80">
-                  <svg className="w-4 h-4 text-[#c7092b] shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1.647 7.412A2 2 0 008.607 17h6.786a2 2 0 001.96-1.588L19 8M10 12h4" />
-                  </svg>
-                  Livrare rapidă
-                </div>
-                <div className="flex items-center gap-3 px-5 py-3.5 text-sm text-white/80">
-                  <svg className="w-4 h-4 text-[#c7092b] shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
-                  </svg>
-                  Garanție inclusă
-                </div>
-                <div className="flex items-center gap-3 px-5 py-3.5 text-sm text-white/80">
-                  <svg className="w-4 h-4 text-[#c7092b] shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <path d="M14.7 6.3a1 1 0 000-1.4l-2.6-2.6a1 1 0 00-1.4 0L9.3 3.7l4 4 1.4-1.4zM7.9 5.1L2 11v4h4l5.9-5.9-4-4z" />
-                  </svg>
-                  Instalare profesională
+              <div className="bg-[#f6f8fb] rounded-2xl p-5">
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1.647 7.412A2 2 0 008.607 17h6.786a2 2 0 001.96-1.588L19 8M10 12h4" />
+                    </svg>
+                    <p className="text-[11px] text-gray-500 leading-snug">Livrare gratuită în Chișinău</p>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M3 13l1.5-5h11L17 13m-14 0v5a1 1 0 001 1h1m12-6v6m0 0a1 1 0 001-1v-5m-1 6h-1m-10 0a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM17 8h2l2 3v2h-4" />
+                    </svg>
+                    <p className="text-[11px] text-gray-500 leading-snug">Livrare în toată Moldova, 24h</p>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
+                    </svg>
+                    <p className="text-[11px] text-gray-500 leading-snug">Garanție 2 ani</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Full specs */}
+      {(specs.length > 0 || (product.specifications && product.specifications.length > 0)) && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-12">
+          <h2 className="text-2xl font-extrabold text-[#1d2353] mb-6">Caracteristici</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="border border-gray-100 rounded-2xl overflow-hidden">
+              <div className="bg-[#f6f8fb] px-5 py-3 text-sm font-extrabold text-[#1d2353]">Informații generale</div>
+              {specs.map((spec, i) => (
+                <div
+                  key={`${spec.label}-${i}`}
+                  className={`flex items-center justify-between px-5 py-3 border-t border-gray-100 ${i % 2 === 1 ? "bg-[#fafbfc]" : ""}`}
+                >
+                  <span className="text-sm text-gray-500">{spec.label}</span>
+                  <span className="text-sm font-bold text-[#1d2353] text-right">{spec.value}</span>
+                </div>
+              ))}
+            </div>
+
+            {product.specifications && product.specifications.length > 0 && (
+              <div className="border border-gray-100 rounded-2xl overflow-hidden">
+                <div className="bg-[#f6f8fb] px-5 py-3 text-sm font-extrabold text-[#1d2353]">Specificații tehnice</div>
+                {product.specifications.map((spec, i) => (
+                  <div
+                    key={`${spec.label}-${i}`}
+                    className={`flex items-center justify-between px-5 py-3 border-t border-gray-100 ${i % 2 === 1 ? "bg-[#fafbfc]" : ""}`}
+                  >
+                    <span className="text-sm text-gray-500">{spec.label}</span>
+                    <span className="text-sm font-bold text-[#1d2353] text-right">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Reviews */}
       <section className="bg-[#f6f8fb] border-y border-gray-100 py-12">

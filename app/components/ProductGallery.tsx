@@ -14,8 +14,25 @@ export default function ProductGallery({ images, alt, badge }: Props) {
   const hasMultiple = images.length > 1;
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="relative h-[360px] sm:h-[460px] lg:h-[560px] rounded-2xl border border-gray-100 bg-white overflow-hidden flex items-center justify-center">
+    <div className="flex flex-col lg:flex-row gap-3">
+      {hasMultiple && (
+        <div className="order-2 lg:order-1 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto lg:max-h-[560px] lg:w-20 shrink-0">
+          {images.map((img, i) => (
+            <button
+              key={img + i}
+              onClick={() => setActive(i)}
+              aria-label={`Imaginea ${i + 1}`}
+              className={`relative w-16 h-16 shrink-0 rounded-lg border-2 overflow-hidden bg-white transition-colors ${
+                i === active ? "border-[#c7092b]" : "border-gray-100 hover:border-gray-300"
+              }`}
+            >
+              <Image src={img} alt={`${alt} ${i + 1}`} fill className="object-contain p-1.5" sizes="64px" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="order-1 lg:order-2 relative flex-1 h-[360px] sm:h-[460px] lg:h-[560px] rounded-2xl border border-gray-100 bg-white overflow-hidden flex items-center justify-center">
         {images.length > 0 ? (
           <Image
             src={images[active]}
@@ -60,23 +77,6 @@ export default function ProductGallery({ images, alt, badge }: Props) {
           </>
         )}
       </div>
-
-      {hasMultiple && (
-        <div className="flex items-center gap-2">
-          {images.map((img, i) => (
-            <button
-              key={img + i}
-              onClick={() => setActive(i)}
-              aria-label={`Imaginea ${i + 1}`}
-              className={`relative w-16 h-16 shrink-0 rounded-lg border-2 overflow-hidden bg-white transition-colors ${
-                i === active ? "border-[#c7092b]" : "border-gray-100 hover:border-gray-300"
-              }`}
-            >
-              <Image src={img} alt={`${alt} ${i + 1}`} fill className="object-contain p-1.5" sizes="64px" />
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

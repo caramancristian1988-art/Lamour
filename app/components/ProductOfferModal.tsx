@@ -10,11 +10,15 @@ function OfferFormPanel({
   productId,
   productName,
   productImage,
+  title,
+  sourceLabel,
   onSuccess,
 }: {
   productId: string;
   productName: string;
   productImage: string | null;
+  title: string;
+  sourceLabel: string;
   onSuccess: () => void;
 }) {
   const [state, formAction, pending] = useActionState(submitContactMessageAction, initialState);
@@ -41,7 +45,7 @@ function OfferFormPanel({
           Cererea ta a fost trimisă!
         </h3>
         <p className="text-sm text-gray-500 animate-pop" style={{ animationDelay: "180ms" }}>
-          Te vom contacta în cel mai scurt timp pentru consultație.
+          Te vom contacta în cel mai scurt timp.
         </p>
       </div>
     );
@@ -49,7 +53,7 @@ function OfferFormPanel({
 
   return (
     <>
-      <h2 className="text-xl font-extrabold text-[#1d2353] text-center mb-5">Cere consultație</h2>
+      <h2 className="text-xl font-extrabold text-[#1d2353] text-center mb-5">{title}</h2>
 
       <div className="flex items-center gap-3 mb-5 p-3 border border-gray-100 rounded-xl bg-[#fafbfc]">
         <span className="relative w-14 h-14 rounded-lg bg-white overflow-hidden shrink-0 border border-gray-100">
@@ -65,7 +69,7 @@ function OfferFormPanel({
       </div>
 
       <form action={formAction} className="flex flex-col gap-3.5">
-        <input type="hidden" name="source" value={`Cere consultație – ${productName}`} />
+        <input type="hidden" name="source" value={`${sourceLabel} – ${productName}`} />
         <input type="hidden" name="productId" value={productId} />
 
         {state.error && (
@@ -119,12 +123,16 @@ export default function ProductOfferModal({
   productImage,
   className,
   children,
+  title = "Cere consultație",
+  sourceLabel = "Cere consultație",
 }: {
   productId: string;
   productName: string;
   productImage: string | null;
   className?: string;
   children?: React.ReactNode;
+  title?: string;
+  sourceLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -190,7 +198,15 @@ export default function ProductOfferModal({
               </svg>
             </button>
 
-            <OfferFormPanel key={openCount} productId={productId} productName={productName} productImage={productImage} onSuccess={closeModal} />
+            <OfferFormPanel
+              key={openCount}
+              productId={productId}
+              productName={productName}
+              productImage={productImage}
+              title={title}
+              sourceLabel={sourceLabel}
+              onSuccess={closeModal}
+            />
           </div>
         </div>
       )}
