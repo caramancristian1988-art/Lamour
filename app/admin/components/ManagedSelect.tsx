@@ -80,7 +80,7 @@ export default function ManagedSelect({
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5 min-w-0">
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs font-bold text-gray-600">
           {label} {required && <span className="text-[#c7092b]">*</span>}
@@ -116,7 +116,7 @@ export default function ManagedSelect({
         required={required}
         value={selected}
         onChange={(e) => setSelected(e.target.value)}
-        className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] bg-white"
+        className="w-full min-w-0 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] bg-white"
       >
         <option value="" disabled={required}>
           {emptyOptionLabel}
