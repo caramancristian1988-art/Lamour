@@ -32,7 +32,7 @@ export default function ProductGallery({ images, alt, badge }: Props) {
         </div>
       )}
 
-      <div className="order-1 lg:order-2 relative flex-1 h-[360px] sm:h-[460px] lg:h-[560px] rounded-2xl border border-gray-100 bg-white overflow-hidden flex items-center justify-center">
+      <div className="order-1 lg:order-2 relative w-full lg:flex-1 h-[360px] sm:h-[460px] lg:h-[560px] rounded-2xl border border-gray-100 bg-white overflow-hidden flex items-center justify-center">
         {images.length > 0 ? (
           <Image
             src={images[active]}
