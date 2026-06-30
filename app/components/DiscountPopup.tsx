@@ -77,6 +77,7 @@ export default function DiscountPopup() {
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const { contactMenuOpen } = useFloatingUI();
 
   // On mount: resume a still-running offer (minimized) from a previous page
@@ -267,9 +268,18 @@ export default function DiscountPopup() {
         </button>
 
         {/* Large product image — replaces the old red banner */}
-        <div className="relative w-full h-[260px] sm:h-[300px] bg-[#f6f8fb]">
+        <div
+          className="relative w-full h-[320px] sm:h-[380px] bg-white touch-pan-y"
+          onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+          onTouchEnd={(e) => {
+            if (touchStartX === null) return;
+            const deltaX = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(deltaX) > 40) goTo(activeIndex + (deltaX < 0 ? 1 : -1));
+            setTouchStartX(null);
+          }}
+        >
           {product.image && (
-            <Image key={activeIndex} src={product.image} alt={product.name} fill className="object-contain p-8" priority />
+            <Image key={activeIndex} src={product.image} alt={product.name} fill className="object-contain p-3" priority />
           )}
 
           {products.length > 1 && (
