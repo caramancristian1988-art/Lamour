@@ -62,7 +62,9 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/climatrapid_srl/"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
                 className="w-8 h-8 border border-white/30 rounded-full flex items-center justify-center hover:border-white/60 hover:bg-white/10 transition-colors"
               >
