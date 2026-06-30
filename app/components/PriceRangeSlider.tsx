@@ -10,45 +10,93 @@ interface Props {
   onCommit: (min: number, max: number) => void;
 }
 
+// Allow the slider and manual input to go well above the current
+// top product price so the user can filter e.g. "above 50 000 MDL"
+// even when the catalogue's current ceiling is lower.
+const ABSOLUTE_MAX = 200_000;
+
 export default function PriceRangeSlider({ min, max, selectedMin, selectedMax, onCommit }: Props) {
+  const sliderMax = Math.max(max, ABSOLUTE_MAX);
   const [localMin, setLocalMin] = useState(selectedMin);
   const [localMax, setLocalMax] = useState(selectedMax);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [inputMin, setInputMin] = useState(String(Math.round(selectedMin)));
+  const [inputMax, setInputMax] = useState(String(Math.round(selectedMax)));
+  const commitRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setLocalMin(selectedMin);
     setLocalMax(selectedMax);
+    setInputMin(String(Math.round(selectedMin)));
+    setInputMax(String(Math.round(selectedMax)));
   }, [selectedMin, selectedMax]);
 
-  const step = Math.max(1, Math.round((max - min) / 100));
-
   function scheduleCommit(nextMin: number, nextMax: number) {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => onCommit(nextMin, nextMax), 400);
+    if (commitRef.current) clearTimeout(commitRef.current);
+    commitRef.current = setTimeout(() => onCommit(nextMin, nextMax), 500);
   }
 
-  function handleMinChange(value: number) {
-    const next = Math.min(value, localMax);
-    setLocalMin(next);
-    scheduleCommit(next, localMax);
+  function applyMin(raw: number) {
+    const v = Math.max(min, Math.min(raw, localMax));
+    setLocalMin(v);
+    setInputMin(String(Math.round(v)));
+    scheduleCommit(v, localMax);
   }
 
-  function handleMaxChange(value: number) {
-    const next = Math.max(value, localMin);
-    setLocalMax(next);
-    scheduleCommit(localMin, next);
+  function applyMax(raw: number) {
+    const v = Math.max(localMin, Math.min(raw, sliderMax));
+    setLocalMax(v);
+    setInputMax(String(Math.round(v)));
+    scheduleCommit(localMin, v);
   }
 
-  const range = max - min || 1;
+  function commitInputMin() {
+    const parsed = parseInt(inputMin.replace(/\D/g, ""), 10);
+    if (!isNaN(parsed)) applyMin(parsed);
+    else setInputMin(String(Math.round(localMin)));
+  }
+
+  function commitInputMax() {
+    const parsed = parseInt(inputMax.replace(/\D/g, ""), 10);
+    if (!isNaN(parsed)) applyMax(parsed);
+    else setInputMax(String(Math.round(localMax)));
+  }
+
+  const range = sliderMax - min || 1;
   const leftPct = ((localMin - min) / range) * 100;
   const rightPct = ((localMax - min) / range) * 100;
 
   return (
-    <div>
-      <div className="flex items-center justify-between text-xs font-semibold text-gray-600 mb-3">
-        <span>{Math.round(localMin).toLocaleString("ro-MD")} MDL</span>
-        <span>{Math.round(localMax).toLocaleString("ro-MD")} MDL</span>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={inputMin}
+            onChange={(e) => setInputMin(e.target.value)}
+            onBlur={commitInputMin}
+            onKeyDown={(e) => e.key === "Enter" && commitInputMin()}
+            aria-label="Preț minim"
+            className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-700 text-center focus:outline-none focus:border-[#c7092b] focus:ring-1 focus:ring-[#c7092b]/20"
+          />
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">MDL</span>
+        </div>
+        <span className="text-gray-400 text-xs shrink-0">—</span>
+        <div className="relative flex-1">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={inputMax}
+            onChange={(e) => setInputMax(e.target.value)}
+            onBlur={commitInputMax}
+            onKeyDown={(e) => e.key === "Enter" && commitInputMax()}
+            aria-label="Preț maxim"
+            className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-700 text-center focus:outline-none focus:border-[#c7092b] focus:ring-1 focus:ring-[#c7092b]/20"
+          />
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">MDL</span>
+        </div>
       </div>
+
       <div className="price-range-slider relative h-5">
         <div className="absolute top-1/2 left-0 right-0 h-1 -translate-y-1/2 bg-gray-200 rounded-full" />
         <div
@@ -58,21 +106,31 @@ export default function PriceRangeSlider({ min, max, selectedMin, selectedMax, o
         <input
           type="range"
           min={min}
-          max={max}
-          step={step}
+          max={sliderMax}
+          step={Math.max(100, Math.round((sliderMax - min) / 100))}
           value={localMin}
-          onChange={(e) => handleMinChange(Number(e.target.value))}
-          aria-label="Preț minim"
+          onChange={(e) => {
+            const v = Math.min(Number(e.target.value), localMax);
+            setLocalMin(v);
+            setInputMin(String(Math.round(v)));
+            scheduleCommit(v, localMax);
+          }}
+          aria-label="Preț minim slider"
           className="absolute top-0 left-0 w-full h-5"
         />
         <input
           type="range"
           min={min}
-          max={max}
-          step={step}
+          max={sliderMax}
+          step={Math.max(100, Math.round((sliderMax - min) / 100))}
           value={localMax}
-          onChange={(e) => handleMaxChange(Number(e.target.value))}
-          aria-label="Preț maxim"
+          onChange={(e) => {
+            const v = Math.max(Number(e.target.value), localMin);
+            setLocalMax(v);
+            setInputMax(String(Math.round(v)));
+            scheduleCommit(localMin, v);
+          }}
+          aria-label="Preț maxim slider"
           className="absolute top-0 left-0 w-full h-5"
         />
       </div>
