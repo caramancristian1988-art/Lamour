@@ -487,7 +487,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
               </div>
             )}
           </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <div className="flex flex-col items-start sm:items-end gap-1.5 shrink-0 w-full sm:w-auto">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <StarRating rating={product.rating} />
