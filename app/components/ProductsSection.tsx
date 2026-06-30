@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ProductCard from "./ProductCard";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
+import { getSectionFlags } from "@/lib/siteSettings";
 
 interface Product {
   id: string;
@@ -27,7 +28,8 @@ interface Props {
   showDiscount?: boolean;
 }
 
-export default function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", bg = "bg-white", showDiscount = false }: Props) {
+export default async function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", bg = "bg-white", showDiscount = false }: Props) {
+  const { ratesEnabled } = await getSectionFlags();
   return (
     <section className={`py-16 ${bg}`}>
       <div className="max-w-7xl mx-auto px-4">
@@ -57,6 +59,7 @@ export default function ProductsSection({ products, title = "Produse", highlight
               image={localProductImages[product.slug] ?? product.image}
               badge={localProductBadges[product.slug] ?? product.badge}
               showDiscount={showDiscount}
+              installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
             />
           ))}
         </div>

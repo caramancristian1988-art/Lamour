@@ -62,6 +62,7 @@ interface ProductRow {
   reviewCount: number;
   badge: string | null;
   availability: string;
+  installmentsEnabled?: boolean;
   categoryId: string;
   createdAt: Date;
 }
@@ -92,7 +93,7 @@ export default async function ProdusePage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { produseEnabled } = await getSectionFlags();
+  const { produseEnabled, ratesEnabled } = await getSectionFlags();
   if (!produseEnabled) notFound();
 
   const query = await searchParams;
@@ -202,6 +203,7 @@ export default async function ProdusePage({
                       image={localProductImages[product.slug] ?? product.image}
                       badge={localProductBadges[product.slug] ?? product.badge}
                       showDiscount={filters.offersOnly}
+                      installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
                     />
                   ))}
                 </div>

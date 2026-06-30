@@ -187,6 +187,7 @@ model Settings {
   despreEnabled   Boolean @default(true)
   blogEnabled     Boolean @default(true)
   contactEnabled  Boolean @default(true)
+  ratesEnabled    Boolean @default(true)
   popupCountdownMinutes Int @default(10)
 }
 

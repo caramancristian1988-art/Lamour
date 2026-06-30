@@ -14,6 +14,7 @@ export async function updateSettingsAction(formData: FormData) {
     despreEnabled: formData.get("despreEnabled") === "on",
     blogEnabled: formData.get("blogEnabled") === "on",
     contactEnabled: formData.get("contactEnabled") === "on",
+    ratesEnabled: formData.get("ratesEnabled") === "on",
   };
 
   const existing = await prisma.settings.findFirst();

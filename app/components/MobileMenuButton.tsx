@@ -51,7 +51,7 @@ export default function MobileMenuButton({
   blogEnabled = true,
   contactEnabled = true,
 }: Partial<SectionFlags>) {
-  const flags: SectionFlags = { produseEnabled, serviciiEnabled, proiecteEnabled, despreEnabled, blogEnabled, contactEnabled };
+  const flags = { produseEnabled, serviciiEnabled, proiecteEnabled, despreEnabled, blogEnabled, contactEnabled };
   const navLinks = baseNavLinks.filter((l) => flags[l.flag]);
   const pathname = usePathname();
   const [open, setOpen] = useState(false);

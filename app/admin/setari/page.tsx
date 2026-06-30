@@ -52,6 +52,25 @@ export default async function AdminSetariPage() {
           </div>
         </div>
 
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Funcționalități</p>
+          <label className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 cursor-pointer">
+            <span>
+              <span className="block text-sm font-bold text-[#1d2353]">Plata în rate</span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                Dezactivează ca să dispară butonul &quot;Cumpără în rate&quot; și estimarea lunară de pe toate produsele,
+                indiferent de setarea individuală a fiecărui produs.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              name="ratesEnabled"
+              defaultChecked={settings?.ratesEnabled ?? true}
+              className="w-5 h-5 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b] shrink-0"
+            />
+          </label>
+        </div>
+
         <SaveButton />
       </form>
     </div>

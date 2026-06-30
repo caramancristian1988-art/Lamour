@@ -8,6 +8,7 @@ export interface SectionFlags {
   despreEnabled: boolean;
   blogEnabled: boolean;
   contactEnabled: boolean;
+  ratesEnabled: boolean;
 }
 
 const DEFAULTS: SectionFlags = {
@@ -17,6 +18,7 @@ const DEFAULTS: SectionFlags = {
   despreEnabled: true,
   blogEnabled: true,
   contactEnabled: true,
+  ratesEnabled: true,
 };
 
 export const getSectionFlags = cache(async (): Promise<SectionFlags> => {
@@ -30,6 +32,7 @@ export const getSectionFlags = cache(async (): Promise<SectionFlags> => {
       despreEnabled: settings.despreEnabled ?? DEFAULTS.despreEnabled,
       blogEnabled: settings.blogEnabled ?? DEFAULTS.blogEnabled,
       contactEnabled: settings.contactEnabled ?? DEFAULTS.contactEnabled,
+      ratesEnabled: settings.ratesEnabled ?? DEFAULTS.ratesEnabled,
     };
   } catch {
     return DEFAULTS;
