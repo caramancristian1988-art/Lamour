@@ -8,6 +8,8 @@ import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
 import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
+export const revalidate = 3600;
+
 const defaultFeatures = [
   { title: "Echipă autorizată", desc: "Tehnicieni calificați și mereu la curent cu noile tehnologii.", icon: "award" },
   { title: "Montaj rapid și curat", desc: "Respectăm timpul tău și lăsăm spațiul curat după instalare.", icon: "clock" },

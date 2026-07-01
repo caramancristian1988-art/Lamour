@@ -32,10 +32,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const sectionFlags = await getSectionFlags();
-  const headerCategories = await getHeaderCategories();
-  const socialLinks = await getSocialLinks();
-  const contactInfo = await getContactInfo();
+  const [sectionFlags, headerCategories, socialLinks, contactInfo] = await Promise.all([
+    getSectionFlags(),
+    getHeaderCategories(),
+    getSocialLinks(),
+    getContactInfo(),
+  ]);
 
   return (
     <html lang="ro" className={GeistSans.variable}>

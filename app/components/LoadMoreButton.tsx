@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Props {
   basePath: string;
@@ -20,7 +20,13 @@ function buildHref(basePath: string, page: number, sort: string, extraParams: Re
 
 export default function LoadMoreButton({ basePath, page, sort, hasMore, extraParams }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+
+  // Reset loading when search params change (navigation completed)
+  useEffect(() => {
+    setLoading(false);
+  }, [searchParams]);
 
   if (!hasMore) return null;
 

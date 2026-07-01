@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSectionFlags } from "@/lib/siteSettings";
 
+export const revalidate = 3600;
+
 const fallbackServiciiPrincipale = [
   {
     id: "fallback-1",

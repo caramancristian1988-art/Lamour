@@ -8,6 +8,8 @@ import ProductsSection from "../components/ProductsSection";
 import FaqAccordion, { type FaqItem } from "../components/FaqAccordion";
 import ContactForm from "../components/ContactForm";
 
+export const revalidate = 3600;
+
 const FALLBACK_FAQS: FaqItem[] = [
   {
     question: "Cât durează instalarea unui aparat de aer condiționat?",

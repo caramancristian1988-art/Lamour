@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import FaqAccordion, { type FaqItem } from "@/app/components/FaqAccordion";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Întrebări frecvente | Climat Rapid",
   description: "Răspunsuri la cele mai frecvente întrebări despre produsele, instalarea și serviciile Climat Rapid.",

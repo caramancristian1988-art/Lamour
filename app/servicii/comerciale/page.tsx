@@ -8,6 +8,8 @@ import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
 import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
+export const revalidate = 3600;
+
 const defaultFeatures = [
   { title: "Capacități mari", desc: "Sisteme dimensionate pentru spații comerciale, hale și birouri.", icon: "building" },
   { title: "Proiectare personalizată", desc: "Calcul de sarcină termică și soluție adaptată clădirii tale.", icon: "blueprint" },

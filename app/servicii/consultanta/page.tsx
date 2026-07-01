@@ -8,6 +8,8 @@ import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
 import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
+export const revalidate = 3600;
+
 const defaultFeatures = [
   { title: "Experți certificați", desc: "Consultanți cu experiență vastă în sisteme de climatizare.", icon: "award" },
   { title: "Recomandare personalizată", desc: "Analizăm spațiul tău și propunem soluția optimă pentru nevoile tale.", icon: "search-plus" },

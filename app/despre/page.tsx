@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Despre Noi | Climat Rapid",
   description:

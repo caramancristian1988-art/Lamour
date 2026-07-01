@@ -8,6 +8,8 @@ import ProductsSection from "@/app/components/ProductsSection";
 import ServiceStepIcon from "@/app/components/ServiceStepIcon";
 import ServiceFeatureIcon from "@/app/components/ServiceFeatureIcon";
 
+export const revalidate = 3600;
+
 const defaultFeatures = [
   { title: "O unitate, mai multe camere", desc: "Climatizezi întreaga locuință cu o singură unitate exterioară.", icon: "grid" },
   { title: "Control independent", desc: "Fiecare cameră are propriul termostat și setări individuale.", icon: "clock-alt" },
