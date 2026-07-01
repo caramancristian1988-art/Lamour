@@ -26,7 +26,22 @@ export default async function EditServicePage({ params }: { params: Promise<{ id
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <AdminPageHeader title="Editează serviciu" />
+        <div className="flex items-center justify-between mb-2">
+          <AdminPageHeader title="Editează serviciu" />
+          {service.href && (
+            <a
+              href={service.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full hover:bg-green-100 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Vezi pe site
+            </a>
+          )}
+        </div>
         <ServiceForm action={updateServiceAction} defaults={service} submitLabel="Salvează modificările" />
       </div>
 
