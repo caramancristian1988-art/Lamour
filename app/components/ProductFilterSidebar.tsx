@@ -70,8 +70,9 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
   const selectedTechnologies = searchParams.get("tehnologie")?.split(",").filter(Boolean) ?? [];
   const selectedEnergy = searchParams.get("energie")?.split(",").filter(Boolean) ?? [];
   const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) ?? [];
+  const PRICE_ABSOLUTE_MAX = 200_000;
   const priceMin = Number(searchParams.get("pretMin")) || priceBounds.min;
-  const priceMax = Number(searchParams.get("pretMax")) || priceBounds.max;
+  const priceMax = Number(searchParams.get("pretMax")) || PRICE_ABSOLUTE_MAX;
   const priceFilterActive = searchParams.has("pretMin") || searchParams.has("pretMax");
   const offersOnly = searchParams.get("oferte") === "1";
 
@@ -98,7 +99,7 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
   function setPriceRange(min: number, max: number) {
     const params = new URLSearchParams(searchParams.toString());
     if (min <= priceBounds.min) params.delete("pretMin"); else params.set("pretMin", String(Math.round(min)));
-    if (max >= priceBounds.max) params.delete("pretMax"); else params.set("pretMax", String(Math.round(max)));
+    if (max >= PRICE_ABSOLUTE_MAX) params.delete("pretMax"); else params.set("pretMax", String(Math.round(max)));
     go(params);
   }
 
