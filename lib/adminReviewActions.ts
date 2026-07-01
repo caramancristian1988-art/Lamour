@@ -18,6 +18,7 @@ export async function createAdminReviewAction(formData: FormData) {
   await prisma.review.create({ data: { name, text, rating, image, product, approved: true } });
   await recomputeProductRating(product);
   revalidatePath("/admin/recenzii");
+  revalidatePath("/admin/produse", "layout");
   revalidatePath("/");
   if (product) revalidatePath("/produse");
 }
@@ -95,5 +96,6 @@ export async function deleteAdminReviewAction(formData: FormData) {
   await recomputeProductRating(review.product);
 
   revalidatePath("/admin/recenzii");
+  revalidatePath("/admin/produse", "layout");
   revalidatePath("/");
 }
