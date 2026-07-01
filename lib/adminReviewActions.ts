@@ -4,6 +4,20 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 
+async function recomputeProductRating(productName: string | null) {
+  if (!productName) return;
+  const reviews = await prisma.review.findMany({ where: { product: productName, approved: true } });
+  const product = await prisma.product.findFirst({ where: { name: productName } });
+  if (!product) return;
+  const avgRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
+  await prisma.product.update({ where: { id: product.id }, data: { rating: avgRating, reviewCount: reviews.length } });
+}
+
+async function revalidateProductPage(productName: string) {
+  const product = await prisma.product.findFirst({ where: { name: productName }, select: { slug: true } });
+  if (product?.slug) revalidatePath(`/produse/${product.slug}`);
+}
+
 export async function createAdminReviewAction(formData: FormData) {
   await requireAdmin();
 
@@ -20,7 +34,10 @@ export async function createAdminReviewAction(formData: FormData) {
   revalidatePath("/admin/recenzii");
   revalidatePath("/admin/produse", "layout");
   revalidatePath("/");
-  if (product) revalidatePath("/produse");
+  if (product) {
+    revalidatePath("/produse");
+    await revalidateProductPage(product);
+  }
 }
 
 export async function updateAdminReviewAction(formData: FormData) {
@@ -47,18 +64,11 @@ export async function updateAdminReviewAction(formData: FormData) {
   if (product !== existing.product) await recomputeProductRating(product);
 
   revalidatePath("/admin/recenzii");
+  revalidatePath("/admin/produse", "layout");
   revalidatePath("/produse");
-}
-
-async function recomputeProductRating(productName: string | null) {
-  if (!productName) return;
-
-  const reviews = await prisma.review.findMany({ where: { product: productName, approved: true } });
-  const product = await prisma.product.findFirst({ where: { name: productName } });
-  if (!product) return;
-
-  const avgRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
-  await prisma.product.update({ where: { id: product.id }, data: { rating: avgRating, reviewCount: reviews.length } });
+  revalidatePath("/");
+  if (existing.product) await revalidateProductPage(existing.product);
+  if (product && product !== existing.product) await revalidateProductPage(product);
 }
 
 export async function approveReviewAction(formData: FormData) {
@@ -71,9 +81,11 @@ export async function approveReviewAction(formData: FormData) {
 
   revalidatePath("/admin/recenzii");
   revalidatePath("/admin/notificari");
+  revalidatePath("/admin/produse", "layout");
   revalidatePath("/");
   if (review.product) {
     revalidatePath("/produse");
+    await revalidateProductPage(review.product);
   }
 }
 
@@ -81,10 +93,13 @@ export async function rejectReviewAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  await prisma.review.delete({ where: { id } });
+
+  const review = await prisma.review.delete({ where: { id } });
   revalidatePath("/admin/recenzii");
   revalidatePath("/admin/notificari");
+  revalidatePath("/admin/produse", "layout");
   revalidatePath("/");
+  if (review.product) revalidatePath("/produse");
 }
 
 export async function deleteAdminReviewAction(formData: FormData) {
@@ -98,4 +113,8 @@ export async function deleteAdminReviewAction(formData: FormData) {
   revalidatePath("/admin/recenzii");
   revalidatePath("/admin/produse", "layout");
   revalidatePath("/");
+  if (review.product) {
+    revalidatePath("/produse");
+    await revalidateProductPage(review.product);
+  }
 }

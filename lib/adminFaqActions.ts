@@ -16,6 +16,7 @@ export async function createFaqAction(formData: FormData) {
 
   await prisma.faq.create({ data: { question, answer, order } });
   revalidatePath("/admin/faq");
+  revalidatePath("/faq");
   revalidatePath("/contact");
 }
 
@@ -31,6 +32,7 @@ export async function updateFaqAction(formData: FormData) {
 
   await prisma.faq.update({ where: { id }, data: { question, answer, order } });
   revalidatePath("/admin/faq");
+  revalidatePath("/faq");
   revalidatePath("/contact");
   redirect("/admin/faq");
 }
@@ -42,5 +44,6 @@ export async function deleteFaqAction(formData: FormData) {
 
   await prisma.faq.delete({ where: { id } });
   revalidatePath("/admin/faq");
+  revalidatePath("/faq");
   revalidatePath("/contact");
 }

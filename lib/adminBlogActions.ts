@@ -39,6 +39,8 @@ export async function createBlogPostAction(_prevState: BlogFormState, formData: 
   await prisma.blogPost.create({ data: { title, slug, description: description || title, image, content, category, published } });
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
+  if (category) revalidatePath(`/blog/categorie/${slugify(category)}`);
   redirect("/admin/blog");
 }
 
@@ -62,6 +64,7 @@ export async function updateBlogPostAction(_prevState: BlogFormState, formData: 
   const existing = await prisma.blogPost.findUnique({ where: { slug } });
   if (existing && existing.id !== id) return { error: "Există deja un articol cu acest slug." };
 
+  const before = await prisma.blogPost.findUnique({ where: { id }, select: { slug: true, category: true } });
   await prisma.blogPost.update({
     where: { id },
     data: { title, slug, description: description || title, image, content, category, published },
@@ -69,6 +72,9 @@ export async function updateBlogPostAction(_prevState: BlogFormState, formData: 
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
   revalidatePath(`/blog/${slug}`);
+  if (before?.slug && before.slug !== slug) revalidatePath(`/blog/${before.slug}`);
+  if (category) revalidatePath(`/blog/categorie/${slugify(category)}`);
+  if (before?.category && before.category !== category) revalidatePath(`/blog/categorie/${slugify(before.category)}`);
   redirect("/admin/blog");
 }
 
@@ -76,9 +82,12 @@ export async function deleteBlogPostAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
+  const post = await prisma.blogPost.findUnique({ where: { id }, select: { slug: true, category: true } });
   await prisma.blogPost.delete({ where: { id } });
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
+  if (post?.slug) revalidatePath(`/blog/${post.slug}`);
+  if (post?.category) revalidatePath(`/blog/categorie/${slugify(post.category)}`);
 }
 
 export async function togglePublishAction(formData: FormData) {
@@ -86,7 +95,10 @@ export async function togglePublishAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const published = formData.get("published") === "1";
   if (!id) return;
+  const post = await prisma.blogPost.findUnique({ where: { id }, select: { slug: true, category: true } });
   await prisma.blogPost.update({ where: { id }, data: { published: !published } });
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
+  if (post?.slug) revalidatePath(`/blog/${post.slug}`);
+  if (post?.category) revalidatePath(`/blog/categorie/${slugify(post.category)}`);
 }

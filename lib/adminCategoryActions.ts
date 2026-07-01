@@ -29,6 +29,7 @@ export async function createCategoryInlineAction(
     const category = await prisma.category.create({ data: { name, slug } });
     revalidatePath("/admin/produse/categorii");
     revalidatePath("/produse");
+    revalidatePath(`/produse/${slug}`);
     return { category: { id: category.id, name: category.name } };
   } catch {
     return { error: "Există deja o categorie cu un nume foarte similar." };
@@ -44,9 +45,11 @@ export async function deleteCategoryInlineAction(id: string): Promise<{ success?
     return { error: "Categoria este folosită de produse existente și nu poate fi ștearsă." };
   }
 
+  const cat = await prisma.category.findUnique({ where: { id }, select: { slug: true } });
   await prisma.category.delete({ where: { id } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
+  if (cat?.slug) revalidatePath(`/produse/${cat.slug}`);
   return { success: true };
 }
 
@@ -63,6 +66,7 @@ export async function createCategoryAction(formData: FormData) {
   await prisma.category.create({ data: { name, slug, description, image } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
+  revalidatePath(`/produse/${slug}`);
 }
 
 export async function updateCategoryAction(formData: FormData) {
@@ -76,9 +80,12 @@ export async function updateCategoryAction(formData: FormData) {
 
   if (!id || !name || !slug) return;
 
+  const existing = await prisma.category.findUnique({ where: { id }, select: { slug: true } });
   await prisma.category.update({ where: { id }, data: { name, slug, description, image } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
+  revalidatePath(`/produse/${slug}`);
+  if (existing?.slug && existing.slug !== slug) revalidatePath(`/produse/${existing.slug}`);
   redirect("/admin/produse/categorii");
 }
 
@@ -90,7 +97,9 @@ export async function deleteCategoryAction(formData: FormData) {
   const productCount = await prisma.product.count({ where: { categoryId: id } });
   if (productCount > 0) return;
 
+  const cat = await prisma.category.findUnique({ where: { id }, select: { slug: true } });
   await prisma.category.delete({ where: { id } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
+  if (cat?.slug) revalidatePath(`/produse/${cat.slug}`);
 }

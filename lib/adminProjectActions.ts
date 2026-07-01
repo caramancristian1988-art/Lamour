@@ -23,6 +23,7 @@ export async function createProjectAction(formData: FormData) {
 
   await prisma.project.create({ data: { title, description, images } });
   revalidatePath("/admin/proiecte");
+  revalidatePath("/proiecte");
   redirect("/admin/proiecte");
 }
 
@@ -38,6 +39,7 @@ export async function updateProjectAction(formData: FormData) {
 
   await prisma.project.update({ where: { id }, data: { title, description, images } });
   revalidatePath("/admin/proiecte");
+  revalidatePath("/proiecte");
   redirect("/admin/proiecte");
 }
 
@@ -47,4 +49,5 @@ export async function deleteProjectAction(formData: FormData) {
   if (!id) return;
   await prisma.project.delete({ where: { id } });
   revalidatePath("/admin/proiecte");
+  revalidatePath("/proiecte");
 }

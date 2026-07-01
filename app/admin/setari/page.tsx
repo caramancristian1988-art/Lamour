@@ -55,6 +55,16 @@ export default async function AdminSetariPage() {
                 className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
               />
             </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-sm font-bold text-[#1d2353]">Adresă</span>
+              <input
+                type="text"
+                name="address"
+                defaultValue={settings?.address ?? ""}
+                placeholder="Str. Exemplu 1, Chișinău, Moldova"
+                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
+              />
+            </label>
           </div>
         </div>
 
@@ -113,6 +123,22 @@ export default async function AdminSetariPage() {
               min={1}
               max={60}
               defaultValue={settings?.installmentMonths ?? 4}
+              className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:border-[#c7092b] shrink-0"
+            />
+          </label>
+          <label className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 mt-2.5">
+            <span>
+              <span className="block text-sm font-bold text-[#1d2353]">Cronometru popup (minute)</span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                Numărul de minute afișat la countdown-ul din popup-ul de oferte speciale.
+              </span>
+            </span>
+            <input
+              type="number"
+              name="popupCountdownMinutes"
+              min={1}
+              max={120}
+              defaultValue={settings?.popupCountdownMinutes ?? 10}
               className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:border-[#c7092b] shrink-0"
             />
           </label>

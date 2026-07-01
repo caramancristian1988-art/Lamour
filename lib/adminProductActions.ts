@@ -79,6 +79,7 @@ export async function createProductAction(_prevState: ProductFormState, formData
   await prisma.product.create({ data });
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
+  revalidatePath(`/produse/${data.slug}`);
   redirect("/admin/produse");
 }
 
@@ -108,7 +109,9 @@ export async function deleteProductAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
+  const product = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
   await prisma.product.delete({ where: { id } });
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
+  if (product?.slug) revalidatePath(`/produse/${product.slug}`);
 }
