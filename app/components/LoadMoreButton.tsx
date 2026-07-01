@@ -1,4 +1,7 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Props {
   basePath: string;
@@ -16,17 +19,40 @@ function buildHref(basePath: string, page: number, sort: string, extraParams: Re
 }
 
 export default function LoadMoreButton({ basePath, page, sort, hasMore, extraParams }: Props) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
   if (!hasMore) return null;
+
+  function handleClick() {
+    setLoading(true);
+    router.push(buildHref(basePath, page + 1, sort, extraParams), { scroll: false });
+  }
 
   return (
     <div className="flex justify-center mt-12">
-      <Link
-        href={buildHref(basePath, page + 1, sort, extraParams)}
-        scroll={false}
-        className="inline-flex items-center gap-2 border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold px-8 py-3 rounded-xl transition-all text-sm uppercase tracking-wide"
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        className="inline-flex items-center gap-2 border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold px-8 py-3 rounded-xl transition-all text-sm uppercase tracking-wide disabled:opacity-70 disabled:cursor-not-allowed"
       >
-        Încarcă mai multe
-      </Link>
+        {loading ? (
+          <>
+            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Se încarcă...
+          </>
+        ) : (
+          <>
+            Încarcă mai multe
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </>
+        )}
+      </button>
     </div>
   );
 }
