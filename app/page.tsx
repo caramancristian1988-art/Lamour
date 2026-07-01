@@ -10,21 +10,29 @@ import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
 import ServicesSection from "@/app/components/ServicesSection";
 import TrustBar from "@/app/components/TrustBar";
+import ReviewsSection from "@/app/components/ReviewsSection";
 
 export const revalidate = 3600;
 
 async function getData() {
   try {
-    const [categories, products, popularProducts] = await Promise.all([
+    const [categories, products, popularProducts, reviews] = await Promise.all([
       prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
       prisma.product.findMany({ take: 4, orderBy: { rating: "desc" } }),
       prisma.product.findMany({ take: 4, orderBy: { reviewCount: "desc" } }),
+      prisma.review.findMany({
+        where: { approved: true },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        select: { id: true, name: true, rating: true, text: true, product: true },
+      }),
     ]);
     return {
       categories,
       products,
       popularProducts,
       offerProducts: fallbackOfferProducts.slice(0, 4),
+      reviews,
     };
   } catch {
     return {
@@ -32,12 +40,13 @@ async function getData() {
       products: fallbackProducts,
       popularProducts: fallbackPopularProducts,
       offerProducts: fallbackOfferProducts.slice(0, 4),
+      reviews: [],
     };
   }
 }
 
 export default async function HomePage() {
-  const { categories, products, popularProducts, offerProducts } = await getData();
+  const { categories, products, popularProducts, offerProducts, reviews } = await getData();
 
   return (
     <main>
@@ -57,6 +66,7 @@ export default async function HomePage() {
         viewAllHref="/produse?oferte=1"
       />
       <ServicesSection />
+      {reviews.length > 0 && <ReviewsSection reviews={reviews} />}
       <TrustBar />
     </main>
   );
