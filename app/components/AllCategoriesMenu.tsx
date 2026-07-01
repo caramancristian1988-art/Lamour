@@ -117,7 +117,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
               >
                 <span className="relative w-14 h-14 rounded-xl bg-[#f6f8fb] overflow-hidden shrink-0">
                   {item.image ? (
-                    <Image src={item.image} alt="" fill className="object-cover" />
+                    <Image src={item.image} alt={item.name} fill className="object-cover" />
                   ) : (
                     <svg className="w-6 h-6 text-gray-300 absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M20 8H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2zM4 6h16V4H4v2z" />

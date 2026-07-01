@@ -109,11 +109,24 @@ export async function generateMetadata({
   const productData = await getProductData(slug);
   if (productData) {
     const name = localProductNames[productData.product.slug] ?? productData.product.name;
+    const description =
+      productData.product.description ??
+      `Cumpără ${name} la cel mai bun preț, cu instalare profesională și garanție.`;
+    const image = productData.product.image;
     return {
       title: `${name} | Climat Rapid`,
-      description:
-        productData.product.description ??
-        `Cumpără ${name} la cel mai bun preț, cu instalare profesională și garanție.`,
+      description,
+      openGraph: {
+        title: `${name} | Climat Rapid`,
+        description,
+        ...(image ? { images: [{ url: image, width: 800, height: 600, alt: name }] } : {}),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${name} | Climat Rapid`,
+        description,
+        ...(image ? { images: [image] } : {}),
+      },
     };
   }
 

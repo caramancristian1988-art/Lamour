@@ -24,6 +24,14 @@ export const metadata: Metadata = {
       "Soluții complete de climatizare pentru locuința sau afacerea ta.",
     locale: "ro_MD",
     type: "website",
+    url: "https://climatrapid.md",
+    siteName: "Climat Rapid",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Climat Rapid — Condiționere & Climatizare Moldova",
+    description:
+      "Magazin online de condiționere și sisteme de climatizare. Livrare și instalare în Moldova.",
   },
 };
 

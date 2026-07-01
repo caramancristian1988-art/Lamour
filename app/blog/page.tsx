@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
+import { prisma } from "@/lib/prisma";
 
 export const revalidate = 3600;
 
@@ -12,68 +13,41 @@ export const metadata: Metadata = {
     "Articole despre climatizare, instalare, mentenanță și sfaturi de la experții Climat Rapid.",
 };
 
-const articles = [
-  {
-    slug: "cum-alegi-conditionerul-potrivit",
-    title: "Cum alegi aparatul de aer condiționat potrivit pentru casa ta?",
-    excerpt: "Află tot ce trebuie să știi pentru a alege un aparat de aer condiționat potrivit și eficient.",
-    category: "Ghiduri",
-    categoryColor: "bg-[#c7092b]",
-    date: "20 Mai 2026",
-    readTime: "5 min read",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
-  },
-  {
-    slug: "temperatura-ideala-vara",
-    title: "Temperatura ideală vara: cât de rece ar trebui setat AC-ul?",
-    excerpt: "Descoperă care este temperatura optimă pentru confort și cum să economisești energie în același timp.",
-    category: "Sfaturi",
-    categoryColor: "bg-[#2563eb]",
-    date: "15 Mai 2026",
-    readTime: "4 min read",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
-  },
-  {
-    slug: "intretinerea-corecta-ac",
-    title: "Întreținerea corectă a aparatului de aer condiționat",
-    excerpt: "Află practicile pentru prelungirea vieții și menținerea unui randament optim al aparatului tău.",
-    category: "Întreținere",
-    categoryColor: "bg-[#16a34a]",
-    date: "10 Mai 2026",
-    readTime: "6 min read",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
-  },
-  {
-    slug: "inverter-vs-on-off",
-    title: "Inverter vs. On/Off — care este diferența?",
-    excerpt: "Află ce înseamnă tehnologia inverter și de ce este mai avantajoasă pentru tine pe termen lung.",
-    category: "Tehnologie",
-    categoryColor: "bg-[#7c3aed]",
-    date: "5 Mai 2026",
-    readTime: "5 min read",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
-  },
-  {
-    slug: "noutati-climatizare-2024",
-    title: "Noutăți în domeniul climatizării — 2024",
-    excerpt: "Descoperă cele mai noi funcții și tehnologii care diferențiază aparatele de acest an.",
-    category: "Noutăți",
-    categoryColor: "bg-[#ea580c]",
-    date: "1 Mai 2026",
-    readTime: "4 min read",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
-  },
-  {
-    slug: "reducere-consum-energie",
-    title: "Cum să reduci consumul de energie al aparatului de aer condiționat",
-    excerpt: "7 sfaturi simple care te ajută să te bucuri de confort și să economisești la factură.",
-    category: "Sfaturi",
-    categoryColor: "bg-[#2563eb]",
-    date: "24 Apr 2026",
-    readTime: "8 min read",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
-  },
-];
+const FALLBACK_ARTICLE = {
+  slug: "cum-alegi-conditionerul-potrivit",
+  title: "Cum alegi aparatul de aer condiționat potrivit pentru casa ta?",
+  excerpt: "Află tot ce trebuie să știi pentru a alege un aparat de aer condiționat potrivit și eficient.",
+  category: "Ghiduri",
+  categoryColor: "bg-[#c7092b]",
+  date: "20 Mai 2026",
+  readTime: "5 min read",
+  image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+};
+
+async function getArticles() {
+  try {
+    const posts = await prisma.blogPost.findMany({
+      where: { published: true },
+      orderBy: { createdAt: "desc" },
+      select: { slug: true, title: true, description: true, category: true, image: true, createdAt: true },
+    });
+    if (posts.length > 0) {
+      return posts.map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.description,
+        category: p.category ?? "General",
+        categoryColor: "bg-[#c7092b]",
+        date: p.createdAt.toLocaleDateString("ro-MD", { day: "numeric", month: "long", year: "numeric" }),
+        readTime: "5 min read",
+        image: p.image ?? "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+      }));
+    }
+  } catch {
+    // fall through to static fallback
+  }
+  return [FALLBACK_ARTICLE];
+}
 
 const filterTabs = [
   { label: "Toate articolele", href: "/blog" },
@@ -85,7 +59,7 @@ const filterTabs = [
 ];
 
 export default async function BlogPage() {
-  const { blogEnabled } = await getSectionFlags();
+  const [{ blogEnabled }, articles] = await Promise.all([getSectionFlags(), getArticles()]);
   if (!blogEnabled) notFound();
 
   return (

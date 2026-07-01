@@ -4,14 +4,28 @@ import NewsletterForm from "@/app/components/NewsletterForm";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
+import { prisma } from "@/lib/prisma";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "Cum alegi conditionerul potrivit pentru casa ta? | Climat Rapid Blog",
-  description:
-    "Ghid complet pentru alegerea conditionerului ideal: BTU, inverter, clasă energetică și sfaturi de la experții Climat Rapid.",
-};
+const DEMO_SLUG = "cum-alegi-conditionerul-potrivit";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  if (slug === DEMO_SLUG) {
+    return {
+      title: "Cum alegi conditionerul potrivit pentru casa ta? | Climat Rapid Blog",
+      description: "Ghid complet pentru alegerea conditionerului ideal: BTU, inverter, clasă energetică și sfaturi de la experții Climat Rapid.",
+    };
+  }
+  const post = await prisma.blogPost.findFirst({ where: { slug, published: true }, select: { title: true, description: true, image: true } });
+  if (!post) return {};
+  return {
+    title: `${post.title} | Climat Rapid Blog`,
+    description: post.description,
+    openGraph: post.image ? { images: [{ url: post.image, alt: post.title }] } : undefined,
+  };
+}
 
 const article = {
   title: "Cum alegi conditionerul potrivit pentru casa ta?",
@@ -34,19 +48,19 @@ const recentArticles = [
   {
     title: "Ce înseamnă BTU și cum îl calculezi?",
     date: "10 iunie 2026",
-    slug: "ce-inseamna-btu",
+    slug: DEMO_SLUG,
     image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
   },
   {
     title: "Inverter vs Non-Inverter: care e mai bun?",
     date: "5 iunie 2026",
-    slug: "inverter-vs-non-inverter",
+    slug: DEMO_SLUG,
     image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
   },
   {
     title: "Cât de des trebuie curățat filtrul?",
     date: "1 iunie 2026",
-    slug: "curatare-filtru-conditioner",
+    slug: DEMO_SLUG,
     image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
   },
 ];
@@ -56,28 +70,82 @@ const relatedArticles = [
     title: "Top 5 conditionere pentru apartament în 2026",
     category: "Produse noi",
     date: "12 iunie 2026",
-    slug: "top-5-conditionere-apartament-2026",
+    slug: DEMO_SLUG,
     image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
   },
   {
     title: "Cum se calculează puterea necesară pentru o cameră?",
     category: "Ghiduri & Sfaturi",
     date: "8 iunie 2026",
-    slug: "calculul-puterii-conditioner",
+    slug: DEMO_SLUG,
     image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
   },
   {
     title: "Mentenanța anuală: de ce este obligatorie?",
     category: "Mentenanță",
     date: "3 iunie 2026",
-    slug: "mentenanta-anuala-conditioner",
+    slug: DEMO_SLUG,
     image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
   },
 ];
 
-export default async function BlogArticlePage() {
-  const { blogEnabled } = await getSectionFlags();
+export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  const [{ blogEnabled }, { slug }] = await Promise.all([getSectionFlags(), params]);
   if (!blogEnabled) notFound();
+
+  if (slug !== DEMO_SLUG) {
+    const post = await prisma.blogPost.findFirst({
+      where: { slug, published: true },
+      select: { title: true, description: true, image: true, content: true, category: true, createdAt: true },
+    });
+    if (!post) notFound();
+    const postArticle = {
+      title: post.title,
+      category: post.category ?? "General",
+      date: post.createdAt.toLocaleDateString("ro-MD", { day: "numeric", month: "long", year: "numeric" }),
+      author: "Echipa Climat Rapid",
+      readTime: "5 min citire",
+      image: post.image ?? "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    };
+    return (
+      <main>
+        <section className="relative h-[320px] sm:h-[420px] overflow-hidden">
+          <Image src={postArticle.image} alt={postArticle.title} fill className="object-cover object-center" priority sizes="100vw" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+          <div className="absolute inset-0 flex flex-col justify-end max-w-7xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
+            <nav className="flex items-center gap-1.5 text-white/60 text-xs mb-4">
+              <Link href="/" className="hover:text-white transition-colors">Acasă</Link><span>/</span>
+              <Link href="/blog" className="hover:text-white transition-colors">Blog</Link><span>/</span>
+              <span className="text-white/80 line-clamp-1">{postArticle.title}</span>
+            </nav>
+            <span className="inline-flex self-start bg-[#c7092b] text-white text-xs font-bold px-3 py-1 rounded-md uppercase tracking-wide mb-3">{postArticle.category}</span>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-4 max-w-3xl">{postArticle.title}</h1>
+            <div className="flex flex-wrap items-center gap-4 text-white/70 text-xs sm:text-sm">
+              <span>{postArticle.author}</span><span>·</span><span>{postArticle.date}</span><span>·</span><span>{postArticle.readTime}</span>
+            </div>
+          </div>
+        </section>
+        <section className="bg-[#f8fafc] py-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <article className="bg-white rounded-2xl shadow-sm p-6 sm:p-10">
+              <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-8 font-medium border-l-4 border-[#c7092b] pl-5">{post.description}</p>
+              {post.content && (
+                <div className="prose prose-sm sm:prose max-w-none text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: post.content }} />
+              )}
+            </article>
+          </div>
+        </section>
+        <section className="bg-[#1d2353] py-14">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-4">Ai nevoie de instalare sau mentenanță?</h2>
+            <Link href="/contact" className="inline-flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-8 py-4 rounded-xl transition-all text-sm uppercase tracking-wide">
+              Solicită ofertă
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <>
