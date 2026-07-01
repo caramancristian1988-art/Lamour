@@ -104,7 +104,7 @@ export default function Footer({ facebook, instagram, tiktok }: Partial<SocialLi
                 </h4>
                 <ul className="space-y-3">
                   {links.map((link) => (
-                    <li key={link.href}>
+                    <li key={link.label}>
                       <Link
                         href={link.href}
                         className="text-sm text-white/60 hover:text-white transition-colors"
