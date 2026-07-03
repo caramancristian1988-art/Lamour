@@ -7,6 +7,8 @@ export default function CartBadge({ className }: { className: string }) {
   if (cartCount === 0) return null;
 
   return (
-    <span key={cartCount} className={`${className} animate-bump`}>{cartCount}</span>
+    <span key={cartCount} className={`${className} animate-bump`}>
+      {cartCount}
+    </span>
   );
 }

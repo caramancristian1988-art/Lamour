@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Upload } from "lucide-react";
+import { Label } from "@/app/components/ui/label";
 
 export default function ImageUploadField({
   name,
@@ -39,29 +41,27 @@ export default function ImageUploadField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-bold text-gray-600">{label}</span>
+      <Label>{label}</Label>
       <input type="hidden" name={name} value={url} />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         {url && (
-          <div className="relative w-16 h-16 rounded-xl bg-[#f6f8fb] border border-gray-200 overflow-hidden shrink-0">
+          <div className="relative w-16 h-16 rounded-xl bg-muted border border-border overflow-hidden shrink-0">
             <Image src={url} alt="" fill className="object-contain" />
           </div>
         )}
-        <label className="inline-flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-sm font-semibold text-[#1d2353] px-4 py-2.5 rounded-xl cursor-pointer transition-colors">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 7.5L12 3m0 0L7.5 7.5M12 3v13.5" />
-          </svg>
+        <label className="inline-flex items-center gap-2 border-2 border-input hover:bg-muted text-sm font-semibold text-primary px-4 py-2.5 rounded-xl cursor-pointer transition-colors">
+          <Upload className="w-4 h-4" aria-hidden />
           {uploading ? "Se încarcă..." : url ? "Schimbă imaginea" : "Alege din calculator"}
           <input type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} className="hidden" />
         </label>
         {url && !uploading && (
-          <button type="button" onClick={() => setUrl("")} className="text-xs text-gray-400 hover:text-[#c7092b] transition-colors">
+          <button type="button" onClick={() => setUrl("")} className="text-sm text-muted-foreground hover:text-accent transition-colors">
             Elimină
           </button>
         )}
       </div>
-      {error && <p className="text-xs text-[#c7092b]">{error}</p>}
+      {error && <p className="text-sm text-accent">{error}</p>}
     </div>
   );
 }

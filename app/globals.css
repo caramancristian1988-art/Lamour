@@ -1,114 +1,143 @@
 @import "tailwindcss";
 
-@theme {
-  --color-brand-red: #c7092b;
-  --color-brand-navy: #1d2353;
-  --color-brand-bg: #f6f8fb;
-  --color-brand-dark: #111827;
-  --color-brand-gray: #6b7280;
-  --font-sans: "Inter", system-ui, sans-serif;
+/* ---------------------------------------------------------------------
+   Design tokens — Asociația Nevăzătorilor din Moldova
+   Palette: vișiniu / roșu accent / roz pudrat / roz foarte deschis / crem
+--------------------------------------------------------------------- */
+:root {
+  --radius: 0.875rem;
+
+  /* Raw brand palette */
+  --brand-maroon: #6b100f;
+  --brand-maroon-dark: #4a0b0a;
+  --brand-red: #891817;
+  --brand-red-dark: #6c1211;
+  --brand-rose: #d9afad;
+  --brand-rose-light: #e2c1bc;
+  --brand-cream: #ede8e5;
+  --brand-ink: #241615;
+  --brand-gray: #6b5d5b;
+
+  /* Semantic tokens (shadcn-style) */
+  --background: var(--brand-cream);
+  --foreground: var(--brand-ink);
+
+  --card: #ffffff;
+  --card-foreground: var(--brand-ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--brand-ink);
+
+  --primary: var(--brand-maroon);
+  --primary-foreground: #ffffff;
+
+  --secondary: var(--brand-rose);
+  --secondary-foreground: #3a1211;
+
+  --muted: #f4f0ee;
+  --muted-foreground: #746663;
+
+  --accent: var(--brand-red);
+  --accent-foreground: #ffffff;
+
+  --destructive: #8a1c1c;
+  --destructive-foreground: #ffffff;
+
+  --success: #146c43;
+  --success-foreground: #ffffff;
+
+  --border: #e4dad7;
+  --input: #ddd0cc;
+  --ring: var(--brand-red);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand-maroon: var(--brand-maroon);
+  --color-brand-maroon-dark: var(--brand-maroon-dark);
+  --color-brand-red: var(--brand-red);
+  --color-brand-red-dark: var(--brand-red-dark);
+  --color-brand-rose: var(--brand-rose);
+  --color-brand-rose-light: var(--brand-rose-light);
+  --color-brand-cream: var(--brand-cream);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-gray: var(--brand-gray);
+
+  --radius-sm: calc(var(--radius) - 0.375rem);
+  --radius-md: calc(var(--radius) - 0.125rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.375rem);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --animate-fade-in: fade-in 0.5s ease-out both;
+  --animate-slide-up: slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-scale-in: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-bump: bump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  --animate-star-pop: star-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  --animate-page-fade: page-fade 0.25s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes pop {
-  0% {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes popup-ring {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes popup-story {
-  from {
-    width: 0%;
-  }
-  to {
-    width: 100%;
-  }
-}
-
-@keyframes star-pop {
-  0% {
-    transform: scale(0) rotate(-15deg);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.3) rotate(8deg);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-@keyframes page-fade {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
 }
 
 @keyframes bump {
-  0% {
-    transform: scale(1);
-  }
-  35% {
-    transform: scale(1.35);
-  }
-  65% {
-    transform: scale(0.92);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  35% { transform: scale(1.35); }
+  65% { transform: scale(0.92); }
+  100% { transform: scale(1); }
 }
 
-@keyframes bell-ring {
-  0%, 60%, 100% {
-    transform: rotate(0deg);
-  }
-  62% {
-    transform: rotate(13deg);
-  }
-  64% {
-    transform: rotate(-10deg);
-  }
-  66% {
-    transform: rotate(7deg);
-  }
-  68% {
-    transform: rotate(-5deg);
-  }
-  70% {
-    transform: rotate(3deg);
-  }
-  72% {
-    transform: rotate(0deg);
-  }
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
 }
 
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+/* ---------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------- */
 * {
   box-sizing: border-box;
 }
@@ -118,10 +147,30 @@ html {
 }
 
 body {
-  background: #f6f8fb;
-  color: #111827;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Generous, WCAG-friendly focus ring on every interactive element. */
+:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Mobile Safari/Chrome zoom in on focus when an input's font-size is under 16px. */
@@ -131,4 +180,58 @@ body {
   textarea {
     font-size: 16px;
   }
+}
+
+/* ---------------------------------------------------------------------
+   Traditional-motif ornaments — subtle, geometric rosette pattern
+   inspired by Moldovan folk embroidery. Used at very low opacity as a
+   background texture, never as a dominant pattern.
+--------------------------------------------------------------------- */
+.bg-motif {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%236B100F' stroke-width='1.1'%3E%3Cpath d='M32 4 L40 20 L32 36 L24 20 Z'/%3E%3Cpath d='M4 32 L20 24 L36 32 L20 40 Z' opacity='0'/%3E%3Ccircle cx='32' cy='20' r='2.4'/%3E%3Cpath d='M8 52 L16 44 L24 52 L16 60 Z'/%3E%3Cpath d='M48 52 L56 44 L64 52 L56 60 Z'/%3E%3Cpath d='M-8 52 L0 44 L8 52 L0 60 Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 64px 64px;
+}
+
+/* Dual-thumb price range slider — two overlapping native range inputs. */
+.price-range-slider input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+.price-range-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--accent);
+  border: 3px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  margin-top: 0;
+}
+.price-range-slider input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--accent);
+  border: 3px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+.price-range-slider input[type="range"]:focus-visible::-webkit-slider-thumb {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+.price-range-slider input[type="range"]:focus-visible::-moz-range-thumb {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.border-motif {
+  border-image-slice: 1;
+  border-image-source: linear-gradient(90deg, transparent, var(--brand-rose) 20%, var(--brand-red) 50%, var(--brand-rose) 80%, transparent);
 }

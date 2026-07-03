@@ -1,5 +1,7 @@
-import { AdminInput, AdminTextarea } from "../components/AdminField";
+import { AdminInput, AdminTextarea, AdminSelect } from "../components/AdminField";
 import { ICON_OPTIONS } from "@/app/components/ServiceFeatureIcon";
+import { Card, CardContent } from "@/app/components/ui/card";
+import { Button } from "@/app/components/ui/button";
 
 interface ServiceFeatureDefaults {
   id?: string;
@@ -21,41 +23,35 @@ export default function ServiceFeatureForm({
   submitLabel: string;
 }) {
   return (
-    <form action={action} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4 max-w-xl">
-      {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
-      <input type="hidden" name="serviceId" value={serviceId} />
+    <Card className="max-w-xl">
+      <CardContent className="p-6">
+        <form action={action} className="flex flex-col gap-4">
+          {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
+          <input type="hidden" name="serviceId" value={serviceId} />
 
-      <AdminInput label="Titlu" name="title" required defaultValue={defaults?.title} placeholder="Garanție inclusă" />
-      <AdminTextarea
-        label="Descriere"
-        name="description"
-        required
-        defaultValue={defaults?.description}
-        placeholder="Oferim garanție pentru manoperă și echipamente."
-        rows={2}
-      />
+          <AdminInput label="Titlu" name="title" required defaultValue={defaults?.title} placeholder="Garanție inclusă" />
+          <AdminTextarea
+            label="Descriere"
+            name="description"
+            required
+            defaultValue={defaults?.description}
+            placeholder="Oferim garanție pentru manoperă și echipamente."
+            rows={2}
+          />
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-bold text-gray-600">Iconiță</span>
-        <select
-          name="icon"
-          defaultValue={defaults?.icon ?? "award"}
-          className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
-        >
-          {ICON_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      </label>
+          <AdminSelect label="Iconiță" name="icon" defaultValue={defaults?.icon ?? "award"}>
+            {ICON_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </AdminSelect>
 
-      <AdminInput label="Ordine" name="order" type="number" defaultValue={defaults?.order ?? 0} />
+          <AdminInput label="Ordine" name="order" type="number" defaultValue={defaults?.order ?? 0} />
 
-      <button
-        type="submit"
-        className="self-start bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-2.5 rounded-xl transition-colors text-sm uppercase tracking-wide mt-2"
-      >
-        {submitLabel}
-      </button>
-    </form>
+          <Button type="submit" variant="accent" className="self-start mt-2">
+            {submitLabel}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

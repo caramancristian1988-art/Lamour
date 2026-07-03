@@ -1,5 +1,6 @@
 import { AdminInput, AdminTextarea } from "../../components/AdminField";
 import ImageUploadField from "../../components/ImageUploadField";
+import { Button } from "@/app/components/ui/button";
 
 interface CategoryDefaults {
   id?: string;
@@ -19,7 +20,7 @@ export default function CategoryForm({
   submitLabel: string;
 }) {
   return (
-    <form action={action} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4">
+    <form action={action} className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4">
       {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
 
       <AdminInput label="Nume categorie" name="name" required defaultValue={defaults?.name} placeholder="Condiționere rezidențiale" />
@@ -27,12 +28,9 @@ export default function CategoryForm({
       <AdminTextarea label="Descriere (opțional)" name="description" defaultValue={defaults?.description ?? ""} placeholder="Pentru confortul casei tale" rows={2} />
       <ImageUploadField name="image" label="Imagine (opțional)" defaultValue={defaults?.image} />
 
-      <button
-        type="submit"
-        className="self-start bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-2.5 rounded-xl transition-colors text-sm uppercase tracking-wide mt-2"
-      >
+      <Button type="submit" variant="accent" className="self-start mt-2">
         {submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 
 interface Props {
   basePath: string;
@@ -37,28 +39,19 @@ export default function LoadMoreButton({ basePath, page, sort, hasMore, extraPar
 
   return (
     <div className="flex justify-center mt-12">
-      <button
-        onClick={handleClick}
-        disabled={loading}
-        className="inline-flex items-center gap-2 border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold px-8 py-3 rounded-xl transition-all text-sm uppercase tracking-wide disabled:opacity-70 disabled:cursor-not-allowed"
-      >
+      <Button onClick={handleClick} disabled={loading} variant="outline" size="lg">
         {loading ? (
           <>
-            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
+            <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
             Se încarcă...
           </>
         ) : (
           <>
             Încarcă mai multe
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
+            <ChevronDown className="w-4 h-4" aria-hidden />
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

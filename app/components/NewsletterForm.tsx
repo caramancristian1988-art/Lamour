@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check, Send } from "lucide-react";
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState("");
@@ -17,10 +18,8 @@ export default function NewsletterForm() {
 
   if (status === "success") {
     return (
-      <div className="flex items-center gap-2 text-green-400 text-sm font-medium">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
+      <div className="flex items-center gap-2 text-white text-sm font-semibold" role="status">
+        <Check className="w-4 h-4" aria-hidden />
         Te-ai abonat cu succes!
       </div>
     );
@@ -28,27 +27,25 @@ export default function NewsletterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="relative">
+      <label htmlFor="newsletter-email" className="sr-only">
+        Adresa ta de email
+      </label>
       <input
+        id="newsletter-email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Emailul tău"
         required
-        className="w-full h-11 pl-4 pr-14 rounded-lg border border-white/20 bg-white/10 text-white placeholder-white/40 text-sm focus:outline-none focus:bg-white/15 transition-all"
+        className="w-full h-12 pl-4 pr-14 rounded-xl border border-white/25 bg-white/10 text-white placeholder-white/50 text-sm focus-visible:outline-none focus-visible:bg-white/15 focus-visible:ring-3 focus-visible:ring-white/30 transition-all"
       />
       <button
         type="submit"
         disabled={status === "loading"}
-        style={{ backgroundColor: "#c7092b" }}
-        className="absolute right-0 top-0 h-11 w-11 rounded-r-lg flex items-center justify-center text-white hover:opacity-90 transition-opacity disabled:opacity-60"
+        aria-label="Abonează-te"
+        className="absolute right-1 top-1 h-10 w-10 rounded-lg flex items-center justify-center text-white bg-accent hover:bg-brand-red-dark transition-colors disabled:opacity-60"
       >
-        {status === "loading" ? (
-          <span className="text-xs font-bold">...</span>
-        ) : (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-          </svg>
-        )}
+        <Send className="w-4 h-4" aria-hidden />
       </button>
     </form>
   );

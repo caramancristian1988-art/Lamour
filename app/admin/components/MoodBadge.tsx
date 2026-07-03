@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { setMoodAction } from "@/lib/adminMessageActions";
 import { MOODS } from "@/lib/moods";
+import { cn } from "@/lib/utils";
 
 export default function MoodBadge({
   id,
@@ -41,29 +43,42 @@ export default function MoodBadge({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="text-xs font-bold px-3 py-1.5 rounded-full border transition-all active:scale-95 flex items-center gap-1.5 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={current ? `Reacție client: ${current.label}. Schimbă reacția` : "Alege o reacție a clientului"}
+        className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-muted text-muted-foreground transition-all active:scale-95 hover:bg-muted/70"
       >
-        {current ? <span>{current.emoji}</span> : "Reacție"}
-        <svg className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        {current ? (
+          <>
+            <span aria-hidden>{current.emoji}</span>
+            {current.label}
+          </>
+        ) : (
+          "Reacție"
+        )}
+        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open && "rotate-180")} aria-hidden />
       </button>
 
       <div
-        className={`absolute right-0 top-full mt-1.5 bg-white border border-gray-100 rounded-xl shadow-xl py-1.5 min-w-[170px] z-10 origin-top-right transition-all duration-150 ${
+        role="listbox"
+        className={cn(
+          "absolute right-0 top-full mt-1.5 bg-card border border-border rounded-xl shadow-xl py-1.5 min-w-[180px] z-10 origin-top-right transition-all duration-150",
           open ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
-        }`}
+        )}
       >
         {MOODS.map((m) => (
           <button
             key={m.value}
             type="button"
+            role="option"
+            aria-selected={m.value === current?.value}
             onClick={() => handleSelect(m.value)}
-            className={`w-full text-left text-xs font-semibold px-3 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-              m.value === current?.value ? "text-[#1d2353]" : "text-gray-600"
-            }`}
+            className={cn(
+              "w-full text-left text-sm font-semibold px-3 py-2 hover:bg-muted transition-colors flex items-center gap-2",
+              m.value === current?.value ? "text-primary" : "text-foreground"
+            )}
           >
-            <span>{m.emoji}</span>
+            <span aria-hidden>{m.emoji}</span>
             {m.label}
           </button>
         ))}

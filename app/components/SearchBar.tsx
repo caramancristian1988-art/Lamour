@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { Search, Loader2 } from "lucide-react";
 import type { SearchResult } from "@/lib/searchProducts";
 
 export default function SearchBar() {
@@ -61,6 +62,7 @@ export default function SearchBar() {
   return (
     <div ref={rootRef} className="relative w-full">
       <form
+        role="search"
         onSubmit={(e) => {
           e.preventDefault();
           if (query.trim()) {
@@ -71,41 +73,35 @@ export default function SearchBar() {
         className="w-full"
       >
         <div className="relative flex items-center">
+          <label htmlFor="site-search" className="sr-only">
+            Caută
+          </label>
           <input
+            id="site-search"
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setOpen(true)}
-            placeholder="Caută condiționere, sisteme multisplit..."
+            placeholder="Caută..."
             autoComplete="off"
-            className="w-full h-11 pl-4 pr-14 rounded-xl border border-gray-200 bg-[#f6f8fb] text-base sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#1d2353] focus:ring-2 focus:ring-[#1d2353]/10 transition-all"
+            className="w-full h-12 pl-4 pr-14 rounded-xl border-2 border-input bg-muted text-base text-foreground placeholder-muted-foreground focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 transition-all"
           />
           <button
             type="submit"
             aria-label="Caută"
-            className="absolute right-0 h-11 w-12 flex items-center justify-center rounded-r-xl bg-[#c7092b] text-white hover:bg-[#a5071f] transition-colors"
+            className="absolute right-0 h-12 w-12 flex items-center justify-center rounded-r-xl bg-accent text-white hover:bg-brand-red-dark transition-colors"
           >
-            <svg
-              className="w-4.5 h-4.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-              />
-            </svg>
+            <Search className="w-5 h-5" aria-hidden />
           </button>
         </div>
       </form>
 
       {showDropdown && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 max-h-[70vh] overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-popover rounded-xl shadow-2xl border border-border z-50 max-h-[70vh] overflow-y-auto">
           {loading ? (
-            <p className="text-sm text-gray-400 text-center py-6">Se caută...</p>
+            <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground py-6">
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> Se caută...
+            </p>
           ) : results.length > 0 ? (
             <>
               {results.map((product) => (
@@ -113,30 +109,30 @@ export default function SearchBar() {
                   key={product.slug}
                   href={`/produse/${product.slug}`}
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors border-t border-gray-50 first:border-t-0"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors border-t border-border first:border-t-0"
                 >
-                  <div className="relative w-10 h-10 shrink-0 rounded-lg bg-white border border-gray-100 overflow-hidden">
+                  <div className="relative w-10 h-10 shrink-0 rounded-lg bg-card border border-border overflow-hidden">
                     {product.image && (
                       <Image src={product.image} alt={product.name} fill className="object-contain" sizes="40px" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#1d2353] truncate">{product.name}</p>
-                    <p className="text-xs text-gray-500">{product.price.toLocaleString("ro-MD")} MDL</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{product.name}</p>
+                    <p className="text-xs text-muted-foreground">{product.price.toLocaleString("ro-MD")} MDL</p>
                   </div>
                 </Link>
               ))}
               <Link
                 href={`/produse?q=${encodeURIComponent(query)}`}
                 onClick={() => setOpen(false)}
-                className="block px-4 py-2.5 text-center text-xs font-bold text-[#c7092b] hover:bg-gray-50 transition-colors border-t border-gray-50 uppercase tracking-wide"
+                className="block px-4 py-3 text-center text-xs font-bold text-accent hover:bg-muted transition-colors border-t border-border uppercase tracking-wide"
               >
                 Vezi toate rezultatele
               </Link>
             </>
           ) : (
-            <p className="text-sm text-gray-400 text-center py-6">
-              Niciun produs găsit pentru &ldquo;{query.trim()}&rdquo;.
+            <p className="text-sm text-muted-foreground text-center py-6">
+              Niciun rezultat pentru „{query.trim()}”.
             </p>
           )}
         </div>

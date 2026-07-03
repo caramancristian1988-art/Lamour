@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ImageOff, ArrowRight } from "lucide-react";
+import { Badge } from "@/app/components/ui/badge";
 
 interface BlogPost {
   id: string;
@@ -16,21 +18,19 @@ interface Props {
 
 export default function BlogSection({ posts }: Props) {
   return (
-    <section className="py-16 bg-[#f6f8fb]">
+    <section className="py-16 bg-muted">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-end justify-between mb-10">
+        <div className="flex items-end justify-between mb-10 gap-4">
           <div>
-            <h2 className="text-3xl font-extrabold text-[#111827]">Blog & Ghiduri utile</h2>
-            <p className="text-[#6b7280] mt-1">Sfaturi de la experții noștri</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">Blog & Ghiduri utile</h2>
+            <p className="text-muted-foreground mt-1">Sfaturi de la echipa noastră</p>
           </div>
           <Link
             href="/blog"
-            className="hidden sm:inline-flex items-center gap-1.5 text-[#1d2353] hover:text-[#c7092b] text-sm font-semibold transition-colors"
+            className="hidden sm:inline-flex items-center gap-1.5 text-foreground hover:text-accent text-sm font-semibold transition-colors rounded"
           >
             Toate articolele
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
+            <ArrowRight className="w-4 h-4" aria-hidden />
           </Link>
         </div>
 
@@ -38,10 +38,10 @@ export default function BlogSection({ posts }: Props) {
           {posts.map((post) => (
             <article
               key={post.id}
-              className="group bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:-translate-y-1"
+              className="group bg-card rounded-2xl border border-border shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:-translate-y-1"
             >
               <Link href={`/blog/${post.slug}`} className="block">
-                <div className="relative h-48 bg-gradient-to-br from-[#eef3ff] to-[#e8f4fd] overflow-hidden">
+                <div className="relative h-48 bg-secondary/20 overflow-hidden">
                   {post.image ? (
                     <Image
                       src={post.image}
@@ -52,34 +52,30 @@ export default function BlogSection({ posts }: Props) {
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <svg className="w-16 h-16 text-[#1d2353]/20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
+                      <ImageOff className="w-16 h-16 text-muted-foreground/30" aria-hidden />
                     </div>
                   )}
-                  <div className="absolute top-3 left-3 bg-[#1d2353] text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                  <Badge variant="default" className="absolute top-3 left-3">
                     Ghid
-                  </div>
+                  </Badge>
                 </div>
               </Link>
 
               <div className="p-5">
-                <Link href={`/blog/${post.slug}`}>
-                  <h3 className="text-base font-bold text-[#111827] group-hover:text-[#c7092b] transition-colors leading-snug mb-2">
+                <Link href={`/blog/${post.slug}`} className="rounded">
+                  <h3 className="text-base font-bold text-foreground group-hover:text-accent transition-colors leading-snug mb-2">
                     {post.title}
                   </h3>
                 </Link>
-                <p className="text-sm text-[#6b7280] leading-relaxed mb-4 line-clamp-2">
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2">
                   {post.description}
                 </p>
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="inline-flex items-center gap-1.5 text-[#c7092b] hover:text-[#a5071f] text-sm font-semibold transition-colors"
+                  className="inline-flex items-center gap-1.5 text-accent hover:text-brand-red-dark text-sm font-semibold transition-colors rounded"
                 >
                   Citește
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
+                  <ArrowRight className="w-4 h-4" aria-hidden />
                 </Link>
               </div>
             </article>

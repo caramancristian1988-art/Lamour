@@ -8,6 +8,10 @@ import ManagedSelect from "../components/ManagedSelect";
 import SpecificationsEditor from "../components/SpecificationsEditor";
 import type { ProductFormState } from "@/lib/adminProductActions";
 import { createCategoryInlineAction, deleteCategoryInlineAction } from "@/lib/adminCategoryActions";
+import { Alert, AlertDescription } from "@/app/components/ui/alert";
+import { Checkbox } from "@/app/components/ui/checkbox";
+import { Label } from "@/app/components/ui/label";
+import { Button } from "@/app/components/ui/button";
 
 interface CategoryOption {
   id: string;
@@ -79,11 +83,13 @@ export default function ProductForm({
       : defaultAvailabilities;
 
   return (
-    <form action={formAction} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4 max-w-2xl">
+    <form action={formAction} className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 max-w-2xl">
       {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
 
       {state.error && (
-        <p className="text-sm text-[#c7092b] bg-[#fdf2f3] border border-[#fbd5d9] rounded-lg px-4 py-2.5">{state.error}</p>
+        <Alert variant="destructive">
+          <AlertDescription>{state.error}</AlertDescription>
+        </Alert>
       )}
 
       <AdminInput label="Nume produs" name="name" required defaultValue={defaults?.name} placeholder="Daikin Sensira FTXF35E" />
@@ -182,23 +188,20 @@ export default function ProductForm({
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
-        <input
-          type="checkbox"
+      <div className="flex items-center gap-2.5">
+        <Checkbox
+          id="field-installmentsEnabled"
           name="installmentsEnabled"
           defaultChecked={defaults?.installmentsEnabled ?? true}
-          className="w-4 h-4 accent-[#c7092b]"
         />
-        Disponibil în rate (afișează butonul &quot;Cumpără în rate&quot;)
-      </label>
+        <Label htmlFor="field-installmentsEnabled" className="font-bold">
+          Disponibil în rate (afișează butonul &quot;Cumpără în rate&quot;)
+        </Label>
+      </div>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="self-start bg-[#c7092b] hover:bg-[#a5071f] disabled:opacity-60 text-white font-bold px-6 py-2.5 rounded-xl transition-colors text-sm uppercase tracking-wide mt-2"
-      >
+      <Button type="submit" variant="accent" disabled={pending} className="self-start mt-2">
         {pending ? "Se salvează..." : submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

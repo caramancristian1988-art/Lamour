@@ -1,6 +1,6 @@
 function Svg({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <svg className={className ?? "w-6 h-6 text-[#c7092b]"} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <svg className={className ?? "w-6 h-6 text-accent"} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
       {children}
     </svg>
   );

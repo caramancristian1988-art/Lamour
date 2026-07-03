@@ -3,7 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ArrowRight, MessageCircle, ShoppingCart, Truck, PackageCheck, ShieldCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { StarRating } from "@/app/components/ui/star-rating";
+import { Badge } from "@/app/components/ui/badge";
 import {
   fallbackCategories,
   fallbackProducts,
@@ -99,10 +102,10 @@ export async function generateMetadata({
   const categoryData = await getCategoryData(slug);
   if (categoryData) {
     return {
-      title: `${categoryData.category.name} | Climat Rapid`,
+      title: `${categoryData.category.name} | Asociația Nevăzătorilor din Moldova`,
       description:
         categoryData.category.description ??
-        `Descoperă gama de ${categoryData.category.name.toLowerCase()} disponibilă la Climat Rapid.`,
+        `Descoperă gama de ${categoryData.category.name.toLowerCase()} disponibilă în magazinul asociației.`,
     };
   }
 
@@ -111,51 +114,34 @@ export async function generateMetadata({
     const name = localProductNames[productData.product.slug] ?? productData.product.name;
     const description =
       productData.product.description ??
-      `Cumpără ${name} la cel mai bun preț, cu instalare profesională și garanție.`;
+      `Cumpără ${name} la cel mai bun preț.`;
     const image = productData.product.image;
     return {
-      title: `${name} | Climat Rapid`,
+      title: `${name} | Asociația Nevăzătorilor din Moldova`,
       description,
       openGraph: {
-        title: `${name} | Climat Rapid`,
+        title: `${name} | Asociația Nevăzătorilor din Moldova`,
         description,
         ...(image ? { images: [{ url: image, width: 800, height: 600, alt: name }] } : {}),
       },
       twitter: {
         card: "summary_large_image",
-        title: `${name} | Climat Rapid`,
+        title: `${name} | Asociația Nevăzătorilor din Moldova`,
         description,
         ...(image ? { images: [image] } : {}),
       },
     };
   }
 
-  return { title: "Pagina nu a fost găsită | Climat Rapid" };
+  return { title: "Pagina nu a fost găsită | Asociația Nevăzătorilor din Moldova" };
 }
 
 function QuickSpecRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-2 text-sm">
-      <span className="text-gray-500 shrink-0">{label}</span>
-      <span className="flex-1 border-b border-dotted border-gray-300 translate-y-[-3px]" />
-      <span className="font-bold text-[#1d2353] text-right shrink-0">{value}</span>
-    </div>
-  );
-}
-
-function StarRating({ rating, size = "w-5 h-5" }: { rating: number; size?: string }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <svg
-          key={star}
-          className={`${size} ${star <= Math.round(rating) ? "text-amber-400" : "text-gray-200"}`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
+      <span className="text-muted-foreground shrink-0">{label}</span>
+      <span className="flex-1 border-b border-dotted border-border translate-y-[-3px]" />
+      <span className="font-bold text-primary text-right shrink-0">{value}</span>
     </div>
   );
 }
@@ -250,53 +236,53 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
   const { items, page: currentPage, hasMore } = paginate(sorted, page);
 
   return (
-    <main className="bg-white">
+    <main className="bg-background">
 
       {/* MOBILE hero */}
       <section className="sm:hidden relative h-[260px] overflow-hidden">
         <Image
           src="/IMG_2851.PNG"
-          alt={category.name}
+          alt=""
           fill
           className="object-cover object-bottom"
           priority
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-white/85 from-10% via-white/50 via-40% to-transparent to-70% pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 from-10% via-background/55 via-40% to-transparent to-70% pointer-events-none" />
         <div className="absolute top-0 left-0 z-10 flex flex-col justify-start px-4 pt-4">
-          <nav className="flex items-center gap-1 text-[10px] text-gray-500 mb-3">
-            <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
-            <span>›</span>
-            <Link href="/produse" className="hover:text-[#c7092b] transition-colors">Produse</Link>
-            <span>›</span>
-            <span className="text-gray-700">{category.name}</span>
+          <nav className="flex items-center gap-1 text-[10px] text-muted-foreground mb-3" aria-label="Fir de ariadnă">
+            <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
+            <span aria-hidden>›</span>
+            <Link href="/produse" className="hover:text-accent transition-colors">Produse</Link>
+            <span aria-hidden>›</span>
+            <span className="text-foreground">{category.name}</span>
           </nav>
-          <h1 className="text-xl font-extrabold text-[#1d2353] mb-2 max-w-[220px]">{category.name}</h1>
+          <h1 className="text-xl font-extrabold text-primary mb-2 max-w-[220px]">{category.name}</h1>
           {category.description && (
-            <p className="text-gray-700 text-xs max-w-[200px] leading-relaxed">{category.description}</p>
+            <p className="text-foreground/80 text-xs max-w-[200px] leading-relaxed">{category.description}</p>
           )}
         </div>
       </section>
 
       {/* DESKTOP hero */}
-      <section className="hidden sm:block relative bg-white overflow-hidden h-[300px] lg:h-[340px]">
+      <section className="hidden sm:block relative bg-background overflow-hidden h-[300px] lg:h-[340px]">
         <div className="absolute inset-0 flex justify-end">
           <div className="w-[65%] h-full relative">
-            <Image src="/IMG_2848.PNG" alt={category.name} fill className="object-cover object-center" priority sizes="65vw" />
+            <Image src="/IMG_2848.PNG" alt="" fill className="object-cover object-center" priority sizes="65vw" />
           </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-white from-25% via-white/60 via-40% to-transparent to-65% pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background from-25% via-background/60 via-40% to-transparent to-65% pointer-events-none" />
         <div className="absolute inset-0 flex flex-col justify-start pt-3 px-8 lg:px-12">
-          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-4">
-            <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
-            <span>›</span>
-            <Link href="/produse" className="hover:text-[#c7092b] transition-colors">Produse</Link>
-            <span>›</span>
-            <span className="text-gray-600">{category.name}</span>
+          <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4" aria-label="Fir de ariadnă">
+            <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
+            <span aria-hidden>›</span>
+            <Link href="/produse" className="hover:text-accent transition-colors">Produse</Link>
+            <span aria-hidden>›</span>
+            <span className="text-foreground">{category.name}</span>
           </nav>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-[#1d2353] mb-4 max-w-md">{category.name}</h1>
+          <h1 className="text-3xl lg:text-4xl font-extrabold text-primary mb-4 max-w-md">{category.name}</h1>
           {category.description && (
-            <p className="text-gray-700 text-sm lg:text-[17px] max-w-xs lg:max-w-sm leading-relaxed">
+            <p className="text-foreground/80 text-sm lg:text-[17px] max-w-xs lg:max-w-sm leading-relaxed">
               {category.description}
             </p>
           )}
@@ -304,7 +290,7 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
       </section>
 
       {/* PRODUCTS GRID */}
-      <section className="bg-white py-10">
+      <section className="bg-background py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
@@ -317,7 +303,7 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
             />
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-400 mb-6">{products.length} produse găsite</p>
+              <p className="text-sm text-muted-foreground mb-6">{products.length} produse găsite</p>
 
               {items.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-5">
@@ -335,11 +321,11 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16">
-                  <p className="text-gray-500 mb-4">Niciun produs nu corespunde filtrelor selectate.</p>
+                <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                  <p className="text-muted-foreground mb-4">Niciun produs nu corespunde filtrelor selectate.</p>
                   <Link
                     href="/produse"
-                    className="inline-flex items-center bg-[#1d2353] hover:bg-[#2a3470] text-white font-bold px-6 py-3 rounded-lg transition-colors text-sm uppercase tracking-wide"
+                    className="inline-flex items-center bg-primary hover:bg-brand-maroon-dark text-primary-foreground font-bold px-6 py-3 rounded-lg transition-colors text-sm uppercase tracking-wide"
                   >
                     Vezi toate produsele
                   </Link>
@@ -468,22 +454,22 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
     : [];
 
   return (
-    <main className="bg-white">
+    <main className="bg-background">
 
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-5 pb-2">
-        <nav className="flex items-center gap-1.5 text-xs text-gray-400 flex-wrap">
-          <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
-          <span>›</span>
-          <Link href="/produse" className="hover:text-[#c7092b] transition-colors">Produse</Link>
+        <nav className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap" aria-label="Fir de ariadnă">
+          <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
+          <span aria-hidden>›</span>
+          <Link href="/produse" className="hover:text-accent transition-colors">Produse</Link>
           {category && (
             <>
-              <span>›</span>
-              <Link href={`/produse/${category.slug}`} className="hover:text-[#c7092b] transition-colors">{category.name}</Link>
+              <span aria-hidden>›</span>
+              <Link href={`/produse/${category.slug}`} className="hover:text-accent transition-colors">{category.name}</Link>
             </>
           )}
-          <span>›</span>
-          <span className="text-gray-600 truncate max-w-[200px]">{displayName}</span>
+          <span aria-hidden>›</span>
+          <span className="text-foreground truncate max-w-[200px]">{displayName}</span>
         </nav>
       </div>
 
@@ -491,7 +477,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-[#1d2353] leading-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-primary leading-tight mb-2">
               {displayName}
             </h1>
             {highlightSpecs.length > 0 && (
@@ -499,7 +485,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                 {highlightSpecs.map((spec) => (
                   <span
                     key={spec.label}
-                    className="inline-flex items-center bg-[#f6f8fb] border border-gray-100 rounded-full px-3 py-1.5 text-xs font-bold text-[#1d2353]"
+                    className="inline-flex items-center bg-muted border border-border rounded-full px-3 py-1.5 text-xs font-bold text-primary"
                   >
                     {spec.value}
                   </span>
@@ -509,12 +495,12 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
           </div>
           <div className="flex items-center gap-3 flex-wrap shrink-0">
             <div className="flex items-center gap-2">
-              <StarRating rating={product.rating} />
-              <span className="text-sm text-gray-500">
+              <StarRating rating={product.rating} size={20} />
+              <span className="text-sm text-muted-foreground">
                 {product.rating.toFixed(1)} ({product.reviewCount} recenzii)
               </span>
             </div>
-            <span className="text-xs text-gray-400">Cod produs: {productCode}</span>
+            <span className="text-xs text-muted-foreground">Cod produs: {productCode}</span>
             <FavoriteButton
               product={{
                 slug: product.slug,
@@ -547,9 +533,9 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
           <div className="flex flex-col gap-6">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353]">Caracteristici tehnice</p>
-                <span className={`text-xs font-bold flex items-center gap-1.5 ${inStock ? "text-green-600" : "text-gray-400"}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-green-500" : "bg-gray-400"}`} />
+                <p className="text-xs font-extrabold uppercase tracking-wide text-primary">Caracteristici tehnice</p>
+                <span className={`text-xs font-bold flex items-center gap-1.5 ${inStock ? "text-success" : "text-muted-foreground"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-success" : "bg-muted-foreground"}`} aria-hidden />
                   {product.availability}
                 </span>
               </div>
@@ -561,7 +547,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
             </div>
 
             {product.description && (
-              <p className="text-gray-600 text-[15px] leading-relaxed">
+              <p className="text-foreground/80 text-[15px] leading-relaxed">
                 {product.description}
               </p>
             )}
@@ -570,32 +556,32 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
               <ProductOfferBanner discount={discount} countdownMinutes={countdownMinutes} />
             )}
 
-            <div className="border border-gray-100 rounded-2xl p-5">
+            <div className="border border-border rounded-2xl p-5 bg-card">
               <div className="mb-1">
                 {product.oldPrice && discount && (
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <span className="text-sm text-gray-400 line-through">
+                    <span className="text-sm text-muted-foreground line-through">
                       {product.oldPrice.toLocaleString("ro-MD")} MDL
                     </span>
-                    <span className="inline-flex items-center bg-[#c7092b] text-white text-xs font-extrabold px-2.5 py-1 rounded-md">
+                    <Badge variant="accent" className="normal-case px-2.5 py-1">
                       -{discountAmount?.toLocaleString("ro-MD")} MDL
-                    </span>
-                    <span className="inline-flex items-center bg-[#fdf2f3] text-[#c7092b] text-xs font-extrabold px-2.5 py-1 rounded-md">
+                    </Badge>
+                    <Badge variant="secondary" className="normal-case px-2.5 py-1">
                       -{discount}%
-                    </span>
+                    </Badge>
                   </div>
                 )}
-                <span className="text-2xl font-extrabold text-gray-900">
+                <span className="text-2xl font-extrabold text-foreground">
                   {product.price.toLocaleString("ro-MD")} MDL
                 </span>
               </div>
 
               {installmentsEnabled && (
-                <div className="inline-flex items-center gap-2 bg-[#eef1fb] rounded-lg px-3 py-2 mb-4">
-                  <span className="bg-[#1d2353] text-white text-[10px] font-extrabold px-2 py-1 rounded uppercase tracking-wide">
+                <div className="inline-flex items-center gap-2 bg-secondary/40 rounded-lg px-3 py-2 mb-4">
+                  <span className="bg-primary text-primary-foreground text-[10px] font-extrabold px-2 py-1 rounded uppercase tracking-wide">
                     Rate
                   </span>
-                  <span className="text-xs font-bold text-[#1d2353]">
+                  <span className="text-xs font-bold text-primary">
                     în {installmentMonths} luni, de la {Math.ceil(product.price / installmentMonths).toLocaleString("ro-MD")} lei/lună
                   </span>
                 </div>
@@ -611,13 +597,11 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                   inStock={inStock}
                   className={`${installmentsEnabled ? "flex-[3]" : "flex-1"} h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors ${
                     inStock
-                      ? "bg-[#c7092b] hover:bg-[#a5071f] text-white"
-                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      ? "bg-accent hover:bg-brand-red-dark text-accent-foreground"
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
                   }`}
                 >
-                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
+                  <ShoppingCart className="w-4 h-4 shrink-0" aria-hidden />
                   {inStock ? "Adaugă în coș" : "Stoc epuizat"}
                 </AddToCartButton>
 
@@ -628,7 +612,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                     productImage={displayImage}
                     title="Cumpără în rate"
                     sourceLabel="Cerere achiziție în rate"
-                    className="flex-[2] h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all duration-300 text-sm uppercase tracking-wide text-center hover:-translate-y-0.5 hover:shadow-md active:scale-95 active:translate-y-0"
+                    className="flex-[2] h-12 flex items-center justify-center border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold rounded-xl transition-all duration-300 text-sm uppercase tracking-wide text-center hover:-translate-y-0.5 hover:shadow-md active:scale-95 active:translate-y-0"
                   >
                     Cumpără în rate
                   </ProductOfferModal>
@@ -639,45 +623,28 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                 productId={product.id}
                 productName={displayName}
                 productImage={displayImage}
-                className="group w-full flex items-center justify-center gap-1.5 text-gray-400 hover:text-[#c7092b] text-sm transition-colors active:scale-95"
+                className="group w-full flex items-center justify-center gap-1.5 text-muted-foreground hover:text-accent text-sm transition-colors active:scale-95"
               >
-                <svg
-                  className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <MessageCircle className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" aria-hidden />
                 <span className="relative">
                   Cere consultație
-                  <span className="absolute left-0 -bottom-0.5 w-0 h-px bg-[#c7092b] transition-all duration-300 group-hover:w-full" />
+                  <span className="absolute left-0 -bottom-0.5 w-0 h-px bg-accent transition-all duration-300 group-hover:w-full" />
                 </span>
               </ProductOfferModal>
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="flex flex-col items-center gap-1.5">
-                <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
-                  <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <p className="text-[11px] text-gray-500 leading-snug">Livrare gratuită în Chișinău</p>
+                <Truck className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
+                <p className="text-[11px] text-muted-foreground leading-snug">Livrare gratuită în Chișinău</p>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M3 16V6a1 1 0 011-1h9v11M3 16h13M3 16a2 2 0 104 0 2 2 0 00-4 0zm13 0a2 2 0 104 0 2 2 0 00-4 0zm0 0h2v-5h-4" />
-                  <path d="M13 8h3.5L19 11v5" />
-                </svg>
-                <p className="text-[11px] text-gray-500 leading-snug">Livrare în toată Moldova, 24h</p>
+                <PackageCheck className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
+                <p className="text-[11px] text-muted-foreground leading-snug">Livrare în toată Moldova, 24h</p>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <svg className="w-6 h-6 text-[#c7092b]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
-                  <path d="M9.25 12l1.85 1.85L14.75 10" />
-                </svg>
-                <p className="text-[11px] text-gray-500 leading-snug">Garanție 2 ani</p>
+                <ShieldCheck className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
+                <p className="text-[11px] text-muted-foreground leading-snug">Garanție 2 ani</p>
               </div>
             </div>
           </div>
@@ -687,31 +654,31 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
       {/* Full specs */}
       {(specs.length > 0 || (product.specifications && product.specifications.length > 0)) && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-12">
-          <h2 className="text-2xl font-extrabold text-[#1d2353] mb-6">Caracteristici</h2>
+          <h2 className="text-2xl font-extrabold text-primary mb-6">Caracteristici</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="border border-gray-100 rounded-2xl overflow-hidden">
-              <div className="bg-[#f6f8fb] px-5 py-3 text-sm font-extrabold text-[#1d2353]">Informații generale</div>
+            <div className="border border-border rounded-2xl overflow-hidden bg-card">
+              <div className="bg-muted px-5 py-3 text-sm font-extrabold text-primary">Informații generale</div>
               {specs.map((spec, i) => (
                 <div
                   key={`${spec.label}-${i}`}
-                  className={`flex items-center justify-between px-5 py-3 border-t border-gray-100 ${i % 2 === 1 ? "bg-[#fafbfc]" : ""}`}
+                  className={`flex items-center justify-between px-5 py-3 border-t border-border ${i % 2 === 1 ? "bg-muted/40" : ""}`}
                 >
-                  <span className="text-sm text-gray-500">{spec.label}</span>
-                  <span className="text-sm font-bold text-[#1d2353] text-right">{spec.value}</span>
+                  <span className="text-sm text-muted-foreground">{spec.label}</span>
+                  <span className="text-sm font-bold text-primary text-right">{spec.value}</span>
                 </div>
               ))}
             </div>
 
             {product.specifications && product.specifications.length > 0 && (
-              <div className="border border-gray-100 rounded-2xl overflow-hidden">
-                <div className="bg-[#f6f8fb] px-5 py-3 text-sm font-extrabold text-[#1d2353]">Specificații tehnice</div>
+              <div className="border border-border rounded-2xl overflow-hidden bg-card">
+                <div className="bg-muted px-5 py-3 text-sm font-extrabold text-primary">Specificații tehnice</div>
                 {product.specifications.map((spec, i) => (
                   <div
                     key={`${spec.label}-${i}`}
-                    className={`flex items-center justify-between px-5 py-3 border-t border-gray-100 ${i % 2 === 1 ? "bg-[#fafbfc]" : ""}`}
+                    className={`flex items-center justify-between px-5 py-3 border-t border-border ${i % 2 === 1 ? "bg-muted/40" : ""}`}
                   >
-                    <span className="text-sm text-gray-500">{spec.label}</span>
-                    <span className="text-sm font-bold text-[#1d2353] text-right">{spec.value}</span>
+                    <span className="text-sm text-muted-foreground">{spec.label}</span>
+                    <span className="text-sm font-bold text-primary text-right">{spec.value}</span>
                   </div>
                 ))}
               </div>
@@ -721,10 +688,10 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
       )}
 
       {/* Reviews */}
-      <section className="bg-[#f6f8fb] border-y border-gray-100 py-12">
+      <section className="bg-muted border-y border-border py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <h2 className="text-2xl font-extrabold text-[#1d2353] mb-8">
-            Recenzii clienți {reviews.length > 0 && <span className="text-gray-400 font-medium text-base">({reviews.length})</span>}
+          <h2 className="text-2xl font-extrabold text-primary mb-8">
+            Recenzii {reviews.length > 0 && <span className="text-muted-foreground font-medium text-base">({reviews.length})</span>}
           </h2>
 
           <ReviewsGrid reviews={reviews} productSlug={product.slug} productName={product.name} />
@@ -733,9 +700,9 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
 
       {/* Product FAQ — optional, only shown if an admin added questions */}
       {faqs.length > 0 && (
-        <section className="bg-white py-12">
+        <section className="bg-background py-12">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
-            <h2 className="text-2xl font-extrabold text-[#1d2353] mb-8">Întrebări frecvente</h2>
+            <h2 className="text-2xl font-extrabold text-primary mb-8">Întrebări frecvente</h2>
             <FaqAccordion faqs={faqs.map((f) => ({ question: f.question, answer: f.answer }))} />
           </div>
         </section>
@@ -743,10 +710,10 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
 
       {/* Related products */}
       {related.length > 0 && (
-        <section className="bg-white py-14">
+        <section className="bg-background py-14">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-            <h2 className="text-2xl font-extrabold text-[#111827] uppercase tracking-wide mb-8">
-              Produse <span className="text-[#c7092b]">similare</span>
+            <h2 className="text-2xl font-extrabold text-foreground uppercase tracking-wide mb-8">
+              Produse <span className="text-accent">similare</span>
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
               {related.map((p) => (
@@ -766,26 +733,24 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
       )}
 
       {/* CTA */}
-      <section className="bg-white px-4 sm:px-6 lg:px-12 pb-10">
-        <div className="max-w-7xl mx-auto bg-[#1d2353] rounded-2xl py-10 lg:py-12 px-8 lg:px-12">
+      <section className="bg-background px-4 sm:px-6 lg:px-12 pb-10">
+        <div className="max-w-7xl mx-auto bg-primary rounded-2xl py-10 lg:py-12 px-8 lg:px-12">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight mb-2">
-                Ai nevoie de instalare profesională?
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-primary-foreground leading-tight mb-2">
+                Ai nevoie de ajutor pentru a alege?
               </h2>
-              <p className="text-white/60 text-sm max-w-md">
-                Echipa noastră se ocupă de instalare rapidă și mentenanță, oriunde în Moldova.
+              <p className="text-primary-foreground/70 text-sm max-w-md">
+                Echipa noastră îți răspunde cu drag la orice întrebare despre produsele din magazin.
               </p>
             </div>
             <div className="shrink-0">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 bg-[#c7092b] hover:bg-[#a5071f] text-white font-extrabold text-sm px-8 py-4 rounded-xl transition-all duration-300 uppercase tracking-wide shadow-lg hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-accent-foreground font-extrabold text-sm px-8 py-4 rounded-xl transition-all duration-300 uppercase tracking-wide shadow-lg hover:-translate-y-0.5"
               >
                 Contactează-ne
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+                <ArrowRight className="w-4 h-4" aria-hidden />
               </Link>
             </div>
           </div>

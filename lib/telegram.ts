@@ -90,10 +90,8 @@ function escapeHtml(value: string): string {
 }
 
 function getSiteUrl(): string {
+  // TODO: set SITE_URL in production so Telegram notification links point at the real domain.
   if (process.env.SITE_URL) return process.env.SITE_URL;
-  // VERCEL_URL is only injected when the project opts in to exposing system
-  // env vars, so don't rely on it — NODE_ENV is always set reliably by Next.js.
-  if (process.env.NODE_ENV === "production") return "https://climarapid-1-erih.vercel.app";
   return "http://localhost:3000";
 }
 

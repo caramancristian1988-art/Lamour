@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { ImageOff, ShoppingCart, Eye } from "lucide-react";
 import FavoriteButton from "./FavoriteButton";
 import AddToCartButton from "./AddToCartButton";
+import { StarRating } from "@/app/components/ui/star-rating";
+import { Badge } from "@/app/components/ui/badge";
 
 interface ProductCardProps {
   name: string;
@@ -20,26 +23,6 @@ interface ProductCardProps {
   showDiscount?: boolean;
   installmentsEnabled?: boolean;
   installmentMonths?: number;
-}
-
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => {
-        const filled = star <= Math.round(rating);
-        return (
-          <svg
-            key={star}
-            className={`w-4 h-4 ${filled ? "text-amber-400" : "text-gray-200"}`}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-        );
-      })}
-    </div>
-  );
 }
 
 export default function ProductCard({
@@ -70,10 +53,10 @@ export default function ProductCard({
     .join(", ");
 
   return (
-    <div className="group bg-white rounded-2xl border border-transparent overflow-hidden h-full flex flex-col transition-all duration-300 hover:border-gray-200 hover:shadow-xl active:border-gray-200 active:shadow-xl focus-within:border-gray-200 focus-within:shadow-xl hover:-translate-y-1">
+    <div className="group bg-card rounded-2xl border border-border overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
       {/* Image area */}
       <div className="relative h-[180px] sm:h-[240px] lg:h-[280px] flex items-center justify-center bg-white overflow-hidden">
-        <Link href={`/produse/${slug}`} className="w-full h-full flex items-center justify-center">
+        <Link href={`/produse/${slug}`} className="w-full h-full flex items-center justify-center rounded-lg">
           {image ? (
             <Image
               src={image}
@@ -83,75 +66,65 @@ export default function ProductCard({
               className="object-contain"
             />
           ) : (
-            <svg className="w-24 h-24 text-gray-200" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 8H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2zM4 6h16V4H4v2z" />
-            </svg>
+            <ImageOff className="w-16 h-16 text-muted-foreground/40" aria-hidden />
           )}
         </Link>
 
-        {/* Badge */}
         {displayBadge && (
-          <span className="absolute top-2 left-2 sm:top-4 sm:left-4 max-w-[calc(100%-2.75rem)] sm:max-w-[70%] bg-[#c7092b] text-white text-[10px] sm:text-xs font-bold rounded-full px-2.5 sm:px-3.5 py-1 uppercase tracking-wide truncate shadow-sm">
+          <Badge
+            variant="accent"
+            className="absolute top-2 left-2 sm:top-4 sm:left-4 max-w-[calc(100%-2.75rem)] sm:max-w-[70%] truncate shadow-sm"
+          >
             {displayBadge}
-          </span>
+          </Badge>
         )}
 
-        {/* Favorite */}
         <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
           <FavoriteButton
             product={{ slug, name, price, oldPrice, image, btu, technology, energyClass, rating, reviewCount, badge }}
           />
         </div>
-
       </div>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-5">
-        {/* Name */}
-        <Link href={`/produse/${slug}`}>
-          <h3 className="text-[13px] sm:text-[15px] lg:text-[17px] font-bold text-[#0f172a] leading-snug line-clamp-3 mb-2 hover:text-[#c7092b] transition-colors">
+        <Link href={`/produse/${slug}`} className="rounded">
+          <h3 className="text-[15px] lg:text-[17px] font-bold text-foreground leading-snug line-clamp-3 mb-2 hover:text-accent transition-colors">
             {name}
           </h3>
         </Link>
 
-        {/* Specs */}
-        {specs && (
-          <p className="text-xs text-gray-500 mb-3">{specs}</p>
-        )}
+        {specs && <p className="text-xs text-muted-foreground mb-3">{specs}</p>}
 
-        {/* Rating */}
         <div className="flex items-center gap-2 mb-4">
           <StarRating rating={rating} />
-          <span className="text-sm text-gray-500">({reviewCount})</span>
+          <span className="text-sm text-muted-foreground">({reviewCount})</span>
         </div>
 
-        {/* Price + actions — pinned to bottom */}
         <div className="mt-auto">
           <div className="mb-2">
             {oldPrice && discount && (
               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                <span className="text-xs text-gray-400 line-through">
+                <span className="text-xs text-muted-foreground line-through">
                   {oldPrice.toLocaleString("ro-MD")} MDL
                 </span>
-                <span className="inline-flex items-center bg-[#c7092b] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                <Badge variant="accent" className="normal-case px-2 py-0.5">
                   -{discountAmount?.toLocaleString("ro-MD")} MDL
-                </span>
-                <span className="inline-flex items-center bg-[#fdf2f3] text-[#c7092b] text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                </Badge>
+                <Badge variant="secondary" className="normal-case px-2 py-0.5">
                   -{discount}%
-                </span>
+                </Badge>
               </div>
             )}
-            <span className="text-base sm:text-lg lg:text-xl font-extrabold text-gray-900">
-              {price.toLocaleString("ro-MD")} MDL
-            </span>
+            <span className="text-lg lg:text-xl font-bold text-foreground">{price.toLocaleString("ro-MD")} MDL</span>
           </div>
 
           {installmentsEnabled !== false && (
-            <div className="inline-flex items-center gap-1.5 bg-[#eef1fb] rounded-full px-2.5 py-1 mb-3">
-              <span className="bg-[#1d2353] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+            <div className="inline-flex items-center gap-1.5 bg-secondary/40 rounded-full px-2.5 py-1 mb-3">
+              <span className="bg-primary text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
                 Rate
               </span>
-              <span className="text-[10px] font-bold text-[#1d2353]">
+              <span className="text-[10px] font-bold text-primary">
                 de la {Math.ceil(price / installmentMonths).toLocaleString("ro-MD")} lei/lună
               </span>
             </div>
@@ -164,22 +137,18 @@ export default function ProductCard({
               price={price}
               oldPrice={oldPrice ?? null}
               image={image ?? null}
-              className="flex-1 h-9 sm:h-11 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-gray-200 disabled:text-gray-400 active:scale-95 hover:shadow-md"
+              className="flex-1 h-10 sm:h-11 bg-accent hover:bg-brand-red-dark text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-muted disabled:text-muted-foreground active:scale-95 hover:shadow-md"
             >
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
+              <ShoppingCart className="w-4 h-4" aria-hidden />
               <span className="hidden sm:inline">Adaugă în coș</span>
             </AddToCartButton>
-            <button
-              onClick={() => { window.location.href = `/produse/${slug}`; }}
-              className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center border border-gray-200 rounded-full shrink-0 text-gray-400 hover:border-[#c7092b] hover:text-[#c7092b] hover:shadow-md transition-all active:scale-95"
+            <Link
+              href={`/produse/${slug}`}
+              aria-label={`Vezi detalii pentru ${name}`}
+              className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center border border-border rounded-full shrink-0 text-muted-foreground hover:border-accent hover:text-accent hover:shadow-md transition-all active:scale-95"
             >
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-            </button>
+              <Eye className="w-4 h-4" aria-hidden />
+            </Link>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { useCart } from "./CartProvider";
 
 interface Props {
@@ -35,9 +36,7 @@ export default function AddToCartButton({ slug, name, price, oldPrice = null, im
     >
       {added ? (
         <span key="added" className="contents animate-pop">
-          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
+          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={2.5} aria-hidden />
           <span>Adăugat!</span>
         </span>
       ) : (

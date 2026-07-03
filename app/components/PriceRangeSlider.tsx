@@ -65,42 +65,47 @@ export default function PriceRangeSlider({ min, max, selectedMin, selectedMax, o
   const leftPct = ((localMin - min) / range) * 100;
   const rightPct = ((localMax - min) / range) * 100;
 
+  const numberInputClass =
+    "w-full border-2 border-input rounded-lg px-2.5 py-1.5 text-xs font-semibold text-foreground text-center focus-visible:outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/20";
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
+          <label className="sr-only" htmlFor="price-min">Preț minim</label>
           <input
+            id="price-min"
             type="text"
             inputMode="numeric"
             value={inputMin}
             onChange={(e) => setInputMin(e.target.value)}
             onBlur={commitInputMin}
             onKeyDown={(e) => e.key === "Enter" && commitInputMin()}
-            aria-label="Preț minim"
-            className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-700 text-center focus:outline-none focus:border-[#c7092b] focus:ring-1 focus:ring-[#c7092b]/20"
+            className={numberInputClass}
           />
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">MDL</span>
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">MDL</span>
         </div>
-        <span className="text-gray-400 text-xs shrink-0">—</span>
+        <span className="text-muted-foreground text-xs shrink-0" aria-hidden>—</span>
         <div className="relative flex-1">
+          <label className="sr-only" htmlFor="price-max">Preț maxim</label>
           <input
+            id="price-max"
             type="text"
             inputMode="numeric"
             value={inputMax}
             onChange={(e) => setInputMax(e.target.value)}
             onBlur={commitInputMax}
             onKeyDown={(e) => e.key === "Enter" && commitInputMax()}
-            aria-label="Preț maxim"
-            className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-700 text-center focus:outline-none focus:border-[#c7092b] focus:ring-1 focus:ring-[#c7092b]/20"
+            className={numberInputClass}
           />
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">MDL</span>
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">MDL</span>
         </div>
       </div>
 
       <div className="price-range-slider relative h-5">
-        <div className="absolute top-1/2 left-0 right-0 h-1 -translate-y-1/2 bg-gray-200 rounded-full" />
+        <div className="absolute top-1/2 left-0 right-0 h-1.5 -translate-y-1/2 bg-border rounded-full" />
         <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 bg-[#c7092b] rounded-full"
+          className="absolute top-1/2 h-1.5 -translate-y-1/2 bg-accent rounded-full"
           style={{ left: `${leftPct}%`, right: `${100 - rightPct}%` }}
         />
         <input

@@ -2,7 +2,14 @@
 
 import { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
+import { ImageOff, AlertCircle } from "lucide-react";
 import { submitContactMessageAction, type ContactFormState } from "@/lib/adminMessageActions";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/app/components/ui/dialog";
+import { Input } from "@/app/components/ui/input";
+import { Textarea } from "@/app/components/ui/textarea";
+import { Button } from "@/app/components/ui/button";
+import { Alert, AlertDescription } from "@/app/components/ui/alert";
+import { SuccessState } from "@/app/components/ui/success-state";
 
 const initialState: ContactFormState = {};
 
@@ -31,87 +38,43 @@ function OfferFormPanel({
   }, [state.success, onSuccess]);
 
   if (state.success) {
-    return (
-      <div className="flex flex-col items-center text-center py-8">
-        <div className="relative w-14 h-14 mb-4">
-          <span className="absolute inset-0 rounded-full bg-green-200 animate-ping" />
-          <div className="relative w-14 h-14 rounded-full bg-green-100 text-green-600 flex items-center justify-center animate-pop">
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-        </div>
-        <h3 className="text-lg font-extrabold text-[#1d2353] mb-1 animate-pop" style={{ animationDelay: "100ms" }}>
-          Cererea ta a fost trimisă!
-        </h3>
-        <p className="text-sm text-gray-500 animate-pop" style={{ animationDelay: "180ms" }}>
-          Te vom contacta în cel mai scurt timp.
-        </p>
-      </div>
-    );
+    return <SuccessState title="Cererea ta a fost trimisă!" description="Te vom contacta în cel mai scurt timp." />;
   }
 
   return (
     <>
-      <h2 className="text-xl font-extrabold text-[#1d2353] text-center mb-5">{title}</h2>
+      <h2 className="text-xl font-bold text-primary text-center">{title}</h2>
 
-      <div className="flex items-center gap-3 mb-5 p-3 border border-gray-100 rounded-xl bg-[#fafbfc]">
-        <span className="relative w-14 h-14 rounded-lg bg-white overflow-hidden shrink-0 border border-gray-100">
+      <div className="flex items-center gap-3 my-5 p-3 border border-border rounded-xl bg-muted">
+        <span className="relative w-14 h-14 rounded-lg bg-card overflow-hidden shrink-0 border border-border flex items-center justify-center">
           {productImage ? (
             <Image src={productImage} alt={productName} fill className="object-contain p-1" />
           ) : (
-            <svg className="w-6 h-6 text-gray-300 absolute inset-0 m-auto" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 8H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2zM4 6h16V4H4v2z" />
-            </svg>
+            <ImageOff className="w-6 h-6 text-muted-foreground" aria-hidden />
           )}
         </span>
-        <p className="text-sm font-bold text-[#1d2353] line-clamp-2">{productName}</p>
+        <p className="text-sm font-bold text-primary line-clamp-2">{productName}</p>
       </div>
 
-      <form action={formAction} className="flex flex-col gap-3.5">
+      <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="source" value={`${sourceLabel} – ${productName}`} />
         <input type="hidden" name="productId" value={productId} />
 
         {state.error && (
-          <p className="text-sm text-[#c7092b] bg-[#fdf2f3] border border-[#fbd5d9] rounded-lg px-4 py-2.5 text-center">
-            {state.error}
-          </p>
+          <Alert variant="destructive">
+            <AlertCircle aria-hidden />
+            <AlertDescription>{state.error}</AlertDescription>
+          </Alert>
         )}
 
-        <input
-          type="text"
-          name="name"
-          required
-          placeholder="Nume complet"
-          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
-        />
-        <input
-          type="tel"
-          name="phone"
-          required
-          placeholder="Telefon"
-          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email (opțional)"
-          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400"
-        />
-        <textarea
-          name="message"
-          placeholder="Mesaj suplimentar (opțional)"
-          rows={3}
-          className="border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#c7092b] placeholder:text-gray-400 resize-none"
-        />
+        <Input name="name" required placeholder="Nume complet" aria-label="Nume complet" />
+        <Input type="tel" name="phone" required placeholder="Telefon" aria-label="Telefon" />
+        <Input type="email" name="email" placeholder="Email (opțional)" aria-label="Email" />
+        <Textarea name="message" placeholder="Mesaj suplimentar (opțional)" rows={3} className="min-h-0" aria-label="Mesaj suplimentar" />
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="bg-[#c7092b] hover:bg-[#a5071f] disabled:opacity-60 active:scale-95 text-white font-bold py-3 rounded-xl transition-all text-sm uppercase tracking-wide mt-1"
-        >
+        <Button type="submit" variant="accent" disabled={pending} className="mt-1">
           {pending ? "Se trimite..." : "Trimite"}
-        </button>
+        </Button>
       </form>
     </>
   );
@@ -135,81 +98,37 @@ export default function ProductOfferModal({
   sourceLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [openCount, setOpenCount] = useState(0);
 
-  function openModal() {
-    setOpenCount((c) => c + 1);
-    setMounted(true);
-    requestAnimationFrame(() => requestAnimationFrame(() => setOpen(true)));
+  function handleOpenChange(next: boolean) {
+    if (next) setOpenCount((c) => c + 1);
+    setOpen(next);
   }
-
-  function closeModal() {
-    setOpen(false);
-  }
-
-  useEffect(() => {
-    if (!open && mounted) {
-      const timeout = setTimeout(() => setMounted(false), 200);
-      return () => clearTimeout(timeout);
-    }
-  }, [open, mounted]);
-
-  useEffect(() => {
-    if (!mounted) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mounted]);
 
   return (
-    <>
-      <button
-        onClick={openModal}
-        className={
-          className ??
-          "w-full h-12 flex items-center justify-center border-2 border-[#1d2353] text-[#1d2353] hover:bg-[#1d2353] hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide"
-        }
-      >
-        {children ?? "Cere consultație"}
-      </button>
-
-      {mounted && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className={`absolute inset-0 bg-black/50 transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0"}`}
-            onClick={closeModal}
-            aria-hidden
-          />
-
-          <div
-            className={`relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 transition-all duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              open ? "opacity-100 scale-100" : "opacity-0 scale-95"
-            }`}
-          >
-            <button
-              onClick={closeModal}
-              aria-label="Închide"
-              className="group absolute top-4 right-4 text-gray-400 hover:text-[#c7092b] transition-colors"
-            >
-              <svg className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <OfferFormPanel
-              key={openCount}
-              productId={productId}
-              productName={productName}
-              productImage={productImage}
-              title={title}
-              sourceLabel={sourceLabel}
-              onSuccess={closeModal}
-            />
-          </div>
-        </div>
-      )}
-    </>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <button
+          className={
+            className ??
+            "w-full h-12 flex items-center justify-center border-2 border-primary text-primary hover:bg-primary hover:text-white font-bold rounded-xl transition-all text-sm uppercase tracking-wide"
+          }
+        >
+          {children ?? "Cere consultație"}
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogTitle className="sr-only">{title}</DialogTitle>
+        <OfferFormPanel
+          key={openCount}
+          productId={productId}
+          productName={productName}
+          productImage={productImage}
+          title={title}
+          sourceLabel={sourceLabel}
+          onSuccess={() => setOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }

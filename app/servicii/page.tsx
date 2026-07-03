@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowRight, HeartHandshake, ShieldCheck, Wrench, Users, HandHeart } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getSectionFlags } from "@/lib/siteSettings";
+import { Button } from "@/app/components/ui/button";
+import { MotifDivider } from "@/app/components/ui/motif";
 
 export const revalidate = 3600;
 
@@ -10,22 +13,22 @@ const fallbackServiciiPrincipale = [
   {
     id: "fallback-1",
     image: "/IMG_2838.PNG",
-    title: "Instalare condiționere",
-    description: "Montaj rapid și sigur pentru apartamente, case, birouri și spații comerciale.",
+    title: "Sprijin și îndrumare personalizată",
+    description: "Consiliere individuală adaptată nevoilor fiecărei persoane cu deficiențe de vedere.",
     href: "/servicii/instalare",
   },
   {
     id: "fallback-2",
     image: "/IMG_2839.PNG",
-    title: "Mentenanță & curățare",
-    description: "Curățare profesională, igienizare, încărcare freon și verificări complete.",
+    title: "Mentenanță & suport continuu",
+    description: "Sprijin constant, verificări periodice și acompaniere pe termen lung.",
     href: "/servicii/mentenanta",
   },
   {
     id: "fallback-3",
     image: "/IMG_2840.PNG",
-    title: "Reparații",
-    description: "Diagnosticare rapidă și reparații pentru orice tip de problemă.",
+    title: "Evaluare & diagnosticare",
+    description: "Evaluăm nevoile specifice și identificăm rapid soluțiile potrivite.",
     href: "/servicii/diagnosticare",
   },
 ];
@@ -35,66 +38,38 @@ const fallbackServiciiAvansate = [
     id: "fallback-4",
     image: "/IMG_2841.PNG",
     title: "Consultanță",
-    description: "Te ajutăm să alegi sistemul potrivit pentru nevoile și bugetul tău.",
+    description: "Te ajutăm să găsești resursele și programele potrivite nevoilor tale.",
     href: "/servicii/consultanta",
   },
   {
     id: "fallback-5",
     image: "/IMG_2843.PNG",
-    title: "Sisteme multisplit",
-    description: "Climatizare pentru mai multe camere cu o singură unitate exterioară.",
+    title: "Programe integrate de sprijin",
+    description: "Servicii combinate, coordonate printr-un singur punct de contact.",
     href: "/servicii/multisplit",
   },
   {
     id: "fallback-6",
     image: "/IMG_2842.PNG",
-    title: "Sisteme comerciale HVAC",
-    description: "Soluții profesionale pentru spații comerciale, birouri, hale și clădiri mari.",
+    title: "Parteneriate instituționale",
+    description: "Soluții de accesibilitate pentru instituții, companii și autorități publice.",
     href: "/servicii/comerciale",
   },
 ];
 
 const fallbackServiciiSuplimentare = [
-  { id: "fallback-7", title: "Demontare & relocare", description: "Demontare aparat, mutare și reinstalare profesională." },
-  { id: "fallback-8", title: "Verificări tehnice", description: "Verificare consum, test eficiență și detectare pierderi de freon." },
-  { id: "fallback-9", title: "Abonamente service", description: "Întreținere periodică, vizite sezoniere și prioritate suport." },
+  { id: "fallback-7", title: "Orientare & mobilitate", description: "Sesiuni de orientare spațială și deplasare independentă în siguranță." },
+  { id: "fallback-8", title: "Verificări periodice", description: "Reevaluăm periodic nevoile și ajustăm planul de sprijin." },
+  { id: "fallback-9", title: "Programe de voluntariat", description: "Însoțire, activități sociale și implicare comunitară constantă." },
 ];
 
 const suplimentareIcons: Record<string, React.ReactNode> = {
-  "Demontare & relocare": (
-    <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-      <rect x="2" y="12" width="20" height="7" rx="1.5"/>
-      <path d="M6 15.5h1M10 15.5h1M14 15.5h1"/>
-      <path d="M2 19v1.5M22 19v1.5"/>
-      <path d="M12 2v8"/>
-      <path d="M9 7l3-5 3 5"/>
-    </svg>
-  ),
-  "Verificări tehnice": (
-    <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-      <rect x="5" y="3" width="14" height="18" rx="2"/>
-      <path d="M9 3a2 2 0 0 0 4 0"/>
-      <path d="M9 10l1 1 2-2"/>
-      <path d="M14 10.5h2"/>
-      <path d="M9 14l1 1 2-2"/>
-      <path d="M14 14.5h2"/>
-      <path d="M9 18l1 1 2-2"/>
-      <path d="M14 18.5h2"/>
-    </svg>
-  ),
-  "Abonamente service": (
-    <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-      <path d="M8.5 12l2.5 2.5 4.5-4.5"/>
-    </svg>
-  ),
+  "Orientare & mobilitate": <Users className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-hidden />,
+  "Verificări periodice": <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-hidden />,
+  "Programe de voluntariat": <HandHeart className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-hidden />,
 };
 
-const genericServiceIcon = (
-  <svg className="w-8 h-8 text-[#1d2353]" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-    <path d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-  </svg>
-);
+const genericServiceIcon = <HeartHandshake className="w-6 h-6 sm:w-7 sm:h-7 text-primary" aria-hidden />;
 
 async function getServicesByCategorie() {
   try {
@@ -122,92 +97,67 @@ export default async function ServiciiPage() {
   const serviciiToate = [...principale, ...avansate];
 
   return (
-    <div className="bg-white text-[#1d2353]">
-      {/* Hero – MOBILE */}
-      <section className="sm:hidden relative overflow-hidden" style={{ height: "90vw", minHeight: 340 }}>
-        <Image
-          src="/IMG_2851.PNG"
-          alt="Servicii climatizare"
-          fill
-          className="object-cover object-bottom"
-          priority
-        />
-        {/* alb solid sus pentru text, transparent complet jos pentru condiționer */}
-        <div className="absolute inset-0" style={{
-          background: "linear-gradient(to bottom, white 0%, white 25%, transparent 45%)"
-        }} />
-        {/* text în zona albă */}
-        <div className="absolute inset-x-0 top-0 px-4 pt-4">
-          <nav className="flex items-center gap-1 text-[10px] text-gray-500 mb-3">
-            <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
-            <span>›</span>
-            <span className="text-[#1d2353] font-medium">Servicii</span>
-          </nav>
-          <p className="text-[#c7092b] text-[10px] font-bold tracking-widest uppercase mb-2">SERVICII</p>
-          <h1 className="text-2xl font-extrabold leading-tight text-[#1d2353]">
-            Soluții complete{" "}
-            <span className="text-[#c7092b]">pentru confortul tău.</span>
-          </h1>
-          <div className="w-8 h-[3px] bg-[#c7092b] mt-3" />
+    <div className="bg-background">
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="relative h-[70vw] max-h-[420px] min-h-[280px] sm:h-[45vh] sm:min-h-[320px]">
+          <Image
+            src="/IMG_2851.PNG"
+            alt=""
+            fill
+            className="object-cover object-center"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-background from-10% via-background/70 via-40% to-transparent to-75%" />
+          <div className="absolute inset-0 flex flex-col justify-center max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
+            <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-4">
+              <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
+              <span aria-hidden>›</span>
+              <span className="text-foreground font-medium">Servicii</span>
+            </nav>
+            <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Servicii</p>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary max-w-lg">
+              Sprijin real, <span className="text-accent">la fiecare pas.</span>
+            </h1>
+            <p className="text-sm sm:text-base text-foreground/80 leading-relaxed max-w-sm">
+              Oferim servicii complete de sprijin, orientare și asistență pentru persoanele
+              nevăzătoare și cu deficiențe de vedere din Moldova.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Hero – DESKTOP */}
-      <section className="hidden sm:flex relative h-[45vh] min-h-[320px] overflow-hidden">
-        <Image
-          src="/IMG_2848.PNG"
-          alt="Servicii climatizare"
-          fill
-          className="object-cover object-center"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-white/90 from-5% via-white/60 via-35% to-transparent to-65%" />
-        <div className="absolute inset-0 flex flex-col justify-center max-w-7xl mx-auto px-6 lg:px-12">
-          <nav className="flex items-center gap-1.5 text-xs text-gray-500 mb-5">
-            <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
-            <span>›</span>
-            <span className="text-[#1d2353] font-medium">Servicii</span>
-          </nav>
-          <p className="text-[#c7092b] text-xs font-bold tracking-widest uppercase mb-3">SERVICII</p>
-          <h1 className="text-4xl lg:text-5xl font-extrabold leading-tight mb-4 text-[#1d2353]">
-            Soluții complete{" "}
-            <span className="text-[#c7092b] block">pentru confortul tău.</span>
-          </h1>
-          <div className="w-10 h-[3px] bg-[#c7092b] mb-5" />
-          <p className="text-sm text-gray-600 leading-relaxed max-w-sm">
-            Oferim servicii profesionale de instalare, mentenanță și reparații
-            pentru orice tip de sistem de climatizare.
-          </p>
-        </div>
-      </section>
-
-      {/* Servicii */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-12 pt-8 sm:pt-0 pb-14">
-        <p className="text-xs font-extrabold tracking-widest uppercase text-[#1d2353] mb-1">
-          SERVICIILE NOASTRE
-        </p>
-        <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
+      {/* Servicii principale */}
+      <section className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12 pt-12 pb-14">
+        <p className="text-xs font-bold tracking-widest uppercase text-accent mb-2">Serviciile noastre</p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-8">
+          Cu ce te putem ajuta
+        </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
           {serviciiToate.map((s) => (
-            <Link key={s.id} href={s.href ?? "/servicii"} className="group flex flex-col rounded-xl bg-white/60 border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            <Link
+              key={s.id}
+              href={s.href ?? "/servicii"}
+              className="group flex flex-col rounded-2xl bg-card border border-border overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+            >
               <div className="relative" style={{ aspectRatio: "1/1" }}>
                 {s.image && (
                   <Image
                     src={s.image}
-                    alt={s.title}
+                    alt=""
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 )}
               </div>
-              <div className="px-3 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-10 flex flex-col gap-2 sm:gap-6">
-                <h3 className="text-sm sm:text-base font-bold group-hover:text-[#c7092b] transition-colors">{s.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{s.description}</p>
-                <span className="text-[#c7092b] text-[11px] sm:text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-1">
-                  AFLĂ MAI MULTE
-                  <svg className="w-3 sm:w-3.5 h-3 sm:h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
-                  </svg>
+              <div className="px-3 sm:px-6 pt-3 sm:pt-4 pb-4 sm:pb-8 flex flex-col gap-2 sm:gap-4">
+                <h3 className="text-sm sm:text-base font-bold text-foreground group-hover:text-accent transition-colors leading-snug">
+                  {s.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{s.description}</p>
+                <span className="text-accent text-[11px] sm:text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-1 uppercase tracking-wide">
+                  Află mai multe
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden />
                 </span>
               </div>
             </Link>
@@ -215,21 +165,23 @@ export default async function ServiciiPage() {
         </div>
       </section>
 
+      <MotifDivider />
+
       {/* Servicii suplimentare */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-12 pb-14">
-        <p className="text-xs font-extrabold tracking-widest uppercase text-[#1d2353] mb-1">
-          SERVICII SUPLIMENTARE
-        </p>
-        <div className="w-8 h-[3px] bg-[#c7092b] mb-8" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
+      <section className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12 pb-14">
+        <p className="text-xs font-bold tracking-widest uppercase text-accent mb-2">Servicii suplimentare</p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-8">
+          Alte forme de sprijin
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
           {serviciiSuplimentare.map((s) => (
-            <div key={s.id} className="flex items-start gap-2 sm:gap-4 p-3 sm:p-5 border border-gray-100 rounded-2xl hover:shadow-sm transition-shadow">
-              <div className="shrink-0 w-10 sm:w-14 h-10 sm:h-14 bg-gray-50 rounded-xl flex items-center justify-center">
+            <div key={s.id} className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 bg-card border border-border rounded-2xl hover:shadow-sm transition-shadow">
+              <div className="shrink-0 w-11 sm:w-14 h-11 sm:h-14 bg-secondary/30 rounded-xl flex items-center justify-center">
                 {suplimentareIcons[s.title] ?? genericServiceIcon}
               </div>
               <div className="min-w-0">
-                <p className="font-bold text-xs sm:text-sm mb-1">{s.title}</p>
-                <p className="text-[11px] sm:text-xs text-gray-500 leading-relaxed">{s.description}</p>
+                <p className="font-bold text-sm mb-1 text-foreground">{s.title}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{s.description}</p>
               </div>
             </div>
           ))}
@@ -237,28 +189,23 @@ export default async function ServiciiPage() {
       </section>
 
       {/* CTA Banner */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-12 pb-16">
-        <div className="bg-[#1d2353] rounded-2xl px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <section className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12 pb-16">
+        <div className="bg-primary rounded-2xl px-6 sm:px-8 py-8 sm:py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <div className="w-12 h-12 bg-[#c7092b] rounded-full flex items-center justify-center shrink-0">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-              </svg>
+            <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center shrink-0">
+              <Wrench className="w-6 h-6 text-white" aria-hidden />
             </div>
             <div>
-              <p className="text-white font-bold text-lg">Ai nevoie de o intervenție rapidă?</p>
-              <p className="text-white/60 text-sm mt-0.5">Echipa noastră este pregătită să te ajute.</p>
+              <p className="text-white font-bold text-lg">Ai nevoie de sprijin acum?</p>
+              <p className="text-white/70 text-sm mt-0.5">Echipa noastră este pregătită să te asculte.</p>
             </div>
           </div>
-          <Link
-            href="/contact"
-            className="shrink-0 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-8 py-3 rounded-xl flex items-center gap-2 transition-colors text-sm uppercase tracking-wide"
-          >
-            CONTACTEAZĂ-NE
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-            </svg>
-          </Link>
+          <Button asChild variant="accent" size="lg" className="shrink-0">
+            <Link href="/contact">
+              Contactează-ne
+              <ArrowRight className="w-4 h-4" aria-hidden />
+            </Link>
+          </Button>
         </div>
       </section>
     </div>

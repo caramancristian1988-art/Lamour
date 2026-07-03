@@ -24,9 +24,9 @@ import {
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 
 export const metadata: Metadata = {
-  title: "Produse | Climat Rapid — Aparate de aer condiționat și accesorii",
+  title: "Produse | Asociația Nevăzătorilor din Moldova",
   description:
-    "Descoperă gama completă de aparate de aer condiționat, sisteme multisplit, portabile și accesorii disponibile la Climat Rapid.",
+    "Descoperă gama completă de produse și accesorii disponibile în magazinul asociației.",
 };
 
 export const revalidate = 3600;
@@ -157,22 +157,23 @@ export default async function ProdusePage({
   const { items, page: currentPage, hasMore } = paginate(sorted, page);
 
   return (
-    <main className="bg-white">
+    <main className="bg-background">
 
       {/* Breadcrumb */}
-      <section className="bg-white">
+      <section className="bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-1">
-          <nav className="flex items-center gap-1.5 text-xs text-gray-400">
-            <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
-            <span>›</span>
-            <span className="text-gray-600">Produse</span>
+          <nav className="flex items-center gap-1.5 text-xs text-muted-foreground" aria-label="Fir de ariadnă">
+            <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
+            <span aria-hidden>›</span>
+            <span className="text-foreground">Produse</span>
           </nav>
         </div>
       </section>
 
       {/* ── PRODUCTS GRID ── */}
-      <section className="bg-white pt-2 pb-10 sm:py-10">
+      <section className="bg-background pt-2 pb-10 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse</h1>
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
               sort={sort}
@@ -186,11 +187,11 @@ export default async function ProdusePage({
 
             <div className="flex-1 min-w-0">
               {filters.query ? (
-                <p className="text-sm text-gray-500 mb-3 sm:mb-6">
-                  {products.length} rezultate pentru <span className="font-bold text-[#1d2353]">&ldquo;{filters.query}&rdquo;</span>
+                <p className="text-sm text-muted-foreground mb-3 sm:mb-6">
+                  {products.length} rezultate pentru <span className="font-bold text-primary">&ldquo;{filters.query}&rdquo;</span>
                 </p>
               ) : (
-                <p className="text-sm text-gray-400 mb-3 sm:mb-6">{products.length} produse găsite</p>
+                <p className="text-sm text-muted-foreground mb-3 sm:mb-6">{products.length} produse găsite</p>
               )}
 
               {items.length > 0 ? (
@@ -209,8 +210,8 @@ export default async function ProdusePage({
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16">
-                  <p className="text-gray-500">
+                <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                  <p className="text-muted-foreground">
                     {filters.query
                       ? `Niciun produs nu corespunde căutării "${filters.query}".`
                       : filters.offersOnly

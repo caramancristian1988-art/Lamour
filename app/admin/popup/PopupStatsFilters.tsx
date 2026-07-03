@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Search, ChevronDown } from "lucide-react";
 
 interface CategoryOption {
   id: string;
@@ -38,30 +39,39 @@ export default function PopupStatsFilters({ categories }: { categories: Category
   return (
     <div className="flex items-center gap-3 mb-4 flex-wrap">
       <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
-        </svg>
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden />
+        <label className="sr-only" htmlFor="popup-stat-search">
+          Caută după nume produs
+        </label>
         <input
+          id="popup-stat-search"
           type="text"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Caută după nume produs..."
-          className="text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:border-[#1d2353] bg-white w-64"
+          className="text-sm font-semibold text-foreground border-2 border-input rounded-xl pl-9 pr-3 py-2 focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 bg-card w-64 transition-colors"
         />
       </div>
 
-      <select
-        defaultValue={searchParams.get("statCat") ?? ""}
-        onChange={(e) => updateParam("statCat", e.target.value)}
-        className="text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1d2353] bg-white"
-      >
-        <option value="">Toate categoriile</option>
-        {categories.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
+      <div className="relative">
+        <label className="sr-only" htmlFor="popup-stat-category">
+          Filtrează după categorie
+        </label>
+        <select
+          id="popup-stat-category"
+          defaultValue={searchParams.get("statCat") ?? ""}
+          onChange={(e) => updateParam("statCat", e.target.value)}
+          className="appearance-none text-sm font-semibold text-muted-foreground border-2 border-input rounded-xl pl-3 pr-9 py-2 focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 bg-card transition-colors"
+        >
+          <option value="">Toate categoriile</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden />
+      </div>
     </div>
   );
 }

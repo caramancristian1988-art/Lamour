@@ -1,10 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { SlidersHorizontal, X } from "lucide-react";
 import { type SortKey } from "@/lib/productListing";
 import ProductSortSelect from "./ProductSortSelect";
 import PriceRangeSlider from "./PriceRangeSlider";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/app/components/ui/sheet";
+import { Checkbox } from "@/app/components/ui/checkbox";
+import { Button } from "@/app/components/ui/button";
+import { Badge } from "@/app/components/ui/badge";
 
 interface CategoryOption {
   id: string;
@@ -43,28 +48,48 @@ interface Props {
   offersCount: number;
 }
 
+function FilterGroup({
+  title,
+  options,
+  selected,
+  paramKey,
+  formatLabel,
+  onToggle,
+}: {
+  title: string;
+  options: { value: string; count: number }[];
+  selected: string[];
+  paramKey: string;
+  formatLabel?: (value: string) => string;
+  onToggle: (key: string, value: string) => void;
+}) {
+  if (options.length === 0) return null;
+  return (
+    <div>
+      <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">{title}</p>
+      <div className="flex flex-col gap-3">
+        {options.map((opt) => {
+          const id = `${paramKey}-${opt.value}`;
+          return (
+            <label key={opt.value} htmlFor={id} className="flex items-center justify-between gap-2 text-sm text-foreground cursor-pointer hover:text-accent">
+              <span className="flex items-center gap-2.5">
+                <Checkbox id={id} checked={selected.includes(opt.value)} onCheckedChange={() => onToggle(paramKey, opt.value)} />
+                {formatLabel ? formatLabel(opt.value) : opt.value}
+              </span>
+              <span className="text-xs text-muted-foreground">({opt.count})</span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function ProductFilterSidebar({ sort, categories, technologies, energyClasses, brands, priceBounds, offersCount }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [drawerMounted, setDrawerMounted] = useState(false);
-
-  function openDrawer() {
-    setDrawerMounted(true);
-    requestAnimationFrame(() => requestAnimationFrame(() => setMobileOpen(true)));
-  }
-
-  function closeDrawer() {
-    setMobileOpen(false);
-  }
-
-  useEffect(() => {
-    if (!mobileOpen && drawerMounted) {
-      const timeout = setTimeout(() => setDrawerMounted(false), 300);
-      return () => clearTimeout(timeout);
-    }
-  }, [mobileOpen, drawerMounted]);
 
   const selectedCats = searchParams.get("cat")?.split(",").filter(Boolean) ?? [];
   const selectedTechnologies = searchParams.get("tehnologie")?.split(",").filter(Boolean) ?? [];
@@ -158,207 +183,84 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
   const sidebarContent = (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Sortează după</p>
+        <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">Sortează după</p>
         <ProductSortSelect defaultValue={sort} />
       </div>
 
       {priceBounds.max > priceBounds.min && (
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Preț</p>
-          <PriceRangeSlider
-            min={priceBounds.min}
-            max={priceBounds.max}
-            selectedMin={priceMin}
-            selectedMax={priceMax}
-            onCommit={setPriceRange}
-          />
+          <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">Preț</p>
+          <PriceRangeSlider min={priceBounds.min} max={priceBounds.max} selectedMin={priceMin} selectedMax={priceMax} onCommit={setPriceRange} />
         </div>
       )}
 
       {offersCount > 0 && (
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Oferte</p>
-          <label className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
-            <span className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={offersOnly}
-                onChange={() => toggleBoolParam("oferte")}
-                className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
-              />
+          <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">Oferte</p>
+          <label htmlFor="filter-oferte" className="flex items-center justify-between gap-2 text-sm text-foreground cursor-pointer hover:text-accent">
+            <span className="flex items-center gap-2.5">
+              <Checkbox id="filter-oferte" checked={offersOnly} onCheckedChange={() => toggleBoolParam("oferte")} />
               Oferte speciale
             </span>
-            <span className="text-xs text-gray-400">({offersCount})</span>
+            <span className="text-xs text-muted-foreground">({offersCount})</span>
           </label>
         </div>
       )}
 
       {hasActive && (
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Filtre active</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">Filtre active</p>
           <div className="flex flex-col gap-2 mb-3">
             {activeChips.map((chip) => (
-              <span
-                key={chip.key}
-                className="flex items-center justify-between gap-2 bg-[#f6f8fb] border border-gray-100 rounded-lg px-3 py-2 text-xs font-semibold text-[#1d2353]"
-              >
+              <Badge key={chip.key} variant="outline" className="w-full justify-between normal-case font-semibold text-primary">
                 {chip.label}
-                <button onClick={chip.onRemove} aria-label="Elimină filtrul" className="text-gray-400 hover:text-[#c7092b] transition-colors shrink-0">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                <button onClick={chip.onRemove} aria-label={`Elimină filtrul ${chip.label}`} className="text-muted-foreground hover:text-accent transition-colors shrink-0">
+                  <X className="w-3.5 h-3.5" aria-hidden />
                 </button>
-              </span>
+              </Badge>
             ))}
           </div>
-          <button
-            onClick={clearAll}
-            className="w-full text-xs font-bold bg-[#1d2353] hover:bg-[#2a3470] text-white rounded-lg py-2.5 transition-colors uppercase tracking-wide"
-          >
+          <Button onClick={clearAll} variant="primary" size="sm" className="w-full">
             Șterge tot
-          </button>
+          </Button>
         </div>
       )}
 
       {categories && categories.length > 0 && (
-        <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Categorie</p>
-          <div className="flex flex-col gap-2.5">
-            {categories.map((cat) => (
-              <label key={cat.id} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
-                <span className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedCats.includes(cat.slug)}
-                    onChange={() => toggleListParam("cat", cat.slug)}
-                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
-                  />
-                  {cat.name}
-                </span>
-                <span className="text-xs text-gray-400">({cat.count})</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <FilterGroup
+          title="Categorie"
+          options={categories.map((c) => ({ value: c.slug, count: c.count }))}
+          selected={selectedCats}
+          paramKey="cat"
+          formatLabel={(slug) => categories.find((c) => c.slug === slug)?.name ?? slug}
+          onToggle={toggleListParam}
+        />
       )}
-
-      {brands.length > 0 && (
-        <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Brand</p>
-          <div className="flex flex-col gap-2.5">
-            {brands.map((opt) => (
-              <label key={opt.value} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
-                <span className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedBrands.includes(opt.value)}
-                    onChange={() => toggleListParam("brand", opt.value)}
-                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
-                  />
-                  {opt.value}
-                </span>
-                <span className="text-xs text-gray-400">({opt.count})</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {technologies.length > 0 && (
-        <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Tehnologie</p>
-          <div className="flex flex-col gap-2.5">
-            {technologies.map((opt) => (
-              <label key={opt.value} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
-                <span className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedTechnologies.includes(opt.value)}
-                    onChange={() => toggleListParam("tehnologie", opt.value)}
-                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
-                  />
-                  {opt.value}
-                </span>
-                <span className="text-xs text-gray-400">({opt.count})</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {energyClasses.length > 0 && (
-        <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Clasă energetică</p>
-          <div className="flex flex-col gap-2.5">
-            {energyClasses.map((opt) => (
-              <label key={opt.value} className="flex items-center justify-between gap-2 text-sm text-gray-600 cursor-pointer hover:text-[#1d2353]">
-                <span className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedEnergy.includes(opt.value)}
-                    onChange={() => toggleListParam("energie", opt.value)}
-                    className="w-4 h-4 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b]"
-                  />
-                  Clasa {opt.value}
-                </span>
-                <span className="text-xs text-gray-400">({opt.count})</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
+      <FilterGroup title="Brand" options={brands} selected={selectedBrands} paramKey="brand" onToggle={toggleListParam} />
+      <FilterGroup title="Tehnologie" options={technologies} selected={selectedTechnologies} paramKey="tehnologie" onToggle={toggleListParam} />
+      <FilterGroup title="Clasă energetică" options={energyClasses} selected={selectedEnergy} paramKey="energie" formatLabel={(v) => `Clasa ${v}`} onToggle={toggleListParam} />
     </div>
   );
 
   return (
     <>
-      {/* Mobile trigger */}
       <div className="lg:hidden mb-3">
-        <button
-          onClick={openDrawer}
-          className="flex items-center gap-2 text-xs font-bold border border-gray-200 rounded-full px-4 py-2.5 text-[#1d2353] transition-transform active:scale-95"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h18M6 12h12M10 20h4" />
-          </svg>
+        <Button onClick={() => setMobileOpen(true)} variant="outline" size="sm" className="gap-2">
+          <SlidersHorizontal className="w-4 h-4" aria-hidden />
           Filtre {hasActive && `(${activeChips.length})`}
-        </button>
+        </Button>
       </div>
 
-      {/* Desktop sidebar */}
       <aside className="hidden lg:block w-64 shrink-0">{sidebarContent}</aside>
 
-      {/* Mobile drawer */}
-      {drawerMounted && (
-        <div className="lg:hidden fixed inset-0 z-50">
-          <div
-            className={`absolute inset-0 bg-white transition-transform duration-300 ease-out p-5 overflow-y-auto ${
-              mobileOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-5">
-              <p className="font-extrabold text-[#1d2353]">Filtre</p>
-              <button
-                onClick={closeDrawer}
-                aria-label="Închide filtrele"
-                className="group text-gray-400 hover:text-[#c7092b] transition-colors"
-              >
-                <svg
-                  className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            {sidebarContent}
-          </div>
-        </div>
-      )}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="lg:hidden overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Filtre</SheetTitle>
+          </SheetHeader>
+          {sidebarContent}
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

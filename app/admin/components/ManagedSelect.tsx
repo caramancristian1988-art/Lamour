@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Plus, Trash2, X } from "lucide-react";
+import { Label } from "@/app/components/ui/label";
+import { Input } from "@/app/components/ui/input";
+import { Button } from "@/app/components/ui/button";
 
 export interface ManagedOption {
   value: string;
@@ -82,41 +86,41 @@ export default function ManagedSelect({
   return (
     <div className="flex flex-col gap-1.5 min-w-0">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-bold text-gray-600">
-          {label} {required && <span className="text-[#c7092b]">*</span>}
-        </span>
+        <Label htmlFor={`managed-select-${name}`}>
+          {label} {required && <span className="text-accent">*</span>}
+        </Label>
         <div className="flex items-center gap-3 shrink-0">
           {selectedOption && onDelete && (
             <button
               type="button"
               onClick={handleDelete}
               disabled={busy}
-              className="text-gray-400 hover:text-[#c7092b] disabled:opacity-50 transition-colors"
-              aria-label="Șterge opțiunea selectată"
+              className="text-muted-foreground hover:text-accent disabled:opacity-50 transition-colors"
+              aria-label={`Șterge opțiunea ${selectedOption.label}`}
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
+              <Trash2 className="w-3.5 h-3.5" aria-hidden />
             </button>
           )}
           {!adding && (
             <button
               type="button"
               onClick={() => setAdding(true)}
-              className="text-xs font-bold text-[#c7092b] hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline"
             >
-              + Adaugă
+              <Plus className="w-3.5 h-3.5" aria-hidden />
+              Adaugă
             </button>
           )}
         </div>
       </div>
 
       <select
+        id={`managed-select-${name}`}
         name={name}
         required={required}
         value={selected}
         onChange={(e) => setSelected(e.target.value)}
-        className="w-full min-w-0 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] bg-white"
+        className="w-full min-w-0 rounded-xl border-2 border-input bg-card px-4 py-3 text-base text-foreground transition-colors focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20"
       >
         <option value="" disabled={required}>
           {emptyOptionLabel}
@@ -130,22 +134,25 @@ export default function ManagedSelect({
 
       {adding && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1.5">
-          <input
+          <Input
             type="text"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             placeholder={addPlaceholder}
-            className="min-w-0 flex-1 border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#c7092b]"
+            aria-label={addPlaceholder}
+            className="min-w-0 flex-1 h-10"
           />
           <div className="flex items-center gap-2 shrink-0">
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
               onClick={handleAdd}
               disabled={busy || !newLabel.trim()}
-              className="flex-1 sm:flex-none bg-[#1d2353] hover:bg-[#2a3470] disabled:opacity-60 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors"
+              className="flex-1 sm:flex-none"
             >
               {busy ? "Se adaugă..." : "Adaugă"}
-            </button>
+            </Button>
             <button
               type="button"
               onClick={() => {
@@ -153,17 +160,15 @@ export default function ManagedSelect({
                 setNewLabel("");
                 setError(null);
               }}
-              className="text-gray-400 hover:text-[#c7092b] transition-colors shrink-0"
-              aria-label="Anulează"
+              className="text-muted-foreground hover:text-accent transition-colors shrink-0"
+              aria-label="Anulează adăugarea opțiunii"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-4 h-4" aria-hidden />
             </button>
           </div>
         </div>
       )}
-      {error && <p className="text-xs text-[#c7092b]">{error}</p>}
+      {error && <p className="text-sm text-accent">{error}</p>}
     </div>
   );
 }

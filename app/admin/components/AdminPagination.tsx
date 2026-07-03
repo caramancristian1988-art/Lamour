@@ -1,42 +1,61 @@
 "use client";
 
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/app/components/ui/pagination";
 
 export default function AdminPagination({ page, totalPages }: { page: number; totalPages: number }) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   if (totalPages <= 1) return null;
 
-  function goToPage(target: number) {
+  function hrefForPage(target: number) {
     const params = new URLSearchParams(searchParams.toString());
     if (target <= 1) params.delete("page");
     else params.set("page", String(target));
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
   }
 
   return (
-    <div className="flex items-center justify-between mt-4">
-      <button
-        type="button"
-        onClick={() => goToPage(page - 1)}
-        disabled={page <= 1}
-        className="text-xs font-bold text-[#1d2353] border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-      >
-        ← Anterior
-      </button>
-      <span className="text-xs text-gray-400">
+    <div className="flex items-center justify-between mt-4 gap-4 flex-wrap">
+      <Pagination className="mx-0 w-auto">
+        <PaginationContent>
+          <PaginationItem>
+            {page <= 1 ? (
+              <span className="inline-flex items-center gap-1.5 pl-3 h-10 px-4 text-sm font-semibold text-muted-foreground opacity-40 rounded-xl border border-border">
+                Anterior
+              </span>
+            ) : (
+              <PaginationPrevious href={hrefForPage(page - 1)} scroll={false} />
+            )}
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+
+      <span className="text-sm text-muted-foreground">
         Pagina {page} din {totalPages}
       </span>
-      <button
-        type="button"
-        onClick={() => goToPage(page + 1)}
-        disabled={page >= totalPages}
-        className="text-xs font-bold text-[#1d2353] border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-      >
-        Următor →
-      </button>
+
+      <Pagination className="mx-0 w-auto">
+        <PaginationContent>
+          <PaginationItem>
+            {page >= totalPages ? (
+              <span className="inline-flex items-center gap-1.5 pr-3 h-10 px-4 text-sm font-semibold text-muted-foreground opacity-40 rounded-xl border border-border">
+                Următor
+              </span>
+            ) : (
+              <PaginationNext href={hrefForPage(page + 1)} scroll={false} />
+            )}
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 }

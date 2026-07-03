@@ -24,27 +24,19 @@ export default async function EditReviewPage({ params }: { params: Promise<{ id:
     <div>
       <AdminPageHeader title="Editează recenzie" />
 
-      <form action={updateAdminReviewAction} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4 max-w-xl">
+      <form action={updateAdminReviewAction} className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 max-w-xl">
         <input type="hidden" name="id" value={review.id} />
 
         <AdminInput label="Nume client" name="name" required defaultValue={review.name} />
         <AdminInput label="Email (opțional)" name="email" type="email" defaultValue={review.email ?? ""} />
 
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-bold text-gray-600">Rating <span className="text-[#c7092b]">*</span></span>
-          <select
-            name="rating"
-            required
-            defaultValue={String(review.rating)}
-            className="border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c7092b] bg-white"
-          >
-            <option value="5">5 stele</option>
-            <option value="4">4 stele</option>
-            <option value="3">3 stele</option>
-            <option value="2">2 stele</option>
-            <option value="1">1 stea</option>
-          </select>
-        </label>
+        <AdminSelect label="Rating" name="rating" required defaultValue={String(review.rating)}>
+          <option value="5">5 stele</option>
+          <option value="4">4 stele</option>
+          <option value="3">3 stele</option>
+          <option value="2">2 stele</option>
+          <option value="1">1 stea</option>
+        </AdminSelect>
 
         <AdminSelect label="Produs (opțional)" name="product" defaultValue={review.product ?? ""}>
           <option value="">— Fără produs —</option>

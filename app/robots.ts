@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://climatrapid.md";
+const BASE_URL = process.env.SITE_URL || "https://example.com";
 
 export default function robots(): MetadataRoute.Robots {
   return {

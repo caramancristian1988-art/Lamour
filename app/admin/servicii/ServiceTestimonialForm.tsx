@@ -1,4 +1,6 @@
 import { AdminInput, AdminTextarea } from "../components/AdminField";
+import { Card, CardContent } from "@/app/components/ui/card";
+import { Button } from "@/app/components/ui/button";
 
 interface ServiceTestimonialDefaults {
   id?: string;
@@ -21,31 +23,32 @@ export default function ServiceTestimonialForm({
   submitLabel: string;
 }) {
   return (
-    <form action={action} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4 max-w-xl">
-      {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
-      <input type="hidden" name="serviceId" value={serviceId} />
+    <Card className="max-w-xl">
+      <CardContent className="p-6">
+        <form action={action} className="flex flex-col gap-4">
+          {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
+          <input type="hidden" name="serviceId" value={serviceId} />
 
-      <AdminTextarea
-        label="Recenzie"
-        name="text"
-        required
-        defaultValue={defaults?.text}
-        placeholder="Servicii excelente! Montajul a fost realizat rapid și foarte curat."
-        rows={3}
-      />
-      <div className="grid grid-cols-2 gap-4">
-        <AdminInput label="Nume" name="name" required defaultValue={defaults?.name} placeholder="Andrei M." />
-        <AdminInput label="Oraș" name="city" required defaultValue={defaults?.city} placeholder="Chișinău" />
-      </div>
-      <AdminInput label="Inițiale" name="initials" required defaultValue={defaults?.initials} placeholder="AM" />
-      <AdminInput label="Ordine" name="order" type="number" defaultValue={defaults?.order ?? 0} />
+          <AdminTextarea
+            label="Recenzie"
+            name="text"
+            required
+            defaultValue={defaults?.text}
+            placeholder="Servicii excelente! Montajul a fost realizat rapid și foarte curat."
+            rows={3}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <AdminInput label="Nume" name="name" required defaultValue={defaults?.name} placeholder="Andrei M." />
+            <AdminInput label="Oraș" name="city" required defaultValue={defaults?.city} placeholder="Chișinău" />
+          </div>
+          <AdminInput label="Inițiale" name="initials" required defaultValue={defaults?.initials} placeholder="AM" />
+          <AdminInput label="Ordine" name="order" type="number" defaultValue={defaults?.order ?? 0} />
 
-      <button
-        type="submit"
-        className="self-start bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-2.5 rounded-xl transition-colors text-sm uppercase tracking-wide mt-2"
-      >
-        {submitLabel}
-      </button>
-    </form>
+          <Button type="submit" variant="accent" className="self-start mt-2">
+            {submitLabel}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,20 +1,23 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { SITE_NAME } from "@/lib/constants";
 import FaqAccordion, { type FaqItem } from "@/app/components/FaqAccordion";
+import { Button } from "@/app/components/ui/button";
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Întrebări frecvente | Climat Rapid",
-  description: "Răspunsuri la cele mai frecvente întrebări despre produsele, instalarea și serviciile Climat Rapid.",
+  title: `Întrebări frecvente | ${SITE_NAME}`,
+  description: `Răspunsuri la cele mai frecvente întrebări despre serviciile și programele ${SITE_NAME}.`,
 };
 
 const FALLBACK_FAQS: FaqItem[] = [
-  { question: "Ce tipuri de aparate de aer condiționat vindeți?", answer: "Oferim o gamă variată: aparate rezidențiale, comerciale, sisteme multisplit și accesorii de la branduri de top." },
-  { question: "Oferiți servicii de instalare?", answer: "Da, echipa noastră asigură instalarea profesională a tuturor aparatelor achiziționate de la noi." },
-  { question: "Care este garanția pentru produse?", answer: "Toate produsele beneficiază de garanție conform specificațiilor producătorului, minim 12 luni." },
-  { question: "Livrați în toată Moldova?", answer: "Da, livrăm în Chișinău și în toate localitățile din Moldova. Detalii pe pagina de Livrare și plată." },
+  { question: "Ce servicii oferiți persoanelor nevăzătoare?", answer: "Oferim o gamă variată de servicii: consultanță, orientare și mobilitate, sprijin practic, mentenanță și programe integrate de sprijin." },
+  { question: "Cum mă pot înscrie într-un program de sprijin?", answer: "Poți completa formularul de contact sau ne poți suna direct, iar echipa noastră îți va prezenta pașii următori." },
+  { question: "Serviciile sunt gratuite?", answer: "O parte din serviciile noastre sunt gratuite pentru membrii asociației. Detaliile se stabilesc individual, în funcție de situație." },
+  { question: "Activați în toată Moldova?", answer: "Da, activăm în Chișinău și în multe localități din Moldova. Detalii despre acoperire poți afla contactându-ne." },
 ];
 
 async function getFaqs(): Promise<FaqItem[]> {
@@ -31,34 +34,34 @@ export default async function FaqPage() {
   const faqs = await getFaqs();
 
   return (
-    <main className="bg-white min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 py-10 sm:py-14">
-        <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-6">
-          <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
-          <span>›</span>
-          <span className="text-gray-600">Întrebări frecvente</span>
+    <main className="bg-background min-h-screen">
+      <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
+        <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-6">
+          <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
+          <span aria-hidden>›</span>
+          <span className="text-foreground font-medium">Întrebări frecvente</span>
         </nav>
 
-        <p className="text-[#c7092b] text-[11px] font-extrabold tracking-widest uppercase mb-3">Suport</p>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1d2353] leading-tight mb-3">
+        <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Suport</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-primary leading-tight tracking-tight mb-3">
           Întrebări frecvente
         </h1>
-        <p className="text-gray-500 text-[15px] leading-relaxed mb-10">
+        <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-10">
           Găsești mai jos răspunsuri la cele mai comune întrebări. Dacă nu găsești ce cauți,{" "}
-          <Link href="/contact" className="text-[#c7092b] hover:underline">contactează-ne</Link>.
+          <Link href="/contact" className="text-accent hover:underline">contactează-ne</Link>.
         </p>
 
         <FaqAccordion faqs={faqs} />
 
-        <div className="mt-12 bg-[#f8fafc] rounded-2xl p-6 text-center border border-gray-100">
-          <p className="font-bold text-[#1d2353] mb-1">Nu ai găsit răspunsul?</p>
-          <p className="text-sm text-gray-500 mb-4">Echipa noastră îți stă la dispoziție pentru orice întrebare.</p>
-          <Link
-            href="/contact"
-            className="inline-flex items-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold px-6 py-3 rounded-xl transition-colors text-sm uppercase tracking-wide"
-          >
-            Contactează-ne
-          </Link>
+        <div className="mt-12 bg-muted rounded-2xl p-6 text-center border border-border">
+          <p className="font-bold text-foreground mb-1">Nu ai găsit răspunsul?</p>
+          <p className="text-sm text-muted-foreground mb-4">Echipa noastră îți stă la dispoziție pentru orice întrebare.</p>
+          <Button asChild variant="accent">
+            <Link href="/contact">
+              Contactează-ne
+              <ArrowRight className="w-4 h-4" aria-hidden />
+            </Link>
+          </Button>
         </div>
       </div>
     </main>

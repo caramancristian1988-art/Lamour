@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import SaveButton from "../components/SaveButton";
+import { AdminInput } from "../components/AdminField";
+import { Switch } from "@/app/components/ui/switch";
+import { Label } from "@/app/components/ui/label";
 import { updateSettingsAction } from "@/lib/adminSettingsActions";
 
 const SECTION_TOGGLES = [
@@ -27,157 +30,99 @@ export default async function AdminSetariPage() {
     <div>
       <AdminPageHeader title="Setări" description="Secțiunile active pe site." />
 
-      <form action={updateSettingsAction} className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-6 max-w-2xl">
+      <form action={updateSettingsAction} className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-6 max-w-2xl">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Date de contact</p>
-          <p className="text-xs text-gray-400 mb-3">
+          <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">Date de contact</p>
+          <p className="text-xs text-muted-foreground mb-3">
             Telefonul și emailul afișate peste tot pe site (bara de sus, butonul flotant, paginile de servicii și contact),
             plus linkurile WhatsApp și Viber, generate automat din același număr.
           </p>
-          <div className="flex flex-col gap-2.5">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-bold text-[#1d2353]">Telefon</span>
-              <input
-                type="tel"
-                name="phone"
-                defaultValue={settings?.phone ?? "+373 69 000 000"}
-                placeholder="+373 69 000 000"
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-bold text-[#1d2353]">Email</span>
-              <input
-                type="email"
-                name="email"
-                defaultValue={settings?.email ?? "contact@climatrapid.md"}
-                placeholder="contact@climatrapid.md"
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-bold text-[#1d2353]">Adresă</span>
-              <input
-                type="text"
-                name="address"
-                defaultValue={settings?.address ?? ""}
-                placeholder="Str. Exemplu 1, Chișinău, Moldova"
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
-              />
-            </label>
+          <div className="flex flex-col gap-3">
+            <AdminInput label="Telefon" name="phone" type="tel" defaultValue={settings?.phone ?? "+373 69 000 000"} placeholder="+373 69 000 000" />
+            <AdminInput label="Email" name="email" type="email" defaultValue={settings?.email ?? ""} placeholder="contact@exemplu.md" />
+            <AdminInput label="Adresă" name="address" defaultValue={settings?.address ?? ""} placeholder="Str. Exemplu 1, Chișinău, Moldova" />
           </div>
         </div>
 
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Secțiuni site</p>
-          <p className="text-xs text-gray-400 mb-3">Dezactivează o secțiune ca să nu mai fie accesibilă pe site (pagina dă 404 și linkul din meniu e ascuns).</p>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">Secțiuni site</p>
+          <p className="text-xs text-muted-foreground mb-3">Dezactivează o secțiune ca să nu mai fie accesibilă pe site (pagina dă 404 și linkul din meniu e ascuns).</p>
           <div className="flex flex-col gap-2.5">
             {SECTION_TOGGLES.map((section) => (
-              <label
-                key={section.name}
-                className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 cursor-pointer"
-              >
-                <span>
-                  <span className="block text-sm font-bold text-[#1d2353]">{section.label}</span>
-                  <span className="block text-xs text-gray-500 mt-0.5">{section.description}</span>
-                </span>
-                <input
-                  type="checkbox"
+              <div key={section.name} className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+                <Label htmlFor={`field-${section.name}`} className="cursor-pointer font-normal">
+                  <span className="block text-sm font-bold text-primary">{section.label}</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">{section.description}</span>
+                </Label>
+                <Switch
+                  id={`field-${section.name}`}
                   name={section.name}
                   defaultChecked={settings?.[section.name] ?? (section.name === "proiecteEnabled" ? false : true)}
-                  className="w-5 h-5 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b] shrink-0"
+                  className="shrink-0"
                 />
-              </label>
+              </div>
             ))}
           </div>
         </div>
 
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Funcționalități</p>
-          <label className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 cursor-pointer">
-            <span>
-              <span className="block text-sm font-bold text-[#1d2353]">Plata în rate</span>
-              <span className="block text-xs text-gray-500 mt-0.5">
-                Dezactivează ca să dispară butonul &quot;Cumpără în rate&quot; și estimarea lunară de pe toate produsele,
-                indiferent de setarea individuală a fiecărui produs.
-              </span>
-            </span>
-            <input
-              type="checkbox"
-              name="ratesEnabled"
-              defaultChecked={settings?.ratesEnabled ?? true}
-              className="w-5 h-5 rounded border-gray-300 text-[#c7092b] focus:ring-[#c7092b] accent-[#c7092b] shrink-0"
-            />
-          </label>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">Funcționalități</p>
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+              <Label htmlFor="field-ratesEnabled" className="cursor-pointer font-normal">
+                <span className="block text-sm font-bold text-primary">Plata în rate</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">
+                  Dezactivează ca să dispară butonul &quot;Cumpără în rate&quot; și estimarea lunară de pe toate produsele,
+                  indiferent de setarea individuală a fiecărui produs.
+                </span>
+              </Label>
+              <Switch id="field-ratesEnabled" name="ratesEnabled" defaultChecked={settings?.ratesEnabled ?? true} className="shrink-0" />
+            </div>
 
-          <label className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 mt-2.5">
-            <span>
-              <span className="block text-sm font-bold text-[#1d2353]">Număr de rate</span>
-              <span className="block text-xs text-gray-500 mt-0.5">
-                Numărul de luni folosit la calculul estimării lunare (ex: preț ÷ {settings?.installmentMonths ?? 4} = lei/lună).
-              </span>
-            </span>
-            <input
-              type="number"
-              name="installmentMonths"
-              min={1}
-              max={60}
-              defaultValue={settings?.installmentMonths ?? 4}
-              className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:border-[#c7092b] shrink-0"
-            />
-          </label>
-          <label className="flex items-center justify-between gap-3 border border-gray-200 rounded-xl px-4 py-3.5 mt-2.5">
-            <span>
-              <span className="block text-sm font-bold text-[#1d2353]">Cronometru popup (minute)</span>
-              <span className="block text-xs text-gray-500 mt-0.5">
-                Numărul de minute afișat la countdown-ul din popup-ul de oferte speciale.
-              </span>
-            </span>
-            <input
-              type="number"
-              name="popupCountdownMinutes"
-              min={1}
-              max={120}
-              defaultValue={settings?.popupCountdownMinutes ?? 10}
-              className="w-20 border border-gray-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:border-[#c7092b] shrink-0"
-            />
-          </label>
+            <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+              <Label htmlFor="field-installmentMonths" className="cursor-pointer font-normal">
+                <span className="block text-sm font-bold text-primary">Număr de rate</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">
+                  Numărul de luni folosit la calculul estimării lunare (ex: preț ÷ {settings?.installmentMonths ?? 4} = lei/lună).
+                </span>
+              </Label>
+              <input
+                id="field-installmentMonths"
+                type="number"
+                name="installmentMonths"
+                min={1}
+                max={60}
+                defaultValue={settings?.installmentMonths ?? 4}
+                className="w-20 border-2 border-input rounded-lg px-3 py-2 text-sm text-center bg-card text-foreground focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 shrink-0"
+              />
+            </div>
+            <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+              <Label htmlFor="field-popupCountdownMinutes" className="cursor-pointer font-normal">
+                <span className="block text-sm font-bold text-primary">Cronometru popup (minute)</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">
+                  Numărul de minute afișat la countdown-ul din popup-ul de oferte speciale.
+                </span>
+              </Label>
+              <input
+                id="field-popupCountdownMinutes"
+                type="number"
+                name="popupCountdownMinutes"
+                min={1}
+                max={120}
+                defaultValue={settings?.popupCountdownMinutes ?? 10}
+                className="w-20 border-2 border-input rounded-lg px-3 py-2 text-sm text-center bg-card text-foreground focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 shrink-0"
+              />
+            </div>
+          </div>
         </div>
 
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-wide text-[#1d2353] mb-3">Rețele sociale</p>
-          <p className="text-xs text-gray-400 mb-3">Linkurile către care duc iconițele din footer. Lasă gol ca să ascunzi o iconiță.</p>
-          <div className="flex flex-col gap-2.5">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-bold text-[#1d2353]">Facebook</span>
-              <input
-                type="url"
-                name="facebook"
-                defaultValue={settings?.facebook ?? ""}
-                placeholder="https://www.facebook.com/..."
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-bold text-[#1d2353]">Instagram</span>
-              <input
-                type="url"
-                name="instagram"
-                defaultValue={settings?.instagram ?? "https://www.instagram.com/climatrapid_srl/"}
-                placeholder="https://www.instagram.com/..."
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-bold text-[#1d2353]">TikTok</span>
-              <input
-                type="url"
-                name="tiktok"
-                defaultValue={settings?.tiktok ?? ""}
-                placeholder="https://www.tiktok.com/@..."
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#c7092b]"
-              />
-            </label>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">Rețele sociale</p>
+          <p className="text-xs text-muted-foreground mb-3">Linkurile către care duc iconițele din footer. Lasă gol ca să ascunzi o iconiță.</p>
+          <div className="flex flex-col gap-3">
+            <AdminInput label="Facebook" name="facebook" type="url" defaultValue={settings?.facebook ?? ""} placeholder="https://www.facebook.com/..." />
+            <AdminInput label="Instagram" name="instagram" type="url" defaultValue={settings?.instagram ?? ""} placeholder="https://www.instagram.com/..." />
+            <AdminInput label="TikTok" name="tiktok" type="url" defaultValue={settings?.tiktok ?? ""} placeholder="https://www.tiktok.com/@..." />
           </div>
         </div>
 

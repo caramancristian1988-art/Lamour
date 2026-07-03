@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import ProductCard from "./ProductCard";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 import { getSectionFlags } from "@/lib/siteSettings";
@@ -28,25 +29,18 @@ interface Props {
   showDiscount?: boolean;
 }
 
-export default async function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", bg = "bg-white", showDiscount = false }: Props) {
+export default async function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", bg = "bg-background", showDiscount = false }: Props) {
   const { ratesEnabled, installmentMonths } = await getSectionFlags();
   return (
-    <section className={`py-16 ${bg}`}>
+    <section className={`py-16 sm:py-20 ${bg}`}>
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <h2 className="text-2xl font-extrabold text-[#111827] uppercase tracking-wide">
-              {title} <span className="text-[#c7092b]">{highlighted}</span>
-            </h2>
-          </div>
-          <Link
-            href={viewAllHref}
-            className="text-sm text-[#c7092b] hover:underline font-semibold flex items-center gap-1"
-          >
+        <div className="flex items-end justify-between mb-10 gap-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+            {title} <span className="text-accent">{highlighted}</span>
+          </h2>
+          <Link href={viewAllHref} className="text-sm text-accent hover:underline font-semibold flex items-center gap-1 shrink-0 rounded">
             Vezi toate produsele
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
+            <ArrowRight className="w-4 h-4" aria-hidden />
           </Link>
         </div>
 

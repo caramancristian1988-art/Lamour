@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/app/components/ui/select";
 
 const options = [
   { value: "newest", label: "Cele mai noi" },
@@ -14,25 +15,26 @@ export default function ProductSortSelect({ defaultValue }: { defaultValue: stri
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+  function handleChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("sort", e.target.value);
+    params.set("sort", value);
     params.delete("page");
     const qs = params.toString();
     router.push(qs ? `${pathname}?${qs}` : pathname);
   }
 
   return (
-    <select
-      defaultValue={defaultValue}
-      onChange={handleChange}
-      className="w-full text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-[#1d2353] bg-white"
-    >
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
+    <Select defaultValue={defaultValue} onValueChange={handleChange}>
+      <SelectTrigger aria-label="Sortează produsele" className="h-10 text-sm">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

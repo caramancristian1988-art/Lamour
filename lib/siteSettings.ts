@@ -62,9 +62,10 @@ export interface SocialLinks {
   tiktok: string | null;
 }
 
+// TODO: set real social links, either here or via Settings in the admin panel.
 const SOCIAL_DEFAULTS: SocialLinks = {
   facebook: null,
-  instagram: "https://www.instagram.com/climatrapid_srl/",
+  instagram: null,
   tiktok: null,
 };
 
@@ -85,11 +86,12 @@ export interface ContactInfo {
   email: string;
 }
 
+// TODO: set real contact defaults, either here or via Settings in the admin panel.
 const CONTACT_DEFAULTS: ContactInfo = {
-  phone: "+373 69 000 000",
-  phoneTel: "+37369000000",
-  phoneDigits: "37369000000",
-  email: "contact@climatrapid.md",
+  phone: "+000 00 000 000",
+  phoneTel: "+00000000000",
+  phoneDigits: "00000000000",
+  email: "contact@example.com",
 };
 
 export const getContactInfo = cache(async (): Promise<ContactInfo> => {

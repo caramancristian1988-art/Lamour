@@ -12,26 +12,23 @@ import AuthModal from "./components/AuthModal";
 import { FloatingUIProvider } from "./components/FloatingUIState";
 import { getSectionFlags, getHeaderCategories, getSocialLinks, getContactInfo } from "@/lib/siteSettings";
 
+// TODO: replace with your own title/description/keywords/OG data before launch.
 export const metadata: Metadata = {
-  title: "Climat Rapid — Condiționere & Climatizare Moldova",
-  description:
-    "Magazin online de condiționere și sisteme de climatizare. Livrare și instalare în Moldova. Daikin, Mitsubishi, Gree, Midea la cele mai bune prețuri.",
-  keywords:
-    "conditioner, climatizare, aer conditionat, Moldova, Chisinau, Daikin, Mitsubishi, instalare",
+  title: "Site Name — Placeholder Title",
+  description: "Placeholder description for the store/site.",
+  keywords: "placeholder, keywords, here",
   openGraph: {
-    title: "Climat Rapid — Condiționere & Climatizare Moldova",
-    description:
-      "Soluții complete de climatizare pentru locuința sau afacerea ta.",
+    title: "Site Name — Placeholder Title",
+    description: "Placeholder description for the store/site.",
     locale: "ro_MD",
     type: "website",
-    url: "https://climatrapid.md",
-    siteName: "Climat Rapid",
+    url: "https://example.com",
+    siteName: "Site Name",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Climat Rapid — Condiționere & Climatizare Moldova",
-    description:
-      "Magazin online de condiționere și sisteme de climatizare. Livrare și instalare în Moldova.",
+    title: "Site Name — Placeholder Title",
+    description: "Placeholder description for the store/site.",
   },
 };
 

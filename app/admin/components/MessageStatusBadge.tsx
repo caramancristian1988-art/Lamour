@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { setMessageStatusAction } from "@/lib/adminMessageActions";
 import { MESSAGE_STATUSES } from "@/lib/messageStatuses";
+import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<string, { badge: string; dot: string }> = {
   in_asteptare: { badge: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-400" },
@@ -12,7 +14,7 @@ const STATUS_STYLES: Record<string, { badge: string; dot: string }> = {
   programat: { badge: "bg-indigo-50 text-indigo-700 border-indigo-200", dot: "bg-indigo-400" },
   in_lucru: { badge: "bg-sky-50 text-sky-700 border-sky-200", dot: "bg-sky-400" },
   achitat: { badge: "bg-teal-50 text-teal-700 border-teal-200", dot: "bg-teal-400" },
-  anulat: { badge: "bg-gray-100 text-gray-500 border-gray-200", dot: "bg-gray-400" },
+  anulat: { badge: "bg-muted text-muted-foreground border-border", dot: "bg-muted-foreground" },
 };
 
 export default function MessageStatusBadge({
@@ -54,30 +56,39 @@ export default function MessageStatusBadge({
         key={current.value}
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`animate-pop text-xs font-bold px-3 py-1.5 rounded-full border transition-all active:scale-95 flex items-center gap-1.5 ${styles.badge}`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Stare cerere: ${current.label}. Schimbă starea`}
+        className={cn(
+          "animate-pop inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-all active:scale-95",
+          styles.badge
+        )}
       >
-        <span className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />
+        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", styles.dot)} aria-hidden />
         {current.label}
-        <svg className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open && "rotate-180")} aria-hidden />
       </button>
 
       <div
-        className={`absolute right-0 top-full mt-1.5 bg-white border border-gray-100 rounded-xl shadow-xl py-1.5 min-w-[170px] z-10 origin-top-right transition-all duration-150 ${
+        role="listbox"
+        className={cn(
+          "absolute right-0 top-full mt-1.5 bg-card border border-border rounded-xl shadow-xl py-1.5 min-w-[180px] z-10 origin-top-right transition-all duration-150",
           open ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
-        }`}
+        )}
       >
         {MESSAGE_STATUSES.map((s) => (
           <button
             key={s.value}
             type="button"
+            role="option"
+            aria-selected={s.value === current.value}
             onClick={() => handleSelect(s.value)}
-            className={`w-full text-left text-xs font-semibold px-3 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-              s.value === current.value ? "text-[#1d2353]" : "text-gray-600"
-            }`}
+            className={cn(
+              "w-full text-left text-sm font-semibold px-3 py-2 hover:bg-muted transition-colors flex items-center gap-2",
+              s.value === current.value ? "text-primary" : "text-foreground"
+            )}
           >
-            <span className={`w-2 h-2 rounded-full shrink-0 ${STATUS_STYLES[s.value].dot}`} />
+            <span className={cn("w-2 h-2 rounded-full shrink-0", STATUS_STYLES[s.value].dot)} aria-hidden />
             {s.label}
           </button>
         ))}

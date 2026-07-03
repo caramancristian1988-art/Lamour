@@ -7,6 +7,8 @@ export default function FavoritesBadge({ className }: { className: string }) {
   if (favorites.length === 0) return null;
 
   return (
-    <span key={favorites.length} className={`${className} animate-bump`}>{favorites.length}</span>
+    <span key={favorites.length} className={`${className} animate-bump`}>
+      {favorites.length}
+    </span>
   );
 }

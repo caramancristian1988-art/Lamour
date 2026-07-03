@@ -30,7 +30,7 @@ export default function LinkedProductText({ text, products }: { text: string; pr
             href={`/produse/${match.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:underline hover:decoration-dotted hover:underline-offset-2 hover:text-[#c7092b] transition-colors"
+            className="hover:underline hover:decoration-dotted hover:underline-offset-2 hover:text-accent transition-colors"
           >
             {part}
           </Link>

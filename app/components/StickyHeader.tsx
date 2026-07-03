@@ -1,6 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
+import { User, Heart, ShoppingCart, ChevronDown } from "lucide-react";
 import type { SectionFlags, HeaderCategory } from "@/lib/siteSettings";
+import { Logo } from "@/app/components/Logo";
+import { SITE_SHORT_NAME } from "@/lib/constants";
 import SearchBar from "./SearchBar";
 import MobileMenuButton from "./MobileMenuButton";
 import FavoritesBadge from "./FavoritesBadge";
@@ -9,11 +11,9 @@ import AllCategoriesMenu from "./AllCategoriesMenu";
 import AccountMenuLink from "./AccountMenuLink";
 
 const fallbackProductsDropdown = [
-  { id: "conditioane-rezidentiale", slug: "conditioane-rezidentiale", name: "Condiționere rezidențiale", image: null },
-  { id: "conditioane-comerciale", slug: "conditioane-comerciale", name: "Condiționere comerciale", image: null },
-  { id: "sisteme-multisplit", slug: "sisteme-multisplit", name: "Sisteme multisplit", image: null },
-  { id: "conditioane-portabile", slug: "conditioane-portabile", name: "Condiționere portabile", image: null },
-  { id: "accesorii-consumabile", slug: "accesorii-consumabile", name: "Accesorii și consumabile", image: null },
+  { id: "categorie-1", slug: "categorie-1", name: "Categoria unu", image: null },
+  { id: "categorie-2", slug: "categorie-2", name: "Categoria doi", image: null },
+  { id: "categorie-3", slug: "categorie-3", name: "Categoria trei", image: null },
 ];
 
 const servicesDropdown = [
@@ -22,7 +22,7 @@ const servicesDropdown = [
   { href: "/servicii/diagnosticare", label: "Diagnosticare & Reparații" },
   { href: "/servicii/consultanta", label: "Consultanță" },
   { href: "/servicii/multisplit", label: "Sisteme multisplit" },
-  { href: "/servicii/comerciale", label: "Sisteme comerciale HVAC" },
+  { href: "/servicii/comerciale", label: "Sisteme comerciale" },
 ];
 
 export default function StickyHeader({
@@ -36,39 +36,37 @@ export default function StickyHeader({
 }: Partial<SectionFlags> & { categories?: HeaderCategory[] }) {
   const productsDropdown = categories && categories.length > 0 ? categories : fallbackProductsDropdown;
   return (
-    <div id="site-header" className="bg-white relative z-40">
-
+    <div id="site-header" className="bg-card relative z-40">
       {/* ══ ROW 1: Header ══ */}
-      <div className="border-b border-gray-200">
-
+      <div className="border-b border-border">
         {/* MOBILE layout */}
         <div className="lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
-            <Link href="/" className="flex items-center gap-2 shrink-0">
-              <div className="w-9 h-9 shrink-0">
-                <Image src="/Untitled-2.png" alt="Climat Rapid logo" width={36} height={36} className="w-full h-full object-contain" priority />
-              </div>
-              <span className="text-lg font-extrabold text-[#1d2353] tracking-tight uppercase leading-none">
-                Climat <span className="text-[#c7092b]">Rapid</span>
+            <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-lg">
+              <Logo size={38} />
+              <span className="text-base font-bold text-primary tracking-tight leading-none">
+                {SITE_SHORT_NAME}
               </span>
             </Link>
-            <div className="flex items-center gap-2.5">
-              <AccountMenuLink className="text-gray-600 hover:text-[#1d2353] transition-colors">
-                <svg className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
-                </svg>
+            <div className="flex items-center gap-1">
+              <AccountMenuLink className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-primary transition-colors">
+                <User className="w-6 h-6 shrink-0" aria-hidden />
               </AccountMenuLink>
-              <Link href="/favorite" className="text-gray-600 hover:text-[#c7092b] transition-colors relative" aria-label="Favorite">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                <FavoritesBadge className="absolute -top-2 -right-2 w-4 h-4 bg-[#c7092b] rounded-full text-white text-[9px] font-bold flex items-center justify-center" />
+              <Link
+                href="/favorite"
+                className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
+                aria-label="Favorite"
+              >
+                <Heart className="w-6 h-6" aria-hidden />
+                <FavoritesBadge className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-accent rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
               </Link>
-              <Link href="/cos" className="text-gray-600 relative" aria-label="Coș">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <CartBadge className="absolute -top-2 -right-2 w-4 h-4 bg-[#c7092b] rounded-full text-white text-[9px] font-bold flex items-center justify-center" />
+              <Link
+                href="/cos"
+                className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
+                aria-label="Coș"
+              >
+                <ShoppingCart className="w-6 h-6" aria-hidden />
+                <CartBadge className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-accent rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
               </Link>
               <MobileMenuButton
                 produseEnabled={produseEnabled}
@@ -82,12 +80,7 @@ export default function StickyHeader({
           </div>
           <div className="px-4 pb-3 flex items-center gap-2">
             {produseEnabled && (
-              <AllCategoriesMenu
-                label="Categorii"
-                className="shrink-0"
-                buttonClassName="flex items-center justify-center gap-1.5 bg-[#c7092b] hover:bg-[#a5071f] text-white text-xs font-bold px-3 h-11 rounded-xl transition-colors uppercase tracking-wide whitespace-nowrap"
-                categories={productsDropdown}
-              />
+              <AllCategoriesMenu label="Categorii" className="shrink-0" categories={productsDropdown} />
             )}
             <div className="flex-1 min-w-0">
               <SearchBar />
@@ -96,48 +89,45 @@ export default function StickyHeader({
         </div>
 
         {/* DESKTOP layout */}
-        <div className="hidden lg:grid grid-cols-[320px_1fr_160px] gap-x-8 max-w-7xl mx-auto px-6 pr-3">
-          <Link href="/" className="flex items-center gap-3 py-8 shrink-0">
-            <div className="w-12 h-12 shrink-0">
-              <Image src="/Untitled-2.png" alt="Climat Rapid logo" width={48} height={48} className="w-full h-full object-contain" priority />
-            </div>
-            <span className="text-[22px] font-extrabold text-[#1d2353] tracking-tight uppercase leading-none">
-              Climat <span className="text-[#c7092b]">Rapid</span>
+        <div className="hidden lg:grid grid-cols-[320px_1fr_220px] gap-x-8 max-w-7xl mx-auto px-6">
+          <Link href="/" className="flex items-center gap-3 py-7 shrink-0 rounded-lg">
+            <Logo size={48} />
+            <span className="text-lg font-bold text-primary tracking-tight leading-tight">
+              {SITE_SHORT_NAME}
             </span>
           </Link>
 
-          <div className="flex items-center py-8">
+          <div className="flex items-center py-7">
             <SearchBar />
           </div>
 
-          <div className="flex items-center gap-4 justify-end py-8">
-            <AccountMenuLink className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#1d2353] transition-colors whitespace-nowrap">
-              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
-              </svg>
-              <span className="hidden lg:block font-medium">Contul meu</span>
+          <div className="flex items-center gap-2 justify-end py-7">
+            <AccountMenuLink className="flex items-center gap-2 px-3 h-11 rounded-xl text-sm text-foreground hover:bg-muted hover:text-primary transition-colors whitespace-nowrap">
+              <User className="w-5 h-5 shrink-0" aria-hidden />
+              <span className="font-semibold">Contul meu</span>
             </AccountMenuLink>
-            <Link href="/favorite" className="text-gray-600 hover:text-[#c7092b] transition-colors relative" aria-label="Favorite">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              <FavoritesBadge className="absolute -top-2 -right-2 w-5 h-5 bg-[#c7092b] rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
+            <Link
+              href="/favorite"
+              className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
+              aria-label="Favorite"
+            >
+              <Heart className="w-5 h-5" aria-hidden />
+              <FavoritesBadge className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-accent rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
             </Link>
-            <Link href="/cos" className="text-gray-600 hover:text-[#1d2353] transition-colors" aria-label="Coș">
-              <div className="relative">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <CartBadge className="absolute -top-2 -right-2 w-5 h-5 bg-[#c7092b] rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
-              </div>
+            <Link
+              href="/cos"
+              className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
+              aria-label="Coș"
+            >
+              <ShoppingCart className="w-5 h-5" aria-hidden />
+              <CartBadge className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-accent rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* ══ ROW 2: Navbar — desktop only ══ */}
-      <div className="hidden lg:grid grid-cols-[320px_1fr_160px] gap-x-8 max-w-7xl mx-auto px-6 pr-4 border-b border-gray-200">
-
+      <div className="hidden lg:grid grid-cols-[320px_1fr_220px] gap-x-8 max-w-7xl mx-auto px-6 border-b border-border">
         <div className="flex items-center gap-10">
           {produseEnabled && <AllCategoriesMenu categories={productsDropdown} />}
         </div>
@@ -145,15 +135,20 @@ export default function StickyHeader({
         <div className="flex items-center gap-6">
           {produseEnabled && (
             <div className="relative group">
-              <Link href="/produse" className="flex items-center gap-1 py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">
+              <Link
+                href="/produse"
+                className="flex items-center gap-1 py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
+              >
                 Produse
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
+                <ChevronDown className="w-3.5 h-3.5" aria-hidden />
               </Link>
-              <div className="absolute top-full left-0 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
+              <div className="absolute top-full left-0 bg-popover rounded-xl shadow-xl border border-border py-2 min-w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
                 {productsDropdown.map((item) => (
-                  <Link key={item.id} href={`/produse?cat=${item.slug}`} className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
+                  <Link
+                    key={item.id}
+                    href={`/produse?cat=${item.slug}`}
+                    className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
+                  >
                     {item.name}
                   </Link>
                 ))}
@@ -163,15 +158,20 @@ export default function StickyHeader({
 
           {serviciiEnabled && (
             <div className="relative group">
-              <Link href="/servicii" className="flex items-center gap-1 py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">
+              <Link
+                href="/servicii"
+                className="flex items-center gap-1 py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
+              >
                 Servicii
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
+                <ChevronDown className="w-3.5 h-3.5" aria-hidden />
               </Link>
-              <div className="absolute top-full left-0 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
+              <div className="absolute top-full left-0 bg-popover rounded-xl shadow-xl border border-border py-2 min-w-[200px] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
                 {servicesDropdown.map((item) => (
-                  <Link key={item.href} href={item.href} className="block px-4 py-2.5 text-sm text-gray-700 hover:text-[#c7092b] hover:bg-gray-50 transition-colors">
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
+                  >
                     {item.label}
                   </Link>
                 ))}
@@ -180,22 +180,29 @@ export default function StickyHeader({
           )}
 
           {proiecteEnabled && (
-            <Link href="/proiecte" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Proiecte</Link>
+            <Link href="/proiecte" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+              Proiecte
+            </Link>
           )}
           {despreEnabled && (
-            <Link href="/despre" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Despre noi</Link>
+            <Link href="/despre" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+              Despre noi
+            </Link>
           )}
           {blogEnabled && (
-            <Link href="/blog" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Blog</Link>
+            <Link href="/blog" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+              Blog
+            </Link>
           )}
           {contactEnabled && (
-            <Link href="/contact" className="py-4 text-sm font-bold text-[#1d2353] hover:text-[#c7092b] transition-colors uppercase tracking-wide">Contact</Link>
+            <Link href="/contact" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+              Contact
+            </Link>
           )}
         </div>
 
         <div />
       </div>
-
     </div>
   );
 }

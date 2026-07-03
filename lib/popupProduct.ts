@@ -7,8 +7,8 @@ import { fallbackOfferProducts } from "./fallbackData";
 import type { PopupProduct } from "@/app/components/DiscountPopup";
 
 const FALLBACK_REVIEW = {
-  name: "Client Climat Rapid",
-  text: "Livrare rapidă, montaj curat și aparatul funcționează perfect. Recomand cu toată încrederea!",
+  name: "Client mulțumit",
+  text: "Livrare rapidă și produs conform descrierii. Recomand cu toată încrederea!",
   rating: 5,
 };
 

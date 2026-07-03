@@ -1,9 +1,10 @@
 import { requireAdmin } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
 import AdminSidebar from "./AdminSidebar";
+import { SITE_SHORT_NAME } from "@/lib/constants";
 
 export const metadata = {
-  title: "Admin | Climat Rapid",
+  title: `Admin | ${SITE_SHORT_NAME}`,
 };
 
 async function getNotifications() {
@@ -23,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const notifications = await getNotifications();
 
   return (
-    <div className="min-h-screen bg-[#f6f8fb] lg:flex">
+    <div className="min-h-screen bg-background lg:flex">
       <AdminSidebar userName={user.name} notifications={notifications} />
       <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-10">{children}</main>
     </div>

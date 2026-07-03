@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Everything below is EXAMPLE domain modeling for a product/service catalog
+// (Category/Product/Review/Faq/BlogPost/Service*/Project/ContactMessage/PopupEvent/Settings).
+// Keep the shape if it fits, otherwise replace with your own models —
+// User/Session are the only models the auth system in lib/auth.ts depends on.
+
 model Category {
   id          String    @id @default(auto()) @map("_id") @db.ObjectId
   name        String
@@ -26,6 +31,7 @@ model Product {
   oldPrice    Float?
   image       String?
   images      String[] @default([])
+  // btu/technology/brand/energyClass are example fields for an appliance catalog — rename/remove for your own product attributes.
   btu         Int?
   technology  String   @default("On/Off")
   brand       String?

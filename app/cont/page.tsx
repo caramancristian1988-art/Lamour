@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { LayoutDashboard } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { logoutAction } from "@/lib/authActions";
 import AccountStats from "../components/AccountStats";
+import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
+import { Button } from "@/app/components/ui/button";
 
 export default async function ContPage() {
   const user = await getSession();
@@ -11,16 +14,16 @@ export default async function ContPage() {
   const initials = user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
   return (
-    <main className="bg-white min-h-[70vh]">
-      <section className="border-b border-gray-100 bg-white">
+    <main className="bg-background min-h-[70vh]">
+      <section className="border-b border-border bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8">
-          <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-4">
-            <Link href="/" className="hover:text-[#c7092b] transition-colors">Acasă</Link>
-            <span>›</span>
-            <span className="text-gray-600">Contul meu</span>
+          <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4" aria-label="Fir de ariadnă">
+            <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
+            <span aria-hidden>›</span>
+            <span className="text-foreground">Contul meu</span>
           </nav>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#1d2353]">
-            Contul <span className="text-[#c7092b]">meu</span>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-primary">
+            Contul <span className="text-accent">meu</span>
           </h1>
         </div>
       </section>
@@ -28,34 +31,31 @@ export default async function ContPage() {
       <section className="py-10">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-16 h-16 rounded-full bg-[#fdf2f3] text-[#c7092b] flex items-center justify-center font-extrabold text-xl shrink-0">
-              {initials}
-            </div>
+            <Avatar className="w-16 h-16 shrink-0">
+              <AvatarFallback className="text-xl">{initials}</AvatarFallback>
+            </Avatar>
             <div className="min-w-0">
-              <p className="font-extrabold text-lg text-[#1d2353] truncate">{user.name}</p>
-              <p className="text-sm text-gray-500 truncate">{user.email}</p>
+              <p className="font-extrabold text-lg text-primary truncate">{user.name}</p>
+              <p className="text-sm text-muted-foreground truncate">{user.email}</p>
             </div>
           </div>
 
           {user.isAdmin && (
-            <Link
-              href="/admin"
-              className="flex items-center justify-center gap-2 bg-[#1d2353] hover:bg-[#2a3470] text-white font-bold px-6 py-3.5 rounded-xl transition-colors text-sm uppercase tracking-wide mb-8"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10m-9 11h4" />
-              </svg>
-              Mergi la pagina de administrator
-            </Link>
+            <Button asChild variant="primary" className="w-full mb-8 gap-2">
+              <Link href="/admin">
+                <LayoutDashboard className="w-5 h-5" aria-hidden />
+                Mergi la pagina de administrator
+              </Link>
+            </Button>
           )}
 
           <AccountStats />
 
-          <div className="border-t border-gray-100 pt-6">
+          <div className="border-t border-border pt-6">
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="text-sm font-bold text-gray-500 hover:text-[#c7092b] transition-colors"
+                className="text-sm font-bold text-muted-foreground hover:text-accent transition-colors"
               >
                 Deconectează-te
               </button>
