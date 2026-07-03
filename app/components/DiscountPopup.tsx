@@ -7,6 +7,7 @@ import Image from "next/image";
 import { logPopupEvent } from "@/lib/popupStatActions";
 import { getPopupProducts, getPopupCountdownMinutes } from "@/lib/popupProduct";
 import { useFloatingUI } from "./FloatingUIState";
+import { useCart } from "./CartProvider";
 
 const SESSION_KEY = "discountPopupState";
 const SHOW_DELAY_MS = 6000;
@@ -24,6 +25,10 @@ export interface PopupProduct {
   rating: number;
   reviewCount: number;
   review: { name: string; text: string; rating: number } | null;
+  btu?: number | null;
+  technology?: string | null;
+  energyClass?: string | null;
+  installmentsEnabled?: boolean;
 }
 
 interface StoredState {
@@ -80,6 +85,7 @@ export default function DiscountPopup() {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const swipedRef = useRef(false);
   const { contactMenuOpen } = useFloatingUI();
+  const { addToCart } = useCart();
 
   // On mount: resume a still-running offer (minimized) from a previous page
   // in this session, or — if this session never triggered one — start the
@@ -343,57 +349,104 @@ export default function DiscountPopup() {
           </div>
         </Link>
 
-        <div className="p-6 sm:p-8">
-          <div className="mb-5">
-            <p className="text-base font-bold text-[#1d2353] leading-snug line-clamp-2">{product.name}</p>
-            <div className="flex items-center gap-1.5 mt-2">
+        <div className=”p-5 sm:p-7”>
+          <div className=”mb-4”>
+            <p className=”text-base font-bold text-[#1d2353] leading-snug line-clamp-2”>{product.name}</p>
+            <div className=”flex items-center gap-1.5 mt-1.5”>
               <StarRating rating={product.rating} animated />
-              <span className="text-sm text-gray-400">({product.reviewCount})</span>
+              <span className=”text-sm text-gray-400”>({product.reviewCount})</span>
             </div>
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <span className="text-2xl font-extrabold text-[#c7092b]">
-                {product.price.toLocaleString("ro-MD")} MDL
+
+            {/* Caracteristici */}
+            {(() => {
+              const specs = [
+                product.btu ? `${(product.btu / 1000).toFixed(0)}000 BTU` : null,
+                product.technology || null,
+                product.energyClass ? `Clasa ${product.energyClass}` : null,
+              ].filter(Boolean) as string[];
+              return specs.length > 0 ? (
+                <div className=”flex flex-wrap gap-1.5 mt-2”>
+                  {specs.map((s) => (
+                    <span key={s} className=”text-[11px] font-semibold bg-[#f0f2f8] text-[#1d2353] px-2.5 py-1 rounded-full”>
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              ) : null;
+            })()}
+
+            {/* Rate */}
+            {product.installmentsEnabled !== false && (
+              <div className=”inline-flex items-center gap-1.5 bg-[#eef1fb] rounded-full px-2.5 py-1 mt-2”>
+                <span className=”bg-[#1d2353] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wide”>
+                  Rate
+                </span>
+                <span className=”text-[10px] font-bold text-[#1d2353]”>
+                  de la {Math.ceil(product.price / 4).toLocaleString(“ro-MD”)} lei/lună
+                </span>
+              </div>
+            )}
+
+            <div className=”flex items-center gap-2 mt-2 flex-wrap”>
+              <span className=”text-2xl font-extrabold text-[#c7092b]”>
+                {product.price.toLocaleString(“ro-MD”)} MDL
               </span>
               {product.oldPrice && (
-                <span className="text-sm text-gray-400 line-through">
-                  {product.oldPrice.toLocaleString("ro-MD")} MDL
+                <span className=”text-sm text-gray-400 line-through”>
+                  {product.oldPrice.toLocaleString(“ro-MD”)} MDL
                 </span>
               )}
             </div>
             {product.oldPrice && (
-              <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m0-12c-1.11 0-2.08.402-2.599 1" />
+              <span className=”inline-flex items-center gap-1 mt-1.5 text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full”>
+                <svg className=”w-3.5 h-3.5” fill=”none” stroke=”currentColor” strokeWidth={2.5} viewBox=”0 0 24 24”>
+                  <path strokeLinecap=”round” strokeLinejoin=”round” d=”M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m0-12c-1.11 0-2.08.402-2.599 1” />
                 </svg>
-                Economisești {Math.round(product.oldPrice - product.price).toLocaleString("ro-MD")} MDL
+                Economisești {Math.round(product.oldPrice - product.price).toLocaleString(“ro-MD”)} MDL
               </span>
             )}
           </div>
 
           {product.review && (
-            <div className="bg-[#f6f8fb] rounded-xl px-4 py-3 mb-6">
+            <div className=”bg-[#f6f8fb] rounded-xl px-4 py-3 mb-4”>
               <StarRating rating={product.review.rating} animated />
-              <p className="text-sm text-gray-700 italic leading-snug mt-1.5 line-clamp-2">
+              <p className=”text-sm text-gray-700 italic leading-snug mt-1.5 line-clamp-2”>
                 „{product.review.text}”
               </p>
-              <p className="text-xs text-gray-400 font-semibold mt-1.5">— {product.review.name}</p>
+              <p className=”text-xs text-gray-400 font-semibold mt-1.5”>— {product.review.name}</p>
             </div>
           )}
 
-          <Link
-            href={`/produse/${product.slug}`}
-            onClick={() => {
-              logPopupEvent(product.slug, "click");
-              setOpen(false);
-              setMinimized(true);
-            }}
-            className="block w-full text-center bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold py-3.5 rounded-xl transition-colors text-sm uppercase tracking-wide"
-          >
-            Vezi produsul
-          </Link>
+          <div className=”flex gap-2”>
+            <Link
+              href={`/produse/${product.slug}`}
+              onClick={() => {
+                logPopupEvent(product.slug, “click”);
+                setOpen(false);
+                setMinimized(true);
+              }}
+              className=”flex-1 text-center bg-[#1d2353] hover:bg-[#161b3d] text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide”
+            >
+              Vezi produsul
+            </Link>
+            <button
+              onClick={() => {
+                addToCart({ slug: product.slug, name: product.name, price: product.price, oldPrice: product.oldPrice, image: product.image });
+                logPopupEvent(product.slug, “click”);
+                setOpen(false);
+                setMinimized(true);
+              }}
+              className=”flex-1 flex items-center justify-center gap-1.5 bg-[#c7092b] hover:bg-[#a5071f] text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide”
+            >
+              <svg className=”w-4 h-4 shrink-0” fill=”none” stroke=”currentColor” strokeWidth={1.8} viewBox=”0 0 24 24”>
+                <path strokeLinecap=”round” strokeLinejoin=”round” d=”M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 2.3c-.6.6-.2 1.7.7 1.7H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z” />
+              </svg>
+              Adaugă în coș
+            </button>
+          </div>
           <button
             onClick={close}
-            className="w-full text-center text-gray-400 hover:text-gray-600 text-sm mt-3 transition-colors"
+            className=”w-full text-center text-gray-400 hover:text-gray-600 text-sm mt-3 transition-colors”
           >
             Nu, mulțumesc
           </button>
