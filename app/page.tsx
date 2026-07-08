@@ -15,7 +15,7 @@ export const revalidate = 3600;
 
 async function getData() {
   try {
-    const [categories, products, popularProducts, reviews] = await Promise.all([
+    const [categories, products, popularProducts, reviews, banners] = await Promise.all([
       prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
       prisma.product.findMany({ take: 4, orderBy: { rating: "desc" } }),
       prisma.product.findMany({ take: 4, orderBy: { reviewCount: "desc" } }),
@@ -25,6 +25,7 @@ async function getData() {
         take: 8,
         select: { id: true, name: true, rating: true, text: true, product: true },
       }),
+      prisma.banner.findMany({ orderBy: { order: "asc" } }),
     ]);
     return {
       categories,
@@ -32,6 +33,7 @@ async function getData() {
       popularProducts,
       offerProducts: fallbackOfferProducts.slice(0, 4),
       reviews,
+      banners,
     };
   } catch {
     return {
@@ -40,16 +42,17 @@ async function getData() {
       popularProducts: fallbackPopularProducts,
       offerProducts: fallbackOfferProducts.slice(0, 4),
       reviews: [],
+      banners: [],
     };
   }
 }
 
 export default async function HomePage() {
-  const { categories, products, popularProducts, offerProducts, reviews } = await getData();
+  const { categories, products, popularProducts, offerProducts, reviews, banners } = await getData();
 
   return (
     <main>
-      <Hero />
+      <Hero banners={banners} />
       <CategoryGrid categories={categories} />
       <ProductsSection products={products} />
       <ProductsSection

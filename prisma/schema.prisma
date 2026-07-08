@@ -81,6 +81,15 @@ model Faq {
   createdAt DateTime @default(now())
 }
 
+model Banner {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  image     String
+  alt       String
+  link      String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
 model BlogPost {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String

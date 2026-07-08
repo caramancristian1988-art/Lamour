@@ -1,0 +1,47 @@
+import { AdminInput } from "../components/AdminField";
+import ImageUploadField from "../components/ImageUploadField";
+import { Button } from "@/app/components/ui/button";
+
+interface BannerDefaults {
+  id?: string;
+  image?: string;
+  alt?: string;
+  link?: string | null;
+  order?: number;
+}
+
+export default function BannerForm({
+  action,
+  defaults,
+  submitLabel,
+}: {
+  action: (formData: FormData) => void;
+  defaults?: BannerDefaults;
+  submitLabel: string;
+}) {
+  return (
+    <form action={action} className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 max-w-xl">
+      {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
+
+      <ImageUploadField name="image" label="Imagine banner" defaultValue={defaults?.image} />
+      <AdminInput
+        label="Text alternativ"
+        name="alt"
+        required
+        defaultValue={defaults?.alt}
+        placeholder="Ofertă de vară -20% la sisteme multisplit"
+      />
+      <AdminInput
+        label="Link (opțional)"
+        name="link"
+        defaultValue={defaults?.link ?? ""}
+        placeholder="/produse?oferte=1"
+      />
+      <AdminInput label="Ordine" name="order" type="number" defaultValue={defaults?.order ?? 0} />
+
+      <Button type="submit" variant="accent" className="self-start mt-2">
+        {submitLabel}
+      </Button>
+    </form>
+  );
+}

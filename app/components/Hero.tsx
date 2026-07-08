@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Leaf, ShieldCheck, HeartHandshake } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { MotifBackground, MotifCorner } from "@/app/components/ui/motif";
+import BannerCarousel, { type BannerSlide } from "@/app/components/BannerCarousel";
 
 const heroBenefits = [
   { icon: Leaf, title: "Grijă autentică", desc: "Suntem alături la fiecare pas" },
@@ -12,7 +13,7 @@ const heroBenefits = [
   { icon: HeartHandshake, title: "Comunitate", desc: "Împreună, mai puternici" },
 ];
 
-export default function Hero() {
+export default function Hero({ banners = [] }: { banners?: BannerSlide[] }) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-brand-cream via-white to-brand-rose-light/40">
       <MotifBackground />
@@ -67,6 +68,17 @@ export default function Hero() {
             </div>
           ))}
         </motion.div>
+
+        {banners.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-10 sm:mt-14"
+          >
+            <BannerCarousel banners={banners} />
+          </motion.div>
+        )}
       </div>
     </section>
   );
