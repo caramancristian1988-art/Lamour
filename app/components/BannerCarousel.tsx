@@ -48,9 +48,9 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
         setTouchStartX(null);
       }}
     >
-      <div className="relative w-full aspect-[4/5] sm:aspect-[16/8] lg:aspect-[21/7] bg-muted">
+      <div className="relative w-full aspect-video sm:aspect-[2/1] lg:aspect-[21/9] bg-muted">
         {banners.map((banner, i) => {
-          const hasOverlay = banner.title || banner.subtitle || banner.ctaLabel;
+          const hasText = banner.title || banner.subtitle;
           const content = (
             <>
               <Image
@@ -61,25 +61,32 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
                 className="object-cover"
                 sizes="(min-width: 1280px) 1280px, 100vw"
               />
-              {hasOverlay && (
-                <>
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
-                  <div className="absolute inset-0 flex flex-col justify-center gap-3 px-6 sm:px-12 lg:px-16 max-w-xl">
-                    {banner.title && (
-                      <h2 className="font-serif italic text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight text-balance">
-                        {banner.title}
-                      </h2>
-                    )}
-                    {banner.subtitle && (
-                      <p className="text-sm sm:text-lg text-white/90 leading-relaxed">{banner.subtitle}</p>
-                    )}
-                    {banner.ctaLabel && (
-                      <Button asChild variant="accent" size="lg" className="self-start mt-2">
-                        <span>{banner.ctaLabel}</span>
-                      </Button>
-                    )}
-                  </div>
-                </>
+              {hasText && <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />}
+              {(hasText || banner.ctaLabel) && (
+                <div
+                  className={`absolute inset-0 flex flex-col gap-2 sm:gap-3 px-4 sm:px-12 lg:px-16 max-w-xl ${
+                    hasText ? "justify-center" : "justify-end pb-3 sm:pb-16"
+                  }`}
+                >
+                  {banner.title && (
+                    <h2 className="font-serif italic text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight text-balance">
+                      {banner.title}
+                    </h2>
+                  )}
+                  {banner.subtitle && (
+                    <p className="text-sm sm:text-lg text-white/90 leading-relaxed">{banner.subtitle}</p>
+                  )}
+                  {banner.ctaLabel && (
+                    <Button
+                      asChild
+                      variant="accent"
+                      size="lg"
+                      className="self-start mt-2 h-9 px-4 text-xs sm:h-14 sm:px-8 sm:text-base"
+                    >
+                      <span>{banner.ctaLabel}</span>
+                    </Button>
+                  )}
+                </div>
               )}
             </>
           );

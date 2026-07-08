@@ -81,10 +81,10 @@ async function main() {
 
   await prisma.banner.create({
     data: {
-      image: "https://placehold.co/1280x560/9D5654/9D5654",
-      alt: "Oferte speciale L'amour Cu Dragoste",
-      title: "Oferte speciale",
-      subtitle: "pentru confortul fiecărei familii!",
+      image: "/50503435-901a-4bc2-8157-15bb46303786.png",
+      alt: "Oferte speciale L'amour Cu Dragoste — pentru confortul fiecărei familii",
+      title: null,
+      subtitle: null,
       ctaLabel: "Vezi ofertele",
       link: "/produse?oferte=1",
       order: 0,
