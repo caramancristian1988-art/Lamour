@@ -113,14 +113,14 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
           <button
             onClick={() => goTo(active - 1)}
             aria-label="Bannerul anterior"
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/90 shadow-lg text-primary hover:text-accent flex items-center justify-center transition-colors"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary shadow-lg text-white hover:bg-brand-maroon-dark flex items-center justify-center transition-colors"
           >
             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden />
           </button>
           <button
             onClick={() => goTo(active + 1)}
             aria-label="Bannerul următor"
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/90 shadow-lg text-primary hover:text-accent flex items-center justify-center transition-colors"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-primary shadow-lg text-white hover:bg-brand-maroon-dark flex items-center justify-center transition-colors"
           >
             <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden />
           </button>

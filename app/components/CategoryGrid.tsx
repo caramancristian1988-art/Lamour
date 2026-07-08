@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ImageOff } from "lucide-react";
+import { ImageOff } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
+import { categoryIcons } from "./CategoryIcons";
 
 interface Category {
   id: string;
@@ -18,45 +20,55 @@ export default function CategoryGrid({ categories }: Props) {
   return (
     <section className="py-16 sm:py-20 bg-muted">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8 gap-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">
-            Categorii <span className="text-accent">populare</span>
+        <div className="flex items-center gap-4 mb-10 flex-wrap">
+          <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight uppercase shrink-0">
+            Categorii populare
           </h2>
-          <Link
-            href="/produse"
-            className="text-sm text-accent hover:underline font-semibold flex items-center gap-1 shrink-0 rounded"
-          >
-            Vezi toate
-            <ArrowRight className="w-4 h-4" aria-hidden />
-          </Link>
+          <div className="flex items-center gap-3 flex-1 min-w-[60px]">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-brand-red shrink-0" aria-hidden>
+              <g stroke="currentColor" strokeWidth="1.1">
+                <ellipse cx="10" cy="6.5" rx="2.1" ry="4" />
+                <ellipse cx="10" cy="13.5" rx="2.1" ry="4" />
+                <ellipse cx="5.5" cy="10" rx="4" ry="2.1" />
+                <ellipse cx="14.5" cy="10" rx="4" ry="2.1" />
+              </g>
+              <circle cx="10" cy="10" r="1.8" fill="currentColor" />
+            </svg>
+            <span className="h-px flex-1 bg-gradient-to-r from-brand-rose to-transparent" />
+          </div>
+          <Button asChild variant="accent" size="sm" className="shrink-0">
+            <Link href="/produse">Vezi toate categoriile</Link>
+          </Button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/produse?cat=${cat.slug}`}
-              className="group flex flex-col items-center bg-card rounded-2xl border border-border p-4 sm:p-6 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-            >
-              <div className="relative w-20 h-20 sm:w-32 sm:h-32 mb-4 shrink-0 rounded-xl overflow-hidden bg-secondary/30 flex items-center justify-center">
-                {cat.image ? (
-                  <Image
-                    src={cat.image}
-                    alt={cat.name}
-                    fill
-                    sizes="(max-width: 640px) 80px, 128px"
-                    className="object-contain"
-                  />
-                ) : (
-                  <ImageOff className="w-8 h-8 text-muted-foreground" aria-hidden />
-                )}
-              </div>
-              <h3 className="text-base font-bold text-foreground leading-snug mb-1.5 line-clamp-2">{cat.name}</h3>
-              {cat.description && (
-                <p className="text-sm text-muted-foreground leading-snug line-clamp-2">{cat.description}</p>
-              )}
-            </Link>
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          {categories.map((cat) => {
+            const Icon = categoryIcons[cat.slug];
+            return (
+              <Link
+                key={cat.id}
+                href={`/produse?cat=${cat.slug}`}
+                className="group flex flex-col items-center text-center gap-3"
+              >
+                <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-secondary/25 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+                  {Icon ? (
+                    <Icon className="w-1/2 h-1/2 text-primary" />
+                  ) : cat.image ? (
+                    <Image
+                      src={cat.image}
+                      alt={cat.name}
+                      fill
+                      sizes="(max-width: 640px) 45vw, 200px"
+                      className="object-contain p-6"
+                    />
+                  ) : (
+                    <ImageOff className="w-8 h-8 text-muted-foreground" aria-hidden />
+                  )}
+                </div>
+                <h3 className="text-sm sm:text-base font-bold text-foreground leading-snug line-clamp-2">{cat.name}</h3>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>
