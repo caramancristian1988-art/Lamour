@@ -10,6 +10,9 @@ import ProductsSection from "@/app/components/ProductsSection";
 import TrustBar from "@/app/components/TrustBar";
 import ReviewsSection from "@/app/components/ReviewsSection";
 import AboutTeaser from "@/app/components/AboutTeaser";
+import FactoryGallery from "@/app/components/FactoryGallery";
+import SocialImpact from "@/app/components/SocialImpact";
+import Partners from "@/app/components/Partners";
 
 export const revalidate = 3600;
 
@@ -65,7 +68,10 @@ export default async function HomePage() {
         highlighted="populare"
         viewAllHref="/produse?sort=rating"
       />
+      <FactoryGallery />
+      <SocialImpact />
       {reviews.length > 0 && <ReviewsSection reviews={reviews} />}
+      <Partners />
     </main>
   );
 }
