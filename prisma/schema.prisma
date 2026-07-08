@@ -67,6 +67,12 @@ model Review {
   createdAt DateTime @default(now())
 }
 
+model NewsletterSubscriber {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
 model Faq {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   question  String
