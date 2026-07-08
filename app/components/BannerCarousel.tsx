@@ -65,7 +65,7 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
               {(hasText || banner.ctaLabel) && (
                 <div
                   className={`absolute inset-0 flex flex-col gap-2 sm:gap-3 px-4 sm:px-12 lg:px-16 max-w-xl ${
-                    hasText ? "justify-center" : "justify-end pb-3 sm:pb-16"
+                    hasText ? "justify-center" : "justify-end items-center pb-3 sm:pb-16"
                   }`}
                 >
                   {banner.title && (
@@ -81,7 +81,7 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
                       asChild
                       variant="accent"
                       size="lg"
-                      className="self-start mt-2 h-9 px-4 text-xs sm:h-14 sm:px-8 sm:text-base"
+                      className={`mt-2 h-9 px-4 text-xs sm:h-14 sm:px-8 sm:text-base ${hasText ? "self-start" : ""}`}
                     >
                       <span>{banner.ctaLabel}</span>
                     </Button>
