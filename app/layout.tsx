@@ -12,6 +12,7 @@ const playfairDisplay = Playfair_Display({
 import { SiteHeader, SiteFooter, SiteFloatingContact, SiteDiscountPopup } from "./components/SiteChrome";
 import ScrollToTop from "./components/ScrollToTop";
 import { FavoritesProvider } from "./components/FavoritesProvider";
+import { AccessibilityProvider } from "./components/AccessibilityProvider";
 import { CartProvider } from "./components/CartProvider";
 import { AuthProvider } from "./components/AuthProvider";
 import { AuthModalProvider } from "./components/AuthModalProvider";
@@ -54,25 +55,27 @@ export default async function RootLayout({
   return (
     <html lang="ro" className={`${GeistSans.variable} ${playfairDisplay.variable}`}>
       <body className="min-h-screen flex flex-col">
-        <AuthProvider>
-          <AuthModalProvider>
-            <FavoritesProvider>
-              <CartProvider>
-                <Suspense fallback={null}>
-                  <ScrollToTop />
-                </Suspense>
-                <SiteHeader {...sectionFlags} {...contactInfo} categories={headerCategories} />
-                {children}
-                <SiteFooter {...socialLinks} />
-                <FloatingUIProvider>
-                  <SiteFloatingContact {...contactInfo} />
-                  <SiteDiscountPopup />
-                </FloatingUIProvider>
-                <AuthModal />
-              </CartProvider>
-            </FavoritesProvider>
-          </AuthModalProvider>
-        </AuthProvider>
+        <AccessibilityProvider>
+          <AuthProvider>
+            <AuthModalProvider>
+              <FavoritesProvider>
+                <CartProvider>
+                  <Suspense fallback={null}>
+                    <ScrollToTop />
+                  </Suspense>
+                  <SiteHeader {...sectionFlags} {...contactInfo} categories={headerCategories} />
+                  {children}
+                  <SiteFooter {...socialLinks} />
+                  <FloatingUIProvider>
+                    <SiteFloatingContact {...contactInfo} />
+                    <SiteDiscountPopup />
+                  </FloatingUIProvider>
+                  <AuthModal />
+                </CartProvider>
+              </FavoritesProvider>
+            </AuthModalProvider>
+          </AuthProvider>
+        </AccessibilityProvider>
       </body>
     </html>
   );

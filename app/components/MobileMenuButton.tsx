@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 import type { SectionFlags } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_SHORT_NAME } from "@/lib/constants";
+import AccessibilityToggle from "./AccessibilityToggle";
 
 const productsDropdown = [
   { href: "/produse?cat=categorie-1", label: "Categoria unu" },
@@ -56,6 +57,12 @@ export default function MobileMenuButton({
         </SheetHeader>
 
         <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Meniu principal">
+          <SheetClose asChild>
+            <Link href="/" className="block px-3 py-3.5 rounded-xl text-primary hover:bg-muted hover:text-accent transition-colors text-base font-bold">
+              Acasă
+            </Link>
+          </SheetClose>
+
           {produseEnabled && (
             <div>
               <div className="flex items-center rounded-xl hover:bg-muted transition-colors">
@@ -104,7 +111,8 @@ export default function MobileMenuButton({
           ))}
         </nav>
 
-        <div className="px-5 py-4 border-t border-border shrink-0">
+        <div className="px-5 py-4 border-t border-border shrink-0 flex flex-col gap-2">
+          <AccessibilityToggle className="justify-center border border-border" />
           <a
             href="tel:+00000000000"
             onClick={closeMenu}
