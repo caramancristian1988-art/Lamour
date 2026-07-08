@@ -3,16 +3,11 @@ import { cn } from "@/lib/utils";
 interface LogoProps {
   className?: string;
   size?: number;
-  /** Optional real logo image URL — falls back to the placeholder mark below. */
+  /** Real logo image URL — defaults to the client-provided logo, pass null to force the placeholder mark below. */
   src?: string | null;
 }
 
-/**
- * Round placeholder mark: two minimalist figures with a white cane, framed
- * by a thin rosette border echoing the site's traditional-motif accents.
- * Swap `src` for the final illustrated logo once the client provides it.
- */
-export function Logo({ className, size = 44, src }: LogoProps) {
+export function Logo({ className, size = 44, src = "/logo.png" }: LogoProps) {
   if (src) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
