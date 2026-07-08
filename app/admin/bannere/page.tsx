@@ -22,7 +22,7 @@ export default async function AdminBannerePage() {
     <div>
       <AdminPageHeader
         title="Bannere"
-        description="Caruselul de oferte afișat pe pagina principală, sub textul de introducere."
+        description="Caruselul din hero-ul paginii principale."
         action={
           <Button variant="accent" asChild>
             <Link href="/admin/bannere/nou">

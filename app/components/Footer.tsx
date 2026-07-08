@@ -3,22 +3,25 @@ import NewsletterForm from "./NewsletterForm";
 import type { SocialLinks } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/constants";
-import { MotifDivider } from "@/app/components/ui/motif";
+import { MotifDivider, MotifBackground } from "@/app/components/ui/motif";
 
 const footerLinks = {
   "DESPRE": [
     { label: "Despre noi", href: "/despre" },
-    { label: "Blog", href: "/blog" },
+    { label: "Noutăți", href: "/blog" },
     { label: "Politica de confidențialitate", href: "/confidentialitate" },
     { label: "Termeni și condiții", href: "/termeni" },
   ],
   "SUPORT": [
     { label: "Contact", href: "/contact" },
     { label: "Întrebări frecvente", href: "/faq" },
-    { label: "Proiecte", href: "/proiecte" },
+    { label: "Livrare și plată", href: "/faq" },
+    { label: "Politica de retur", href: "/faq" },
   ],
-  "EXPLOREAZĂ": [
-    { label: "Toate produsele", href: "/produse" },
+  "PRODUSE": [
+    { label: "Hârtie igienică", href: "/produse?cat=hartie-igienica" },
+    { label: "Șervețele", href: "/produse?cat=servetele" },
+    { label: "Prosoape de hârtie", href: "/produse?cat=prosoape-de-hartie" },
     { label: "Oferte speciale", href: "/produse?oferte=1" },
   ],
 };
@@ -82,10 +85,13 @@ export default function Footer({ facebook, instagram }: Partial<SocialLinks>) {
             </div>
           ))}
 
-          <div>
-            <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Abonează-te la noutăți</h4>
-            <p className="text-sm text-white/70 mb-4 leading-relaxed">Fii la curent cu noutățile și evenimentele noastre.</p>
-            <NewsletterForm />
+          <div className="relative">
+            <MotifBackground className="opacity-[0.06]" />
+            <h4 className="relative text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Abonează-te la noutăți</h4>
+            <p className="relative text-sm text-white/70 mb-4 leading-relaxed">Fii la curent cu noutățile și evenimentele noastre.</p>
+            <div className="relative">
+              <NewsletterForm />
+            </div>
           </div>
         </div>
 
@@ -93,8 +99,12 @@ export default function Footer({ facebook, instagram }: Partial<SocialLinks>) {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-4 text-center text-xs text-white/50">
-          © {new Date().getFullYear()} {SITE_NAME}. Toate drepturile rezervate.
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
+          <span>© {new Date().getFullYear()} {SITE_NAME}. Toate drepturile rezervate.</span>
+          <span className="flex items-center gap-1.5 text-white/60">
+            Suntem alături de{" "}
+            <span className="font-semibold text-brand-rose-light">Asociația Nevăzătorilor din Moldova</span>
+          </span>
         </div>
       </div>
     </footer>

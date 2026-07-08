@@ -17,7 +17,7 @@ const productsDropdown = [
 const baseNavLinks = [
   { href: "/proiecte", label: "Proiecte", flag: "proiecteEnabled" as const },
   { href: "/despre", label: "Despre noi", flag: "despreEnabled" as const },
-  { href: "/blog", label: "Blog", flag: "blogEnabled" as const },
+  { href: "/blog", label: "Noutăți", flag: "blogEnabled" as const },
   { href: "/contact", label: "Contact", flag: "contactEnabled" as const },
 ];
 
@@ -85,6 +85,14 @@ export default function MobileMenuButton({
                 </div>
               </div>
             </div>
+          )}
+
+          {produseEnabled && (
+            <SheetClose asChild>
+              <Link href="/produse?oferte=1" className="block px-3 py-3.5 rounded-xl text-primary hover:bg-muted hover:text-accent transition-colors text-base font-bold">
+                Oferte
+              </Link>
+            </SheetClose>
           )}
 
           {navLinks.map((link) => (

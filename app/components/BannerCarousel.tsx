@@ -4,13 +4,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 
-const AUTOPLAY_MS = 5000;
+const AUTOPLAY_MS = 6000;
 
 export interface BannerSlide {
   id: string;
   image: string;
   alt: string;
+  title: string | null;
+  subtitle: string | null;
+  ctaLabel: string | null;
   link: string | null;
 }
 
@@ -33,7 +37,7 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
 
   return (
     <div
-      className="relative w-full rounded-2xl overflow-hidden shadow-sm touch-pan-y"
+      className="relative w-full rounded-3xl overflow-hidden shadow-lg touch-pan-y"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
@@ -44,17 +48,40 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
         setTouchStartX(null);
       }}
     >
-      <div className="relative w-full aspect-[16/7] sm:aspect-[21/6] bg-muted">
+      <div className="relative w-full aspect-[4/5] sm:aspect-[16/8] lg:aspect-[21/7] bg-muted">
         {banners.map((banner, i) => {
-          const slide = (
-            <Image
-              src={banner.image}
-              alt={banner.alt}
-              fill
-              priority={i === 0}
-              className="object-cover"
-              sizes="(min-width: 1280px) 1280px, 100vw"
-            />
+          const hasOverlay = banner.title || banner.subtitle || banner.ctaLabel;
+          const content = (
+            <>
+              <Image
+                src={banner.image}
+                alt={banner.alt}
+                fill
+                priority={i === 0}
+                className="object-cover"
+                sizes="(min-width: 1280px) 1280px, 100vw"
+              />
+              {hasOverlay && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
+                  <div className="absolute inset-0 flex flex-col justify-center gap-3 px-6 sm:px-12 lg:px-16 max-w-xl">
+                    {banner.title && (
+                      <h2 className="font-serif italic text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight text-balance">
+                        {banner.title}
+                      </h2>
+                    )}
+                    {banner.subtitle && (
+                      <p className="text-sm sm:text-lg text-white/90 leading-relaxed">{banner.subtitle}</p>
+                    )}
+                    {banner.ctaLabel && (
+                      <Button asChild variant="accent" size="lg" className="self-start mt-2">
+                        <span>{banner.ctaLabel}</span>
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+            </>
           );
           return (
             <div
@@ -64,10 +91,10 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
             >
               {banner.link ? (
                 <Link href={banner.link} className="block w-full h-full" tabIndex={i === active ? 0 : -1}>
-                  {slide}
+                  {content}
                 </Link>
               ) : (
-                slide
+                <div className="relative w-full h-full">{content}</div>
               )}
             </div>
           );
@@ -79,19 +106,19 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
           <button
             onClick={() => goTo(active - 1)}
             aria-label="Bannerul anterior"
-            className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 shadow-lg text-primary hover:text-accent flex items-center justify-center transition-colors"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/90 shadow-lg text-primary hover:text-accent flex items-center justify-center transition-colors"
           >
             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden />
           </button>
           <button
             onClick={() => goTo(active + 1)}
             aria-label="Bannerul următor"
-            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 shadow-lg text-primary hover:text-accent flex items-center justify-center transition-colors"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/90 shadow-lg text-primary hover:text-accent flex items-center justify-center transition-colors"
           >
             <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden />
           </button>
 
-          <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
+          <div className="absolute bottom-4 inset-x-0 z-20 flex items-center justify-center gap-2">
             {banners.map((banner, i) => (
               <button
                 key={banner.id}

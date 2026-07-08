@@ -6,6 +6,9 @@ interface BannerDefaults {
   id?: string;
   image?: string;
   alt?: string;
+  title?: string | null;
+  subtitle?: string | null;
+  ctaLabel?: string | null;
   link?: string | null;
   order?: number;
 }
@@ -29,7 +32,25 @@ export default function BannerForm({
         name="alt"
         required
         defaultValue={defaults?.alt}
-        placeholder="Ofertă de vară -20% la sisteme multisplit"
+        placeholder="Ofertă de vară -20% la hârtie igienică"
+      />
+      <AdminInput
+        label="Titlu (opțional, afișat suprapus pe banner)"
+        name="title"
+        defaultValue={defaults?.title ?? ""}
+        placeholder="Oferte speciale"
+      />
+      <AdminInput
+        label="Subtitlu (opțional)"
+        name="subtitle"
+        defaultValue={defaults?.subtitle ?? ""}
+        placeholder="pentru confortul fiecărei familii!"
+      />
+      <AdminInput
+        label="Text buton (opțional)"
+        name="ctaLabel"
+        defaultValue={defaults?.ctaLabel ?? ""}
+        placeholder="Vezi ofertele"
       />
       <AdminInput
         label="Link (opțional)"

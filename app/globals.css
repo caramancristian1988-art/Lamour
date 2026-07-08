@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------
-   Design tokens — Asociația Nevăzătorilor din Moldova
-   Palette: vișiniu / roșu accent / roz pudrat / roz foarte deschis / crem
+   Design tokens — L'amour Cu Dragoste
+   Palette: vișiniu profund / roz pudrat / roz foarte deschis / ivoriu
 --------------------------------------------------------------------- */
 :root {
   --radius: 0.875rem;
 
   /* Raw brand palette */
-  --brand-maroon: #6b100f;
-  --brand-maroon-dark: #4a0b0a;
-  --brand-red: #891817;
-  --brand-red-dark: #6c1211;
-  --brand-rose: #d9afad;
-  --brand-rose-light: #e2c1bc;
-  --brand-cream: #ede8e5;
-  --brand-ink: #241615;
-  --brand-gray: #6b5d5b;
+  --brand-maroon: #710808;
+  --brand-maroon-dark: #520606;
+  --brand-red: #9d5654;
+  --brand-red-dark: #7e4442;
+  --brand-rose: #d8b2b1;
+  --brand-rose-light: #e9d0ce;
+  --brand-cream: #efedeb;
+  --brand-ink: #652f37;
+  --brand-gray: #8a7472;
 
   /* Semantic tokens (shadcn-style) */
   --background: var(--brand-cream);
@@ -34,7 +34,7 @@
   --secondary-foreground: #3a1211;
 
   --muted: #f4f0ee;
-  --muted-foreground: #746663;
+  --muted-foreground: #86696c;
 
   --accent: var(--brand-red);
   --accent-foreground: #ffffff;
@@ -45,8 +45,8 @@
   --success: #146c43;
   --success-foreground: #ffffff;
 
-  --border: #e4dad7;
-  --input: #ddd0cc;
+  --border: var(--brand-rose);
+  --input: #cf9c9a;
   --ring: var(--brand-red);
 }
 
@@ -87,8 +87,11 @@
   --radius-md: calc(var(--radius) - 0.125rem);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 0.375rem);
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.375rem;
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-playfair), "Playfair Display", Georgia, serif;
 
   --animate-fade-in: fade-in 0.5s ease-out both;
   --animate-slide-up: slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -155,6 +158,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+h1, h2, h3 {
+  font-family: var(--font-serif);
+}
+
 /* Generous, WCAG-friendly focus ring on every interactive element. */
 :focus-visible {
   outline: 3px solid var(--ring);
@@ -188,7 +195,7 @@ body {
    background texture, never as a dominant pattern.
 --------------------------------------------------------------------- */
 .bg-motif {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%236B100F' stroke-width='1.1'%3E%3Cpath d='M32 4 L40 20 L32 36 L24 20 Z'/%3E%3Cpath d='M4 32 L20 24 L36 32 L20 40 Z' opacity='0'/%3E%3Ccircle cx='32' cy='20' r='2.4'/%3E%3Cpath d='M8 52 L16 44 L24 52 L16 60 Z'/%3E%3Cpath d='M48 52 L56 44 L64 52 L56 60 Z'/%3E%3Cpath d='M-8 52 L0 44 L8 52 L0 60 Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23710808' stroke-width='1'%3E%3Cg transform='translate(32,14)'%3E%3Cellipse cx='0' cy='-4' rx='2' ry='4'/%3E%3Cellipse cx='0' cy='4' rx='2' ry='4'/%3E%3Cellipse cx='-4' cy='0' rx='4' ry='2'/%3E%3Cellipse cx='4' cy='0' rx='4' ry='2'/%3E%3Ccircle r='1.4' fill='%23710808'/%3E%3C/g%3E%3Cpath d='M4 50 C8 44 16 44 20 50 C16 52 8 52 4 50 Z'/%3E%3Cpath d='M2 54 Q8 50 14 54'/%3E%3Cpath d='M44 50 C48 44 56 44 60 50 C56 52 48 52 44 50 Z'/%3E%3Cpath d='M46 54 Q52 50 58 54'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 64px 64px;
 }

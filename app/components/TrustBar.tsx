@@ -1,10 +1,10 @@
-import { Truck, ShieldCheck, RotateCcw, HeadphonesIcon } from "lucide-react";
+import { Leaf, Layers, MapPin, Accessibility } from "lucide-react";
 
 const items = [
-  { icon: Truck, title: "Transport gratuit", subtitle: "Pentru comenzi peste 1500 MDL" },
-  { icon: ShieldCheck, title: "Plată securizată", subtitle: "Plăți online 100% sigure" },
-  { icon: RotateCcw, title: "Retur 14 zile", subtitle: "Drept de retur fără griji" },
-  { icon: HeadphonesIcon, title: "Suport dedicat", subtitle: "Suntem aici să te ajutăm" },
+  { icon: Leaf, title: "100% Celuloză", subtitle: "Moale, rezistentă și prietenoasă cu pielea" },
+  { icon: Layers, title: "3 Straturi", subtitle: "Pentru extra rezistență și absorbție" },
+  { icon: MapPin, title: "Fabricat în Moldova", subtitle: "Susținem locurile de muncă și economia locală" },
+  { icon: Accessibility, title: "Accesibil pentru toți", subtitle: "Susținem incluziunea persoanelor cu dizabilități" },
 ];
 
 export default function TrustBar() {

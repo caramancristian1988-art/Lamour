@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import {
   fallbackCategories,
-  fallbackProducts,
   fallbackPopularProducts,
   fallbackOfferProducts,
 } from "@/lib/fallbackData";
@@ -10,14 +9,14 @@ import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
 import TrustBar from "@/app/components/TrustBar";
 import ReviewsSection from "@/app/components/ReviewsSection";
+import AboutTeaser from "@/app/components/AboutTeaser";
 
 export const revalidate = 3600;
 
 async function getData() {
   try {
-    const [categories, products, popularProducts, reviews, banners] = await Promise.all([
+    const [categories, popularProducts, reviews, banners] = await Promise.all([
       prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
-      prisma.product.findMany({ take: 4, orderBy: { rating: "desc" } }),
       prisma.product.findMany({ take: 4, orderBy: { reviewCount: "desc" } }),
       prisma.review.findMany({
         where: { approved: true },
@@ -29,7 +28,6 @@ async function getData() {
     ]);
     return {
       categories,
-      products,
       popularProducts,
       offerProducts: fallbackOfferProducts.slice(0, 4),
       reviews,
@@ -38,7 +36,6 @@ async function getData() {
   } catch {
     return {
       categories: fallbackCategories,
-      products: fallbackProducts,
       popularProducts: fallbackPopularProducts,
       offerProducts: fallbackOfferProducts.slice(0, 4),
       reviews: [],
@@ -48,27 +45,27 @@ async function getData() {
 }
 
 export default async function HomePage() {
-  const { categories, products, popularProducts, offerProducts, reviews, banners } = await getData();
+  const { categories, popularProducts, offerProducts, reviews, banners } = await getData();
 
   return (
     <main>
       <Hero banners={banners} />
+      <TrustBar />
       <CategoryGrid categories={categories} />
-      <ProductsSection products={products} />
-      <ProductsSection
-        products={popularProducts}
-        title="Produse"
-        highlighted="populare"
-        viewAllHref="/produse?sort=rating"
-      />
+      <AboutTeaser />
       <ProductsSection
         products={offerProducts}
         title="Oferte"
         highlighted="speciale"
         viewAllHref="/produse?oferte=1"
       />
+      <ProductsSection
+        products={popularProducts}
+        title="Produse"
+        highlighted="populare"
+        viewAllHref="/produse?sort=rating"
+      />
       {reviews.length > 0 && <ReviewsSection reviews={reviews} />}
-      <TrustBar />
     </main>
   );
 }

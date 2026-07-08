@@ -9,6 +9,7 @@ import FavoritesBadge from "./FavoritesBadge";
 import CartBadge from "./CartBadge";
 import AllCategoriesMenu from "./AllCategoriesMenu";
 import AccountMenuLink from "./AccountMenuLink";
+import { MotifDivider } from "@/app/components/ui/motif";
 
 const fallbackProductsDropdown = [
   { id: "categorie-1", slug: "categorie-1", name: "Categoria unu", image: null },
@@ -145,6 +146,11 @@ export default function StickyHeader({
             </div>
           )}
 
+          {produseEnabled && (
+            <Link href="/produse?oferte=1" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+              Oferte
+            </Link>
+          )}
           {proiecteEnabled && (
             <Link href="/proiecte" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
               Proiecte
@@ -157,7 +163,7 @@ export default function StickyHeader({
           )}
           {blogEnabled && (
             <Link href="/blog" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
-              Blog
+              Noutăți
             </Link>
           )}
           {contactEnabled && (
@@ -169,6 +175,8 @@ export default function StickyHeader({
 
         <div />
       </div>
+
+      <MotifDivider className="py-1.5" />
     </div>
   );
 }
