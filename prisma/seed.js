@@ -79,16 +79,27 @@ async function main() {
     ],
   });
 
-  await prisma.banner.create({
-    data: {
-      image: "/50503435-901a-4bc2-8157-15bb46303786.png",
-      alt: "Oferte speciale L'amour Cu Dragoste — pentru confortul fiecărei familii",
-      title: null,
-      subtitle: null,
-      ctaLabel: "Vezi ofertele",
-      link: "/produse?oferte=1",
-      order: 0,
-    },
+  await prisma.banner.createMany({
+    data: [
+      {
+        image: "/50503435-901a-4bc2-8157-15bb46303786.png",
+        alt: "Oferte speciale L'amour Cu Dragoste — pentru confortul fiecărei familii",
+        title: null,
+        subtitle: null,
+        ctaLabel: "Vezi ofertele",
+        link: "/produse?oferte=1",
+        order: 0,
+      },
+      {
+        image: "/banner-calitate-premium.png",
+        alt: "Calitate premium în fiecare detaliu — L'amour Cu Dragoste",
+        title: null,
+        subtitle: null,
+        ctaLabel: "Vezi produsele",
+        link: "/produse",
+        order: 1,
+      },
+    ],
   });
 
   console.log("✅ Seed completed successfully!");
