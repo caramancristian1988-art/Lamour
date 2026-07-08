@@ -49,14 +49,24 @@ export async function sendNewsletterCampaignAction(
 
   const subject = String(formData.get("subject") ?? "").trim();
   const message = String(formData.get("message") ?? "").trim();
+  const subscriberIds = String(formData.get("subscriberIds") ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
 
   if (!subject || !message) {
     return { error: "Completează subiectul și mesajul." };
   }
+  if (subscriberIds.length === 0) {
+    return { error: "Selectează cel puțin un abonat." };
+  }
 
-  const subscribers = await prisma.newsletterSubscriber.findMany({ select: { email: true } });
+  const subscribers = await prisma.newsletterSubscriber.findMany({
+    where: { id: { in: subscriberIds } },
+    select: { email: true },
+  });
   if (subscribers.length === 0) {
-    return { error: "Nu există niciun abonat momentan." };
+    return { error: "Nu există niciun abonat selectat." };
   }
 
   const html = `
