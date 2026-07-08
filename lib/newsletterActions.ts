@@ -49,6 +49,7 @@ export async function sendNewsletterCampaignAction(
 
   const subject = String(formData.get("subject") ?? "").trim();
   const message = String(formData.get("message") ?? "").trim();
+  const offerBadge = String(formData.get("offerBadge") ?? "").trim();
   const subscriberIds = String(formData.get("subscriberIds") ?? "")
     .split(",")
     .map((id) => id.trim())
@@ -88,13 +89,14 @@ export async function sendNewsletterCampaignAction(
       ${products
         .map(
           (p) => `
-        <a href="${siteUrl}/produse/${p.slug}" style="display:flex;align-items:center;gap:12px;text-decoration:none;border:1px solid #e5dedd;border-radius:12px;padding:12px;margin-bottom:10px">
+        <a href="${siteUrl}/produse/${p.slug}" style="position:relative;display:flex;align-items:center;gap:12px;text-decoration:none;border:1px solid #e5dedd;border-radius:12px;padding:12px;margin-bottom:10px">
           ${
             p.image
               ? `<img src="${p.image}" alt="${escapeHtml(p.name)}" width="56" height="56" style="object-fit:contain;border-radius:8px;background:#f5f0ef" />`
               : ""
           }
           <div>
+            ${offerBadge ? `<p style="margin:0 0 4px;display:inline-block;background:#6b100f;color:#fff;font-weight:bold;font-size:11px;padding:2px 8px;border-radius:999px">${escapeHtml(offerBadge)}</p>` : ""}
             <p style="margin:0;color:#241615;font-weight:bold;font-size:14px">${escapeHtml(p.name)}</p>
             <p style="margin:4px 0 0;color:#6b100f;font-weight:bold;font-size:14px">
               ${p.price.toLocaleString("ro-MD")} MDL
