@@ -8,7 +8,6 @@ import {
 import Hero from "@/app/components/Hero";
 import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
-import ServicesSection from "@/app/components/ServicesSection";
 import TrustBar from "@/app/components/TrustBar";
 import ReviewsSection from "@/app/components/ReviewsSection";
 
@@ -65,7 +64,6 @@ export default async function HomePage() {
         highlighted="speciale"
         viewAllHref="/produse?oferte=1"
       />
-      <ServicesSection />
       {reviews.length > 0 && <ReviewsSection reviews={reviews} />}
       <TrustBar />
     </main>

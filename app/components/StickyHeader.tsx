@@ -16,18 +16,8 @@ const fallbackProductsDropdown = [
   { id: "categorie-3", slug: "categorie-3", name: "Categoria trei", image: null },
 ];
 
-const servicesDropdown = [
-  { href: "/servicii/instalare", label: "Instalare" },
-  { href: "/servicii/mentenanta", label: "Mentenanță" },
-  { href: "/servicii/diagnosticare", label: "Diagnosticare & Reparații" },
-  { href: "/servicii/consultanta", label: "Consultanță" },
-  { href: "/servicii/multisplit", label: "Sisteme multisplit" },
-  { href: "/servicii/comerciale", label: "Sisteme comerciale" },
-];
-
 export default function StickyHeader({
   produseEnabled = true,
-  serviciiEnabled = true,
   proiecteEnabled = true,
   despreEnabled = true,
   blogEnabled = true,
@@ -70,7 +60,6 @@ export default function StickyHeader({
               </Link>
               <MobileMenuButton
                 produseEnabled={produseEnabled}
-                serviciiEnabled={serviciiEnabled}
                 proiecteEnabled={proiecteEnabled}
                 despreEnabled={despreEnabled}
                 blogEnabled={blogEnabled}
@@ -150,29 +139,6 @@ export default function StickyHeader({
                     className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
                   >
                     {item.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {serviciiEnabled && (
-            <div className="relative group">
-              <Link
-                href="/servicii"
-                className="flex items-center gap-1 py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
-              >
-                Servicii
-                <ChevronDown className="w-3.5 h-3.5" aria-hidden />
-              </Link>
-              <div className="absolute top-full left-0 bg-popover rounded-xl shadow-xl border border-border py-2 min-w-[200px] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
-                {servicesDropdown.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
-                  >
-                    {item.label}
                   </Link>
                 ))}
               </div>

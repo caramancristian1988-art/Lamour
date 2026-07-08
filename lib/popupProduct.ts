@@ -199,7 +199,6 @@ export async function updatePopupTimerAction(formData: FormData) {
         {
           popupCountdownMinutes: minutes,
           produseEnabled: true,
-          serviciiEnabled: true,
           proiecteEnabled: false,
           despreEnabled: true,
           blogEnabled: true,

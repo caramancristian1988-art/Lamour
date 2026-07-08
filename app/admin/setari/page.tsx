@@ -8,7 +8,6 @@ import { updateSettingsAction } from "@/lib/adminSettingsActions";
 
 const SECTION_TOGGLES = [
   { name: "produseEnabled", label: "Produse", description: "Listele de produse, paginile de categorie și de detaliu." },
-  { name: "serviciiEnabled", label: "Servicii", description: "Pagina de servicii și sub-paginile ei." },
   { name: "proiecteEnabled", label: "Proiecte", description: "Portofoliul de proiecte realizate." },
   { name: "despreEnabled", label: "Despre noi", description: "Pagina de prezentare a companiei." },
   { name: "blogEnabled", label: "Blog", description: "Articolele de blog și paginile de categorie." },
@@ -34,7 +33,7 @@ export default async function AdminSetariPage() {
         <div>
           <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">Date de contact</p>
           <p className="text-xs text-muted-foreground mb-3">
-            Telefonul și emailul afișate peste tot pe site (bara de sus, butonul flotant, paginile de servicii și contact),
+            Telefonul și emailul afișate peste tot pe site (bara de sus, butonul flotant, pagina de contact),
             plus linkurile WhatsApp și Viber, generate automat din același număr.
           </p>
           <div className="flex flex-col gap-3">

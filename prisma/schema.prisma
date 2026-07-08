@@ -93,58 +93,6 @@ model BlogPost {
   createdAt   DateTime @default(now())
 }
 
-model Service {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String
-  image       String?
-  detailImage String?
-  heroImageDesktop String?
-  href        String?
-  section     String   @default("principale")
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-}
-
-model ServiceStep {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  serviceId   String   @db.ObjectId
-  order       Int      @default(0)
-  title       String
-  description String
-  image       String?
-  createdAt   DateTime @default(now())
-}
-
-model ServiceFeature {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  serviceId   String   @db.ObjectId
-  order       Int      @default(0)
-  title       String
-  description String
-  icon        String   @default("award")
-  createdAt   DateTime @default(now())
-}
-
-model ServiceChecklistItem {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  serviceId String   @db.ObjectId
-  order     Int      @default(0)
-  text      String
-  createdAt DateTime @default(now())
-}
-
-model ServiceTestimonial {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  serviceId String   @db.ObjectId
-  order     Int      @default(0)
-  text      String
-  name      String
-  city      String
-  initials  String
-  createdAt DateTime @default(now())
-}
-
 model ProductFaq {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   productId String   @db.ObjectId
@@ -195,7 +143,6 @@ model Settings {
   seoTitle    String?
   seoDescription String?
   produseEnabled  Boolean @default(true)
-  serviciiEnabled Boolean @default(true)
   proiecteEnabled Boolean @default(false)
   despreEnabled   Boolean @default(true)
   blogEnabled     Boolean @default(true)

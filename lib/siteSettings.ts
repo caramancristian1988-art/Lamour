@@ -4,7 +4,6 @@ import { prisma } from "./prisma";
 
 export interface SectionFlags {
   produseEnabled: boolean;
-  serviciiEnabled: boolean;
   proiecteEnabled: boolean;
   despreEnabled: boolean;
   blogEnabled: boolean;
@@ -15,7 +14,6 @@ export interface SectionFlags {
 
 const DEFAULTS: SectionFlags = {
   produseEnabled: true,
-  serviciiEnabled: true,
   proiecteEnabled: false,
   despreEnabled: true,
   blogEnabled: true,
@@ -46,7 +44,6 @@ export const getSectionFlags = cache(async (): Promise<SectionFlags> => {
   if (!settings) return DEFAULTS;
   return {
     produseEnabled: settings.produseEnabled ?? DEFAULTS.produseEnabled,
-    serviciiEnabled: settings.serviciiEnabled ?? DEFAULTS.serviciiEnabled,
     proiecteEnabled: settings.proiecteEnabled ?? DEFAULTS.proiecteEnabled,
     despreEnabled: settings.despreEnabled ?? DEFAULTS.despreEnabled,
     blogEnabled: settings.blogEnabled ?? DEFAULTS.blogEnabled,

@@ -14,15 +14,6 @@ const productsDropdown = [
   { href: "/produse?cat=categorie-3", label: "Categoria trei" },
 ];
 
-const servicesDropdown = [
-  { href: "/servicii/instalare", label: "Instalare" },
-  { href: "/servicii/mentenanta", label: "Mentenanță" },
-  { href: "/servicii/diagnosticare", label: "Diagnosticare & Reparații" },
-  { href: "/servicii/consultanta", label: "Consultanță" },
-  { href: "/servicii/multisplit", label: "Sisteme multisplit" },
-  { href: "/servicii/comerciale", label: "Sisteme comerciale" },
-];
-
 const baseNavLinks = [
   { href: "/proiecte", label: "Proiecte", flag: "proiecteEnabled" as const },
   { href: "/despre", label: "Despre noi", flag: "despreEnabled" as const },
@@ -32,17 +23,15 @@ const baseNavLinks = [
 
 export default function MobileMenuButton({
   produseEnabled = true,
-  serviciiEnabled = true,
   proiecteEnabled = true,
   despreEnabled = true,
   blogEnabled = true,
   contactEnabled = true,
 }: Partial<SectionFlags>) {
-  const flags = { produseEnabled, serviciiEnabled, proiecteEnabled, despreEnabled, blogEnabled, contactEnabled };
+  const flags = { produseEnabled, proiecteEnabled, despreEnabled, blogEnabled, contactEnabled };
   const navLinks = baseNavLinks.filter((l) => flags[l.flag]);
   const [open, setOpen] = useState(false);
   const [produseOpen, setProduseOpen] = useState(false);
-  const [serviciiOpen, setServiciiOpen] = useState(false);
 
   function closeMenu() {
     setOpen(false);
@@ -87,37 +76,6 @@ export default function MobileMenuButton({
               <div className={`overflow-hidden transition-all duration-200 ${produseOpen ? "max-h-96" : "max-h-0"}`}>
                 <div className="flex flex-col pb-1">
                   {productsDropdown.map((item) => (
-                    <SheetClose asChild key={item.href}>
-                      <Link href={item.href} className="px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-accent transition-colors">
-                        {item.label}
-                      </Link>
-                    </SheetClose>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {serviciiEnabled && (
-            <div>
-              <div className="flex items-center rounded-xl hover:bg-muted transition-colors">
-                <SheetClose asChild>
-                  <Link href="/servicii" className="flex-1 px-3 py-3.5 text-primary hover:text-accent transition-colors text-base font-bold">
-                    Servicii
-                  </Link>
-                </SheetClose>
-                <button
-                  onClick={() => setServiciiOpen((v) => !v)}
-                  aria-label="Arată categoriile de servicii"
-                  aria-expanded={serviciiOpen}
-                  className="px-3 py-3.5 text-primary hover:text-accent transition-colors"
-                >
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${serviciiOpen ? "rotate-180" : ""}`} aria-hidden />
-                </button>
-              </div>
-              <div className={`overflow-hidden transition-all duration-200 ${serviciiOpen ? "max-h-96" : "max-h-0"}`}>
-                <div className="flex flex-col pb-1">
-                  {servicesDropdown.map((item) => (
                     <SheetClose asChild key={item.href}>
                       <Link href={item.href} className="px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-accent transition-colors">
                         {item.label}

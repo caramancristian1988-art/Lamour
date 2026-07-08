@@ -15,7 +15,6 @@ const footerLinks = {
   "SUPORT": [
     { label: "Contact", href: "/contact" },
     { label: "Întrebări frecvente", href: "/faq" },
-    { label: "Servicii", href: "/servicii" },
     { label: "Proiecte", href: "/proiecte" },
   ],
   "EXPLOREAZĂ": [

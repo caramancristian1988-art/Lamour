@@ -7,13 +7,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/`, changeFrequency: "daily", priority: 1 },
     { url: `${BASE_URL}/produse`, changeFrequency: "daily", priority: 0.9 },
-    { url: `${BASE_URL}/servicii`, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${BASE_URL}/servicii/instalare`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE_URL}/servicii/mentenanta`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE_URL}/servicii/diagnosticare`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE_URL}/servicii/consultanta`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE_URL}/servicii/multisplit`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${BASE_URL}/servicii/comerciale`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/despre`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/blog`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/contact`, changeFrequency: "monthly", priority: 0.6 },
