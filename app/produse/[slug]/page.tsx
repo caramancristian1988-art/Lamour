@@ -222,7 +222,7 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
     { min: baseProducts[0]?.price ?? 0, max: baseProducts[0]?.price ?? 0 }
   );
 
-  const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology)))
+  const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology).filter(Boolean)))
     .sort()
     .map((value) => ({ value, count: baseProducts.filter((p) => p.technology === value).length }));
 
@@ -240,8 +240,9 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
 
       {/* MOBILE hero */}
       <section className="sm:hidden relative h-[260px] overflow-hidden">
+        {/* Placeholder — swap for a real category/product photo. */}
         <Image
-          src="/IMG_2851.PNG"
+          src="https://placehold.co/800x600/D8B2B1/652F37?text=L%27amour+Cu+Dragoste"
           alt=""
           fill
           className="object-cover object-bottom"
@@ -268,7 +269,8 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
       <section className="hidden sm:block relative bg-background overflow-hidden h-[300px] lg:h-[340px]">
         <div className="absolute inset-0 flex justify-end">
           <div className="w-[65%] h-full relative">
-            <Image src="/IMG_2848.PNG" alt="" fill className="object-cover object-center" priority sizes="65vw" />
+            {/* Placeholder — swap for a real category/product photo. */}
+            <Image src="https://placehold.co/1200x600/D8B2B1/652F37?text=L%27amour+Cu+Dragoste" alt="" fill className="object-cover object-center" priority sizes="65vw" />
           </div>
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-background from-25% via-background/60 via-40% to-transparent to-65% pointer-events-none" />
@@ -424,7 +426,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
   const specs = [
     product.brand ? { label: "Brand", value: product.brand } : null,
     product.btu ? { label: "Capacitate", value: `${(product.btu / 1000).toFixed(0)}000 BTU` } : null,
-    { label: "Tehnologie", value: product.technology },
+    product.technology ? { label: "Tehnologie", value: product.technology } : null,
     product.energyClass ? { label: "Clasă energetică", value: product.energyClass } : null,
     category ? { label: "Categorie", value: category.name } : null,
     { label: "Disponibilitate", value: product.availability },

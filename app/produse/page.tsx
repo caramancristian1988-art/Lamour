@@ -129,7 +129,7 @@ export default async function ProdusePage({
     { min: baseProducts[0]?.price ?? 0, max: baseProducts[0]?.price ?? 0 }
   );
 
-  const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology)))
+  const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology).filter(Boolean)))
     .sort()
     .map((value) => ({ value, count: baseProducts.filter((p) => p.technology === value).length }));
 

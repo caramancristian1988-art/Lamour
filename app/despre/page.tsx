@@ -12,21 +12,22 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: `Despre noi | ${SITE_NAME}`,
-  description: `Află povestea ${SITE_NAME}, organizație dedicată sprijinirii persoanelor nevăzătoare și cu deficiențe de vedere din Moldova.`,
+  description: `Află povestea ${SITE_NAME}, producător moldovenesc de hârtie igienică și produse de uz casnic, dedicat calității și incluziunii sociale.`,
 };
 
 const stats = [
   { value: "10+", label: "Ani de activitate" },
-  { value: "2500+", label: "Persoane sprijinite" },
-  { value: "40+", label: "Programe derulate" },
-  { value: "150+", label: "Voluntari implicați" },
+  { value: "50+", label: "Angajați" },
+  { value: "12+", label: "Produse în gamă" },
+  { value: "100%", label: "Celuloză" },
 ];
 
+// Placeholder team — swap for real staff photos when available.
 const team = [
-  { name: "Alexandru Popescu", role: "Director executiv", image: "/IMG_2945.PNG" },
-  { name: "Mihai Rotaru", role: "Coordonator programe", image: "/IMG_2946.PNG" },
-  { name: "Ion Cebotari", role: "Specialist orientare și mobilitate", image: "/IMG_2947.PNG" },
-  { name: "Vladimir Turcanu", role: "Consilier social", image: "/IMG_2948.PNG" },
+  { name: "Alexandru Popescu", role: "Director executiv", image: "https://placehold.co/400x400/D8B2B1/652F37?text=Foto+echipa" },
+  { name: "Mihai Rotaru", role: "Responsabil producție", image: "https://placehold.co/400x400/D8B2B1/652F37?text=Foto+echipa" },
+  { name: "Ion Cebotari", role: "Specialist control calitate", image: "https://placehold.co/400x400/D8B2B1/652F37?text=Foto+echipa" },
+  { name: "Vladimir Turcanu", role: "Coordonator incluziune socială", image: "https://placehold.co/400x400/D8B2B1/652F37?text=Foto+echipa" },
 ];
 
 export default async function DesprePage() {
@@ -52,13 +53,13 @@ export default async function DesprePage() {
               </p>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary">
-                Un drum accesibil este <span className="text-accent">misiunea</span> noastră.
+                Calitate cu <span className="text-accent">suflet</span>, în fiecare produs.
               </h1>
 
               <p className="text-sm sm:text-base text-foreground/80 leading-relaxed mb-8 max-w-md">
-                Suntem o organizație din Moldova dedicată sprijinirii persoanelor nevăzătoare și
-                cu deficiențe de vedere. De la consultanță și orientare, până la programe de
-                sprijin continuu, ne asigurăm că fiecare persoană are alături o comunitate.
+                Producem hârtie igienică, șervețele și alte produse de uz casnic din 100% celuloză,
+                cu grijă pentru oameni și pentru natură. Ne implicăm activ în susținerea incluziunii
+                sociale, oferind locuri de muncă persoanelor cu dizabilități.
               </p>
 
               <div className="flex flex-wrap gap-3">
@@ -73,8 +74,9 @@ export default async function DesprePage() {
 
             {/* RIGHT: Image */}
             <div className="relative w-full rounded-2xl overflow-hidden shadow-xl aspect-[4/3] lg:aspect-auto lg:h-[380px]">
+              {/* Placeholder — swap for a real production-line/factory photo. */}
               <Image
-                src="/IMG_2935.PNG"
+                src="https://placehold.co/800x600/9D5654/ffffff?text=Fabrica+noastra"
                 alt=""
                 fill
                 className="object-cover object-center"
@@ -99,24 +101,26 @@ export default async function DesprePage() {
               </h2>
               <div className="space-y-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
                 <p>
-                  {SITE_NAME} a apărut din dorința de a oferi persoanelor nevăzătoare și cu
-                  deficiențe de vedere sprijin real, adaptat nevoilor fiecăruia.
+                  {SITE_NAME} a apărut din dorința de a oferi familiilor din Moldova produse de
+                  hârtie și igienă de calitate, fabricate local, din 100% celuloză.
                 </p>
                 <p>
                   De peste 10 ani, am crescut alături de comunitate și am dezvoltat parteneriate
-                  solide cu instituții și organizații din Moldova și de peste hotare.
+                  solide, susținând totodată incluziunea socială prin colaborarea cu Asociația
+                  Nevăzătorilor din Moldova, care ne oferă o parte din echipă.
                 </p>
                 <p>
-                  Fiecare persoană sprijinită este tratată cu respect, iar fiecare relație este
-                  un parteneriat pe termen lung.
+                  Fiecare produs care iese din fabrica noastră poartă grija pentru oameni și pentru
+                  natură, de la materia primă până la ambalaj.
                 </p>
               </div>
             </div>
 
             <div className="relative order-2 lg:order-1">
               <div className="relative h-[220px] sm:h-[300px] lg:h-[360px] rounded-2xl overflow-hidden shadow-xl">
+                {/* Placeholder — swap for a real photo of the production/packaging line. */}
                 <Image
-                  src="/IMG_2937.PNG"
+                  src="https://placehold.co/800x600/D8B2B1/652F37?text=Productia+noastra"
                   alt=""
                   fill
                   className="object-cover object-center"
