@@ -121,6 +121,10 @@ export default function StickyHeader({
 
       {/* ══ ROW 2: Navbar — desktop only ══ */}
       <div className="hidden lg:flex items-center justify-center gap-10 max-w-[96rem] mx-auto px-6 border-b border-border">
+        {produseEnabled && (
+          <AllCategoriesMenu categories={productsDropdown} buttonClassName="flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white text-sm font-bold px-5 h-10 rounded-xl transition-colors uppercase tracking-wide shrink-0" />
+        )}
+
         <Link href="/" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
           Acasă
         </Link>
