@@ -14,6 +14,7 @@ interface ProductCardProps {
   price: number;
   oldPrice?: number | null;
   image?: string | null;
+  images?: string[];
   btu?: number | null;
   technology?: string | null;
   energyClass?: string | null;
@@ -31,6 +32,7 @@ export default function ProductCard({
   price,
   oldPrice,
   image,
+  images,
   btu,
   technology,
   energyClass,
@@ -40,6 +42,10 @@ export default function ProductCard({
   installmentsEnabled,
   installmentMonths = 4,
 }: ProductCardProps) {
+  // A leftover placehold.co seed image doesn't count as a "real" main image —
+  // prefer an actual uploaded gallery photo over it when one exists.
+  const isPlaceholder = image?.includes("placehold.co") ?? false;
+  const displayImage = (!isPlaceholder && image) || images?.[0] || image || null;
   const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
   const discountAmount = oldPrice ? Math.round(oldPrice - price) : null;
   const displayBadge = badge ?? (discount ? `-${discount}%` : null);
@@ -57,9 +63,9 @@ export default function ProductCard({
       {/* Image area */}
       <div className="relative h-[180px] sm:h-[240px] lg:h-[280px] flex items-center justify-center bg-white overflow-hidden">
         <Link href={`/produse/${slug}`} className="w-full h-full flex items-center justify-center rounded-lg">
-          {image ? (
+          {displayImage ? (
             <Image
-              src={image}
+              src={displayImage}
               alt={name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
@@ -81,7 +87,7 @@ export default function ProductCard({
 
         <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
           <FavoriteButton
-            product={{ slug, name, price, oldPrice, image, btu, technology, energyClass, rating, reviewCount, badge }}
+            product={{ slug, name, price, oldPrice, image: displayImage, btu, technology, energyClass, rating, reviewCount, badge }}
           />
         </div>
       </div>
