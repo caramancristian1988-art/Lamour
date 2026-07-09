@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { fallbackCategories, fallbackOfferProducts } from "@/lib/fallbackData";
 import Hero from "@/app/components/Hero";
+import TrustBar from "@/app/components/TrustBar";
 import BusinessDivisions from "@/app/components/BusinessDivisions";
 import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
@@ -60,6 +61,7 @@ export default async function HomePage() {
   return (
     <main>
       <Hero banners={banners} />
+      <TrustBar />
       <CategoryGrid categories={categories} />
       <ProductsSection
         products={offerProducts}
