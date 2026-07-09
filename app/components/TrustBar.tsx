@@ -1,9 +1,9 @@
-import { Leaf, Layers, MapPin, Accessibility } from "lucide-react";
+import { ShieldCheck, Building2, MapPin, Accessibility } from "lucide-react";
 import { MotifBackground } from "@/app/components/ui/motif";
 
 const items = [
-  { icon: Leaf, title: "100% Celuloză", subtitle: "Moale, rezistentă și prietenoasă cu pielea" },
-  { icon: Layers, title: "3 Straturi", subtitle: "Pentru extra rezistență și absorbție" },
+  { icon: ShieldCheck, title: "Calitate garantată", subtitle: "Control riguros la fiecare etapă de producție" },
+  { icon: Building2, title: "4 domenii de activitate", subtitle: "Hârtie, mobilă, ambalaje și spații comerciale" },
   { icon: MapPin, title: "Fabricat în Moldova", subtitle: "Susținem locurile de muncă și economia locală" },
   { icon: Accessibility, title: "Accesibil pentru toți", subtitle: "Susținem incluziunea persoanelor cu dizabilități" },
 ];
