@@ -1,6 +1,7 @@
 import { Quote } from "lucide-react";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
+import { MotifBackground } from "@/app/components/ui/motif";
 
 interface Review {
   id: string;
@@ -25,8 +26,9 @@ function getInitials(name: string) {
 
 export default function ReviewsSection({ reviews }: Props) {
   return (
-    <section className="py-16 sm:py-20 bg-card">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="relative overflow-hidden py-16 sm:py-20 bg-background">
+      <MotifBackground />
+      <div className="relative max-w-7xl mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold text-primary tracking-tight">Ce spun clienții noștri</h2>
           <p className="text-muted-foreground mt-2">Recenzii de la familii care ne-au ales din toată Moldova</p>

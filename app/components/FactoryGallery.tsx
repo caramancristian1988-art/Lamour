@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { MotifDivider } from "@/app/components/ui/motif";
+import { MotifDivider, MotifBackground } from "@/app/components/ui/motif";
 
 // Placeholder gallery — swap each image for a real factory photo when available.
 const photos = [
@@ -15,8 +15,9 @@ const photos = [
 
 export default function FactoryGallery() {
   return (
-    <section className="py-16 sm:py-20 bg-card">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="relative overflow-hidden py-16 sm:py-20 bg-background">
+      <MotifBackground />
+      <div className="relative max-w-7xl mx-auto px-4">
         <div className="text-center mb-10">
           <p className="text-xs font-bold text-accent uppercase tracking-widest mb-3">Fabrica noastră</p>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary tracking-tight">

@@ -1,4 +1,5 @@
 import { Leaf, Layers, MapPin, Accessibility } from "lucide-react";
+import { MotifBackground } from "@/app/components/ui/motif";
 
 const items = [
   { icon: Leaf, title: "100% Celuloză", subtitle: "Moale, rezistentă și prietenoasă cu pielea" },
@@ -9,8 +10,9 @@ const items = [
 
 export default function TrustBar() {
   return (
-    <div className="bg-background py-10 sm:py-12">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="relative overflow-hidden bg-background py-10 sm:py-12">
+      <MotifBackground />
+      <div className="relative max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {items.map((item) => (
             <div key={item.title} className="flex flex-col items-center text-center gap-3">

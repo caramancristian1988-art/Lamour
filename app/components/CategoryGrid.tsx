@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { categoryIcons } from "./CategoryIcons";
+import { MotifBackground } from "@/app/components/ui/motif";
 
 interface Category {
   id: string;
@@ -18,8 +19,9 @@ interface Props {
 
 export default function CategoryGrid({ categories }: Props) {
   return (
-    <section className="py-16 sm:py-20 bg-muted">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="relative overflow-hidden py-16 sm:py-20 bg-background">
+      <MotifBackground />
+      <div className="relative max-w-7xl mx-auto px-4">
         <div className="flex items-center gap-4 mb-10 flex-wrap">
           <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight uppercase shrink-0">
             Categorii populare

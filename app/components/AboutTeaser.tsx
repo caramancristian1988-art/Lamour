@@ -1,12 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/app/components/ui/button";
-import { MotifDivider } from "@/app/components/ui/motif";
+import { MotifDivider, MotifBackground } from "@/app/components/ui/motif";
 
 export default function AboutTeaser() {
   return (
-    <section className="py-16 sm:py-20">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="relative overflow-hidden py-16 sm:py-20 bg-background">
+      <MotifBackground />
+      <div className="relative max-w-7xl mx-auto px-4">
         <MotifDivider className="mb-10 sm:mb-14" />
 
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">

@@ -21,7 +21,7 @@ export default function Hero({ banners = [] }: { banners?: BannerSlide[] }) {
   const slides = banners.length > 0 ? banners : fallbackBanners;
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-brand-cream via-white to-brand-rose-light/40 pt-6 pb-10 sm:pb-14">
+    <section className="relative overflow-hidden bg-gradient-to-br from-white via-white to-brand-rose-light/40 pt-6 pb-10 sm:pb-14">
       <MotifBackground />
       <MotifCorner className="absolute top-6 left-6 hidden sm:block" />
       <MotifCorner className="absolute bottom-6 right-6 hidden sm:block" flip />

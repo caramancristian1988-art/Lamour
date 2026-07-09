@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import ProductCard from "./ProductCard";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 import { getSectionFlags } from "@/lib/siteSettings";
+import { MotifBackground } from "@/app/components/ui/motif";
 
 interface Product {
   id: string;
@@ -32,8 +33,9 @@ interface Props {
 export default async function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", bg = "bg-background", showDiscount = false }: Props) {
   const { ratesEnabled, installmentMonths } = await getSectionFlags();
   return (
-    <section className={`py-16 sm:py-20 ${bg}`}>
-      <div className="max-w-7xl mx-auto px-4">
+    <section className={`relative overflow-hidden py-16 sm:py-20 ${bg}`}>
+      <MotifBackground />
+      <div className="relative max-w-7xl mx-auto px-4">
         <div className="flex items-end justify-between mb-10 gap-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">
             {title} <span className="text-accent">{highlighted}</span>

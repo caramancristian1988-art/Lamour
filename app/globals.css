@@ -19,7 +19,7 @@
   --brand-gray: #8a7472;
 
   /* Semantic tokens (shadcn-style) */
-  --background: var(--brand-cream);
+  --background: #ffffff;
   --foreground: var(--brand-ink);
 
   --card: #ffffff;

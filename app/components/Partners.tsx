@@ -1,3 +1,5 @@
+import { MotifBackground } from "@/app/components/ui/motif";
+
 // Placeholder partner names — swap for real partner logos when available.
 const partners = [
   "Asociația Nevăzătorilor din Moldova",
@@ -12,8 +14,9 @@ export default function Partners() {
   const track = [...partners, ...partners];
 
   return (
-    <section className="py-12 sm:py-14 bg-background border-y border-border overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 mb-6">
+    <section className="relative py-12 sm:py-14 bg-background border-y border-border overflow-hidden">
+      <MotifBackground />
+      <div className="relative max-w-7xl mx-auto px-4 mb-6">
         <p className="text-center text-xs font-bold text-muted-foreground uppercase tracking-widest">
           Parteneri și colaboratori
         </p>
