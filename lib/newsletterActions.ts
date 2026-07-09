@@ -83,40 +83,84 @@ export async function sendNewsletterCampaignAction(
 
   const siteUrl = process.env.SITE_URL || "https://example.com";
 
+  const ctaLink =
+    products.length === 1
+      ? `${siteUrl}/produse/${products[0].slug}`
+      : products.length > 1
+        ? `${siteUrl}/produse?oferte=1`
+        : `${siteUrl}/produse`;
+  const ctaLabel = products.length === 1 ? "Vezi produsul" : products.length > 1 ? "Vezi ofertele" : "Vezi produsele";
+
   const productsHtml = products.length
-    ? `
-    <div style="margin-top:24px">
-      ${products
+    ? products
         .map(
           (p) => `
-        <a href="${siteUrl}/produse/${p.slug}" style="position:relative;display:flex;align-items:center;gap:12px;text-decoration:none;border:1px solid #e5dedd;border-radius:12px;padding:12px;margin-bottom:10px">
-          ${
-            p.image
-              ? `<img src="${p.image}" alt="${escapeHtml(p.name)}" width="56" height="56" style="object-fit:contain;border-radius:8px;background:#f5f0ef" />`
-              : ""
-          }
-          <div>
-            ${offerBadge ? `<p style="margin:0 0 4px;display:inline-block;background:#6b100f;color:#fff;font-weight:bold;font-size:11px;padding:2px 8px;border-radius:999px">${escapeHtml(offerBadge)}</p>` : ""}
-            <p style="margin:0;color:#241615;font-weight:bold;font-size:14px">${escapeHtml(p.name)}</p>
-            <p style="margin:4px 0 0;color:#6b100f;font-weight:bold;font-size:14px">
-              ${p.price.toLocaleString("ro-MD")} MDL
-              ${p.oldPrice ? `<span style="color:#746663;font-weight:normal;text-decoration:line-through;margin-left:6px">${p.oldPrice.toLocaleString("ro-MD")} MDL</span>` : ""}
-            </p>
-          </div>
-        </a>`
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border:1px solid #E9D0CE;border-radius:14px;background:#ffffff">
+          <tr>
+            <td style="width:56px;padding:12px 0 12px 12px;vertical-align:middle">
+              <a href="${siteUrl}/produse/${p.slug}" style="text-decoration:none">
+                ${
+                  p.image
+                    ? `<img src="${p.image}" alt="${escapeHtml(p.name)}" width="56" height="56" style="display:block;border-radius:10px;object-fit:contain;background:#EFEDEB" />`
+                    : ""
+                }
+              </a>
+            </td>
+            <td style="padding:12px;vertical-align:middle">
+              <a href="${siteUrl}/produse/${p.slug}" style="text-decoration:none">
+                ${offerBadge ? `<span style="display:inline-block;margin-bottom:5px;background:#710808;color:#ffffff;font-weight:bold;font-size:10px;letter-spacing:0.3px;padding:3px 9px;border-radius:999px">${escapeHtml(offerBadge)}</span><br/>` : ""}
+                <span style="display:block;color:#652F37;font-weight:bold;font-size:14px;font-family:Georgia,'Times New Roman',serif">${escapeHtml(p.name)}</span>
+                <span style="display:block;margin-top:4px;color:#710808;font-weight:bold;font-size:14px">
+                  ${p.price.toLocaleString("ro-MD")} MDL
+                  ${p.oldPrice ? `<span style="color:#9D5654;font-weight:normal;text-decoration:line-through;margin-left:6px">${p.oldPrice.toLocaleString("ro-MD")} MDL</span>` : ""}
+                </span>
+              </a>
+            </td>
+          </tr>
+        </table>`
         )
-        .join("")}
-    </div>`
+        .join("")
     : "";
 
   const html = `
-    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px">
-      <h2 style="color:#6b100f;margin-bottom:16px">${escapeHtml(subject)}</h2>
-      <div style="color:#241615;line-height:1.6;white-space:pre-wrap">${escapeHtml(message)}</div>
-      ${productsHtml}
-      <p style="color:#746663;font-size:12px;margin-top:32px">${SITE_NAME}</p>
-    </div>
-  `;
+<!doctype html>
+<html lang="ro">
+  <body style="margin:0;padding:0;background:#EFEDEB">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#EFEDEB;padding:32px 16px">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #D8B2B1">
+            <tr>
+              <td style="background:#710808;padding:26px 32px;text-align:center">
+                <span style="display:block;color:#ffffff;font-size:26px;font-style:italic;font-weight:bold;font-family:Georgia,'Times New Roman',serif">L&rsquo;amour</span>
+                <span style="display:block;margin-top:2px;color:#E9D0CE;font-size:11px;letter-spacing:3px;text-transform:uppercase">Cu Dragoste</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px">
+                <h1 style="margin:0 0 14px;color:#710808;font-size:21px;font-family:Georgia,'Times New Roman',serif">${escapeHtml(subject)}</h1>
+                <div style="color:#652F37;font-size:15px;line-height:1.7;white-space:pre-wrap">${escapeHtml(message)}</div>
+                ${productsHtml}
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px auto 0">
+                  <tr>
+                    <td style="background:#9D5654;border-radius:999px">
+                      <a href="${ctaLink}" style="display:inline-block;padding:14px 34px;color:#ffffff;font-weight:bold;font-size:13px;text-decoration:none;letter-spacing:0.5px;text-transform:uppercase">${ctaLabel}</a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#F8F2F1;padding:18px 32px;text-align:center;border-top:1px solid #E9D0CE">
+                <span style="color:#9D5654;font-size:12px">${SITE_NAME}</span>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
 
   const sent = await sendMail({
     bcc: subscribers.map((s) => s.email),
