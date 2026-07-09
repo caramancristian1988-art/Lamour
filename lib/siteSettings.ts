@@ -81,6 +81,7 @@ export interface ContactInfo {
   phoneTel: string;
   phoneDigits: string;
   email: string;
+  address: string;
 }
 
 // TODO: set real contact defaults, either here or via Settings in the admin panel.
@@ -89,6 +90,7 @@ const CONTACT_DEFAULTS: ContactInfo = {
   phoneTel: "+00000000000",
   phoneDigits: "00000000000",
   email: "contact@example.com",
+  address: "Chișinău, Moldova",
 };
 
 export const getContactInfo = cache(async (): Promise<ContactInfo> => {
@@ -101,6 +103,7 @@ export const getContactInfo = cache(async (): Promise<ContactInfo> => {
     phoneTel,
     phoneDigits: phoneTel.replace(/^\+/, ""),
     email: settings.email || CONTACT_DEFAULTS.email,
+    address: settings.address || CONTACT_DEFAULTS.address,
   };
 });
 

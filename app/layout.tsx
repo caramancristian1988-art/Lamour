@@ -65,7 +65,7 @@ export default async function RootLayout({
                   </Suspense>
                   <SiteHeader {...sectionFlags} {...contactInfo} categories={headerCategories} />
                   {children}
-                  <SiteFooter {...socialLinks} />
+                  <SiteFooter {...socialLinks} {...contactInfo} />
                   <FloatingUIProvider>
                     <SiteFloatingContact {...contactInfo} />
                     <SiteDiscountPopup />

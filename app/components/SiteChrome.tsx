@@ -20,7 +20,7 @@ export function SiteHeader(props: Partial<SectionFlags> & { categories?: HeaderC
   );
 }
 
-export function SiteFooter(props: Partial<SocialLinks>) {
+export function SiteFooter(props: Partial<SocialLinks> & Partial<ContactInfo>) {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
 

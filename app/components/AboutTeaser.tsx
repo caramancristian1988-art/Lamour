@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { HeartHandshake } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { MotifDivider, MotifBackground } from "@/app/components/ui/motif";
 
@@ -30,22 +31,53 @@ export default function AboutTeaser() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="relative h-40 sm:h-48 rounded-2xl overflow-hidden col-span-2">
+          <div className="grid grid-cols-3 gap-4 auto-rows-[170px] sm:auto-rows-[190px]">
+            <div className="relative row-span-2 rounded-2xl overflow-hidden">
               {/* Placeholder — swap for a real production-line/factory photo. */}
-              <Image src="https://placehold.co/800x400/9D5654/ffffff?text=Fabrica+noastra" alt="Fabrica L'amour Cu Dragoste" fill className="object-cover" />
+              <Image
+                src="https://placehold.co/400x800/9D5654/ffffff?text=Linia+de+productie"
+                alt="Linia de producție L'amour Cu Dragoste"
+                fill
+                className="object-cover"
+              />
             </div>
-            <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
-              {/* Placeholder — swap for a real photo of the packaging line/products. */}
-              <Image src="https://placehold.co/400x300/D8B2B1/652F37?text=Produsele+noastre" alt="Produsele L'amour Cu Dragoste" fill className="object-cover" />
+            <div className="relative rounded-2xl overflow-hidden">
+              {/* Placeholder — swap for a real photo of the factory building. */}
+              <Image
+                src="https://placehold.co/400x300/D8B2B1/652F37?text=Fabrica+noastra"
+                alt="Fabrica L'amour Cu Dragoste"
+                fill
+                className="object-cover"
+              />
             </div>
-            <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
+            <div className="relative rounded-2xl overflow-hidden">
+              {/* Placeholder — swap for a real photo of the packaged products. */}
+              <Image
+                src="https://placehold.co/400x300/E9D0CE/652F37?text=Produsele+noastre"
+                alt="Produsele L'amour Cu Dragoste"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative row-span-2 rounded-2xl overflow-hidden">
               {/* Placeholder — reserved for a respectful, inclusive photo of a
                   visually-impaired employee at work (e.g. with a white cane),
                   once real photography is available. */}
-              <Image src="https://placehold.co/400x300/710808/ffffff?text=Echipa+noastra" alt="Echipa noastră incluzivă" fill className="object-cover" />
+              <Image
+                src="https://placehold.co/400x800/710808/ffffff?text=Echipa+noastra"
+                alt="Echipa noastră incluzivă"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
+        </div>
+
+        <div className="mt-10 sm:mt-14 flex items-center justify-center gap-3 bg-secondary/20 border border-accent/30 rounded-2xl px-6 py-4 text-center">
+          <HeartHandshake className="w-5 h-5 text-primary shrink-0" aria-hidden />
+          <p className="text-sm sm:text-base italic text-primary font-medium">
+            Credem într-o lume mai bună, în care fiecare persoană are șansa de a fi utilă și respectată.
+          </p>
         </div>
       </div>
     </section>

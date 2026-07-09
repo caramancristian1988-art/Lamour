@@ -1,4 +1,4 @@
-import { Quote } from "lucide-react";
+import { Quote, Users } from "lucide-react";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
 import { MotifBackground } from "@/app/components/ui/motif";
@@ -57,6 +57,16 @@ export default function ReviewsSection({ reviews }: Props) {
               </div>
             </div>
           ))}
+
+          <div className="rounded-2xl bg-gradient-to-br from-secondary/30 to-accent/20 border border-accent/30 p-6 flex flex-col items-center justify-center text-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shrink-0">
+              <Users className="w-6 h-6 text-white" aria-hidden />
+            </div>
+            <p className="text-base font-bold text-primary leading-snug">
+              Împreună construim
+              <br />o societate mai incluzivă!
+            </p>
+          </div>
         </div>
       </div>
     </section>

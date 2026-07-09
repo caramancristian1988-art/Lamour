@@ -1,32 +1,26 @@
 import Link from "next/link";
-import NewsletterForm from "./NewsletterForm";
-import type { SocialLinks } from "@/lib/siteSettings";
+import { Phone, Mail, MapPin, Eye } from "lucide-react";
+import type { SocialLinks, ContactInfo } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/constants";
-import { MotifDivider, MotifBackground } from "@/app/components/ui/motif";
+import { MotifDivider } from "@/app/components/ui/motif";
 
-const footerLinks = {
-  "DESPRE": [
-    { label: "Despre noi", href: "/despre" },
-    { label: "Noutăți", href: "/blog" },
-    { label: "Politica de confidențialitate", href: "/confidentialitate" },
-    { label: "Termeni și condiții", href: "/termeni" },
-  ],
-  "SUPORT": [
-    { label: "Contact", href: "/contact" },
-    { label: "Întrebări frecvente", href: "/faq" },
-    { label: "Livrare și plată", href: "/faq" },
-    { label: "Politica de retur", href: "/faq" },
-  ],
-  "PRODUSE": [
-    { label: "Hârtie igienică", href: "/produse?cat=hartie-igienica" },
-    { label: "Șervețele", href: "/produse?cat=servetele" },
-    { label: "Prosoape de hârtie", href: "/produse?cat=prosoape-de-hartie" },
-    { label: "Oferte speciale", href: "/produse?oferte=1" },
-  ],
-};
+const usefulLinks = [
+  { label: "Despre noi", href: "/despre" },
+  { label: "Produse", href: "/produse" },
+  { label: "Oferte", href: "/produse?oferte=1" },
+  { label: "Noutăți", href: "/blog" },
+  { label: "Contact", href: "/contact" },
+];
 
-export default function Footer({ facebook, instagram }: Partial<SocialLinks>) {
+const infoLinks = [
+  { label: "Livrare și plată", href: "/faq" },
+  { label: "Politica de retur", href: "/faq" },
+  { label: "Termeni și condiții", href: "/termeni" },
+  { label: "Politica de confidențialitate", href: "/confidentialitate" },
+];
+
+export default function Footer({ facebook, instagram, phone, email, address }: Partial<SocialLinks> & Partial<ContactInfo>) {
   return (
     <footer className="bg-brand-maroon text-white">
       <div className="max-w-7xl mx-auto px-4 pt-14 pb-10">
@@ -70,27 +64,71 @@ export default function Footer({ facebook, instagram }: Partial<SocialLinks>) {
             </div>
           </div>
 
-          {(Object.entries(footerLinks) as [string, { label: string; href: string }[]][]).map(([section, links]) => (
-            <div key={section}>
-              <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">{section}</h4>
-              <ul className="space-y-3">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <Link href={link.href} className="text-sm text-white/70 hover:text-white transition-colors rounded">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div>
+            <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Link-uri utile</h4>
+            <ul className="space-y-3">
+              {usefulLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="text-sm text-white/70 hover:text-white transition-colors rounded">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-          <div className="relative">
-            <MotifBackground className="opacity-[0.06]" />
-            <h4 className="relative text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Abonează-te la noutăți</h4>
-            <p className="relative text-sm text-white/70 mb-4 leading-relaxed">Fii la curent cu noutățile și evenimentele noastre.</p>
-            <div className="relative">
-              <NewsletterForm />
+          <div>
+            <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Informații</h4>
+            <ul className="space-y-3">
+              {infoLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="text-sm text-white/70 hover:text-white transition-colors rounded">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Contacte</h4>
+            <ul className="space-y-3">
+              {address && (
+                <li className="flex items-start gap-2 text-sm text-white/70">
+                  <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-brand-rose-light" aria-hidden />
+                  <span>{address}</span>
+                </li>
+              )}
+              {phone && (
+                <li>
+                  <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors rounded">
+                    <Phone className="w-4 h-4 shrink-0 text-brand-rose-light" aria-hidden />
+                    {phone}
+                  </a>
+                </li>
+              )}
+              {email && (
+                <li>
+                  <a href={`mailto:${email}`} className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors rounded">
+                    <Mail className="w-4 h-4 shrink-0 text-brand-rose-light" aria-hidden />
+                    {email}
+                  </a>
+                </li>
+              )}
+            </ul>
+          </div>
+
+          <div className="flex sm:justify-end lg:justify-start">
+            <div className="flex items-center gap-3 bg-white/5 border border-white/15 rounded-2xl px-4 py-4 max-w-[220px]">
+              <div className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                <Eye className="w-5 h-5 text-brand-rose-light" aria-hidden />
+              </div>
+              <div>
+                <p className="text-[11px] text-white/60 leading-tight">Suntem alături de</p>
+                <p className="text-xs font-bold text-white leading-tight mt-0.5">
+                  Asociația Nevăzătorilor din Moldova
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -99,12 +137,8 @@ export default function Footer({ facebook, instagram }: Partial<SocialLinks>) {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
-          <span>© {new Date().getFullYear()} {SITE_NAME}. Toate drepturile rezervate.</span>
-          <span className="flex items-center gap-1.5 text-white/60">
-            Suntem alături de{" "}
-            <span className="font-semibold text-brand-rose-light">Asociația Nevăzătorilor din Moldova</span>
-          </span>
+        <div className="max-w-7xl mx-auto px-4 py-4 text-center text-xs text-white/50">
+          © {new Date().getFullYear()} {SITE_NAME}. Toate drepturile rezervate.
         </div>
       </div>
     </footer>
