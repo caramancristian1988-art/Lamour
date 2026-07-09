@@ -1,11 +1,11 @@
-import { ShieldCheck, Building2, MapPin, Accessibility } from "lucide-react";
+import { ShieldCheck, Building2, MapPin, HeartHandshake } from "lucide-react";
 import { MotifBackground } from "@/app/components/ui/motif";
 
 const items = [
   { icon: ShieldCheck, title: "Calitate garantată", subtitle: "Control riguros la fiecare etapă de producție" },
   { icon: Building2, title: "4 domenii de activitate", subtitle: "Hârtie, mobilă, ambalaje și spații comerciale" },
   { icon: MapPin, title: "Fabricat în Moldova", subtitle: "Susținem locurile de muncă și economia locală" },
-  { icon: Accessibility, title: "Accesibil pentru toți", subtitle: "Susținem incluziunea persoanelor cu dizabilități" },
+  { icon: HeartHandshake, title: "Accesibil pentru toți", subtitle: "Susținem incluziunea persoanelor cu dizabilități" },
 ];
 
 export default function TrustBar() {
