@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Phone, Mail, MapPin, Eye } from "lucide-react";
+import Image from "next/image";
+import { Phone, Mail, MapPin } from "lucide-react";
 import type { SocialLinks, ContactInfo } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/constants";
@@ -120,8 +121,13 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
 
           <div className="flex sm:justify-end lg:justify-start">
             <div className="flex items-center gap-3 bg-white/5 border border-white/15 rounded-2xl px-4 py-4 max-w-[220px]">
-              <div className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                <Eye className="w-5 h-5 text-brand-rose-light" aria-hidden />
+              <div className="relative w-[70px] h-[46px] rounded-lg bg-white shrink-0 overflow-hidden">
+                <Image
+                  src="/logo-asociatia-nevazatorilor.png"
+                  alt="Asociația Nevăzătorilor din Moldova"
+                  fill
+                  className="object-contain p-1"
+                />
               </div>
               <div>
                 <p className="text-[11px] text-white/60 leading-tight">Suntem alături de</p>

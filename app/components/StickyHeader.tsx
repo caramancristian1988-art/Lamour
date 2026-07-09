@@ -35,7 +35,7 @@ export default function StickyHeader({
             <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-lg">
               <Logo size={44} />
               <span className="block leading-tight">
-                <span className="block text-base font-serif font-bold text-primary tracking-tight">Hârtie Igienică</span>
+                <span className="block text-base font-serif italic font-bold text-primary tracking-tight">L&apos;amour</span>
                 <span className="block text-[9px] font-bold text-accent tracking-widest uppercase">Cu Dragoste</span>
               </span>
             </Link>
@@ -75,7 +75,7 @@ export default function StickyHeader({
           <Link href="/" className="flex items-center gap-4 py-5 shrink-0 rounded-lg">
             <Logo size={88} />
             <span className="block leading-tight">
-              <span className="block text-3xl font-serif font-bold text-primary tracking-tight">Hârtie Igienică</span>
+              <span className="block text-3xl font-serif italic font-bold text-primary tracking-tight">L&apos;amour</span>
               <span className="block text-xs font-bold text-accent tracking-[0.25em] uppercase mt-1">Cu Dragoste</span>
             </span>
           </Link>
