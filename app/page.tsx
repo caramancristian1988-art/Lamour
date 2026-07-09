@@ -18,8 +18,13 @@ export const revalidate = 3600;
 
 async function getData() {
   try {
-    const [categories, reviews, banners, projects, posts] = await Promise.all([
+    const [categories, offerProducts, reviews, banners, projects, posts] = await Promise.all([
       prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
+      prisma.product.findMany({
+        where: { oldPrice: { not: null } },
+        orderBy: { createdAt: "desc" },
+        take: 4,
+      }),
       prisma.review.findMany({
         where: { approved: true },
         orderBy: { createdAt: "desc" },
@@ -37,7 +42,7 @@ async function getData() {
     ]);
     return {
       categories,
-      offerProducts: fallbackOfferProducts.slice(0, 4),
+      offerProducts: offerProducts.length > 0 ? offerProducts : fallbackOfferProducts.slice(0, 4),
       reviews,
       banners,
       projects,
