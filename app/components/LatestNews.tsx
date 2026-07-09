@@ -21,7 +21,7 @@ export default function LatestNews({ posts }: Props) {
   if (posts.length === 0) return null;
 
   return (
-    <section className="relative overflow-hidden py-16 sm:py-20 bg-secondary/15">
+    <section className="relative overflow-hidden py-16 sm:py-20 bg-background">
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
         <div className="flex items-end justify-between mb-10 gap-4">
