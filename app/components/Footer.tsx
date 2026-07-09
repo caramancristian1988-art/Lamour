@@ -129,13 +129,13 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
           </div>
 
           <div className="flex sm:justify-end lg:justify-start">
-            <div className="flex items-center gap-3 bg-white/5 border border-white/15 rounded-2xl px-4 py-4 max-w-[220px]">
-              <div className="relative w-[70px] h-[46px] rounded-lg bg-white shrink-0 overflow-hidden">
+            <div className="flex items-center gap-3 max-w-[220px]">
+              <div className="relative w-[56px] h-[56px] shrink-0">
                 <Image
                   src="/logo-asociatia-nevazatorilor.png"
                   alt="Asociația Nevăzătorilor din Moldova"
                   fill
-                  className="object-contain p-1"
+                  className="object-contain"
                 />
               </div>
               <div>
