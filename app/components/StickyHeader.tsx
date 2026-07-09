@@ -88,7 +88,7 @@ export default function StickyHeader({
         </div>
 
         {/* DESKTOP layout */}
-        <div className="hidden lg:grid grid-cols-[360px_1fr_420px] gap-x-8 max-w-[96rem] mx-auto px-6">
+        <div className="hidden lg:grid grid-cols-[320px_1fr_420px] gap-x-6 max-w-[96rem] mx-auto px-6">
           <Link href="/" className="flex items-center gap-4 py-4 shrink-0 rounded-lg">
             <Logo size={132} />
             <span className="block leading-tight">
