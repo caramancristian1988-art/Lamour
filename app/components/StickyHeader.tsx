@@ -33,7 +33,7 @@ export default function StickyHeader({
         <div className="lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
             <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-lg">
-              <Logo size={44} />
+              <Logo size={56} />
               <span className="block leading-tight">
                 <span className="block text-base font-serif italic font-bold text-primary tracking-tight">L&apos;amour</span>
                 <span className="block text-[9px] font-bold text-accent tracking-widest uppercase">Cu Dragoste</span>
@@ -72,8 +72,8 @@ export default function StickyHeader({
 
         {/* DESKTOP layout */}
         <div className="hidden lg:grid grid-cols-[360px_1fr_420px] gap-x-6 max-w-7xl mx-auto px-6">
-          <Link href="/" className="flex items-center gap-4 py-5 shrink-0 rounded-lg">
-            <Logo size={88} />
+          <Link href="/" className="flex items-center gap-4 py-4 shrink-0 rounded-lg">
+            <Logo size={132} />
             <span className="block leading-tight">
               <span className="block text-3xl font-serif italic font-bold text-primary tracking-tight">L&apos;amour</span>
               <span className="block text-xs font-bold text-accent tracking-[0.25em] uppercase mt-1">Cu Dragoste</span>
