@@ -2,11 +2,27 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Target, Eye, HeartHandshake, Users, Sparkles } from "lucide-react";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { SITE_NAME } from "@/lib/constants";
 import { Button } from "@/app/components/ui/button";
 import { MotifDivider } from "@/app/components/ui/motif";
+import SocialImpact from "@/app/components/SocialImpact";
+
+const milestones = [
+  { year: "2014", text: `Înființarea ${SITE_NAME}, cu prima linie de producție de hârtie igienică.` },
+  { year: "2017", text: "Extinderea gamei de produse cu șervețele și prosoape de hârtie." },
+  { year: "2019", text: "Începe colaborarea cu Asociația Nevăzătorilor din Moldova." },
+  { year: "2022", text: "Deschiderea diviziei de mobilier la comandă." },
+  { year: "2026", text: "Extinderea către fabricație la comandă, ambalaje și spații comerciale." },
+];
+
+const values = [
+  { icon: Target, title: "Calitate", text: "Fiecare produs trece prin control riguros, de la materie primă la ambalaj." },
+  { icon: HeartHandshake, title: "Incluziune", text: "Locuri de muncă demne pentru persoane cu dizabilități." },
+  { icon: Sparkles, title: "Responsabilitate", text: "Grijă pentru oameni și pentru natură în tot ce producem." },
+  { icon: Users, title: "Comunitate", text: "Parteneriate locale și susținere pentru economia din Moldova." },
+];
 
 export const revalidate = 3600;
 
@@ -132,6 +148,26 @@ export default async function DesprePage() {
         </div>
       </section>
 
+      {/* ── ISTORIE ── */}
+      <section id="istorie" className="py-12 lg:py-16 border-t border-border scroll-mt-24">
+        <div className="max-w-3xl mx-auto px-5 sm:px-6 lg:px-12">
+          <div className="text-center mb-10">
+            <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Istorie</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">Un parcurs în etape</h2>
+          </div>
+          <div className="flex flex-col gap-6">
+            {milestones.map((m) => (
+              <div key={m.year} className="flex gap-5 items-start">
+                <div className="shrink-0 w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+                  {m.year}
+                </div>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-4">{m.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <MotifDivider className="max-w-7xl mx-auto" />
 
       {/* ── STATISTICI ── */}
@@ -150,6 +186,48 @@ export default async function DesprePage() {
           </div>
         </div>
       </section>
+
+      {/* ── MISIUNE ── */}
+      <section id="misiune" className="py-12 lg:py-16 border-t border-border scroll-mt-24">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
+          <div className="grid lg:grid-cols-2 gap-8 mb-12">
+            <div className="bg-card border border-border rounded-2xl p-8">
+              <Target className="w-8 h-8 text-primary mb-4" aria-hidden />
+              <h2 className="text-xl font-bold text-primary tracking-tight mb-3">Misiunea noastră</h2>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                Producem produse de calitate pentru familiile din Moldova, susținând în același timp
+                incluziunea socială și dezvoltarea comunității locale.
+              </p>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-8">
+              <Eye className="w-8 h-8 text-primary mb-4" aria-hidden />
+              <h2 className="text-xl font-bold text-primary tracking-tight mb-3">Viziunea noastră</h2>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                Să devenim un producător de referință în Moldova, cunoscut atât pentru calitatea
+                produselor, cât și pentru impactul social pozitiv pe care îl generăm.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {values.map((v) => (
+              <div
+                key={v.title}
+                className="bg-card border border-border rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 p-6 text-center flex flex-col items-center"
+              >
+                <v.icon className="w-7 h-7 text-primary mb-3" aria-hidden />
+                <h3 className="font-bold text-foreground text-sm mb-2">{v.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{v.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── MISIUNE SOCIALĂ ── */}
+      <div id="misiune-sociala" className="scroll-mt-24">
+        <SocialImpact />
+      </div>
 
       {/* ── ECHIPA NOASTRĂ ── */}
       <section className="py-12 lg:py-16">

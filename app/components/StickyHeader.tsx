@@ -16,9 +16,27 @@ const fallbackProductsDropdown = [
   { id: "categorie-3", slug: "categorie-3", name: "Categoria trei", image: null },
 ];
 
+const despreDropdown = [
+  { href: "/despre#istorie", label: "Istorie" },
+  { href: "/despre#misiune", label: "Misiune" },
+  { href: "/despre#misiune-sociala", label: "Misiune socială" },
+  { href: "/productie", label: "Producție" },
+];
+
+const produseDropdown = [
+  { href: "/produse", label: "Produse din hârtie" },
+  { href: "/mobila", label: "Mobilă" },
+  { href: "/productie-la-comanda", label: "Ambalaje" },
+];
+
+const serviciiDropdown = [
+  { href: "/productie-la-comanda", label: "Fabricație la comandă" },
+  { href: "/spatii-comerciale", label: "Spații comerciale" },
+  { href: "/productie", label: "Servicii de producție" },
+];
+
 export default function StickyHeader({
   produseEnabled = true,
-  proiecteEnabled = true,
   despreEnabled = true,
   blogEnabled = true,
   contactEnabled = true,
@@ -53,7 +71,6 @@ export default function StickyHeader({
               </Link>
               <MobileMenuButton
                 produseEnabled={produseEnabled}
-                proiecteEnabled={proiecteEnabled}
                 despreEnabled={despreEnabled}
                 blogEnabled={blogEnabled}
                 contactEnabled={contactEnabled}
@@ -108,6 +125,29 @@ export default function StickyHeader({
           Acasă
         </Link>
 
+        {despreEnabled && (
+          <div className="relative group">
+            <Link
+              href="/despre"
+              className="flex items-center gap-1 py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
+            >
+              Despre noi
+              <ChevronDown className="w-3.5 h-3.5" aria-hidden />
+            </Link>
+            <div className="absolute top-full left-0 bg-popover rounded-xl shadow-xl border border-border py-2 min-w-[220px] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
+              {despreDropdown.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {produseEnabled && (
           <div className="relative group">
             <Link
@@ -118,34 +158,47 @@ export default function StickyHeader({
               <ChevronDown className="w-3.5 h-3.5" aria-hidden />
             </Link>
             <div className="absolute top-full left-0 bg-popover rounded-xl shadow-xl border border-border py-2 min-w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
-              {productsDropdown.map((item) => (
+              {produseDropdown.map((item) => (
                 <Link
-                  key={item.id}
-                  href={`/produse?cat=${item.slug}`}
+                  key={item.href}
+                  href={item.href}
                   className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
                 >
-                  {item.name}
+                  {item.label}
                 </Link>
               ))}
+              <div className="my-1.5 border-t border-border" />
+              <Link
+                href="/produse?oferte=1"
+                className="block px-4 py-2.5 text-sm font-bold text-accent hover:bg-muted transition-colors"
+              >
+                Oferte speciale
+              </Link>
             </div>
           </div>
         )}
 
-        {produseEnabled && (
-          <Link href="/produse?oferte=1" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
-            Oferte
+        <div className="relative group">
+          <Link
+            href="/productie"
+            className="flex items-center gap-1 py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
+          >
+            Servicii
+            <ChevronDown className="w-3.5 h-3.5" aria-hidden />
           </Link>
-        )}
-        {proiecteEnabled && (
-          <Link href="/proiecte" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
-            Proiecte
-          </Link>
-        )}
-        {despreEnabled && (
-          <Link href="/despre" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
-            Despre noi
-          </Link>
-        )}
+          <div className="absolute top-full left-0 bg-popover rounded-xl shadow-xl border border-border py-2 min-w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
+            {serviciiDropdown.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {blogEnabled && (
           <Link href="/blog" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
             Noutăți

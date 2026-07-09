@@ -9,30 +9,90 @@ import { Logo } from "@/app/components/Logo";
 import { SITE_SHORT_NAME } from "@/lib/constants";
 import AccessibilityToggle from "./AccessibilityToggle";
 
-const productsDropdown = [
-  { href: "/produse?cat=categorie-1", label: "Categoria unu" },
-  { href: "/produse?cat=categorie-2", label: "Categoria doi" },
-  { href: "/produse?cat=categorie-3", label: "Categoria trei" },
+const produseDropdown = [
+  { href: "/produse", label: "Produse din hârtie" },
+  { href: "/mobila", label: "Mobilă" },
+  { href: "/productie-la-comanda", label: "Ambalaje" },
+  { href: "/produse?oferte=1", label: "Oferte speciale" },
+];
+
+const despreDropdown = [
+  { href: "/despre#istorie", label: "Istorie" },
+  { href: "/despre#misiune", label: "Misiune" },
+  { href: "/despre#misiune-sociala", label: "Misiune socială" },
+  { href: "/productie", label: "Producție" },
+];
+
+const serviciiDropdown = [
+  { href: "/productie-la-comanda", label: "Fabricație la comandă" },
+  { href: "/spatii-comerciale", label: "Spații comerciale" },
+  { href: "/productie", label: "Servicii de producție" },
 ];
 
 const baseNavLinks = [
-  { href: "/proiecte", label: "Proiecte", flag: "proiecteEnabled" as const },
-  { href: "/despre", label: "Despre noi", flag: "despreEnabled" as const },
   { href: "/blog", label: "Noutăți", flag: "blogEnabled" as const },
   { href: "/contact", label: "Contact", flag: "contactEnabled" as const },
 ];
 
+function MobileDropdownGroup({
+  label,
+  href,
+  items,
+  open,
+  onToggle,
+  ariaLabel,
+}: {
+  label: string;
+  href: string;
+  items: { href: string; label: string }[];
+  open: boolean;
+  onToggle: () => void;
+  ariaLabel: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center rounded-xl hover:bg-muted transition-colors">
+        <SheetClose asChild>
+          <Link href={href} className="flex-1 px-3 py-3.5 text-primary hover:text-accent transition-colors text-base font-bold">
+            {label}
+          </Link>
+        </SheetClose>
+        <button
+          onClick={onToggle}
+          aria-label={ariaLabel}
+          aria-expanded={open}
+          className="px-3 py-3.5 text-primary hover:text-accent transition-colors"
+        >
+          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} aria-hidden />
+        </button>
+      </div>
+      <div className={`overflow-hidden transition-all duration-200 ${open ? "max-h-96" : "max-h-0"}`}>
+        <div className="flex flex-col pb-1">
+          {items.map((item) => (
+            <SheetClose asChild key={item.href}>
+              <Link href={item.href} className="px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-accent transition-colors">
+                {item.label}
+              </Link>
+            </SheetClose>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MobileMenuButton({
   produseEnabled = true,
-  proiecteEnabled = true,
   despreEnabled = true,
   blogEnabled = true,
   contactEnabled = true,
 }: Partial<SectionFlags>) {
-  const flags = { produseEnabled, proiecteEnabled, despreEnabled, blogEnabled, contactEnabled };
+  const flags = { produseEnabled, despreEnabled, blogEnabled, contactEnabled };
   const navLinks = baseNavLinks.filter((l) => flags[l.flag]);
   const [open, setOpen] = useState(false);
+  const [despreOpen, setDespreOpen] = useState(false);
   const [produseOpen, setProduseOpen] = useState(false);
+  const [serviciiOpen, setServiciiOpen] = useState(false);
 
   function closeMenu() {
     setOpen(false);
@@ -63,44 +123,36 @@ export default function MobileMenuButton({
             </Link>
           </SheetClose>
 
-          {produseEnabled && (
-            <div>
-              <div className="flex items-center rounded-xl hover:bg-muted transition-colors">
-                <SheetClose asChild>
-                  <Link href="/produse" className="flex-1 px-3 py-3.5 text-primary hover:text-accent transition-colors text-base font-bold">
-                    Produse
-                  </Link>
-                </SheetClose>
-                <button
-                  onClick={() => setProduseOpen((v) => !v)}
-                  aria-label="Arată categoriile de produse"
-                  aria-expanded={produseOpen}
-                  className="px-3 py-3.5 text-primary hover:text-accent transition-colors"
-                >
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${produseOpen ? "rotate-180" : ""}`} aria-hidden />
-                </button>
-              </div>
-              <div className={`overflow-hidden transition-all duration-200 ${produseOpen ? "max-h-96" : "max-h-0"}`}>
-                <div className="flex flex-col pb-1">
-                  {productsDropdown.map((item) => (
-                    <SheetClose asChild key={item.href}>
-                      <Link href={item.href} className="px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-accent transition-colors">
-                        {item.label}
-                      </Link>
-                    </SheetClose>
-                  ))}
-                </div>
-              </div>
-            </div>
+          {despreEnabled && (
+            <MobileDropdownGroup
+              label="Despre noi"
+              href="/despre"
+              items={despreDropdown}
+              open={despreOpen}
+              onToggle={() => setDespreOpen((v) => !v)}
+              ariaLabel="Arată secțiunile despre companie"
+            />
           )}
 
           {produseEnabled && (
-            <SheetClose asChild>
-              <Link href="/produse?oferte=1" className="block px-3 py-3.5 rounded-xl text-primary hover:bg-muted hover:text-accent transition-colors text-base font-bold">
-                Oferte
-              </Link>
-            </SheetClose>
+            <MobileDropdownGroup
+              label="Produse"
+              href="/produse"
+              items={produseDropdown}
+              open={produseOpen}
+              onToggle={() => setProduseOpen((v) => !v)}
+              ariaLabel="Arată categoriile de produse"
+            />
           )}
+
+          <MobileDropdownGroup
+            label="Servicii"
+            href="/productie"
+            items={serviciiDropdown}
+            open={serviciiOpen}
+            onToggle={() => setServiciiOpen((v) => !v)}
+            ariaLabel="Arată serviciile companiei"
+          />
 
           {navLinks.map((link) => (
             <SheetClose asChild key={link.href}>
