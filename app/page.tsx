@@ -60,10 +60,6 @@ export default async function HomePage() {
   return (
     <main>
       <Hero banners={banners} />
-      <BusinessDivisions />
-      <AboutTeaser />
-      <FactoryGallery />
-      <SocialImpact />
       <CategoryGrid categories={categories} />
       <ProductsSection
         products={offerProducts}
@@ -71,6 +67,10 @@ export default async function HomePage() {
         highlighted="speciale"
         viewAllHref="/produse?oferte=1"
       />
+      <BusinessDivisions />
+      <AboutTeaser />
+      <FactoryGallery />
+      <SocialImpact />
       <LatestProjects projects={projects} />
       <LatestNews posts={posts} />
       <Partners />
