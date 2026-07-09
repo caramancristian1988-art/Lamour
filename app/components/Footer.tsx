@@ -5,6 +5,7 @@ import type { SocialLinks, ContactInfo } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/constants";
 import { MotifDivider } from "@/app/components/ui/motif";
+import NewsletterForm from "@/app/components/NewsletterForm";
 
 const usefulLinks = [
   { label: "Despre noi", href: "/despre" },
@@ -25,7 +26,7 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
   return (
     <footer className="bg-brand-maroon text-white">
       <div className="max-w-7xl mx-auto px-4 pt-14 pb-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-10">
           {/* Brand column */}
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4 rounded-lg w-fit">
@@ -63,6 +64,14 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
                 </a>
               )}
             </div>
+          </div>
+
+          <div className="sm:col-span-2 lg:col-span-1">
+            <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Abonează-te</h4>
+            <p className="text-white/70 text-sm leading-relaxed mb-4">
+              Primește noutăți și oferte speciale direct pe email.
+            </p>
+            <NewsletterForm />
           </div>
 
           <div>

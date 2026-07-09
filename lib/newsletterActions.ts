@@ -81,7 +81,7 @@ export async function sendNewsletterCampaignAction(
       })
     : [];
 
-  const siteUrl = process.env.SITE_URL || "https://example.com";
+  const siteUrl = process.env.SITE_URL || "https://lamour-zeta.vercel.app";
 
   const ctaLink =
     products.length === 1
