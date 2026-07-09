@@ -45,13 +45,13 @@ export default async function HomePage() {
       <Hero banners={banners} />
       <TrustBar />
       <CategoryGrid categories={categories} />
-      <AboutTeaser />
       <ProductsSection
         products={offerProducts}
         title="Oferte"
         highlighted="speciale"
         viewAllHref="/produse?oferte=1"
       />
+      <AboutTeaser />
       <ReviewsSection reviews={reviews} />
     </main>
   );

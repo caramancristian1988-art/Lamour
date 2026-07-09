@@ -82,14 +82,14 @@ export default function SearchBar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setOpen(true)}
-            placeholder="Caută..."
+            placeholder="Caută produse..."
             autoComplete="off"
-            className="w-full h-12 pl-4 pr-14 rounded-xl border-2 border-input bg-muted text-base text-foreground placeholder-muted-foreground focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 transition-all"
+            className="w-full h-14 pl-5 pr-16 rounded-xl border-2 border-input bg-muted text-base text-foreground placeholder-muted-foreground focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 transition-all"
           />
           <button
             type="submit"
             aria-label="Caută"
-            className="absolute right-0 h-12 w-12 flex items-center justify-center rounded-r-xl bg-accent text-white hover:bg-brand-red-dark transition-colors"
+            className="absolute right-0 h-14 w-14 flex items-center justify-center rounded-r-xl bg-accent text-white hover:bg-brand-red-dark transition-colors"
           >
             <Search className="w-5 h-5" aria-hidden />
           </button>
