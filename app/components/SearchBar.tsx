@@ -72,7 +72,7 @@ export default function SearchBar() {
         }}
         className="w-full"
       >
-        <div className="relative flex items-center">
+        <div className="flex items-center h-14 rounded-xl border-2 border-input bg-muted overflow-hidden transition-all focus-within:border-accent focus-within:ring-3 focus-within:ring-accent/20">
           <label htmlFor="site-search" className="sr-only">
             Caută
           </label>
@@ -84,12 +84,12 @@ export default function SearchBar() {
             onFocus={() => setOpen(true)}
             placeholder="Caută produse..."
             autoComplete="off"
-            className="w-full h-14 pl-5 pr-16 rounded-xl border-2 border-input bg-muted text-base text-foreground placeholder-muted-foreground focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 transition-all"
+            className="flex-1 min-w-0 h-full pl-5 pr-3 bg-transparent text-base text-foreground placeholder-muted-foreground outline-none"
           />
           <button
             type="submit"
             aria-label="Caută"
-            className="absolute right-0 h-14 w-14 flex items-center justify-center rounded-r-xl bg-accent text-white hover:bg-brand-red-dark transition-colors"
+            className="shrink-0 h-full w-14 flex items-center justify-center bg-accent text-white hover:bg-brand-red-dark transition-colors"
           >
             <Search className="w-5 h-5" aria-hidden />
           </button>
