@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Menu, ChevronDown, Sparkles, ImageOff } from "lucide-react";
 import {
   DropdownMenu,
@@ -32,9 +34,24 @@ interface Props {
 
 export default function AllCategoriesMenu({ className, buttonClassName, label = "Toate categoriile", categories }: Props) {
   const productsDropdown = categories && categories.length > 0 ? categories : fallbackCategories;
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Force-close on any navigation — Radix only auto-closes for
+  // DropdownMenuItem selections, not plain <Link> clicks, so without this
+  // the menu stays open after navigating to a category/offers page.
+  // Adjusting state during render (not in an effect) per React's guidance
+  // for "resetting state when a prop changes".
+  const routeKey = `${pathname}?${searchParams.toString()}`;
+  const [lastRouteKey, setLastRouteKey] = useState(routeKey);
+  if (routeKey !== lastRouteKey) {
+    setLastRouteKey(routeKey);
+    if (open) setOpen(false);
+  }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           className={
@@ -57,6 +74,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
         <p className="px-3 pt-1.5 pb-2 text-xs font-bold text-muted-foreground uppercase tracking-wide">Produse</p>
         <Link
           href="/produse?oferte=1"
+          onClick={() => setOpen(false)}
           className="flex items-center gap-4 rounded-xl px-3 py-3 text-base font-bold text-accent hover:bg-muted transition-colors"
         >
           <span className="relative w-14 h-14 rounded-xl bg-secondary/40 shrink-0 flex items-center justify-center">
@@ -68,6 +86,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
           <Link
             key={item.id}
             href={`/produse?cat=${item.slug}`}
+            onClick={() => setOpen(false)}
             className="flex items-center gap-4 rounded-xl px-3 py-3 text-base font-semibold text-foreground hover:text-accent hover:bg-muted transition-colors"
           >
             <span className="relative w-14 h-14 rounded-xl bg-muted overflow-hidden shrink-0 flex items-center justify-center">

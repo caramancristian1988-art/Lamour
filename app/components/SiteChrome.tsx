@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import type { SectionFlags, HeaderCategory, SocialLinks, ContactInfo } from "@/lib/siteSettings";
 import TopBar from "./TopBar";
@@ -16,7 +17,12 @@ export function SiteHeader(props: Partial<SectionFlags> & { categories?: HeaderC
   return (
     <>
       <TopBar phone={props.phone} phoneTel={props.phoneTel} email={props.email} />
-      <ScrollAwareHeader {...props} />
+      {/* NavDropdown/AllCategoriesMenu (nested inside) use useSearchParams,
+          which requires a Suspense boundary or it breaks static prerendering
+          site-wide. */}
+      <Suspense fallback={<div className="h-[196px] lg:h-[236px] bg-card" />}>
+        <ScrollAwareHeader {...props} />
+      </Suspense>
       <OrnamentalBorder />
     </>
   );

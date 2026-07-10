@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { User, ShoppingCart, ChevronDown } from "lucide-react";
+import { User, ShoppingCart } from "lucide-react";
 import type { SectionFlags, HeaderCategory } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import SearchBar from "./SearchBar";
@@ -8,6 +8,7 @@ import CartBadge from "./CartBadge";
 import AllCategoriesMenu from "./AllCategoriesMenu";
 import AccountMenuLink from "./AccountMenuLink";
 import AccessibilityToggle from "./AccessibilityToggle";
+import NavDropdown from "./NavDropdown";
 
 const fallbackProductsDropdown = [
   { id: "categorie-1", slug: "categorie-1", name: "Categoria unu", image: null },
@@ -26,6 +27,7 @@ const produseDropdown = [
   { href: "/produse", label: "Produse din hârtie" },
   { href: "/mobila", label: "Mobilă" },
   { href: "/productie-la-comanda", label: "Ambalaje" },
+  { href: "/produse?oferte=1", label: "Oferte speciale", divider: true, highlighted: true },
 ];
 
 const serviciiDropdown = [
@@ -124,79 +126,11 @@ export default function StickyHeader({
           <AllCategoriesMenu categories={productsDropdown} buttonClassName="flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white text-sm font-bold px-5 h-10 rounded-xl transition-colors uppercase tracking-wide shrink-0" />
         )}
 
-        {despreEnabled && (
-          <div className="relative group">
-            <Link
-              href="/despre"
-              className="flex items-center gap-1 py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
-            >
-              Despre noi
-              <ChevronDown className="w-3.5 h-3.5" aria-hidden />
-            </Link>
-            <div className="absolute top-full left-0 bg-popover rounded-xl shadow-xl border border-border py-2 min-w-[220px] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
-              {despreDropdown.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+        {despreEnabled && <NavDropdown label="Despre noi" href="/despre" items={despreDropdown} />}
 
-        {produseEnabled && (
-          <div className="relative group">
-            <Link
-              href="/produse"
-              className="flex items-center gap-1 py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
-            >
-              Produse
-              <ChevronDown className="w-3.5 h-3.5" aria-hidden />
-            </Link>
-            <div className="absolute top-full left-0 bg-popover rounded-xl shadow-xl border border-border py-2 min-w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
-              {produseDropdown.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <div className="my-1.5 border-t border-border" />
-              <Link
-                href="/produse?oferte=1"
-                className="block px-4 py-2.5 text-sm font-bold text-accent hover:bg-muted transition-colors"
-              >
-                Oferte speciale
-              </Link>
-            </div>
-          </div>
-        )}
+        {produseEnabled && <NavDropdown label="Produse" href="/produse" items={produseDropdown} />}
 
-        <div className="relative group">
-          <Link
-            href="/productie"
-            className="flex items-center gap-1 py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
-          >
-            Servicii
-            <ChevronDown className="w-3.5 h-3.5" aria-hidden />
-          </Link>
-          <div className="absolute top-full left-0 bg-popover rounded-xl shadow-xl border border-border py-2 min-w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-150 translate-y-1 group-hover:translate-y-0 z-50">
-            {serviciiDropdown.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="block px-4 py-2.5 text-sm text-foreground hover:text-accent hover:bg-muted transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
+        <NavDropdown label="Servicii" href="/productie" items={serviciiDropdown} />
 
         {blogEnabled && (
           <Link href="/blog" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
