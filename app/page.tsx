@@ -55,6 +55,7 @@ export default async function HomePage() {
         title="Oferte"
         highlighted="speciale"
         viewAllHref="/produse?oferte=1"
+        viewAllLabel="Vezi toate ofertele"
       />
       <AboutTeaser />
       <ReviewsSection reviews={reviews} />
