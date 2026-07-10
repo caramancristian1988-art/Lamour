@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import ProductCard from "./ProductCard";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 import { getSectionFlags } from "@/lib/siteSettings";
-import { MotifBackground } from "@/app/components/ui/motif";
+import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
 
 interface Product {
   id: string;
@@ -37,8 +37,9 @@ export default async function ProductsSection({ products, title = "Produse", hig
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
         <div className="flex items-end justify-between mb-10 gap-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+          <h2 className="flex items-center gap-2.5 text-2xl sm:text-3xl font-bold text-primary tracking-tight">
             {title} <span className="text-accent">{highlighted}</span>
+            <HeadingFlourish />
           </h2>
           <Link href={viewAllHref} className="text-sm text-accent hover:underline font-semibold flex items-center gap-1 shrink-0 rounded">
             Vezi toate produsele

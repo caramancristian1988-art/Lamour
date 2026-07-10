@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { categoryIcons } from "./CategoryIcons";
-import { MotifBackground } from "@/app/components/ui/motif";
+import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
 
 interface Category {
   id: string;
@@ -27,15 +27,7 @@ export default function CategoryGrid({ categories }: Props) {
             Categorii populare
           </h2>
           <div className="flex items-center gap-3 flex-1 min-w-[60px]">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-brand-red shrink-0" aria-hidden>
-              <g stroke="currentColor" strokeWidth="1.1">
-                <ellipse cx="10" cy="6.5" rx="2.1" ry="4" />
-                <ellipse cx="10" cy="13.5" rx="2.1" ry="4" />
-                <ellipse cx="5.5" cy="10" rx="4" ry="2.1" />
-                <ellipse cx="14.5" cy="10" rx="4" ry="2.1" />
-              </g>
-              <circle cx="10" cy="10" r="1.8" fill="currentColor" />
-            </svg>
+            <HeadingFlourish />
             <span className="h-px flex-1 bg-gradient-to-r from-brand-rose to-transparent" />
           </div>
           <Button asChild variant="accent" size="sm" className="shrink-0">

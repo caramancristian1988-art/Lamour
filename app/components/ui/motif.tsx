@@ -24,6 +24,28 @@ export function MotifDivider({ className }: { className?: string }) {
   );
 }
 
+/** Small inline flower/diamond mark used right after a section heading. */
+export function HeadingFlourish({ className }: { className?: string }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden
+      className={cn("text-brand-red shrink-0 inline-block align-middle", className)}
+    >
+      <g stroke="currentColor" strokeWidth="1.1">
+        <ellipse cx="10" cy="6.5" rx="2.1" ry="4" />
+        <ellipse cx="10" cy="13.5" rx="2.1" ry="4" />
+        <ellipse cx="5.5" cy="10" rx="4" ry="2.1" />
+        <ellipse cx="14.5" cy="10" rx="4" ry="2.1" />
+      </g>
+      <circle cx="10" cy="10" r="1.8" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function MotifCorner({ className, flip }: { className?: string; flip?: boolean }) {
   return (
     <svg

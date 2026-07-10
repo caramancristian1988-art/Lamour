@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { HeartHandshake } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import { MotifDivider, MotifBackground } from "@/app/components/ui/motif";
+import { MotifDivider, MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
 
 export default function AboutTeaser() {
   return (
@@ -13,7 +13,10 @@ export default function AboutTeaser() {
 
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           <div>
-            <p className="text-xs font-bold text-accent uppercase tracking-widest mb-3">Despre noi</p>
+            <p className="flex items-center gap-2 text-xs font-bold text-accent uppercase tracking-widest mb-3">
+              Despre noi
+              <HeadingFlourish className="w-4 h-4" />
+            </p>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary tracking-tight mb-4">
               Suntem o companie din Republica Moldova
             </h2>
