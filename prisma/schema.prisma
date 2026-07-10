@@ -82,15 +82,16 @@ model Faq {
 }
 
 model Banner {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  image     String
-  alt       String
-  title     String?
-  subtitle  String?
-  ctaLabel  String?
-  link      String?
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  image       String
+  alt         String
+  title       String?
+  subtitle    String?
+  ctaLabel    String?
+  ctaPosition String   @default("stanga")
+  link        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
 }
 
 model BlogPost {

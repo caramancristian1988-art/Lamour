@@ -1,4 +1,4 @@
-import { AdminInput } from "../components/AdminField";
+import { AdminInput, AdminSelect } from "../components/AdminField";
 import ImageUploadField from "../components/ImageUploadField";
 import { Button } from "@/app/components/ui/button";
 
@@ -9,6 +9,7 @@ interface BannerDefaults {
   title?: string | null;
   subtitle?: string | null;
   ctaLabel?: string | null;
+  ctaPosition?: string;
   link?: string | null;
   order?: number;
 }
@@ -52,6 +53,11 @@ export default function BannerForm({
         defaultValue={defaults?.ctaLabel ?? ""}
         placeholder="Vezi ofertele"
       />
+      <AdminSelect label="Poziție buton" name="ctaPosition" defaultValue={defaults?.ctaPosition ?? "stanga"}>
+        <option value="stanga">Stânga</option>
+        <option value="centru">Centru</option>
+        <option value="dreapta">Dreapta</option>
+      </AdminSelect>
       <AdminInput
         label="Link (opțional)"
         name="link"

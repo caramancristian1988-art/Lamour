@@ -13,12 +13,13 @@ export async function createBannerAction(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim() || null;
   const subtitle = String(formData.get("subtitle") ?? "").trim() || null;
   const ctaLabel = String(formData.get("ctaLabel") ?? "").trim() || null;
+  const ctaPosition = String(formData.get("ctaPosition") ?? "").trim() || "stanga";
   const link = String(formData.get("link") ?? "").trim() || null;
   const order = Math.max(0, Number(formData.get("order")) || 0);
 
   if (!image || !alt) return;
 
-  await prisma.banner.create({ data: { image, alt, title, subtitle, ctaLabel, link, order } });
+  await prisma.banner.create({ data: { image, alt, title, subtitle, ctaLabel, ctaPosition, link, order } });
   revalidatePath("/admin/bannere");
   revalidatePath("/");
   redirect("/admin/bannere");
@@ -33,12 +34,13 @@ export async function updateBannerAction(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim() || null;
   const subtitle = String(formData.get("subtitle") ?? "").trim() || null;
   const ctaLabel = String(formData.get("ctaLabel") ?? "").trim() || null;
+  const ctaPosition = String(formData.get("ctaPosition") ?? "").trim() || "stanga";
   const link = String(formData.get("link") ?? "").trim() || null;
   const order = Math.max(0, Number(formData.get("order")) || 0);
 
   if (!id || !image || !alt) return;
 
-  await prisma.banner.update({ where: { id }, data: { image, alt, title, subtitle, ctaLabel, link, order } });
+  await prisma.banner.update({ where: { id }, data: { image, alt, title, subtitle, ctaLabel, ctaPosition, link, order } });
   revalidatePath("/admin/bannere");
   revalidatePath("/");
   redirect("/admin/bannere");
