@@ -31,6 +31,7 @@ model Product {
   oldPrice    Float?
   image       String?
   images      String[] @default([])
+  packageQuantity String?
   // btu/technology/brand/energyClass are example fields for an appliance catalog — rename/remove for your own product attributes.
   btu         Int?
   technology  String   @default("On/Off")

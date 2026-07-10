@@ -96,6 +96,7 @@ function toProduct(seed: ProductSeed) {
     price: seed.price,
     oldPrice: seed.oldPrice,
     image: `https://placehold.co/400x400/ffffff/652F37?text=${encodeURIComponent(seed.name.split(",")[0])}`,
+    packageQuantity: null as string | null,
     btu: null as number | null,
     technology: "",
     energyClass: null as string | null,

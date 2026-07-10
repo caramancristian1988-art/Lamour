@@ -369,6 +369,7 @@ interface ProductViewProps {
     oldPrice: number | null;
     image: string | null;
     images?: string[];
+    packageQuantity?: string | null;
     btu: number | null;
     technology: string;
     brand?: string | null;
@@ -424,6 +425,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
   const countdownMinutes = discount ? await getPopupCountdownMinutes() : 0;
 
   const specs = [
+    product.packageQuantity ? { label: "Cantitate", value: product.packageQuantity } : null,
     product.brand ? { label: "Brand", value: product.brand } : null,
     product.btu ? { label: "Capacitate", value: `${(product.btu / 1000).toFixed(0)}000 BTU` } : null,
     product.technology ? { label: "Tehnologie", value: product.technology } : null,
@@ -434,14 +436,14 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
   ].filter(Boolean) as { label: string; value: string }[];
 
   const inStock = product.availability !== "Stoc epuizat";
-  const highlightLabels = ["Capacitate", "Tehnologie", "Clasă energetică"];
+  const highlightLabels = ["Cantitate", "Capacitate", "Tehnologie", "Clasă energetică"];
   const highlightSpecs = specs.filter((s) => highlightLabels.includes(s.label));
   // The quick panel leads with the handful of specs that matter for a fast
   // scan, then tops up from the admin-entered specifications (if any) so
   // every product shows at least MIN_TOP_SPECS rows when the data exists.
   // Everything still shows in full further down in "Caracteristici".
   const MIN_TOP_SPECS = 5;
-  const topPanelLabels = ["Capacitate", "Tehnologie", "Clasă energetică", "Brand"];
+  const topPanelLabels = ["Cantitate", "Capacitate", "Tehnologie", "Clasă energetică", "Brand"];
   const essentialTopSpecs = specs.filter((s) => topPanelLabels.includes(s.label));
   const extraTopSpecsNeeded = Math.max(0, MIN_TOP_SPECS - essentialTopSpecs.length);
   const topPanelSpecs = [

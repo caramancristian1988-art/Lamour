@@ -15,6 +15,7 @@ interface ProductCardProps {
   oldPrice?: number | null;
   image?: string | null;
   images?: string[];
+  packageQuantity?: string | null;
   btu?: number | null;
   technology?: string | null;
   energyClass?: string | null;
@@ -33,6 +34,7 @@ export default function ProductCard({
   oldPrice,
   image,
   images,
+  packageQuantity,
   btu,
   technology,
   energyClass,
@@ -51,6 +53,7 @@ export default function ProductCard({
   const displayBadge = badge ?? (discount ? `-${discount}%` : null);
 
   const specs = [
+    packageQuantity || null,
     btu ? `${(btu / 1000).toFixed(0)}000 BTU` : null,
     technology || null,
     energyClass ? `Clasa ${energyClass}` : null,

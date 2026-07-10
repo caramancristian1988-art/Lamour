@@ -27,6 +27,7 @@ interface ProductDefaults {
   oldPrice?: number | null;
   image?: string | null;
   images?: string[];
+  packageQuantity?: string | null;
   btu?: number | null;
   technology?: string;
   brand?: string | null;
@@ -134,6 +135,13 @@ export default function ProductForm({
         <AdminInput label="Preț (MDL)" name="price" type="number" required defaultValue={defaults?.price} placeholder="12999" />
         <AdminInput label="Preț vechi (opțional)" name="oldPrice" type="number" defaultValue={defaults?.oldPrice ?? ""} placeholder="14999" />
       </div>
+
+      <AdminInput
+        label="Cantitate / Ambalaj (opțional)"
+        name="packageQuantity"
+        defaultValue={defaults?.packageQuantity ?? ""}
+        placeholder="ex: 32 role, 100 buc, 500 ml"
+      />
 
       <ImageUploadField name="image" label="Imagine principală" defaultValue={defaults?.image} />
       <MultiImageUploadField name="images" label="Galerie imagini (opțional)" defaultValue={defaults?.images} />

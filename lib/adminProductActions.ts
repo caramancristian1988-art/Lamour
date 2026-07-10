@@ -34,6 +34,7 @@ function readProductFields(formData: FormData) {
   const oldPriceRaw = String(formData.get("oldPrice") ?? "").trim();
   const image = String(formData.get("image") ?? "").trim() || null;
   const images = parseImageLines(formData);
+  const packageQuantity = String(formData.get("packageQuantity") ?? "").trim() || null;
   const btuRaw = String(formData.get("btu") ?? "").trim();
   const technology = String(formData.get("technology") ?? "").trim() || "On/Off";
   const brand = String(formData.get("brand") ?? "").trim() || null;
@@ -52,6 +53,7 @@ function readProductFields(formData: FormData) {
     oldPrice: oldPriceRaw ? Number(oldPriceRaw) : null,
     image,
     images,
+    packageQuantity,
     btu: btuRaw ? Number(btuRaw) : null,
     technology,
     brand,
