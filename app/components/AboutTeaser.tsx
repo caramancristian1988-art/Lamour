@@ -49,14 +49,11 @@ export default function AboutTeaser() {
               />
             </div>
             <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
-              {/* Placeholder — reserved for a respectful, inclusive photo of a
-                  visually-impaired employee at work (e.g. with a white cane),
-                  once real photography is available. */}
               <Image
-                src="https://placehold.co/400x300/710808/ffffff?text=Echipa+noastra"
-                alt="Echipa noastră incluzivă"
+                src="/echipa-lamour.png"
+                alt="Echipa L'amour Cu Dragoste"
                 fill
-                className="object-cover"
+                className="object-cover object-[center_62%]"
               />
             </div>
           </div>
