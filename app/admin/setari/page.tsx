@@ -36,7 +36,7 @@ export default async function AdminSetariPage({
       <AdminPageHeader title="Setări" description="Secțiunile active pe site." />
 
       {salvat === "1" && (
-        <Alert variant="success" role="status" className="max-w-2xl mb-4">
+        <Alert variant="success" role="status" className="max-w-2xl mb-4 animate-slide-up">
           <Check aria-hidden />
           <AlertDescription>Setările au fost salvate cu succes.</AlertDescription>
         </Alert>

@@ -25,7 +25,11 @@ export default function SaveButton({ label = "Salvează setările" }: { label?: 
       type="submit"
       variant="accent"
       disabled={pending}
-      className={cn("self-start", justSaved && "bg-success hover:bg-success")}
+      className={cn(
+        "self-start transition-colors duration-300",
+        pending && "animate-pulse",
+        justSaved && "bg-success hover:bg-success"
+      )}
     >
       {pending ? (
         <>
@@ -34,7 +38,7 @@ export default function SaveButton({ label = "Salvează setările" }: { label?: 
         </>
       ) : justSaved ? (
         <span key="saved" className="flex items-center gap-2 animate-pop">
-          <Check className="w-4 h-4" aria-hidden />
+          <Check className="w-4 h-4 animate-bump" aria-hidden />
           Salvat!
         </span>
       ) : (
