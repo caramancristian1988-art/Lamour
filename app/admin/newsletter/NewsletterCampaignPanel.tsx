@@ -312,7 +312,7 @@ export default function NewsletterCampaignPanel({
               name="offerBadge"
               placeholder="-20% doar astăzi, doar pentru tine"
             />
-            <AdminTextarea label="Mesaj" name="message" required rows={8} placeholder="Scrie oferta pe care vrei să o trimiți abonaților..." />
+            <AdminTextarea label="Mesaj (opțional)" name="message" rows={8} placeholder="Scrie oferta pe care vrei să o trimiți abonaților..." />
 
             <Button type="submit" variant="accent" disabled={pending || selected.size === 0} className="self-start mt-2">
               {pending ? "Se trimite..." : `Trimite către ${selected.size} abonați selectați`}

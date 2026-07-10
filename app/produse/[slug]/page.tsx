@@ -535,7 +535,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
           <div className="flex flex-col gap-6">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-extrabold uppercase tracking-wide text-primary">Caracteristici tehnice</p>
+                <p className="text-xs font-extrabold uppercase tracking-wide text-primary">Caracteristici</p>
                 <span className={`text-xs font-bold flex items-center gap-1.5 ${inStock ? "text-success" : "text-muted-foreground"}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-success" : "bg-muted-foreground"}`} aria-hidden />
                   {product.availability}
@@ -673,7 +673,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
 
             {product.specifications && product.specifications.length > 0 && (
               <div className="border border-border rounded-2xl overflow-hidden bg-card">
-                <div className="bg-muted px-5 py-3 text-sm font-extrabold text-primary">Specificații tehnice</div>
+                <div className="bg-muted px-5 py-3 text-sm font-extrabold text-primary">Specificații suplimentare</div>
                 {product.specifications.map((spec, i) => (
                   <div
                     key={`${spec.label}-${i}`}

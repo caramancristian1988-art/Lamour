@@ -59,8 +59,8 @@ export async function sendNewsletterCampaignAction(
     .map((id) => id.trim())
     .filter(Boolean);
 
-  if (!subject || !message) {
-    return { error: "Completează subiectul și mesajul." };
+  if (!subject) {
+    return { error: "Completează subiectul." };
   }
   if (subscriberIds.length === 0) {
     return { error: "Selectează cel puțin un abonat." };
@@ -139,7 +139,7 @@ export async function sendNewsletterCampaignAction(
             <tr>
               <td style="padding:32px">
                 <h1 style="margin:0 0 14px;color:#710808;font-size:21px;font-family:Georgia,'Times New Roman',serif">${escapeHtml(subject)}</h1>
-                <div style="color:#652F37;font-size:15px;line-height:1.7;white-space:pre-wrap">${escapeHtml(message)}</div>
+                ${message ? `<div style="color:#652F37;font-size:15px;line-height:1.7;white-space:pre-wrap">${escapeHtml(message)}</div>` : ""}
                 ${productsHtml}
                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px auto 0">
                   <tr>
