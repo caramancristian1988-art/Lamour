@@ -52,6 +52,14 @@ export const fallbackCategories = [
     image: "https://placehold.co/400x300/D8B2B1/652F37?text=Alte+produse",
     createdAt: new Date(),
   },
+  {
+    id: "7",
+    name: "Produse de uz casnic",
+    slug: "produse-de-uz-casnic",
+    description: "Produse de curățenie și uz casnic pentru fiecare zi.",
+    image: "https://placehold.co/400x300/D8B2B1/652F37?text=Uz+casnic",
+    createdAt: new Date(),
+  },
 ];
 
 interface ProductSeed {

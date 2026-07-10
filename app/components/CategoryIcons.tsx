@@ -78,6 +78,18 @@ function BottleIcon(props: IconProps) {
   );
 }
 
+function HouseholdIcon(props: IconProps) {
+  return (
+    <svg {...shared} {...props}>
+      <path d="M18 10 h8 l10 -4" />
+      <path d="M36 6 l6 2 l-2 6 l-6 -2 z" />
+      <path d="M26 10 v6 l-8 6 v30 a4 4 0 0 0 4 4 h12 a4 4 0 0 0 4 -4 v-30 l-8 -6" />
+      <line x1="16" y1="36" x2="40" y2="36" />
+      <path d="M18 16 q-4 2 -4 6" />
+    </svg>
+  );
+}
+
 export const categoryIcons: Record<string, (props: IconProps) => React.JSX.Element> = {
   "hartie-igienica": ToiletPaperIcon,
   servetele: TissueBoxIcon,
@@ -85,4 +97,5 @@ export const categoryIcons: Record<string, (props: IconProps) => React.JSX.Eleme
   "servetele-umede": WetWipesIcon,
   chibrite: MatchesIcon,
   "alte-produse": BottleIcon,
+  "produse-de-uz-casnic": HouseholdIcon,
 };

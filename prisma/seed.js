@@ -12,6 +12,7 @@ const CATEGORIES = [
   { name: "Șervețele umede", slug: "servetele-umede", description: "Șervețele umede pentru igiena zilnică.", image: "https://placehold.co/400x300/D8B2B1/652F37?text=Servetele+umede" },
   { name: "Chibrite", slug: "chibrite", description: "Chibrite de uz casnic.", image: "https://placehold.co/400x300/D8B2B1/652F37?text=Chibrite" },
   { name: "Alte produse", slug: "alte-produse", description: "Alte produse de uz casnic.", image: "https://placehold.co/400x300/D8B2B1/652F37?text=Alte+produse" },
+  { name: "Produse de uz casnic", slug: "produse-de-uz-casnic", description: "Produse de curățenie și uz casnic pentru fiecare zi.", image: "https://placehold.co/400x300/D8B2B1/652F37?text=Uz+casnic" },
 ];
 
 // Example seed data — replace with your own real catalog before going live.
