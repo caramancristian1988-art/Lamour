@@ -40,13 +40,12 @@ export default function AboutTeaser() {
                 className="object-cover"
               />
             </div>
-            <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
-              {/* Placeholder — swap for a real photo of the packaging line/products. */}
+            <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden bg-white">
               <Image
-                src="https://placehold.co/400x300/D8B2B1/652F37?text=Produsele+noastre"
+                src="/produsele-lamour.png"
                 alt="Produsele L'amour Cu Dragoste"
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </div>
             <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
