@@ -41,6 +41,7 @@ export async function createBlogPostAction(_prevState: BlogFormState, formData: 
   revalidatePath("/blog");
   revalidatePath(`/blog/${slug}`);
   if (category) revalidatePath(`/blog/categorie/${slugify(category)}`);
+  revalidatePath("/");
   redirect("/admin/blog");
 }
 
@@ -75,6 +76,7 @@ export async function updateBlogPostAction(_prevState: BlogFormState, formData: 
   if (before?.slug && before.slug !== slug) revalidatePath(`/blog/${before.slug}`);
   if (category) revalidatePath(`/blog/categorie/${slugify(category)}`);
   if (before?.category && before.category !== category) revalidatePath(`/blog/categorie/${slugify(before.category)}`);
+  revalidatePath("/");
   redirect("/admin/blog");
 }
 
@@ -88,6 +90,7 @@ export async function deleteBlogPostAction(formData: FormData) {
   revalidatePath("/blog");
   if (post?.slug) revalidatePath(`/blog/${post.slug}`);
   if (post?.category) revalidatePath(`/blog/categorie/${slugify(post.category)}`);
+  revalidatePath("/");
 }
 
 export async function togglePublishAction(formData: FormData) {
@@ -101,4 +104,5 @@ export async function togglePublishAction(formData: FormData) {
   revalidatePath("/blog");
   if (post?.slug) revalidatePath(`/blog/${post.slug}`);
   if (post?.category) revalidatePath(`/blog/categorie/${slugify(post.category)}`);
+  revalidatePath("/");
 }

@@ -80,6 +80,7 @@ export async function createProductAction(_prevState: ProductFormState, formData
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
   revalidatePath(`/produse/${data.slug}`);
+  revalidatePath("/");
   redirect("/admin/produse");
 }
 
@@ -102,6 +103,7 @@ export async function updateProductAction(_prevState: ProductFormState, formData
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
   revalidatePath(`/produse/${data.slug}`);
+  revalidatePath("/");
   redirect("/admin/produse");
 }
 
@@ -114,4 +116,5 @@ export async function deleteProductAction(formData: FormData) {
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
   if (product?.slug) revalidatePath(`/produse/${product.slug}`);
+  revalidatePath("/");
 }

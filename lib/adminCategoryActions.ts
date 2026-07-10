@@ -30,6 +30,7 @@ export async function createCategoryInlineAction(
     revalidatePath("/admin/produse/categorii");
     revalidatePath("/produse");
     revalidatePath(`/produse/${slug}`);
+    revalidatePath("/");
     return { category: { id: category.id, name: category.name } };
   } catch {
     return { error: "Există deja o categorie cu un nume foarte similar." };
@@ -50,6 +51,7 @@ export async function deleteCategoryInlineAction(id: string): Promise<{ success?
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
   if (cat?.slug) revalidatePath(`/produse/${cat.slug}`);
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -67,6 +69,7 @@ export async function createCategoryAction(formData: FormData) {
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
   revalidatePath(`/produse/${slug}`);
+  revalidatePath("/");
 }
 
 export async function updateCategoryAction(formData: FormData) {
@@ -86,6 +89,7 @@ export async function updateCategoryAction(formData: FormData) {
   revalidatePath("/produse");
   revalidatePath(`/produse/${slug}`);
   if (existing?.slug && existing.slug !== slug) revalidatePath(`/produse/${existing.slug}`);
+  revalidatePath("/");
   redirect("/admin/produse/categorii");
 }
 
@@ -102,4 +106,5 @@ export async function deleteCategoryAction(formData: FormData) {
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
   if (cat?.slug) revalidatePath(`/produse/${cat.slug}`);
+  revalidatePath("/");
 }

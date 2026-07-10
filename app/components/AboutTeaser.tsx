@@ -33,9 +33,8 @@ export default function AboutTeaser() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="relative h-40 sm:h-48 rounded-2xl overflow-hidden col-span-2">
-              {/* Placeholder — swap for a real production-line/factory photo. */}
               <Image
-                src="https://placehold.co/800x400/9D5654/ffffff?text=Fabrica+noastra"
+                src="/fabrica-lamour.png"
                 alt="Fabrica L'amour Cu Dragoste"
                 fill
                 className="object-cover"
