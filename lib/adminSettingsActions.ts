@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 
@@ -32,4 +33,5 @@ export async function updateSettingsAction(formData: FormData) {
 
   revalidatePath("/admin/setari");
   revalidatePath("/", "layout");
+  redirect("/admin/setari?salvat=1");
 }

@@ -1,9 +1,11 @@
+import { Check } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import SaveButton from "../components/SaveButton";
 import { AdminInput } from "../components/AdminField";
 import { Switch } from "@/app/components/ui/switch";
 import { Label } from "@/app/components/ui/label";
+import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { updateSettingsAction } from "@/lib/adminSettingsActions";
 
 const SECTION_TOGGLES = [
@@ -21,12 +23,24 @@ async function getSettings() {
   }
 }
 
-export default async function AdminSetariPage() {
+export default async function AdminSetariPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ salvat?: string }>;
+}) {
   const settings = await getSettings();
+  const { salvat } = await searchParams;
 
   return (
     <div>
       <AdminPageHeader title="Setări" description="Secțiunile active pe site." />
+
+      {salvat === "1" && (
+        <Alert variant="success" role="status" className="max-w-2xl mb-4">
+          <Check aria-hidden />
+          <AlertDescription>Setările au fost salvate cu succes.</AlertDescription>
+        </Alert>
+      )}
 
       <form action={updateSettingsAction} className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-6 max-w-2xl">
         <div>
