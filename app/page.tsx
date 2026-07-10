@@ -2,22 +2,16 @@ import { prisma } from "@/lib/prisma";
 import { fallbackCategories, fallbackOfferProducts } from "@/lib/fallbackData";
 import Hero from "@/app/components/Hero";
 import TrustBar from "@/app/components/TrustBar";
-import BusinessDivisions from "@/app/components/BusinessDivisions";
 import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
 import ReviewsSection from "@/app/components/ReviewsSection";
 import AboutTeaser from "@/app/components/AboutTeaser";
-import FactoryGallery from "@/app/components/FactoryGallery";
-import SocialImpact from "@/app/components/SocialImpact";
-import LatestNews from "@/app/components/LatestNews";
-import Partners from "@/app/components/Partners";
-import DivisionCta from "@/app/components/division/DivisionCta";
 
 export const revalidate = 3600;
 
 async function getData() {
   try {
-    const [categories, offerProducts, reviews, banners, posts] = await Promise.all([
+    const [categories, offerProducts, reviews, banners] = await Promise.all([
       prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
       prisma.product.findMany({
         where: { oldPrice: { not: null } },
@@ -31,19 +25,12 @@ async function getData() {
         select: { id: true, name: true, rating: true, text: true, product: true },
       }),
       prisma.banner.findMany({ orderBy: { order: "asc" } }),
-      prisma.blogPost.findMany({
-        where: { published: true },
-        orderBy: { createdAt: "desc" },
-        take: 3,
-        select: { slug: true, title: true, description: true, category: true, image: true, createdAt: true },
-      }),
     ]);
     return {
       categories,
       offerProducts: offerProducts.length > 0 ? offerProducts : fallbackOfferProducts.slice(0, 4),
       reviews,
       banners,
-      posts,
     };
   } catch {
     return {
@@ -51,13 +38,12 @@ async function getData() {
       offerProducts: fallbackOfferProducts.slice(0, 4),
       reviews: [],
       banners: [],
-      posts: [],
     };
   }
 }
 
 export default async function HomePage() {
-  const { categories, offerProducts, reviews, banners, posts } = await getData();
+  const { categories, offerProducts, reviews, banners } = await getData();
 
   return (
     <main>
@@ -70,20 +56,8 @@ export default async function HomePage() {
         highlighted="speciale"
         viewAllHref="/produse?oferte=1"
       />
-      <BusinessDivisions />
-      <AboutTeaser />
-      <FactoryGallery />
-      <SocialImpact />
-      <LatestNews posts={posts} />
-      <Partners />
-      <DivisionCta
-        title="Ai un proiect, o comandă sau o cerere de ofertă?"
-        description="Scrie-ne — echipa noastră îți răspunde rapid cu o propunere personalizată."
-        ctaLabel="Contactează-ne"
-        ctaHref="/contact"
-        className="pt-10"
-      />
       <ReviewsSection reviews={reviews} />
+      <AboutTeaser />
     </main>
   );
 }
