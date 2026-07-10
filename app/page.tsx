@@ -9,7 +9,6 @@ import ReviewsSection from "@/app/components/ReviewsSection";
 import AboutTeaser from "@/app/components/AboutTeaser";
 import FactoryGallery from "@/app/components/FactoryGallery";
 import SocialImpact from "@/app/components/SocialImpact";
-import LatestProjects from "@/app/components/LatestProjects";
 import LatestNews from "@/app/components/LatestNews";
 import Partners from "@/app/components/Partners";
 import DivisionCta from "@/app/components/division/DivisionCta";
@@ -18,7 +17,7 @@ export const revalidate = 3600;
 
 async function getData() {
   try {
-    const [categories, offerProducts, reviews, banners, projects, posts] = await Promise.all([
+    const [categories, offerProducts, reviews, banners, posts] = await Promise.all([
       prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
       prisma.product.findMany({
         where: { oldPrice: { not: null } },
@@ -32,7 +31,6 @@ async function getData() {
         select: { id: true, name: true, rating: true, text: true, product: true },
       }),
       prisma.banner.findMany({ orderBy: { order: "asc" } }),
-      prisma.project.findMany({ orderBy: { createdAt: "desc" }, take: 3 }),
       prisma.blogPost.findMany({
         where: { published: true },
         orderBy: { createdAt: "desc" },
@@ -45,7 +43,6 @@ async function getData() {
       offerProducts: offerProducts.length > 0 ? offerProducts : fallbackOfferProducts.slice(0, 4),
       reviews,
       banners,
-      projects,
       posts,
     };
   } catch {
@@ -54,14 +51,13 @@ async function getData() {
       offerProducts: fallbackOfferProducts.slice(0, 4),
       reviews: [],
       banners: [],
-      projects: [],
       posts: [],
     };
   }
 }
 
 export default async function HomePage() {
-  const { categories, offerProducts, reviews, banners, projects, posts } = await getData();
+  const { categories, offerProducts, reviews, banners, posts } = await getData();
 
   return (
     <main>
@@ -78,7 +74,6 @@ export default async function HomePage() {
       <AboutTeaser />
       <FactoryGallery />
       <SocialImpact />
-      <LatestProjects projects={projects} />
       <LatestNews posts={posts} />
       <Partners />
       <DivisionCta

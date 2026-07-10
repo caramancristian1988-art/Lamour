@@ -9,7 +9,6 @@ export async function updateSettingsAction(formData: FormData) {
 
   const data = {
     produseEnabled: formData.get("produseEnabled") === "on",
-    proiecteEnabled: formData.get("proiecteEnabled") === "on",
     despreEnabled: formData.get("despreEnabled") === "on",
     blogEnabled: formData.get("blogEnabled") === "on",
     contactEnabled: formData.get("contactEnabled") === "on",

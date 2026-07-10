@@ -117,12 +117,6 @@ export default function MobileMenuButton({
         </SheetHeader>
 
         <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Meniu principal">
-          <SheetClose asChild>
-            <Link href="/" className="block px-3 py-3.5 rounded-xl text-primary hover:bg-muted hover:text-accent transition-colors text-base font-bold">
-              Acasă
-            </Link>
-          </SheetClose>
-
           {despreEnabled && (
             <MobileDropdownGroup
               label="Despre noi"

@@ -114,14 +114,6 @@ model ProductFaq {
   createdAt DateTime @default(now())
 }
 
-model Project {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String
-  images      String[] @default([])
-  createdAt   DateTime @default(now())
-}
-
 model ContactMessage {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
   name              String
@@ -155,7 +147,6 @@ model Settings {
   seoTitle    String?
   seoDescription String?
   produseEnabled  Boolean @default(true)
-  proiecteEnabled Boolean @default(false)
   despreEnabled   Boolean @default(true)
   blogEnabled     Boolean @default(true)
   contactEnabled  Boolean @default(true)

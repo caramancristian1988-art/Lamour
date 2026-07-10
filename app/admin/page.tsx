@@ -3,7 +3,6 @@ import {
   Star,
   Package,
   Layers,
-  Image as ImageIcon,
   FileText,
   Megaphone,
   Settings,
@@ -17,23 +16,21 @@ import { MESSAGE_STATUSES } from "@/lib/messageStatuses";
 
 async function getStats() {
   try {
-    const [products, categories, projects, blogPosts, messages, unreadMessages, reviews, pendingReviews] =
+    const [products, categories, blogPosts, messages, unreadMessages, reviews, pendingReviews] =
       await Promise.all([
         prisma.product.count(),
         prisma.category.count(),
-        prisma.project.count(),
         prisma.blogPost.count(),
         prisma.contactMessage.count(),
         prisma.contactMessage.count({ where: { read: false } }),
         prisma.review.count({ where: { approved: true } }),
         prisma.review.count({ where: { approved: false } }),
       ]);
-    return { products, categories, projects, blogPosts, messages, unreadMessages, reviews, pendingReviews };
+    return { products, categories, blogPosts, messages, unreadMessages, reviews, pendingReviews };
   } catch {
     return {
       products: 0,
       categories: 0,
-      projects: 0,
       blogPosts: 0,
       messages: 0,
       unreadMessages: 0,
@@ -65,7 +62,6 @@ export default async function AdminDashboardPage() {
 
   const contentChartData = [
     { label: "Produse", value: stats.products },
-    { label: "Proiecte", value: stats.projects },
     { label: "Articole blog", value: stats.blogPosts },
   ];
 
@@ -99,12 +95,6 @@ export default async function AdminDashboardPage() {
           label="Categorii"
           value={stats.categories}
           icon={<Layers className="w-6 h-6" aria-hidden />}
-        />
-        <AdminStatCard
-          href="/admin/proiecte"
-          label="Proiecte"
-          value={stats.projects}
-          icon={<ImageIcon className="w-6 h-6" aria-hidden />}
         />
         <AdminStatCard
           href="/admin/blog"

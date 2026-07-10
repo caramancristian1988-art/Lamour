@@ -8,7 +8,6 @@ import { updateSettingsAction } from "@/lib/adminSettingsActions";
 
 const SECTION_TOGGLES = [
   { name: "produseEnabled", label: "Produse", description: "Listele de produse, paginile de categorie și de detaliu." },
-  { name: "proiecteEnabled", label: "Proiecte", description: "Portofoliul de proiecte realizate." },
   { name: "despreEnabled", label: "Despre noi", description: "Pagina de prezentare a companiei." },
   { name: "blogEnabled", label: "Blog", description: "Articolele de blog și paginile de categorie." },
   { name: "contactEnabled", label: "Contact", description: "Pagina de contact și formularul." },
@@ -56,7 +55,7 @@ export default async function AdminSetariPage() {
                 <Switch
                   id={`field-${section.name}`}
                   name={section.name}
-                  defaultChecked={settings?.[section.name] ?? (section.name === "proiecteEnabled" ? false : true)}
+                  defaultChecked={settings?.[section.name] ?? true}
                   className="shrink-0"
                 />
               </div>

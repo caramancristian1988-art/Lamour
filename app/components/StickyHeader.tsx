@@ -125,10 +125,6 @@ export default function StickyHeader({
           <AllCategoriesMenu categories={productsDropdown} buttonClassName="flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white text-sm font-bold px-5 h-10 rounded-xl transition-colors uppercase tracking-wide shrink-0" />
         )}
 
-        <Link href="/" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
-          Acasă
-        </Link>
-
         {despreEnabled && (
           <div className="relative group">
             <Link
