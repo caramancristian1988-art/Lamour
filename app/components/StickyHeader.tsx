@@ -8,7 +8,6 @@ import CartBadge from "./CartBadge";
 import AllCategoriesMenu from "./AllCategoriesMenu";
 import AccountMenuLink from "./AccountMenuLink";
 import AccessibilityToggle from "./AccessibilityToggle";
-import OrnamentalBorder from "./OrnamentalBorder";
 
 const fallbackProductsDropdown = [
   { id: "categorie-1", slug: "categorie-1", name: "Categoria unu", image: null },
@@ -210,8 +209,6 @@ export default function StickyHeader({
           </Link>
         )}
       </div>
-
-      <OrnamentalBorder />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import type { SectionFlags, HeaderCategory, SocialLinks, ContactInfo } from "@/lib/siteSettings";
 import TopBar from "./TopBar";
 import ScrollAwareHeader from "./ScrollAwareHeader";
+import OrnamentalBorder from "./OrnamentalBorder";
 import Footer from "./Footer";
 import FloatingContact from "./FloatingContact";
 import DiscountPopup from "./DiscountPopup";
@@ -16,6 +17,7 @@ export function SiteHeader(props: Partial<SectionFlags> & { categories?: HeaderC
     <>
       <TopBar phone={props.phone} phoneTel={props.phoneTel} email={props.email} />
       <ScrollAwareHeader {...props} />
+      <OrnamentalBorder />
     </>
   );
 }
