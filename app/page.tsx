@@ -56,8 +56,8 @@ export default async function HomePage() {
         highlighted="speciale"
         viewAllHref="/produse?oferte=1"
       />
-      <ReviewsSection reviews={reviews} />
       <AboutTeaser />
+      <ReviewsSection reviews={reviews} />
     </main>
   );
 }
