@@ -31,40 +31,31 @@ export default function AboutTeaser() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 auto-rows-[170px] sm:auto-rows-[190px]">
-            <div className="relative row-span-2 rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative h-40 sm:h-48 rounded-2xl overflow-hidden col-span-2">
               {/* Placeholder — swap for a real production-line/factory photo. */}
               <Image
-                src="https://placehold.co/400x800/9D5654/ffffff?text=Linia+de+productie"
-                alt="Linia de producție L'amour Cu Dragoste"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative rounded-2xl overflow-hidden">
-              {/* Placeholder — swap for a real photo of the factory building. */}
-              <Image
-                src="https://placehold.co/400x300/D8B2B1/652F37?text=Fabrica+noastra"
+                src="https://placehold.co/800x400/9D5654/ffffff?text=Fabrica+noastra"
                 alt="Fabrica L'amour Cu Dragoste"
                 fill
                 className="object-cover"
               />
             </div>
-            <div className="relative rounded-2xl overflow-hidden">
-              {/* Placeholder — swap for a real photo of the packaged products. */}
+            <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
+              {/* Placeholder — swap for a real photo of the packaging line/products. */}
               <Image
-                src="https://placehold.co/400x300/E9D0CE/652F37?text=Produsele+noastre"
+                src="https://placehold.co/400x300/D8B2B1/652F37?text=Produsele+noastre"
                 alt="Produsele L'amour Cu Dragoste"
                 fill
                 className="object-cover"
               />
             </div>
-            <div className="relative row-span-2 rounded-2xl overflow-hidden">
+            <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
               {/* Placeholder — reserved for a respectful, inclusive photo of a
                   visually-impaired employee at work (e.g. with a white cane),
                   once real photography is available. */}
               <Image
-                src="https://placehold.co/400x800/710808/ffffff?text=Echipa+noastra"
+                src="https://placehold.co/400x300/710808/ffffff?text=Echipa+noastra"
                 alt="Echipa noastră incluzivă"
                 fill
                 className="object-cover"
