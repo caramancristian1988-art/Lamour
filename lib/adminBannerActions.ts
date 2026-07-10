@@ -5,6 +5,12 @@ import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 
+function clampPercent(value: FormDataEntryValue | null, fallback: number): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(100, Math.max(0, n));
+}
+
 export async function createBannerAction(formData: FormData) {
   await requireAdmin();
 
@@ -13,13 +19,14 @@ export async function createBannerAction(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim() || null;
   const subtitle = String(formData.get("subtitle") ?? "").trim() || null;
   const ctaLabel = String(formData.get("ctaLabel") ?? "").trim() || null;
-  const ctaPosition = String(formData.get("ctaPosition") ?? "").trim() || "stanga";
+  const ctaPositionX = clampPercent(formData.get("ctaPositionX"), 15);
+  const ctaPositionY = clampPercent(formData.get("ctaPositionY"), 85);
   const link = String(formData.get("link") ?? "").trim() || null;
   const order = Math.max(0, Number(formData.get("order")) || 0);
 
   if (!image || !alt) return;
 
-  await prisma.banner.create({ data: { image, alt, title, subtitle, ctaLabel, ctaPosition, link, order } });
+  await prisma.banner.create({ data: { image, alt, title, subtitle, ctaLabel, ctaPositionX, ctaPositionY, link, order } });
   revalidatePath("/admin/bannere");
   revalidatePath("/");
   redirect("/admin/bannere");
@@ -34,13 +41,14 @@ export async function updateBannerAction(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim() || null;
   const subtitle = String(formData.get("subtitle") ?? "").trim() || null;
   const ctaLabel = String(formData.get("ctaLabel") ?? "").trim() || null;
-  const ctaPosition = String(formData.get("ctaPosition") ?? "").trim() || "stanga";
+  const ctaPositionX = clampPercent(formData.get("ctaPositionX"), 15);
+  const ctaPositionY = clampPercent(formData.get("ctaPositionY"), 85);
   const link = String(formData.get("link") ?? "").trim() || null;
   const order = Math.max(0, Number(formData.get("order")) || 0);
 
   if (!id || !image || !alt) return;
 
-  await prisma.banner.update({ where: { id }, data: { image, alt, title, subtitle, ctaLabel, ctaPosition, link, order } });
+  await prisma.banner.update({ where: { id }, data: { image, alt, title, subtitle, ctaLabel, ctaPositionX, ctaPositionY, link, order } });
   revalidatePath("/admin/bannere");
   revalidatePath("/");
   redirect("/admin/bannere");

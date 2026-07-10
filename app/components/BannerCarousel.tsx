@@ -15,7 +15,8 @@ export interface BannerSlide {
   title: string | null;
   subtitle: string | null;
   ctaLabel: string | null;
-  ctaPosition?: string;
+  ctaPositionX?: number;
+  ctaPositionY?: number;
   link: string | null;
 }
 
@@ -53,15 +54,8 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
       <div className="relative w-full aspect-video sm:aspect-[2/1] lg:aspect-[21/9] bg-muted">
         {banners.map((banner, i) => {
           const hasText = banner.title || banner.subtitle;
-          const position = banner.ctaPosition === "centru" || banner.ctaPosition === "dreapta" ? banner.ctaPosition : "stanga";
-          const justifyClass = position === "centru" ? "justify-center" : position === "dreapta" ? "justify-end" : "justify-start";
-          const alignClass = position === "centru" ? "items-center text-center" : position === "dreapta" ? "items-end text-right" : "items-start text-left";
-          const gradientClass =
-            position === "dreapta"
-              ? "bg-gradient-to-l from-black/60 via-black/25 to-transparent"
-              : position === "centru"
-                ? "bg-gradient-to-t from-black/60 via-black/10 to-transparent"
-                : "bg-gradient-to-r from-black/60 via-black/25 to-transparent";
+          const posX = banner.ctaPositionX ?? 15;
+          const posY = banner.ctaPositionY ?? 85;
           const content = (
             <>
               <Image
@@ -72,33 +66,36 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
                 className="object-cover"
                 sizes="(min-width: 1280px) 1280px, 100vw"
               />
-              {hasText && <div className={`absolute inset-0 ${gradientClass}`} />}
-              {(hasText || banner.ctaLabel) && (
-                <div
-                  className={`absolute inset-0 flex px-4 sm:px-12 lg:px-16 ${justifyClass} ${
-                    hasText ? "items-center" : "items-end pb-3 sm:pb-16"
-                  }`}
-                >
-                  <div className={`flex flex-col gap-2 sm:gap-3 max-w-xl ${alignClass}`}>
-                    {banner.title && (
-                      <h2 className="font-serif italic text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight text-balance">
-                        {banner.title}
-                      </h2>
-                    )}
-                    {banner.subtitle && (
-                      <p className="text-sm sm:text-lg text-white/90 leading-relaxed">{banner.subtitle}</p>
-                    )}
-                    {banner.ctaLabel && (
-                      <Button
-                        asChild
-                        variant="accent"
-                        size="lg"
-                        className="mt-2 h-9 px-4 text-xs sm:h-14 sm:px-8 sm:text-base"
-                      >
-                        <span>{banner.ctaLabel}</span>
-                      </Button>
-                    )}
+              {hasText && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
+                  <div className="absolute inset-0 flex items-center justify-start px-4 sm:px-12 lg:px-16">
+                    <div className="flex flex-col gap-2 sm:gap-3 max-w-xl items-start text-left">
+                      {banner.title && (
+                        <h2 className="font-serif italic text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight text-balance">
+                          {banner.title}
+                        </h2>
+                      )}
+                      {banner.subtitle && (
+                        <p className="text-sm sm:text-lg text-white/90 leading-relaxed">{banner.subtitle}</p>
+                      )}
+                    </div>
                   </div>
+                </>
+              )}
+              {banner.ctaLabel && (
+                <div
+                  className="absolute -translate-x-1/2 -translate-y-1/2"
+                  style={{ left: `${posX}%`, top: `${posY}%` }}
+                >
+                  <Button
+                    asChild
+                    variant="accent"
+                    size="lg"
+                    className="h-9 px-4 text-xs sm:h-14 sm:px-8 sm:text-base whitespace-nowrap"
+                  >
+                    <span>{banner.ctaLabel}</span>
+                  </Button>
                 </div>
               )}
             </>

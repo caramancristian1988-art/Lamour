@@ -1,5 +1,5 @@
-import { AdminInput, AdminSelect } from "../components/AdminField";
-import ImageUploadField from "../components/ImageUploadField";
+import { AdminInput } from "../components/AdminField";
+import BannerImagePositionField from "./BannerImagePositionField";
 import { Button } from "@/app/components/ui/button";
 
 interface BannerDefaults {
@@ -9,7 +9,8 @@ interface BannerDefaults {
   title?: string | null;
   subtitle?: string | null;
   ctaLabel?: string | null;
-  ctaPosition?: string;
+  ctaPositionX?: number;
+  ctaPositionY?: number;
   link?: string | null;
   order?: number;
 }
@@ -27,7 +28,12 @@ export default function BannerForm({
     <form action={action} className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 max-w-xl">
       {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
 
-      <ImageUploadField name="image" label="Imagine banner" defaultValue={defaults?.image} />
+      <BannerImagePositionField
+        imageDefault={defaults?.image}
+        ctaLabelDefault={defaults?.ctaLabel}
+        posXDefault={defaults?.ctaPositionX}
+        posYDefault={defaults?.ctaPositionY}
+      />
       <AdminInput
         label="Text alternativ"
         name="alt"
@@ -53,11 +59,6 @@ export default function BannerForm({
         defaultValue={defaults?.ctaLabel ?? ""}
         placeholder="Vezi ofertele"
       />
-      <AdminSelect label="Poziție buton" name="ctaPosition" defaultValue={defaults?.ctaPosition ?? "stanga"}>
-        <option value="stanga">Stânga</option>
-        <option value="centru">Centru</option>
-        <option value="dreapta">Dreapta</option>
-      </AdminSelect>
       <AdminInput
         label="Link (opțional)"
         name="link"
