@@ -76,7 +76,6 @@ export default async function HomePage() {
           highlighted="noi"
           viewAllHref="/produse"
           viewAllLabel="Vezi toate produsele"
-          bg="bg-muted/40"
         />
       )}
       {recommendedProducts.length > 0 && (
@@ -95,7 +94,6 @@ export default async function HomePage() {
           highlighted="casnic"
           viewAllHref="/produse?cat=produse-de-uz-casnic"
           viewAllLabel="Vezi toate produsele"
-          bg="bg-muted/40"
         />
       )}
       <DivisionQuickLinks />
