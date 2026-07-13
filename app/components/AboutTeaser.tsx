@@ -34,8 +34,8 @@ export default function AboutTeaser() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="relative h-40 sm:h-48 rounded-2xl overflow-hidden col-span-2">
+          <div className="grid grid-cols-1 gap-4">
+            <div className="relative h-48 sm:h-56 rounded-2xl overflow-hidden">
               <Image
                 src="/fabrica-lamour.png"
                 alt="Fabrica L'amour Cu Dragoste"
@@ -43,20 +43,12 @@ export default function AboutTeaser() {
                 className="object-cover"
               />
             </div>
-            <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden bg-white">
+            <div className="relative h-36 sm:h-44 rounded-2xl overflow-hidden bg-white">
               <Image
                 src="/produsele-lamour.png"
                 alt="Produsele L'amour Cu Dragoste"
                 fill
-                className="object-contain"
-              />
-            </div>
-            <div className="relative h-32 sm:h-40 rounded-2xl overflow-hidden">
-              <Image
-                src="/echipa-lamour.png"
-                alt="Echipa L'amour Cu Dragoste"
-                fill
-                className="object-cover object-[center_62%]"
+                className="object-contain p-4"
               />
             </div>
           </div>

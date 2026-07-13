@@ -31,14 +31,6 @@ export const metadata: Metadata = {
   description: `Află povestea ${SITE_NAME}, producător moldovenesc de hârtie igienică și produse de uz casnic, dedicat calității și incluziunii sociale.`,
 };
 
-// Placeholder team — swap for real staff photos when available.
-const team = [
-  { name: "Alexandru Popescu", role: "Director executiv", image: "https://placehold.co/400x400/D8B2B1/652F37?text=Foto+echipa" },
-  { name: "Mihai Rotaru", role: "Responsabil producție", image: "https://placehold.co/400x400/D8B2B1/652F37?text=Foto+echipa" },
-  { name: "Ion Cebotari", role: "Specialist control calitate", image: "https://placehold.co/400x400/D8B2B1/652F37?text=Foto+echipa" },
-  { name: "Vladimir Turcanu", role: "Coordonator incluziune socială", image: "https://placehold.co/400x400/D8B2B1/652F37?text=Foto+echipa" },
-];
-
 export default async function DesprePage() {
   const { despreEnabled } = await getSectionFlags();
   if (!despreEnabled) notFound();
@@ -83,10 +75,9 @@ export default async function DesprePage() {
 
             {/* RIGHT: Image */}
             <div className="relative w-full rounded-2xl overflow-hidden shadow-xl aspect-[4/3] lg:aspect-auto lg:h-[380px]">
-              {/* Placeholder — swap for a real production-line/factory photo. */}
               <Image
-                src="https://placehold.co/800x600/9D5654/ffffff?text=Fabrica+noastra"
-                alt=""
+                src="/fabrica-lamour.png"
+                alt="Fabrica L'amour Cu Dragoste"
                 fill
                 className="object-cover object-center"
                 priority
@@ -126,13 +117,12 @@ export default async function DesprePage() {
             </div>
 
             <div className="relative order-2 lg:order-1">
-              <div className="relative h-[220px] sm:h-[300px] lg:h-[360px] rounded-2xl overflow-hidden shadow-xl">
-                {/* Placeholder — swap for a real photo of the production/packaging line. */}
+              <div className="relative h-[220px] sm:h-[300px] lg:h-[360px] rounded-2xl overflow-hidden shadow-xl bg-white">
                 <Image
-                  src="https://placehold.co/800x600/D8B2B1/652F37?text=Productia+noastra"
-                  alt=""
+                  src="/produsele-lamour.png"
+                  alt="Produsele L'amour Cu Dragoste"
                   fill
-                  className="object-cover object-center"
+                  className="object-contain p-6"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
@@ -171,16 +161,16 @@ export default async function DesprePage() {
               <Target className="w-8 h-8 text-primary mb-4" aria-hidden />
               <h2 className="text-xl font-bold text-primary tracking-tight mb-3">Misiunea noastră</h2>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Producem produse de calitate pentru familiile din Moldova, susținând în același timp
-                incluziunea socială și dezvoltarea comunității locale.
+                Facem produse de hârtie și de uz casnic pe care familiile din Moldova să se poată baza
+                — fabricate aici, din 100% celuloză, la prețuri corecte.
               </p>
             </div>
             <div className="bg-card border border-border rounded-2xl p-8">
               <Eye className="w-8 h-8 text-primary mb-4" aria-hidden />
               <h2 className="text-xl font-bold text-primary tracking-tight mb-3">Viziunea noastră</h2>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Să devenim un producător de referință în Moldova, cunoscut atât pentru calitatea
-                produselor, cât și pentru impactul social pozitiv pe care îl generăm.
+                Vrem ca numele {SITE_NAME} să însemne, pentru orice moldovean, produse de încredere —
+                și un loc de muncă demn pentru oricine, indiferent de dizabilitate.
               </p>
             </div>
           </div>
@@ -207,40 +197,18 @@ export default async function DesprePage() {
 
       {/* ── ECHIPA NOASTRĂ ── */}
       <section className="py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-10 lg:gap-16 items-start">
-            <div className="lg:pt-4">
-              <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">
-                Echipa noastră
-              </p>
-              <h2 className="text-2xl sm:text-3xl font-bold text-primary leading-tight tracking-tight">
-                Profesioniști de încredere, la dispoziția ta
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {team.map((member) => (
-                <div
-                  key={member.name}
-                  className="group bg-card border border-border rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
-                >
-                  <div className="h-44 relative overflow-hidden">
-                    <Image
-                      src={member.image}
-                      alt=""
-                      fill
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                    />
-                  </div>
-                  <div className="px-4 py-4 text-center">
-                    <h3 className="font-bold text-foreground text-sm mb-1">{member.name}</h3>
-                    <p className="text-accent text-[11px] font-semibold">{member.role}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="max-w-3xl mx-auto px-5 sm:px-6 lg:px-12 text-center">
+          <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">
+            Echipa noastră
+          </p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-primary leading-tight tracking-tight mb-4">
+            Oamenii din spatele fiecărui produs
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            O parte din echipa noastră de producție este formată din angajați ai Asociației
+            Nevăzătorilor din Moldova. Pentru noi, incluziunea nu e un slogan — e felul în care
+            lucrăm, zi de zi.
+          </p>
         </div>
       </section>
 
