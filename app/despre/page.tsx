@@ -31,13 +31,6 @@ export const metadata: Metadata = {
   description: `Află povestea ${SITE_NAME}, producător moldovenesc de hârtie igienică și produse de uz casnic, dedicat calității și incluziunii sociale.`,
 };
 
-const stats = [
-  { value: "10+", label: "Ani de activitate" },
-  { value: "50+", label: "Angajați" },
-  { value: "12+", label: "Produse în gamă" },
-  { value: "100%", label: "Celuloză" },
-];
-
 // Placeholder team — swap for real staff photos when available.
 const team = [
   { name: "Alexandru Popescu", role: "Director executiv", image: "https://placehold.co/400x400/D8B2B1/652F37?text=Foto+echipa" },
@@ -169,23 +162,6 @@ export default async function DesprePage() {
       </section>
 
       <MotifDivider className="max-w-7xl mx-auto" />
-
-      {/* ── STATISTICI ── */}
-      <section className="py-10">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {stats.map((stat) => (
-              <div
-                key={stat.value}
-                className="bg-card border border-border rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 px-6 py-8 text-center"
-              >
-                <div className="text-3xl sm:text-4xl font-bold text-accent mb-2">{stat.value}</div>
-                <div className="text-sm text-muted-foreground font-medium leading-snug">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── MISIUNE ── */}
       <section id="misiune" className="py-12 lg:py-16 border-t border-border scroll-mt-24">
