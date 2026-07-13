@@ -16,9 +16,6 @@ interface ProductCardProps {
   image?: string | null;
   images?: string[];
   packageQuantity?: string | null;
-  btu?: number | null;
-  technology?: string | null;
-  energyClass?: string | null;
   rating: number;
   reviewCount: number;
   badge?: string | null;
@@ -35,9 +32,6 @@ export default function ProductCard({
   image,
   images,
   packageQuantity,
-  btu,
-  technology,
-  energyClass,
   rating,
   reviewCount,
   badge,
@@ -52,14 +46,7 @@ export default function ProductCard({
   const discountAmount = oldPrice ? Math.round(oldPrice - price) : null;
   const displayBadge = badge ?? (discount ? `-${discount}%` : null);
 
-  const specs = [
-    packageQuantity || null,
-    btu ? `${(btu / 1000).toFixed(0)}000 BTU` : null,
-    technology || null,
-    energyClass ? `Clasa ${energyClass}` : null,
-  ]
-    .filter(Boolean)
-    .join(", ");
+  const specs = [packageQuantity || null].filter(Boolean).join(", ");
 
   return (
     <div className="group bg-card rounded-2xl border border-border overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
@@ -90,7 +77,7 @@ export default function ProductCard({
 
         <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
           <FavoriteButton
-            product={{ slug, name, price, oldPrice, image: displayImage, btu, technology, energyClass, rating, reviewCount, badge }}
+            product={{ slug, name, price, oldPrice, image: displayImage, rating, reviewCount, badge }}
           />
         </div>
       </div>

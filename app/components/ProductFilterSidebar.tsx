@@ -18,16 +18,6 @@ interface CategoryOption {
   count: number;
 }
 
-interface EnergyOption {
-  value: string;
-  count: number;
-}
-
-interface TechnologyOption {
-  value: string;
-  count: number;
-}
-
 interface BrandOption {
   value: string;
   count: number;
@@ -41,8 +31,6 @@ interface PriceBounds {
 interface Props {
   sort: SortKey;
   categories?: CategoryOption[];
-  technologies: TechnologyOption[];
-  energyClasses: EnergyOption[];
   brands: BrandOption[];
   priceBounds: PriceBounds;
   offersCount: number;
@@ -85,15 +73,13 @@ function FilterGroup({
   );
 }
 
-export default function ProductFilterSidebar({ sort, categories, technologies, energyClasses, brands, priceBounds, offersCount }: Props) {
+export default function ProductFilterSidebar({ sort, categories, brands, priceBounds, offersCount }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const selectedCats = searchParams.get("cat")?.split(",").filter(Boolean) ?? [];
-  const selectedTechnologies = searchParams.get("tehnologie")?.split(",").filter(Boolean) ?? [];
-  const selectedEnergy = searchParams.get("energie")?.split(",").filter(Boolean) ?? [];
   const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) ?? [];
   const PRICE_ABSOLUTE_MAX = 200_000;
   const priceMin = Number(searchParams.get("pretMin")) || priceBounds.min;
@@ -144,7 +130,7 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
 
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString());
-    ["cat", "tehnologie", "energie", "brand", "pretMin", "pretMax", "oferte"].forEach((k) => params.delete(k));
+    ["cat", "brand", "pretMin", "pretMax", "oferte"].forEach((k) => params.delete(k));
     go(params);
   }
 
@@ -155,12 +141,6 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
       if (cat) activeChips.push({ key: `cat-${slug}`, label: cat.name, onRemove: () => removeListValue("cat", slug) });
     });
   }
-  selectedTechnologies.forEach((val) =>
-    activeChips.push({ key: `tehnologie-${val}`, label: val, onRemove: () => removeListValue("tehnologie", val) })
-  );
-  selectedEnergy.forEach((val) =>
-    activeChips.push({ key: `energie-${val}`, label: `Clasa ${val}`, onRemove: () => removeListValue("energie", val) })
-  );
   selectedBrands.forEach((val) =>
     activeChips.push({ key: `brand-${val}`, label: val, onRemove: () => removeListValue("brand", val) })
   );
@@ -237,8 +217,6 @@ export default function ProductFilterSidebar({ sort, categories, technologies, e
         />
       )}
       <FilterGroup title="Brand" options={brands} selected={selectedBrands} paramKey="brand" onToggle={toggleListParam} />
-      <FilterGroup title="Tehnologie" options={technologies} selected={selectedTechnologies} paramKey="tehnologie" onToggle={toggleListParam} />
-      <FilterGroup title="Clasă energetică" options={energyClasses} selected={selectedEnergy} paramKey="energie" formatLabel={(v) => `Clasa ${v}`} onToggle={toggleListParam} />
     </div>
   );
 

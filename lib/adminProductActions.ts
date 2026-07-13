@@ -35,10 +35,7 @@ function readProductFields(formData: FormData) {
   const image = String(formData.get("image") ?? "").trim() || null;
   const images = parseImageLines(formData);
   const packageQuantity = String(formData.get("packageQuantity") ?? "").trim() || null;
-  const btuRaw = String(formData.get("btu") ?? "").trim();
-  const technology = String(formData.get("technology") ?? "").trim() || "On/Off";
   const brand = String(formData.get("brand") ?? "").trim() || null;
-  const energyClass = String(formData.get("energyClass") ?? "").trim() || null;
   const badge = String(formData.get("badge") ?? "").trim() || null;
   const availability = String(formData.get("availability") ?? "").trim() || "În stoc";
   const installmentsEnabled = formData.get("installmentsEnabled") === "on";
@@ -54,10 +51,7 @@ function readProductFields(formData: FormData) {
     image,
     images,
     packageQuantity,
-    btu: btuRaw ? Number(btuRaw) : null,
-    technology,
     brand,
-    energyClass,
     badge,
     availability,
     installmentsEnabled,

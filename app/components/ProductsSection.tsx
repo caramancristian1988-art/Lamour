@@ -12,9 +12,6 @@ interface Product {
   price: number;
   oldPrice: number | null;
   image: string | null;
-  btu: number | null;
-  technology: string;
-  energyClass: string | null;
   rating: number;
   reviewCount: number;
   badge: string | null;

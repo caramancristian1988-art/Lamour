@@ -53,7 +53,6 @@ async function main() {
         price: p.price,
         oldPrice: p.oldPrice,
         image: `https://placehold.co/400x400/ffffff/652F37?text=${encodeURIComponent(p.name.split(",")[0])}`,
-        technology: "",
         rating: 4.5 + (i % 3) * 0.1,
         reviewCount: 8 + i * 3,
         categoryId: categories[p.categorySlug].id,

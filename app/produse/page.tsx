@@ -54,10 +54,7 @@ interface ProductRow {
   price: number;
   oldPrice: number | null;
   image: string | null;
-  btu: number | null;
-  technology: string;
   brand: string | null;
-  energyClass: string | null;
   rating: number;
   reviewCount: number;
   badge: string | null;
@@ -119,19 +116,10 @@ export default async function ProdusePage({
     count: baseProducts.filter((p) => p.categoryId === cat.id).length,
   }));
 
-  const energyClassOptions = Array.from(new Set(baseProducts.map((p) => p.energyClass).filter((v): v is string => Boolean(v))))
-    .sort()
-    .reverse()
-    .map((value) => ({ value, count: baseProducts.filter((p) => p.energyClass === value).length }));
-
   const priceBounds = baseProducts.reduce(
     (acc, p) => ({ min: Math.min(acc.min, p.price), max: Math.max(acc.max, p.price) }),
     { min: baseProducts[0]?.price ?? 0, max: baseProducts[0]?.price ?? 0 }
   );
-
-  const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology).filter(Boolean)))
-    .sort()
-    .map((value) => ({ value, count: baseProducts.filter((p) => p.technology === value).length }));
 
   // Brand counts are "optimistic": computed against every other active filter
   // except the brand filter itself, so picking one brand doesn't hide the rest.
@@ -178,8 +166,6 @@ export default async function ProdusePage({
             <ProductFilterSidebar
               sort={sort}
               categories={categoryOptions}
-              technologies={technologyOptions}
-              energyClasses={energyClassOptions}
               brands={brandOptions}
               priceBounds={priceBounds}
               offersCount={offersCount}
@@ -230,8 +216,6 @@ export default async function ProdusePage({
                   ...(filters.query ? { q: filters.query } : {}),
                   ...(filters.offersOnly ? { oferte: "1" } : {}),
                   ...(filters.categorySlugs.length > 0 ? { cat: filters.categorySlugs.join(",") } : {}),
-                  ...(filters.technologies.length > 0 ? { tehnologie: filters.technologies.join(",") } : {}),
-                  ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),
                   ...(filters.brands.length > 0 ? { brand: filters.brands.join(",") } : {}),
                   ...(filters.priceMin !== null ? { pretMin: String(filters.priceMin) } : {}),
                   ...(filters.priceMax !== null ? { pretMax: String(filters.priceMax) } : {}),

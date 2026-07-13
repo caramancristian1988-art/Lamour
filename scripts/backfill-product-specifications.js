@@ -80,7 +80,7 @@ function btuBucketSpecs(btu) {
 }
 
 function specsForAcUnit(product, categorySlug) {
-  const refrigerant = product.technology === "Inverter" ? "R32" : "R410A";
+  const refrigerant = "R32";
   const origin = (product.brand && brandOrigin[product.brand]) || "China";
   const model = modelFromName(product.name, product.brand);
   const base = [
@@ -100,7 +100,7 @@ function specsForAcUnit(product, categorySlug) {
     ];
   }
 
-  const b = btuBucketSpecs(product.btu);
+  const b = btuBucketSpecs();
   return [
     ...base,
     { label: "Nivel de zgomot (interior)", value: b.noiseInt },

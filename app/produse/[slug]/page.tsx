@@ -192,10 +192,7 @@ interface CategoryViewProps {
     price: number;
     oldPrice: number | null;
     image: string | null;
-    btu: number | null;
-    technology: string;
     brand: string | null;
-    energyClass: string | null;
     rating: number;
     reviewCount: number;
     badge: string | null;
@@ -212,19 +209,10 @@ interface CategoryViewProps {
 function CategoryView({ category, products: baseProducts, sort, page, filters, ratesEnabled, installmentMonths }: CategoryViewProps) {
   const products = applyFilters(baseProducts, filters);
 
-  const energyClassOptions = Array.from(new Set(baseProducts.map((p) => p.energyClass).filter((v): v is string => Boolean(v))))
-    .sort()
-    .reverse()
-    .map((value) => ({ value, count: baseProducts.filter((p) => p.energyClass === value).length }));
-
   const priceBounds = baseProducts.reduce(
     (acc, p) => ({ min: Math.min(acc.min, p.price), max: Math.max(acc.max, p.price) }),
     { min: baseProducts[0]?.price ?? 0, max: baseProducts[0]?.price ?? 0 }
   );
-
-  const technologyOptions = Array.from(new Set(baseProducts.map((p) => p.technology).filter(Boolean)))
-    .sort()
-    .map((value) => ({ value, count: baseProducts.filter((p) => p.technology === value).length }));
 
   const brandOptions = Array.from(new Set(baseProducts.map((p) => p.brand).filter((v): v is string => Boolean(v))))
     .sort()
@@ -297,8 +285,6 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
               sort={sort}
-              technologies={technologyOptions}
-              energyClasses={energyClassOptions}
               brands={brandOptions}
               priceBounds={priceBounds}
               offersCount={offersCount}
@@ -341,8 +327,6 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
                 hasMore={hasMore}
                 extraParams={{
                   ...(filters.offersOnly ? { oferte: "1" } : {}),
-                  ...(filters.technologies.length > 0 ? { tehnologie: filters.technologies.join(",") } : {}),
-                  ...(filters.energyClasses.length > 0 ? { energie: filters.energyClasses.join(",") } : {}),
                   ...(filters.brands.length > 0 ? { brand: filters.brands.join(",") } : {}),
                   ...(filters.priceMin !== null ? { pretMin: String(filters.priceMin) } : {}),
                   ...(filters.priceMax !== null ? { pretMax: String(filters.priceMax) } : {}),
@@ -370,10 +354,7 @@ interface ProductViewProps {
     image: string | null;
     images?: string[];
     packageQuantity?: string | null;
-    btu: number | null;
-    technology: string;
     brand?: string | null;
-    energyClass: string | null;
     rating: number;
     reviewCount: number;
     badge: string | null;
@@ -389,9 +370,6 @@ interface ProductViewProps {
     price: number;
     oldPrice: number | null;
     image: string | null;
-    btu: number | null;
-    technology: string;
-    energyClass: string | null;
     rating: number;
     reviewCount: number;
     badge: string | null;
@@ -427,23 +405,20 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
   const specs = [
     product.packageQuantity ? { label: "Cantitate", value: product.packageQuantity } : null,
     product.brand ? { label: "Brand", value: product.brand } : null,
-    product.btu ? { label: "Capacitate", value: `${(product.btu / 1000).toFixed(0)}000 BTU` } : null,
-    product.technology ? { label: "Tehnologie", value: product.technology } : null,
-    product.energyClass ? { label: "Clasă energetică", value: product.energyClass } : null,
     category ? { label: "Categorie", value: category.name } : null,
     { label: "Disponibilitate", value: product.availability },
     product.rating > 0 ? { label: "Rating", value: `${product.rating.toFixed(1)} (${product.reviewCount} recenzii)` } : null,
   ].filter(Boolean) as { label: string; value: string }[];
 
   const inStock = product.availability !== "Stoc epuizat";
-  const highlightLabels = ["Cantitate", "Capacitate", "Tehnologie", "Clasă energetică"];
+  const highlightLabels = ["Cantitate"];
   const highlightSpecs = specs.filter((s) => highlightLabels.includes(s.label));
   // The quick panel leads with the handful of specs that matter for a fast
   // scan, then tops up from the admin-entered specifications (if any) so
   // every product shows at least MIN_TOP_SPECS rows when the data exists.
   // Everything still shows in full further down in "Caracteristici".
   const MIN_TOP_SPECS = 5;
-  const topPanelLabels = ["Cantitate", "Capacitate", "Tehnologie", "Clasă energetică", "Brand"];
+  const topPanelLabels = ["Cantitate", "Brand"];
   const essentialTopSpecs = specs.filter((s) => topPanelLabels.includes(s.label));
   const extraTopSpecsNeeded = Math.max(0, MIN_TOP_SPECS - essentialTopSpecs.length);
   const topPanelSpecs = [
@@ -512,9 +487,6 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                 price: product.price,
                 oldPrice: product.oldPrice,
                 image: displayImage,
-                btu: product.btu,
-                technology: product.technology,
-                energyClass: product.energyClass,
                 rating: product.rating,
                 reviewCount: product.reviewCount,
                 badge: displayBadge,

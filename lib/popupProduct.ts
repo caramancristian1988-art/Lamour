@@ -23,9 +23,6 @@ function randomFallback(): PopupProduct {
     rating: pick.rating,
     reviewCount: pick.reviewCount,
     review: FALLBACK_REVIEW,
-    btu: null,
-    technology: null,
-    energyClass: null,
     installmentsEnabled: true,
   };
 }
@@ -69,9 +66,6 @@ export async function getPopupProduct(): Promise<PopupProduct | null> {
       rating: pick.rating,
       reviewCount: pick.reviewCount,
       review,
-      btu: pick.btu,
-      technology: pick.technology,
-      energyClass: pick.energyClass,
       installmentsEnabled: pick.installmentsEnabled,
     };
   } catch {
@@ -99,9 +93,6 @@ export async function getPopupProducts(count: number): Promise<PopupProduct[]> {
         rating: pick.rating,
         reviewCount: pick.reviewCount,
         review: FALLBACK_REVIEW,
-        btu: null,
-        technology: null,
-        energyClass: null,
         installmentsEnabled: true,
       }));
     }
@@ -119,9 +110,6 @@ export async function getPopupProducts(count: number): Promise<PopupProduct[]> {
           rating: pick.rating,
           reviewCount: pick.reviewCount,
           review,
-          btu: pick.btu,
-          technology: pick.technology,
-          energyClass: pick.energyClass,
           installmentsEnabled: pick.installmentsEnabled,
         };
       })

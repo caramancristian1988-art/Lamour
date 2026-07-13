@@ -27,9 +27,6 @@ export interface PopupProduct {
   rating: number;
   reviewCount: number;
   review: { name: string; text: string; rating: number } | null;
-  btu?: number | null;
-  technology?: string | null;
-  energyClass?: string | null;
   installmentsEnabled?: boolean;
 }
 
@@ -322,23 +319,6 @@ export default function DiscountPopup() {
               <StarRating rating={product.rating} />
               <span className="text-sm text-muted-foreground">({product.reviewCount})</span>
             </div>
-
-            {(() => {
-              const specs = [
-                product.btu ? `${(product.btu / 1000).toFixed(0)}000 BTU` : null,
-                product.technology || null,
-                product.energyClass ? `Clasa ${product.energyClass}` : null,
-              ].filter(Boolean) as string[];
-              return specs.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {specs.map((s) => (
-                    <span key={s} className="text-[11px] font-semibold bg-muted text-primary px-2.5 py-1 rounded-full">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              ) : null;
-            })()}
 
             {product.installmentsEnabled !== false && (
               <div className="inline-flex items-center gap-1.5 bg-secondary/40 rounded-full px-2.5 py-1 mt-2">

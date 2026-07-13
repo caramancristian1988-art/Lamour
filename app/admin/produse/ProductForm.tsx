@@ -28,10 +28,7 @@ interface ProductDefaults {
   image?: string | null;
   images?: string[];
   packageQuantity?: string | null;
-  btu?: number | null;
-  technology?: string;
   brand?: string | null;
-  energyClass?: string | null;
   badge?: string | null;
   availability?: string;
   installmentsEnabled?: boolean;
@@ -56,23 +53,11 @@ export default function ProductForm({
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
 
-  const defaultEnergyClasses = ["A", "A+", "A++", "A+++"];
-  const energyClassOptions =
-    defaults?.energyClass && !defaultEnergyClasses.includes(defaults.energyClass)
-      ? [...defaultEnergyClasses, defaults.energyClass]
-      : defaultEnergyClasses;
-
   const defaultBadges = ["A++", "Nou", "Reducere", "Cel mai vândut"];
   const badgeOptions =
     defaults?.badge && !defaultBadges.includes(defaults.badge)
       ? [...defaultBadges, defaults.badge]
       : defaultBadges;
-
-  const defaultTechnologies = ["Inverter", "On/Off"];
-  const technologyOptions =
-    defaults?.technology && !defaultTechnologies.includes(defaults.technology)
-      ? [...defaultTechnologies, defaults.technology]
-      : defaultTechnologies;
 
   const brandOptions =
     defaults?.brand && !brands.includes(defaults.brand) ? [...brands, defaults.brand] : brands;
@@ -146,20 +131,6 @@ export default function ProductForm({
       <ImageUploadField name="image" label="Imagine principală" defaultValue={defaults?.image} />
       <MultiImageUploadField name="images" label="Galerie imagini (opțional)" defaultValue={defaults?.images} />
 
-      <div className="grid grid-cols-2 gap-4">
-        <AdminInput label="BTU (opțional)" name="btu" type="number" defaultValue={defaults?.btu ?? ""} placeholder="12000" />
-        <ManagedSelect
-          name="energyClass"
-          label="Clasă energetică"
-          defaultOptions={energyClassOptions.map((value) => ({ value, label: value }))}
-          defaultValue={defaults?.energyClass ?? ""}
-          addPlaceholder="ex: B"
-          deleteConfirmText="Sigur vrei să ștergi această clasă energetică din listă?"
-          onAdd={async (label) => ({ option: { value: label, label } })}
-          onDelete={async () => {}}
-        />
-      </div>
-
       <SpecificationsEditor defaultValue={defaults?.specifications} />
 
       <ManagedSelect
@@ -173,28 +144,16 @@ export default function ProductForm({
         onDelete={async () => {}}
       />
 
-      <div className="grid grid-cols-2 gap-4">
-        <ManagedSelect
-          name="technology"
-          label="Tehnologie"
-          defaultOptions={technologyOptions.map((value) => ({ value, label: value }))}
-          defaultValue={defaults?.technology ?? "On/Off"}
-          addPlaceholder="ex: Dual Inverter"
-          deleteConfirmText="Sigur vrei să ștergi această tehnologie din listă?"
-          onAdd={async (label) => ({ option: { value: label, label } })}
-          onDelete={async () => {}}
-        />
-        <ManagedSelect
-          name="availability"
-          label="Disponibilitate"
-          defaultOptions={availabilityOptions.map((value) => ({ value, label: value }))}
-          defaultValue={defaults?.availability ?? "În stoc"}
-          addPlaceholder="ex: La comandă"
-          deleteConfirmText="Sigur vrei să ștergi această opțiune de disponibilitate?"
-          onAdd={async (label) => ({ option: { value: label, label } })}
-          onDelete={async () => {}}
-        />
-      </div>
+      <ManagedSelect
+        name="availability"
+        label="Disponibilitate"
+        defaultOptions={availabilityOptions.map((value) => ({ value, label: value }))}
+        defaultValue={defaults?.availability ?? "În stoc"}
+        addPlaceholder="ex: La comandă"
+        deleteConfirmText="Sigur vrei să ștergi această opțiune de disponibilitate?"
+        onAdd={async (label) => ({ option: { value: label, label } })}
+        onDelete={async () => {}}
+      />
 
       <div className="flex items-center gap-2.5">
         <Checkbox

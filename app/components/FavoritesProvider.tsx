@@ -8,9 +8,6 @@ export interface FavoriteItem {
   price: number;
   oldPrice?: number | null;
   image?: string | null;
-  btu?: number | null;
-  technology?: string | null;
-  energyClass?: string | null;
   rating: number;
   reviewCount: number;
   badge?: string | null;
