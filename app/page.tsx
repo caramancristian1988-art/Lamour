@@ -1,11 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { fallbackCategories, fallbackOfferProducts } from "@/lib/fallbackData";
-import { getSectionFlags } from "@/lib/siteSettings";
 import Hero from "@/app/components/Hero";
 import TrustBar from "@/app/components/TrustBar";
 import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
-import FeaturedProductsTabs from "@/app/components/FeaturedProductsTabs";
+import DivisionQuickLinks from "@/app/components/DivisionQuickLinks";
 import ReviewsSection from "@/app/components/ReviewsSection";
 import AboutTeaser from "@/app/components/AboutTeaser";
 
@@ -57,7 +56,6 @@ async function getData() {
 export default async function HomePage() {
   const { categories, offerProducts, newProducts, recommendedProducts, householdProducts, reviews, banners } =
     await getData();
-  const { ratesEnabled, installmentMonths } = await getSectionFlags();
 
   return (
     <main>
@@ -71,13 +69,36 @@ export default async function HomePage() {
         viewAllHref="/produse?oferte=1"
         viewAllLabel="Vezi toate ofertele"
       />
-      <FeaturedProductsTabs
-        newProducts={newProducts}
-        recommendedProducts={recommendedProducts}
-        householdProducts={householdProducts}
-        ratesEnabled={ratesEnabled}
-        installmentMonths={installmentMonths}
-      />
+      {newProducts.length > 0 && (
+        <ProductsSection
+          products={newProducts}
+          title="Produse"
+          highlighted="noi"
+          viewAllHref="/produse"
+          viewAllLabel="Vezi toate produsele"
+          bg="bg-muted/40"
+        />
+      )}
+      {recommendedProducts.length > 0 && (
+        <ProductsSection
+          products={recommendedProducts}
+          title="Produse"
+          highlighted="recomandate"
+          viewAllHref="/produse"
+          viewAllLabel="Vezi toate produsele"
+        />
+      )}
+      {householdProducts.length > 0 && (
+        <ProductsSection
+          products={householdProducts}
+          title="Uz"
+          highlighted="casnic"
+          viewAllHref="/produse?cat=produse-de-uz-casnic"
+          viewAllLabel="Vezi toate produsele"
+          bg="bg-muted/40"
+        />
+      )}
+      <DivisionQuickLinks />
       <AboutTeaser />
       <ReviewsSection reviews={reviews} />
     </main>
