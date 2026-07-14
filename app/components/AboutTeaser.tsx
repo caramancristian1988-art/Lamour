@@ -9,8 +9,8 @@ export default function AboutTeaser() {
     <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
-          <div>
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 lg:items-stretch">
+          <div className="flex flex-col justify-center">
             <p className="flex items-center gap-2 text-xs font-bold text-accent uppercase tracking-widest mb-3">
               Despre noi
               <HeadingFlourish className="w-4 h-4" />
@@ -27,28 +27,18 @@ export default function AboutTeaser() {
               dizabilități — o parte din echipa noastră este formată din angajați ai Asociației Nevăzătorilor
               din Moldova.
             </p>
-            <Button asChild variant="accent" size="lg">
+            <Button asChild variant="accent" size="lg" className="self-start">
               <Link href="/despre">Citește mai mult</Link>
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="relative h-56 sm:h-72 rounded-2xl overflow-hidden">
-              <Image
-                src="/fabrica-lamour.png"
-                alt="Fabrica L'amour Cu Dragoste"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative h-56 sm:h-72 rounded-2xl overflow-hidden bg-white">
-              <Image
-                src="/produsele-lamour.png"
-                alt="Produsele L'amour Cu Dragoste"
-                fill
-                className="object-contain p-3"
-              />
-            </div>
+          <div className="relative h-64 sm:h-80 lg:h-auto rounded-2xl overflow-hidden">
+            <Image
+              src="/fabrica-lamour.png"
+              alt="Fabrica L'amour Cu Dragoste"
+              fill
+              className="object-cover"
+            />
           </div>
         </div>
 
