@@ -2,15 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { HeartHandshake } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import { MotifDivider, MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
+import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
 
 export default function AboutTeaser() {
   return (
-    <section className="relative overflow-hidden py-16 sm:py-20 bg-background">
+    <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
-        <MotifDivider className="mb-10 sm:mb-14" />
-
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           <div>
             <p className="flex items-center gap-2 text-xs font-bold text-accent uppercase tracking-widest mb-3">
@@ -34,8 +32,8 @@ export default function AboutTeaser() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            <div className="relative h-48 sm:h-56 rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative h-56 sm:h-72 rounded-2xl overflow-hidden">
               <Image
                 src="/fabrica-lamour.png"
                 alt="Fabrica L'amour Cu Dragoste"
@@ -43,12 +41,12 @@ export default function AboutTeaser() {
                 className="object-cover"
               />
             </div>
-            <div className="relative h-36 sm:h-44 rounded-2xl overflow-hidden bg-white">
+            <div className="relative h-56 sm:h-72 rounded-2xl overflow-hidden bg-white">
               <Image
                 src="/produsele-lamour.png"
                 alt="Produsele L'amour Cu Dragoste"
                 fill
-                className="object-contain p-4"
+                className="object-contain p-3"
               />
             </div>
           </div>

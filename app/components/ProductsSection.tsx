@@ -31,7 +31,7 @@ interface Props {
 export default async function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", viewAllLabel = "Vezi toate produsele", bg = "bg-background", showDiscount = false }: Props) {
   const { ratesEnabled, installmentMonths } = await getSectionFlags();
   return (
-    <section className={`relative overflow-hidden py-16 sm:py-20 ${bg}`}>
+    <section className={`relative overflow-hidden py-12 sm:py-16 ${bg}`}>
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
         <div className="flex items-center gap-4 mb-10 flex-wrap">

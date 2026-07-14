@@ -19,7 +19,7 @@ interface Props {
 
 export default function CategoryGrid({ categories }: Props) {
   return (
-    <section className="relative overflow-hidden py-16 sm:py-20 bg-background">
+    <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
         <div className="flex items-center gap-4 mb-10 flex-wrap">
@@ -35,7 +35,10 @@ export default function CategoryGrid({ categories }: Props) {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[repeat(var(--cat-count),minmax(0,1fr))] gap-3 sm:gap-4"
+          style={{ "--cat-count": categories.length } as React.CSSProperties}
+        >
           {categories.map((cat) => {
             const Icon = categoryIcons[cat.slug];
             return (

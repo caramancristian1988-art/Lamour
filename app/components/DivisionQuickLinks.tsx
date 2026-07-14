@@ -19,7 +19,7 @@ const items = [
 
 export default function DivisionQuickLinks() {
   return (
-    <section className="relative overflow-hidden py-16 sm:py-20 bg-background">
+    <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
       <div className="relative max-w-7xl mx-auto px-4">
         <div className="flex items-center gap-2.5 mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight uppercase">Alte domenii</h2>

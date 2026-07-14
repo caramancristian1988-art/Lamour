@@ -26,7 +26,7 @@ function getInitials(name: string) {
 
 export default function ReviewsSection({ reviews }: Props) {
   return (
-    <section className="relative overflow-hidden py-16 sm:py-20 bg-background">
+    <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
         <div className="text-center mb-10">
