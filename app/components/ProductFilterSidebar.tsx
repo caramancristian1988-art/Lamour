@@ -81,7 +81,7 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
 
   const selectedCats = searchParams.get("cat")?.split(",").filter(Boolean) ?? [];
   const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) ?? [];
-  const PRICE_ABSOLUTE_MAX = 200_000;
+  const PRICE_ABSOLUTE_MAX = 10_000;
   const priceMin = Number(searchParams.get("pretMin")) || priceBounds.min;
   const priceMax = Number(searchParams.get("pretMax")) || PRICE_ABSOLUTE_MAX;
   const priceFilterActive = searchParams.has("pretMin") || searchParams.has("pretMax");

@@ -10,10 +10,10 @@ interface Props {
   onCommit: (min: number, max: number) => void;
 }
 
-// Allow the slider and manual input to go well above the current
-// top product price so the user can filter e.g. "above 50 000 MDL"
-// even when the catalogue's current ceiling is lower.
-const ABSOLUTE_MAX = 200_000;
+// Allow the slider and manual input to go somewhat above the current
+// top product price so the user can filter near the catalogue's ceiling
+// even as it shifts.
+const ABSOLUTE_MAX = 10_000;
 
 export default function PriceRangeSlider({ min, max, selectedMin, selectedMax, onCommit }: Props) {
   const sliderMax = Math.max(max, ABSOLUTE_MAX);
