@@ -25,13 +25,6 @@ const certifications = [
   { icon: CheckCircle2, label: "Materie primă certificată" },
 ];
 
-const capacity = [
-  { value: "10+", label: "Ani de activitate" },
-  { value: "50+", label: "Angajați" },
-  { value: "3", label: "Linii de producție" },
-  { value: "100%", label: "Celuloză" },
-];
-
 export default function ProductiePage() {
   return (
     <main className="bg-background">
@@ -64,22 +57,6 @@ export default function ProductiePage() {
               >
                 <c.icon className="w-8 h-8 text-primary" aria-hidden />
                 <p className="text-sm font-bold text-foreground">{c.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-10 border-t border-border">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {capacity.map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-card border border-border rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 px-6 py-8 text-center"
-              >
-                <div className="text-3xl sm:text-4xl font-bold text-accent mb-2">{stat.value}</div>
-                <div className="text-sm text-muted-foreground font-medium leading-snug">{stat.label}</div>
               </div>
             ))}
           </div>

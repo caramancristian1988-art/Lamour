@@ -23,12 +23,6 @@ const despreDropdown = [
   { href: "/productie", label: "Producție" },
 ];
 
-const serviciiDropdown = [
-  { href: "/productie-la-comanda", label: "Fabricație la comandă" },
-  { href: "/spatii-comerciale", label: "Spații comerciale" },
-  { href: "/productie", label: "Servicii de producție" },
-];
-
 const baseNavLinks = [
   { href: "/blog", label: "Noutăți", flag: "blogEnabled" as const },
   { href: "/contact", label: "Contact", flag: "contactEnabled" as const },
@@ -92,7 +86,6 @@ export default function MobileMenuButton({
   const [open, setOpen] = useState(false);
   const [despreOpen, setDespreOpen] = useState(false);
   const [produseOpen, setProduseOpen] = useState(false);
-  const [serviciiOpen, setServiciiOpen] = useState(false);
 
   function closeMenu() {
     setOpen(false);
@@ -138,15 +131,6 @@ export default function MobileMenuButton({
               ariaLabel="Arată categoriile de produse"
             />
           )}
-
-          <MobileDropdownGroup
-            label="Servicii"
-            href="/productie"
-            items={serviciiDropdown}
-            open={serviciiOpen}
-            onToggle={() => setServiciiOpen((v) => !v)}
-            ariaLabel="Arată serviciile companiei"
-          />
 
           {navLinks.map((link) => (
             <SheetClose asChild key={link.href}>
