@@ -32,13 +32,23 @@ export default function AboutTeaser() {
             </Button>
           </div>
 
-          <div className="relative h-64 sm:h-80 lg:h-auto rounded-2xl overflow-hidden">
-            <Image
-              src="/fabrica-lamour.png"
-              alt="Fabrica L'amour Cu Dragoste"
-              fill
-              className="object-cover"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative h-64 sm:h-80 lg:h-auto rounded-2xl overflow-hidden">
+              <Image
+                src="/fabrica-lamour.png"
+                alt="Fabrica L'amour Cu Dragoste"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative h-64 sm:h-80 lg:h-auto rounded-2xl overflow-hidden">
+              <Image
+                src="/produsele-lamour.png"
+                alt="Produsele L'amour Cu Dragoste"
+                fill
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
 
