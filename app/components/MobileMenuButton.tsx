@@ -12,7 +12,9 @@ import AccessibilityToggle from "./AccessibilityToggle";
 const produseDropdown = [
   { href: "/produse", label: "Produse din hârtie" },
   { href: "/mobila", label: "Mobilă" },
-  { href: "/productie-la-comanda", label: "Ambalaje" },
+  { href: "/productie-la-comanda", label: "Fabricație la comandă" },
+  { href: "/spatii-comerciale", label: "Spații comerciale" },
+  { href: "/productie", label: "Servicii de producție" },
   { href: "/produse?oferte=1", label: "Oferte speciale" },
 ];
 

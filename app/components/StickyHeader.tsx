@@ -26,14 +26,10 @@ const despreDropdown = [
 const produseDropdown = [
   { href: "/produse", label: "Produse din hârtie" },
   { href: "/mobila", label: "Mobilă" },
-  { href: "/productie-la-comanda", label: "Ambalaje" },
-  { href: "/produse?oferte=1", label: "Oferte speciale", divider: true, highlighted: true },
-];
-
-const serviciiDropdown = [
   { href: "/productie-la-comanda", label: "Fabricație la comandă" },
   { href: "/spatii-comerciale", label: "Spații comerciale" },
   { href: "/productie", label: "Servicii de producție" },
+  { href: "/produse?oferte=1", label: "Oferte speciale", divider: true, highlighted: true },
 ];
 
 export default function StickyHeader({
@@ -129,8 +125,6 @@ export default function StickyHeader({
         {despreEnabled && <NavDropdown label="Despre noi" href="/despre" items={despreDropdown} />}
 
         {produseEnabled && <NavDropdown label="Produse" href="/produse" items={produseDropdown} />}
-
-        <NavDropdown label="Servicii" href="/productie" items={serviciiDropdown} />
 
         {blogEnabled && (
           <Link href="/blog" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
