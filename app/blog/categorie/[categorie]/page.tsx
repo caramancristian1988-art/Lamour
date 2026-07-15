@@ -4,75 +4,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { getSectionFlags } from "@/lib/siteSettings";
+import { prisma } from "@/lib/prisma";
 import { Badge } from "@/app/components/ui/badge";
 import { SITE_NAME } from "@/lib/constants";
 
 export const revalidate = 3600;
 
-const DEMO_SLUG = "cum-alegi-conditionerul-potrivit";
-
-const allArticles = [
-  {
-    slug: DEMO_SLUG,
-    title: "Cum poți contribui la incluziunea persoanelor cu deficiențe de vedere",
-    excerpt: "Câteva idei simple prin care comunitatea poate sprijini incluziunea persoanelor nevăzătoare.",
-    category: "Impact social",
-    categorySlug: "comunitate",
-    date: "20 Mai 2026",
-    readTime: "5 min citire",
-    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
-  },
-  {
-    slug: DEMO_SLUG,
-    title: "Accesibilitatea digitală: de ce contează pentru fiecare dintre noi",
-    excerpt: "Descoperă de ce site-urile și aplicațiile accesibile fac diferența pentru persoanele nevăzătoare.",
-    category: "Ghiduri",
-    categorySlug: "ghiduri",
-    date: "15 Mai 2026",
-    readTime: "4 min citire",
-    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
-  },
-  {
-    slug: DEMO_SLUG,
-    title: "Cum sprijinim membrii asociației în activitatea zilnică",
-    excerpt: "Află despre practicile prin care asociația oferă sprijin constant membrilor săi.",
-    category: "Impact social",
-    categorySlug: "comunitate",
-    date: "10 Mai 2026",
-    readTime: "6 min citire",
-    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
-  },
-  {
-    slug: DEMO_SLUG,
-    title: "Tehnologii asistive — ce înseamnă și cum ajută în viața de zi cu zi",
-    excerpt: "Află ce tehnologii asistive există și de ce sunt un avantaj real pentru independență.",
-    category: "Ghiduri",
-    categorySlug: "ghiduri",
-    date: "5 Mai 2026",
-    readTime: "5 min citire",
-    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
-  },
-  {
-    slug: DEMO_SLUG,
-    title: "Noutăți din activitatea noastră — 2026",
-    excerpt: "Descoperă cele mai noi proiecte și inițiative ale companiei din acest an.",
-    category: "Noutăți",
-    categorySlug: "noutati",
-    date: "1 Mai 2026",
-    readTime: "4 min citire",
-    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
-  },
-  {
-    slug: DEMO_SLUG,
-    title: "Cum te poți implica ca voluntar în comunitatea noastră",
-    excerpt: "7 idei simple prin care te poți implica și sprijini activitatea asociației.",
-    category: "Sfaturi",
-    categorySlug: "sfaturi",
-    date: "24 Apr 2026",
-    readTime: "8 min citire",
-    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
-  },
-];
+const FALLBACK_IMAGE = "https://placehold.co/800x600/D8B2B1/652F37?text=Articol";
 
 const filterTabs = [
   { label: "Toate articolele", href: "/blog" },
@@ -107,7 +45,11 @@ export default async function CategoriePage({ params }: { params: Promise<{ cate
 
   const { categorie } = await params;
   const categoryName = categoryNames[categorie] ?? categorie;
-  const articles = allArticles.filter((a) => a.categorySlug === categorie);
+
+  const posts = await prisma.blogPost.findMany({
+    where: { published: true, category: categoryName },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <main className="bg-background">
@@ -122,7 +64,7 @@ export default async function CategoriePage({ params }: { params: Promise<{ cate
             <span className="text-primary font-medium">{categoryName}</span>
           </nav>
           <h1 className="text-3xl font-extrabold text-primary">{categoryName}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{articles.length} articol{articles.length !== 1 ? "e" : ""}</p>
+          <p className="text-sm text-muted-foreground mt-1">{posts.length} articol{posts.length !== 1 ? "e" : ""}</p>
         </div>
       </section>
 
@@ -150,7 +92,7 @@ export default async function CategoriePage({ params }: { params: Promise<{ cate
       {/* Articles */}
       <section className="bg-background py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {articles.length === 0 ? (
+          {posts.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-muted-foreground text-sm">Nu există articole în această categorie încă.</p>
               <Link href="/blog" className="inline-flex items-center gap-1.5 text-accent font-bold text-sm mt-4 hover:underline">
@@ -160,29 +102,27 @@ export default async function CategoriePage({ params }: { params: Promise<{ cate
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {articles.map((article) => (
-                <Link key={article.slug} href={`/blog/${article.slug}`} className="group flex flex-col bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              {posts.map((post) => (
+                <Link key={post.slug} href={`/blog/${post.slug}`} className="group flex flex-col bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                   <div className="relative h-48 overflow-hidden">
                     <Image
-                      src={article.image}
-                      alt={article.title}
+                      src={post.image ?? FALLBACK_IMAGE}
+                      alt={post.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <Badge variant="accent" className="absolute top-3 left-3 shadow-sm">
-                      {article.category}
+                      {post.category ?? "General"}
                     </Badge>
                   </div>
                   <div className="flex flex-col flex-1 p-5 gap-3">
                     <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                      <span>{article.date}</span>
-                      <span>·</span>
-                      <span>{article.readTime}</span>
+                      <span>{post.createdAt.toLocaleDateString("ro-MD", { day: "numeric", month: "long", year: "numeric" })}</span>
                     </div>
                     <h2 className="font-extrabold text-primary text-sm leading-snug group-hover:text-accent transition-colors line-clamp-2">
-                      {article.title}
+                      {post.title}
                     </h2>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{article.excerpt}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{post.description}</p>
                     <div className="mt-auto pt-2 flex items-center gap-1 text-accent text-xs font-bold">
                       Citește articolul
                       <ArrowRight className="w-3.5 h-3.5" aria-hidden />

@@ -17,10 +17,10 @@ export const metadata: Metadata = {
 };
 
 const FALLBACK_ARTICLE = {
-  slug: "cum-alegi-conditionerul-potrivit",
+  slug: "cum-poti-contribui-la-incluziunea-persoanelor-nevazatoare",
   title: "Cum poți contribui la incluziunea persoanelor cu deficiențe de vedere",
   excerpt: "Câteva idei simple prin care comunitatea poate sprijini incluziunea persoanelor nevăzătoare.",
-  category: "Ghiduri",
+  category: "Comunitate",
   date: "20 Mai 2026",
   readTime: "5 min citire",
   image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
