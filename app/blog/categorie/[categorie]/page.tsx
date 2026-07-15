@@ -18,7 +18,7 @@ const allArticles = [
     categorySlug: "ghiduri",
     date: "20 Mai 2026",
     readTime: "5 min citire",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     slug: "temperatura-ideala-vara",
@@ -28,7 +28,7 @@ const allArticles = [
     categorySlug: "sfaturi",
     date: "15 Mai 2026",
     readTime: "4 min citire",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     slug: "intretinerea-corecta-ac",
@@ -38,7 +38,7 @@ const allArticles = [
     categorySlug: "intretinere",
     date: "10 Mai 2026",
     readTime: "6 min citire",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     slug: "inverter-vs-on-off",
@@ -48,7 +48,7 @@ const allArticles = [
     categorySlug: "tehnologie",
     date: "5 Mai 2026",
     readTime: "5 min citire",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     slug: "noutati-climatizare-2024",
@@ -58,7 +58,7 @@ const allArticles = [
     categorySlug: "noutati",
     date: "1 Mai 2026",
     readTime: "4 min citire",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     slug: "reducere-consum-energie",
@@ -68,7 +68,7 @@ const allArticles = [
     categorySlug: "sfaturi",
     date: "24 Apr 2026",
     readTime: "8 min citire",
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
 ];
 

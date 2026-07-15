@@ -36,7 +36,7 @@ const article = {
   date: "15 iunie 2026",
   author: "Echipa asociației",
   readTime: "7 min citire",
-  image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+  image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
 };
 
 const categories = [
@@ -52,19 +52,19 @@ const recentArticles = [
     title: "Ce înseamnă accesibilitatea digitală și de ce contează?",
     date: "10 iunie 2026",
     slug: DEMO_SLUG,
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     title: "Tehnologii asistive: ce instrumente ne pot ajuta zilnic?",
     date: "5 iunie 2026",
     slug: DEMO_SLUG,
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     title: "Cum te poți implica ca voluntar în activitățile asociației?",
     date: "1 iunie 2026",
     slug: DEMO_SLUG,
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
 ];
 
@@ -74,21 +74,21 @@ const relatedArticles = [
     category: "Resurse",
     date: "12 iunie 2026",
     slug: DEMO_SLUG,
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     title: "Cum se organizează evenimentele comunității noastre?",
     category: "Ghiduri & Sfaturi",
     date: "8 iunie 2026",
     slug: DEMO_SLUG,
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     title: "De ce este importantă implicarea voluntarilor?",
     category: "Comunitate",
     date: "3 iunie 2026",
     slug: DEMO_SLUG,
-    image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+    image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
 ];
 
@@ -108,7 +108,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
       date: post.createdAt.toLocaleDateString("ro-MD", { day: "numeric", month: "long", year: "numeric" }),
       author: "Echipa asociației",
       readTime: "5 min citire",
-      image: post.image ?? "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+      image: post.image ?? "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
     };
     return (
       <main>

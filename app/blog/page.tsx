@@ -23,7 +23,7 @@ const FALLBACK_ARTICLE = {
   category: "Ghiduri",
   date: "20 Mai 2026",
   readTime: "5 min citire",
-  image: "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+  image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
 };
 
 async function getArticles() {
@@ -41,7 +41,7 @@ async function getArticles() {
         category: p.category ?? "General",
         date: p.createdAt.toLocaleDateString("ro-MD", { day: "numeric", month: "long", year: "numeric" }),
         readTime: "5 min citire",
-        image: p.image ?? "/30634e25-d3ae-42fc-b1cd-cb9ab4ce60da.png",
+        image: p.image ?? "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
       }));
     }
   } catch {
@@ -71,10 +71,10 @@ export default async function BlogPage() {
         {/* MOBILE hero (sm:hidden) */}
         <section className="sm:hidden relative h-[300px] overflow-hidden">
           <Image
-            src="/IMG_2826.PNG"
+            src="/noutati.png"
             alt=""
             fill
-            className="object-cover object-[center_25%]"
+            className="object-cover object-center"
             priority
             sizes="100vw"
           />
@@ -97,7 +97,7 @@ export default async function BlogPage() {
           <div className="absolute inset-0 flex justify-end">
             <div className="w-[65%] h-full relative">
               <Image
-                src="/IMG_2824.PNG"
+                src="/noutati.png"
                 alt=""
                 fill
                 className="object-cover object-center"
