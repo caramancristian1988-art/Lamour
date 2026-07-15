@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Prisma } from "@prisma/client";
-import { ArrowRight, X, ImageOff } from "lucide-react";
+import { ArrowRight, X, ImageOff, Check } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import SaveButton from "../components/SaveButton";
@@ -13,6 +13,7 @@ import { Card } from "@/app/components/ui/card";
 import { Label } from "@/app/components/ui/label";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Badge } from "@/app/components/ui/badge";
+import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import {
   getPopupEnabledProductIds,
   updatePopupProductsAction,
@@ -83,6 +84,8 @@ export default async function AdminPopupPage({
   const statQ = typeof query.statQ === "string" ? query.statQ : "";
   const statPage = Math.max(1, Number(query.statPage) || 1);
 
+  const saved = typeof query.saved === "string" ? query.saved : "";
+
   const [{ products, total, categories, enabledIds }, countdownMinutes, allProductStats] = await Promise.all([
     getData(catFilter, sort, page),
     getPopupCountdownMinutes(),
@@ -99,6 +102,13 @@ export default async function AdminPopupPage({
         title="Pop-up ofertă"
         description="Alege ce produse pot apărea în pop-up-ul cu reducere de pe site. La fiecare vizită se arată unul ales aleatoriu din lista bifată. Dacă nu bifezi niciun produs, se arată automat unul cu reducere."
       />
+
+      {saved === "1" && (
+        <Alert variant="success" role="status" className="max-w-2xl mb-4 animate-slide-up">
+          <Check aria-hidden />
+          <AlertDescription>Selecția a fost salvată cu succes.</AlertDescription>
+        </Alert>
+      )}
 
       <Card className="p-6 mb-6">
         <form action={updatePopupTimerAction} className="flex flex-wrap items-end gap-4">
@@ -197,6 +207,9 @@ export default async function AdminPopupPage({
       <form action={updatePopupProductsAction}>
         <Card className="p-6">
           <input type="hidden" name="allIds" value={products.map((p) => p.id).join(",")} />
+          <input type="hidden" name="cat" value={catFilter} />
+          <input type="hidden" name="sort" value={sort} />
+          <input type="hidden" name="page" value={page} />
 
           <PageFade pageKey={`${catFilter}-${sort}-${page}`}>
             {products.length === 0 ? (

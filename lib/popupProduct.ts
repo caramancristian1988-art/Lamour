@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 import { fallbackOfferProducts } from "./fallbackData";
@@ -146,6 +147,16 @@ export async function updatePopupProductsAction(formData: FormData) {
   ]);
 
   revalidatePath("/admin/popup");
+
+  const params = new URLSearchParams();
+  const cat = String(formData.get("cat") ?? "");
+  const sort = String(formData.get("sort") ?? "");
+  const page = String(formData.get("page") ?? "");
+  if (cat) params.set("cat", cat);
+  if (sort) params.set("sort", sort);
+  if (page) params.set("page", page);
+  params.set("saved", "1");
+  redirect(`/admin/popup?${params.toString()}`);
 }
 
 const DEFAULT_COUNTDOWN_MINUTES = 10;
