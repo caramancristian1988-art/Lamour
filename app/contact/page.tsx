@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Phone, MessageCircle, Mail, Clock, HeadphonesIcon } from "lucide-react";
 import { prisma } from "@/lib/prisma";
@@ -63,35 +62,20 @@ export default async function ContactPage() {
       {/* ── HERO SECTION ── */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[260px] lg:min-h-[360px] items-center gap-8 py-6 lg:py-0">
-            {/* LEFT */}
-            <div className="relative z-10 py-6 lg:py-10">
-              <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-5">
-                <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
-                <span aria-hidden>›</span>
-                <span className="text-foreground font-medium">Contact</span>
-              </nav>
-              <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary">
-                Contactează <span className="text-accent">{SITE_NAME}</span>
-              </h1>
-              <p className="text-sm sm:text-base text-foreground/80 max-w-sm leading-relaxed">
-                Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
-                Scrie-ne și revenim rapid cu un răspuns.
-              </p>
-            </div>
-
-            {/* RIGHT: Image */}
-            <div className="relative w-full rounded-2xl overflow-hidden shadow-xl aspect-[4/3] lg:aspect-auto lg:h-[300px]">
-              <Image
-                src="/tehnician.png"
-                alt=""
-                fill
-                className="object-cover object-center"
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-            </div>
+          <div className="max-w-2xl py-10 lg:py-14">
+            <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-5">
+              <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
+              <span aria-hidden>›</span>
+              <span className="text-foreground font-medium">Contact</span>
+            </nav>
+            <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary">
+              Contactează <span className="text-accent">{SITE_NAME}</span>
+            </h1>
+            <p className="text-sm sm:text-base text-foreground/80 max-w-sm leading-relaxed">
+              Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
+              Scrie-ne și revenim rapid cu un răspuns.
+            </p>
           </div>
         </div>
       </section>
