@@ -59,7 +59,7 @@ export default function ProductCard({
               alt={name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-              className="object-contain"
+              className="object-cover"
             />
           ) : (
             <ImageOff className="w-16 h-16 text-muted-foreground/40" aria-hidden />
