@@ -51,7 +51,7 @@ export default function ProductCard({
   return (
     <div className="group bg-card rounded-2xl border border-border overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
       {/* Image area */}
-      <div className="relative h-[180px] sm:h-[240px] lg:h-[280px] flex items-center justify-center bg-white overflow-hidden">
+      <div className="relative h-[220px] sm:h-[300px] lg:h-[340px] flex items-center justify-center bg-white overflow-hidden">
         <Link href={`/produse/${slug}`} className="w-full h-full flex items-center justify-center rounded-lg">
           {displayImage ? (
             <Image
