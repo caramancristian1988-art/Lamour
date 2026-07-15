@@ -54,9 +54,9 @@ const filterTabs = [
   { label: "Toate articolele", href: "/blog" },
   { label: "Ghiduri", href: "/blog/categorie/ghiduri" },
   { label: "Sfaturi", href: "/blog/categorie/sfaturi" },
-  { label: "Întreținere", href: "/blog/categorie/intretinere" },
   { label: "Noutăți", href: "/blog/categorie/noutati" },
-  { label: "Tehnologie", href: "/blog/categorie/tehnologie" },
+  { label: "Comunitate", href: "/blog/categorie/comunitate" },
+  { label: "Producție", href: "/blog/categorie/productie" },
 ];
 
 export default async function BlogPage() {

@@ -26,7 +26,7 @@ const despreDropdown = [
 ];
 
 const baseNavLinks = [
-  { href: "/blog", label: "Noutăți", flag: "blogEnabled" as const },
+  { href: "/blog", label: "Blog", flag: "blogEnabled" as const },
   { href: "/contact", label: "Contact", flag: "contactEnabled" as const },
 ];
 

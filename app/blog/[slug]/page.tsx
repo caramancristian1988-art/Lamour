@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 const article = {
   title: "Cum poți contribui la incluziunea persoanelor cu deficiențe de vedere",
-  category: "Ghiduri & Sfaturi",
+  category: "Comunitate",
   date: "15 iunie 2026",
   author: "Echipa asociației",
   readTime: "7 min citire",
@@ -40,11 +40,11 @@ const article = {
 };
 
 const categories = [
-  { label: "Ghiduri & Sfaturi", count: 12 },
-  { label: "Comunitate", count: 8 },
-  { label: "Evenimente", count: 6 },
-  { label: "Resurse", count: 4 },
-  { label: "Anunțuri", count: 9 },
+  { label: "Ghiduri", count: 12 },
+  { label: "Sfaturi", count: 8 },
+  { label: "Noutăți", count: 6 },
+  { label: "Comunitate", count: 9 },
+  { label: "Producție", count: 4 },
 ];
 
 const recentArticles = [
@@ -71,14 +71,14 @@ const recentArticles = [
 const relatedArticles = [
   {
     title: "Top 5 resurse utile pentru persoanele nevăzătoare în 2026",
-    category: "Resurse",
+    category: "Ghiduri",
     date: "12 iunie 2026",
     slug: DEMO_SLUG,
     image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
     title: "Cum se organizează evenimentele comunității noastre?",
-    category: "Ghiduri & Sfaturi",
+    category: "Noutăți",
     date: "8 iunie 2026",
     slug: DEMO_SLUG,
     image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",

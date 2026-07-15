@@ -20,7 +20,7 @@ interface BlogDefaults {
   published?: boolean;
 }
 
-const BLOG_CATEGORIES = ["Ghiduri", "Sfaturi", "Întreținere", "Tehnologie", "Noutăți"];
+const BLOG_CATEGORIES = ["Ghiduri", "Sfaturi", "Noutăți", "Comunitate", "Producție"];
 
 const initialState: BlogFormState = {};
 
@@ -45,7 +45,7 @@ export default function BlogForm({
         </Alert>
       )}
 
-      <AdminInput label="Titlu" name="title" required defaultValue={defaults?.title} placeholder="5 sfaturi pentru întreținerea aparatului de aer condiționat" />
+      <AdminInput label="Titlu" name="title" required defaultValue={defaults?.title} placeholder="5 sfaturi pentru alegerea hârtiei igienice potrivite" />
       <AdminInput label="Slug" name="slug" defaultValue={defaults?.slug} placeholder="se generează automat din titlu dacă e gol" />
       <AdminTextarea label="Descriere scurtă" name="description" defaultValue={defaults?.description} placeholder="Apare în lista de articole și la SEO." rows={2} />
 

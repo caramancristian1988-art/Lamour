@@ -9,51 +9,53 @@ import { SITE_NAME } from "@/lib/constants";
 
 export const revalidate = 3600;
 
+const DEMO_SLUG = "cum-alegi-conditionerul-potrivit";
+
 const allArticles = [
   {
-    slug: "cum-alegi-conditionerul-potrivit",
+    slug: DEMO_SLUG,
     title: "Cum poți contribui la incluziunea persoanelor cu deficiențe de vedere",
     excerpt: "Câteva idei simple prin care comunitatea poate sprijini incluziunea persoanelor nevăzătoare.",
-    category: "Ghiduri",
-    categorySlug: "ghiduri",
+    category: "Impact social",
+    categorySlug: "comunitate",
     date: "20 Mai 2026",
     readTime: "5 min citire",
     image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
-    slug: "temperatura-ideala-vara",
+    slug: DEMO_SLUG,
     title: "Accesibilitatea digitală: de ce contează pentru fiecare dintre noi",
     excerpt: "Descoperă de ce site-urile și aplicațiile accesibile fac diferența pentru persoanele nevăzătoare.",
-    category: "Sfaturi",
-    categorySlug: "sfaturi",
+    category: "Ghiduri",
+    categorySlug: "ghiduri",
     date: "15 Mai 2026",
     readTime: "4 min citire",
     image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
-    slug: "intretinerea-corecta-ac",
+    slug: DEMO_SLUG,
     title: "Cum sprijinim membrii asociației în activitatea zilnică",
     excerpt: "Află despre practicile prin care asociația oferă sprijin constant membrilor săi.",
-    category: "Întreținere",
-    categorySlug: "intretinere",
+    category: "Impact social",
+    categorySlug: "comunitate",
     date: "10 Mai 2026",
     readTime: "6 min citire",
     image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
-    slug: "inverter-vs-on-off",
+    slug: DEMO_SLUG,
     title: "Tehnologii asistive — ce înseamnă și cum ajută în viața de zi cu zi",
     excerpt: "Află ce tehnologii asistive există și de ce sunt un avantaj real pentru independență.",
-    category: "Tehnologie",
-    categorySlug: "tehnologie",
+    category: "Ghiduri",
+    categorySlug: "ghiduri",
     date: "5 Mai 2026",
     readTime: "5 min citire",
     image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
-    slug: "noutati-climatizare-2024",
-    title: "Noutăți din activitatea asociației — 2026",
-    excerpt: "Descoperă cele mai noi proiecte și inițiative ale asociației din acest an.",
+    slug: DEMO_SLUG,
+    title: "Noutăți din activitatea noastră — 2026",
+    excerpt: "Descoperă cele mai noi proiecte și inițiative ale companiei din acest an.",
     category: "Noutăți",
     categorySlug: "noutati",
     date: "1 Mai 2026",
@@ -61,7 +63,7 @@ const allArticles = [
     image: "https://placehold.co/800x600/D8B2B1/652F37?text=Articol",
   },
   {
-    slug: "reducere-consum-energie",
+    slug: DEMO_SLUG,
     title: "Cum te poți implica ca voluntar în comunitatea noastră",
     excerpt: "7 idei simple prin care te poți implica și sprijini activitatea asociației.",
     category: "Sfaturi",
@@ -76,17 +78,17 @@ const filterTabs = [
   { label: "Toate articolele", href: "/blog" },
   { label: "Ghiduri", href: "/blog/categorie/ghiduri" },
   { label: "Sfaturi", href: "/blog/categorie/sfaturi" },
-  { label: "Întreținere", href: "/blog/categorie/intretinere" },
   { label: "Noutăți", href: "/blog/categorie/noutati" },
-  { label: "Tehnologie", href: "/blog/categorie/tehnologie" },
+  { label: "Comunitate", href: "/blog/categorie/comunitate" },
+  { label: "Producție", href: "/blog/categorie/productie" },
 ];
 
 const categoryNames: Record<string, string> = {
   ghiduri: "Ghiduri",
   sfaturi: "Sfaturi",
-  intretinere: "Întreținere",
   noutati: "Noutăți",
-  tehnologie: "Tehnologie",
+  comunitate: "Comunitate",
+  productie: "Producție",
 };
 
 export function generateStaticParams() {

@@ -128,7 +128,7 @@ export default function StickyHeader({
 
         {blogEnabled && (
           <Link href="/blog" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
-            Noutăți
+            Blog
           </Link>
         )}
         {contactEnabled && (
