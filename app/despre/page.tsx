@@ -117,12 +117,12 @@ export default async function DesprePage() {
             </div>
 
             <div className="relative order-2 lg:order-1">
-              <div className="relative h-[280px] sm:h-[380px] lg:h-[440px] rounded-2xl overflow-hidden shadow-xl bg-white">
+              <div className="relative aspect-[1717/916] rounded-2xl overflow-hidden shadow-xl bg-white">
                 <Image
                   src="/produsele-lamour.png"
                   alt="Produsele L'amour Cu Dragoste"
                   fill
-                  className="object-contain p-2"
+                  className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
