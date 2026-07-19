@@ -50,7 +50,15 @@ export default function StickyHeader({
             <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-lg">
               <Logo size={56} />
               <span className="block leading-tight">
-                <span className="block text-base font-serif italic font-bold text-primary tracking-tight">LuminaTehnica</span>
+                <span
+                  className="block text-base font-serif italic font-bold tracking-tight"
+                  style={{
+                    color: "#fdf8f7",
+                    WebkitTextStroke: "0.6px #d8b2b1",
+                    paintOrder: "stroke fill",
+                    textShadow: "0 1px 6px rgba(113,8,8,0.55)",
+                  }}
+                >LuminaTehnica</span>
                 <span className="block text-[9px] font-bold text-accent tracking-widest uppercase">Cu Dragoste</span>
               </span>
             </Link>
@@ -89,7 +97,15 @@ export default function StickyHeader({
           <Link href="/" className="flex items-center gap-4 py-4 shrink-0 rounded-lg">
             <Logo size={132} />
             <span className="block leading-tight">
-              <span className="block text-2xl font-serif italic font-bold text-primary tracking-tight whitespace-nowrap">LuminaTehnica</span>
+              <span
+                className="block text-2xl font-serif italic font-bold tracking-tight whitespace-nowrap"
+                style={{
+                  color: "#fdf8f7",
+                  WebkitTextStroke: "0.8px #d8b2b1",
+                  paintOrder: "stroke fill",
+                  textShadow: "0 1px 8px rgba(113,8,8,0.55)",
+                }}
+              >LuminaTehnica</span>
               <span className="block text-xs font-bold text-accent tracking-[0.25em] uppercase mt-1">Cu Dragoste</span>
             </span>
           </Link>
