@@ -17,9 +17,8 @@ async function getData() {
           orderBy: { createdAt: "asc" },
           include: {
             products: {
-              where: { image: { not: null } },
-              select: { image: true },
-              take: 1,
+              select: { image: true, images: true },
+              take: 5,
               orderBy: { createdAt: "desc" },
             },
           },
@@ -41,11 +40,18 @@ async function getData() {
         prisma.banner.findMany({ orderBy: { order: "asc" } }),
       ]);
 
-    // Folosim poza categoriei dacă există, altfel prima poză din produsele sale
-    const categories = rawCategories.map(({ products, ...cat }) => ({
-      ...cat,
-      image: cat.image ?? products[0]?.image ?? null,
-    }));
+    // Preferăm o poză reală a unui produs din categorie — poza categoriei
+    // în sine e aproape mereu doar un placeholder generat la seed.
+    const isPlaceholder = (url: string | null | undefined) => !url || url.includes("placehold.co");
+    const categories = rawCategories.map(({ products, ...cat }) => {
+      const productImage = products
+        .flatMap((p) => [p.image, ...p.images])
+        .find((img) => !isPlaceholder(img));
+      return {
+        ...cat,
+        image: productImage ?? (isPlaceholder(cat.image) ? null : cat.image),
+      };
+    });
 
     return {
       categories,

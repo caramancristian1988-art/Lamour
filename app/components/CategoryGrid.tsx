@@ -71,7 +71,7 @@ export default function CategoryGrid({ categories }: Props) {
                       alt={cat.name}
                       fill
                       sizes="(max-width: 640px) 45vw, 200px"
-                      className="object-contain p-6"
+                      className="object-cover"
                     />
                   ) : Icon ? (
                     <Icon className="w-1/2 h-1/2 text-primary" />
