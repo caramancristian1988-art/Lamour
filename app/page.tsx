@@ -11,9 +11,19 @@ export const revalidate = 3600;
 
 async function getData() {
   try {
-    const [categories, offerProducts, newProducts, recommendedProducts, reviews, banners] =
+    const [rawCategories, offerProducts, newProducts, recommendedProducts, reviews, banners] =
       await Promise.all([
-        prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
+        prisma.category.findMany({
+          orderBy: { createdAt: "asc" },
+          include: {
+            products: {
+              where: { image: { not: null } },
+              select: { image: true },
+              take: 1,
+              orderBy: { createdAt: "desc" },
+            },
+          },
+        }),
         prisma.product.findMany({
           where: { oldPrice: { not: null } },
           orderBy: { createdAt: "desc" },
@@ -31,21 +41,14 @@ async function getData() {
         prisma.banner.findMany({ orderBy: { order: "asc" } }),
       ]);
 
-    // Pentru fiecare categorie, preia prima poză din produsele sale (dacă categoria nu are poză proprie)
-    const enrichedCategories = await Promise.all(
-      categories.map(async (cat) => {
-        if (cat.image) return cat;
-        const product = await prisma.product.findFirst({
-          where: { categoryId: cat.id, image: { not: null } },
-          select: { image: true },
-          orderBy: { createdAt: "desc" },
-        });
-        return { ...cat, image: product?.image ?? null };
-      })
-    );
+    // Folosim poza categoriei dacă există, altfel prima poză din produsele sale
+    const categories = rawCategories.map(({ products, ...cat }) => ({
+      ...cat,
+      image: cat.image ?? products[0]?.image ?? null,
+    }));
 
     return {
-      categories: enrichedCategories,
+      categories,
       offerProducts: offerProducts.length > 0 ? offerProducts : fallbackOfferProducts.slice(0, 4),
       newProducts,
       recommendedProducts,
