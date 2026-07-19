@@ -51,20 +51,20 @@ export default function StickyHeader({
               <Logo size={56} />
               <span className="block leading-tight">
                 <span
-                  className="block text-base font-serif italic font-bold tracking-tight"
+                  className="block text-lg font-serif italic font-bold tracking-tight"
                   style={{
                     color: "#FEFEFE",
-                    WebkitTextStroke: "1px #111111",
+                    WebkitTextStroke: "1.5px #111111",
                     paintOrder: "stroke fill",
                     textShadow:
                       "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 3px 3px rgba(17,17,17,0.35)",
                   }}
                 >LuminaTehnica</span>
                 <span
-                  className="block text-[9px] font-bold tracking-widest uppercase"
+                  className="block text-[10px] font-bold tracking-widest uppercase"
                   style={{
                     color: "#FEFEFE",
-                    WebkitTextStroke: "0.5px #111111",
+                    WebkitTextStroke: "0.8px #111111",
                     paintOrder: "stroke fill",
                     textShadow:
                       "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 2px 2px rgba(17,17,17,0.35)",
@@ -103,15 +103,15 @@ export default function StickyHeader({
         </div>
 
         {/* DESKTOP layout */}
-        <div className="hidden lg:grid grid-cols-[360px_1fr_420px] gap-x-6 max-w-[96rem] mx-auto px-6">
+        <div className="hidden lg:grid grid-cols-[410px_1fr_420px] gap-x-6 max-w-[96rem] mx-auto px-6">
           <Link href="/" className="flex items-center gap-4 py-4 shrink-0 rounded-lg">
             <Logo size={132} />
             <span className="block leading-tight">
               <span
-                className="block text-2xl font-serif italic font-bold tracking-tight whitespace-nowrap"
+                className="block text-3xl font-serif italic font-bold tracking-tight whitespace-nowrap"
                 style={{
                   color: "#FEFEFE",
-                  WebkitTextStroke: "1.2px #111111",
+                  WebkitTextStroke: "2px #111111",
                   paintOrder: "stroke fill",
                   textShadow:
                     "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 4px 5px rgba(17,17,17,0.35)",
@@ -121,7 +121,7 @@ export default function StickyHeader({
                 className="block text-xs font-bold tracking-[0.25em] uppercase mt-1"
                 style={{
                   color: "#FEFEFE",
-                  WebkitTextStroke: "0.6px #111111",
+                  WebkitTextStroke: "1px #111111",
                   paintOrder: "stroke fill",
                   textShadow:
                     "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 2px 3px rgba(17,17,17,0.35)",
