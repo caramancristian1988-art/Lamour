@@ -135,9 +135,7 @@ export default function CategoryGrid({ categories }: Props) {
                   className="group flex flex-col items-center text-center gap-3"
                 >
                   <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-secondary/25 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-                    {Icon ? (
-                      <Icon className="w-1/2 h-1/2 text-primary" />
-                    ) : cat.image ? (
+                    {cat.image ? (
                       <Image
                         src={cat.image}
                         alt={cat.name}
@@ -145,6 +143,8 @@ export default function CategoryGrid({ categories }: Props) {
                         sizes="(max-width: 640px) 45vw, 200px"
                         className="object-contain p-6"
                       />
+                    ) : Icon ? (
+                      <Icon className="w-1/2 h-1/2 text-primary" />
                     ) : (
                       <ImageOff className="w-8 h-8 text-muted-foreground" aria-hidden />
                     )}
