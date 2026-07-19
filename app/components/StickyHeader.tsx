@@ -53,10 +53,11 @@ export default function StickyHeader({
                 <span
                   className="block text-base font-serif italic font-bold tracking-tight"
                   style={{
-                    color: "#fdf8f7",
-                    WebkitTextStroke: "0.6px #d8b2b1",
+                    color: "#FEFEFE",
+                    WebkitTextStroke: "1px #111111",
                     paintOrder: "stroke fill",
-                    textShadow: "0 1px 6px rgba(113,8,8,0.55)",
+                    textShadow:
+                      "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 3px 3px rgba(17,17,17,0.35)",
                   }}
                 >LuminaTehnica</span>
                 <span className="block text-[9px] font-bold text-accent tracking-widest uppercase">Cu Dragoste</span>
@@ -100,10 +101,11 @@ export default function StickyHeader({
               <span
                 className="block text-2xl font-serif italic font-bold tracking-tight whitespace-nowrap"
                 style={{
-                  color: "#fdf8f7",
-                  WebkitTextStroke: "0.8px #d8b2b1",
+                  color: "#FEFEFE",
+                  WebkitTextStroke: "1.2px #111111",
                   paintOrder: "stroke fill",
-                  textShadow: "0 1px 8px rgba(113,8,8,0.55)",
+                  textShadow:
+                    "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 4px 5px rgba(17,17,17,0.35)",
                 }}
               >LuminaTehnica</span>
               <span className="block text-xs font-bold text-accent tracking-[0.25em] uppercase mt-1">Cu Dragoste</span>
