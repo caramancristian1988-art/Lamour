@@ -4,7 +4,6 @@ import Hero from "@/app/components/Hero";
 import TrustBar from "@/app/components/TrustBar";
 import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
-import DivisionQuickLinks from "@/app/components/DivisionQuickLinks";
 import ReviewsSection from "@/app/components/ReviewsSection";
 import AboutTeaser from "@/app/components/AboutTeaser";
 
@@ -12,7 +11,7 @@ export const revalidate = 3600;
 
 async function getData() {
   try {
-    const [categories, offerProducts, newProducts, recommendedProducts, householdProducts, reviews, banners] =
+    const [categories, offerProducts, newProducts, recommendedProducts, reviews, banners] =
       await Promise.all([
         prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
         prisma.product.findMany({
@@ -21,8 +20,8 @@ async function getData() {
           take: 4,
         }),
         prisma.product.findMany({ orderBy: { createdAt: "desc" }, take: 4 }),
-        prisma.product.findMany({ orderBy: { rating: "desc" }, take: 4 }),
-        prisma.product.findMany({ where: { category: { slug: "produse-de-uz-casnic" } }, take: 4 }),
+        // Recomandate din TOATE categoriile, după rating
+        prisma.product.findMany({ orderBy: { rating: "desc" }, take: 8 }),
         prisma.review.findMany({
           where: { approved: true },
           orderBy: { createdAt: "desc" },
@@ -31,12 +30,25 @@ async function getData() {
         }),
         prisma.banner.findMany({ orderBy: { order: "asc" } }),
       ]);
+
+    // Pentru fiecare categorie, preia prima poză din produsele sale (dacă categoria nu are poză proprie)
+    const enrichedCategories = await Promise.all(
+      categories.map(async (cat) => {
+        if (cat.image) return cat;
+        const product = await prisma.product.findFirst({
+          where: { categoryId: cat.id, image: { not: null } },
+          select: { image: true },
+          orderBy: { createdAt: "desc" },
+        });
+        return { ...cat, image: product?.image ?? null };
+      })
+    );
+
     return {
-      categories,
+      categories: enrichedCategories,
       offerProducts: offerProducts.length > 0 ? offerProducts : fallbackOfferProducts.slice(0, 4),
       newProducts,
       recommendedProducts,
-      householdProducts,
       reviews,
       banners,
     };
@@ -46,7 +58,6 @@ async function getData() {
       offerProducts: fallbackOfferProducts.slice(0, 4),
       newProducts: [],
       recommendedProducts: [],
-      householdProducts: [],
       reviews: [],
       banners: [],
     };
@@ -54,7 +65,7 @@ async function getData() {
 }
 
 export default async function HomePage() {
-  const { categories, offerProducts, newProducts, recommendedProducts, householdProducts, reviews, banners } =
+  const { categories, offerProducts, newProducts, recommendedProducts, reviews, banners } =
     await getData();
 
   return (
@@ -87,16 +98,6 @@ export default async function HomePage() {
           viewAllLabel="Vezi toate produsele"
         />
       )}
-      {householdProducts.length > 0 && (
-        <ProductsSection
-          products={householdProducts}
-          title="Uz"
-          highlighted="casnic"
-          viewAllHref="/produse?cat=produse-de-uz-casnic"
-          viewAllLabel="Vezi toate produsele"
-        />
-      )}
-      <DivisionQuickLinks />
       <AboutTeaser />
       <ReviewsSection reviews={reviews} />
     </main>
