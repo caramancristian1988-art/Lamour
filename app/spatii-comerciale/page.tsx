@@ -4,20 +4,12 @@ import { SITE_NAME } from "@/lib/constants";
 import DivisionHero from "@/app/components/division/DivisionHero";
 import SpaceCard from "@/app/components/SpaceCard";
 import ContactForm from "@/app/components/ContactForm";
-import { spaceListings, SPACE_TYPE_LABELS, type SpaceType } from "@/lib/spatiiComercialeData";
+import { getSpaceListings } from "@/lib/spatiiComercialeData";
 
 export const metadata: Metadata = {
   title: `Spații comerciale | ${SITE_NAME}`,
   description: `Apartamente, spații comerciale, birouri și depozite disponibile spre închiriere, de la ${SITE_NAME}.`,
 };
-
-const filterTabs: { label: string; value: SpaceType | "toate" }[] = [
-  { label: "Toate", value: "toate" },
-  { label: SPACE_TYPE_LABELS.apartament, value: "apartament" },
-  { label: SPACE_TYPE_LABELS["spatiu-comercial"], value: "spatiu-comercial" },
-  { label: SPACE_TYPE_LABELS.birou, value: "birou" },
-  { label: SPACE_TYPE_LABELS.depozit, value: "depozit" },
-];
 
 export default async function SpatiiComercialePage({
   searchParams,
@@ -25,8 +17,10 @@ export default async function SpatiiComercialePage({
   searchParams: Promise<{ tip?: string }>;
 }) {
   const { tip } = await searchParams;
-  const activeType = tip && tip !== "toate" ? (tip as SpaceType) : "toate";
-  const listings = activeType === "toate" ? spaceListings : spaceListings.filter((l) => l.type === activeType);
+  const allListings = await getSpaceListings();
+  const types = Array.from(new Set(allListings.map((l) => l.type))).sort();
+  const activeType = tip && types.includes(tip) ? tip : "toate";
+  const listings = activeType === "toate" ? allListings : allListings.filter((l) => l.type === activeType);
 
   return (
     <main className="bg-background">
@@ -44,17 +38,27 @@ export default async function SpatiiComercialePage({
       <section id="oferte" className="py-12 lg:py-16 border-t border-border scroll-mt-24">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
           <div className="flex items-center gap-2 flex-wrap mb-8">
-            {filterTabs.map((tab) => (
+            <Link
+              href="/spatii-comerciale"
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                activeType === "toate"
+                  ? "bg-primary text-white"
+                  : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
+              }`}
+            >
+              Toate
+            </Link>
+            {types.map((type) => (
               <Link
-                key={tab.value}
-                href={tab.value === "toate" ? "/spatii-comerciale" : `/spatii-comerciale?tip=${tab.value}`}
+                key={type}
+                href={`/spatii-comerciale?tip=${encodeURIComponent(type)}`}
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                  activeType === tab.value
+                  activeType === type
                     ? "bg-primary text-white"
                     : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
                 }`}
               >
-                {tab.label}
+                {type}
               </Link>
             ))}
           </div>

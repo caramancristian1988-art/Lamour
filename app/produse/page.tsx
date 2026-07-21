@@ -16,8 +16,8 @@ import ProductFilterSidebar from "../components/ProductFilterSidebar";
 import FurnitureCard from "../components/FurnitureCard";
 import SpaceCard from "../components/SpaceCard";
 import DivisionFilterSidebar from "../components/DivisionFilterSidebar";
-import { furnitureListings, FURNITURE_TYPE_LABELS, type FurnitureType } from "@/lib/mobilaData";
-import { spaceListings, SPACE_TYPE_LABELS, type SpaceType } from "@/lib/spatiiComercialeData";
+import { getFurnitureListings } from "@/lib/mobilaData";
+import { getSpaceListings } from "@/lib/spatiiComercialeData";
 import {
   sortProducts,
   paginate,
@@ -113,20 +113,15 @@ function materialFamily(material: string): string {
   return material;
 }
 
-function areaNumber(area: string): number {
-  return Number(area.replace(/[^\d]/g, "")) || 0;
-}
-
 type AreaBucket = "sub-70" | "70-150" | "peste-150";
 const AREA_BUCKET_LABELS: Record<AreaBucket, string> = {
   "sub-70": "Sub 70 m²",
   "70-150": "70 - 150 m²",
   "peste-150": "Peste 150 m²",
 };
-function areaBucket(area: string): AreaBucket {
-  const n = areaNumber(area);
-  if (n < 70) return "sub-70";
-  if (n <= 150) return "70-150";
+function areaBucket(area: number): AreaBucket {
+  if (area < 70) return "sub-70";
+  if (area <= 150) return "70-150";
   return "peste-150";
 }
 
@@ -195,22 +190,30 @@ export default async function ProdusePage({
 
   // ── MOBILĂ ──────────────────────────────────────────────────────────
   if (division === "mobila") {
-    const tip = firstParam(query.tip);
-    const activeType = tip && tip !== "toate" ? (tip as FurnitureType) : "toate";
-    const byType = activeType === "toate" ? furnitureListings : furnitureListings.filter((l) => l.type === activeType);
-    const typeTabs: { label: string; value: FurnitureType | "toate" }[] = [
-      { label: "Toate", value: "toate" },
-      { label: FURNITURE_TYPE_LABELS.birou, value: "birou" },
-      { label: FURNITURE_TYPE_LABELS.casa, value: "casa" },
-      { label: FURNITURE_TYPE_LABELS.bucatarie, value: "bucatarie" },
-      { label: FURNITURE_TYPE_LABELS.comercial, value: "comercial" },
-    ];
+    const allListings = await getFurnitureListings();
 
+    const selectedTypes = selectedParams(query.tip);
     const selectedMaterials = selectedParams(query.material);
-    const materialOptions = facetOptions(byType, (l) => materialFamily(l.material));
-    const listings = selectedMaterials.length > 0
-      ? byType.filter((l) => selectedMaterials.includes(materialFamily(l.material)))
-      : byType;
+    const typeOptions = facetOptions(allListings, (l) => l.type);
+    const materialOptions = facetOptions(allListings, (l) => materialFamily(l.material));
+
+    const prices = allListings.map((l) => l.price).filter((p): p is number => p != null);
+    const priceBounds = prices.reduce(
+      (acc, p) => ({ min: Math.min(acc.min, p), max: Math.max(acc.max, p) }),
+      { min: prices[0] ?? 0, max: prices[0] ?? 0 }
+    );
+    const priceMinParam = firstParam(query.pretMin);
+    const priceMaxParam = firstParam(query.pretMax);
+    const priceMin = Number(priceMinParam) || priceBounds.min;
+    const priceMax = Number(priceMaxParam) || 100_000;
+    const priceFilterActive = priceMinParam !== undefined || priceMaxParam !== undefined;
+
+    const listings = allListings.filter((l) => {
+      if (selectedTypes.length > 0 && !selectedTypes.includes(l.type)) return false;
+      if (selectedMaterials.length > 0 && !selectedMaterials.includes(materialFamily(l.material))) return false;
+      if (priceFilterActive && (l.price == null || l.price < priceMin || l.price > priceMax)) return false;
+      return true;
+    });
 
     return (
       <main className="bg-background">
@@ -219,24 +222,18 @@ export default async function ProdusePage({
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <DivisionTabs active={division} />
 
-            <div className="flex items-center gap-2 flex-wrap mb-6">
-              {typeTabs.map((tab) => (
-                <Link
-                  key={tab.value}
-                  href={tab.value === "toate" ? "/produse?division=mobila" : `/produse?division=mobila&tip=${tab.value}`}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                    activeType === tab.value
-                      ? "bg-primary text-white"
-                      : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              ))}
-            </div>
-
             <div className="flex flex-col lg:flex-row gap-8 items-start">
-              <DivisionFilterSidebar groups={[{ title: "Material", paramKey: "material", options: materialOptions }]} />
+              <DivisionFilterSidebar
+                groups={[
+                  { title: "Tip", paramKey: "tip", options: typeOptions },
+                  { title: "Material", paramKey: "material", options: materialOptions },
+                ]}
+                priceRange={
+                  priceBounds.max > priceBounds.min
+                    ? { title: "Preț", paramKeyMin: "pretMin", paramKeyMax: "pretMax", min: priceBounds.min, max: priceBounds.max, absoluteMax: 100_000 }
+                    : undefined
+                }
+              />
 
               <div className="flex-1 min-w-0">
                 {listings.length > 0 ? (
@@ -260,24 +257,31 @@ export default async function ProdusePage({
 
   // ── CHIRIE ──────────────────────────────────────────────────────────
   if (division === "chirie") {
-    const tip = firstParam(query.tip);
-    const activeType = tip && tip !== "toate" ? (tip as SpaceType) : "toate";
-    const byType = activeType === "toate" ? spaceListings : spaceListings.filter((l) => l.type === activeType);
-    const typeTabs: { label: string; value: SpaceType | "toate" }[] = [
-      { label: "Toate", value: "toate" },
-      { label: SPACE_TYPE_LABELS.apartament, value: "apartament" },
-      { label: SPACE_TYPE_LABELS["spatiu-comercial"], value: "spatiu-comercial" },
-      { label: SPACE_TYPE_LABELS.birou, value: "birou" },
-      { label: SPACE_TYPE_LABELS.depozit, value: "depozit" },
-    ];
+    const allListings = await getSpaceListings();
 
+    const selectedTypes = selectedParams(query.tip);
     const selectedZones = selectedParams(query.zona);
     const selectedAreas = selectedParams(query.suprafata) as AreaBucket[];
-    const zoneOptions = facetOptions(byType, (l) => zoneLabel(l.location));
-    const areaOptions = facetOptions(byType, (l) => areaBucket(l.area), (v) => AREA_BUCKET_LABELS[v as AreaBucket]);
-    const listings = byType.filter((l) => {
+    const typeOptions = facetOptions(allListings, (l) => l.type);
+    const zoneOptions = facetOptions(allListings, (l) => zoneLabel(l.location));
+    const areaOptions = facetOptions(allListings, (l) => areaBucket(l.area), (v) => AREA_BUCKET_LABELS[v as AreaBucket]);
+
+    const prices = allListings.map((l) => l.price).filter((p): p is number => p != null);
+    const priceBounds = prices.reduce(
+      (acc, p) => ({ min: Math.min(acc.min, p), max: Math.max(acc.max, p) }),
+      { min: prices[0] ?? 0, max: prices[0] ?? 0 }
+    );
+    const priceMinParam = firstParam(query.pretMin);
+    const priceMaxParam = firstParam(query.pretMax);
+    const priceMin = Number(priceMinParam) || priceBounds.min;
+    const priceMax = Number(priceMaxParam) || 100_000;
+    const priceFilterActive = priceMinParam !== undefined || priceMaxParam !== undefined;
+
+    const listings = allListings.filter((l) => {
+      if (selectedTypes.length > 0 && !selectedTypes.includes(l.type)) return false;
       if (selectedZones.length > 0 && !selectedZones.includes(zoneLabel(l.location))) return false;
       if (selectedAreas.length > 0 && !selectedAreas.includes(areaBucket(l.area))) return false;
+      if (priceFilterActive && (l.price == null || l.price < priceMin || l.price > priceMax)) return false;
       return true;
     });
 
@@ -288,28 +292,18 @@ export default async function ProdusePage({
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <DivisionTabs active={division} />
 
-            <div className="flex items-center gap-2 flex-wrap mb-6">
-              {typeTabs.map((tab) => (
-                <Link
-                  key={tab.value}
-                  href={tab.value === "toate" ? "/produse?division=chirie" : `/produse?division=chirie&tip=${tab.value}`}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                    activeType === tab.value
-                      ? "bg-primary text-white"
-                      : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              ))}
-            </div>
-
             <div className="flex flex-col lg:flex-row gap-8 items-start">
               <DivisionFilterSidebar
                 groups={[
+                  { title: "Tip", paramKey: "tip", options: typeOptions },
                   { title: "Zonă", paramKey: "zona", options: zoneOptions },
                   { title: "Suprafață", paramKey: "suprafata", options: areaOptions },
                 ]}
+                priceRange={
+                  priceBounds.max > priceBounds.min
+                    ? { title: "Preț", paramKeyMin: "pretMin", paramKeyMax: "pretMax", min: priceBounds.min, max: priceBounds.max, unit: "€", absoluteMax: 5000 }
+                    : undefined
+                }
               />
 
               <div className="flex-1 min-w-0">

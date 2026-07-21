@@ -24,9 +24,17 @@ const DEFAULT_SPEC_TEMPLATE: Spec[] = [
   { label: "Greutate unitate exterioară", value: "" },
 ];
 
-export default function SpecificationsEditor({ defaultValue }: { defaultValue?: Spec[] }) {
+export default function SpecificationsEditor({
+  defaultValue,
+  template = DEFAULT_SPEC_TEMPLATE,
+  label = "Specificații tehnice (opțional)",
+}: {
+  defaultValue?: Spec[];
+  template?: Spec[];
+  label?: string;
+}) {
   const [rows, setRows] = useState<Spec[]>(
-    defaultValue && defaultValue.length > 0 ? defaultValue : DEFAULT_SPEC_TEMPLATE
+    defaultValue && defaultValue.length > 0 ? defaultValue : template
   );
 
   function updateRow(i: number, field: "label" | "value", val: string) {
@@ -42,13 +50,13 @@ export default function SpecificationsEditor({ defaultValue }: { defaultValue?: 
   }
 
   function resetToTemplate() {
-    setRows(DEFAULT_SPEC_TEMPLATE);
+    setRows(template);
   }
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <Label>Specificații tehnice (opțional)</Label>
+        <Label>{label}</Label>
         <button
           type="button"
           onClick={resetToTemplate}

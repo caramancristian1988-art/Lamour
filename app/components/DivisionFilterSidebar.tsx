@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/app/components/u
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
+import PriceRangeSlider from "./PriceRangeSlider";
 
 export interface FacetOption {
   value: string;
@@ -20,17 +21,40 @@ export interface FacetGroup {
   options: FacetOption[];
 }
 
-interface Props {
-  groups: FacetGroup[];
+export interface PriceRangeConfig {
+  title: string;
+  paramKeyMin: string;
+  paramKeyMax: string;
+  min: number;
+  max: number;
+  unit?: string;
+  absoluteMax?: number;
 }
 
-export default function DivisionFilterSidebar({ groups }: Props) {
+interface Props {
+  groups: FacetGroup[];
+  priceRange?: PriceRangeConfig;
+}
+
+export default function DivisionFilterSidebar({ groups, priceRange }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const selectedByKey = new Map(groups.map((g) => [g.paramKey, searchParams.get(g.paramKey)?.split(",").filter(Boolean) ?? []]));
+
+  const priceMin = priceRange ? Number(searchParams.get(priceRange.paramKeyMin)) || priceRange.min : 0;
+  const priceMax = priceRange ? Number(searchParams.get(priceRange.paramKeyMax)) || (priceRange.absoluteMax ?? 10_000) : 0;
+  const priceFilterActive = !!priceRange && (searchParams.has(priceRange.paramKeyMin) || searchParams.has(priceRange.paramKeyMax));
+
+  function setPriceRange(nextMin: number, nextMax: number) {
+    if (!priceRange) return;
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextMin <= priceRange.min) params.delete(priceRange.paramKeyMin); else params.set(priceRange.paramKeyMin, String(Math.round(nextMin)));
+    if (nextMax >= (priceRange.absoluteMax ?? 10_000)) params.delete(priceRange.paramKeyMax); else params.set(priceRange.paramKeyMax, String(Math.round(nextMax)));
+    go(params);
+  }
 
   function go(params: URLSearchParams) {
     const qs = params.toString();
@@ -52,6 +76,10 @@ export default function DivisionFilterSidebar({ groups }: Props) {
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString());
     groups.forEach((g) => params.delete(g.paramKey));
+    if (priceRange) {
+      params.delete(priceRange.paramKeyMin);
+      params.delete(priceRange.paramKeyMax);
+    }
     go(params);
   }
 
@@ -62,6 +90,18 @@ export default function DivisionFilterSidebar({ groups }: Props) {
       if (opt) activeChips.push({ key: `${g.paramKey}-${value}`, label: opt.label, onRemove: () => removeValue(g.paramKey, value) });
     });
   });
+  if (priceRange && priceFilterActive) {
+    activeChips.push({
+      key: "price-range",
+      label: `${Math.round(priceMin).toLocaleString("ro-MD")} - ${Math.round(priceMax).toLocaleString("ro-MD")} ${priceRange.unit ?? "MDL"}`,
+      onRemove: () => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete(priceRange.paramKeyMin);
+        params.delete(priceRange.paramKeyMax);
+        go(params);
+      },
+    });
+  }
   const hasActive = activeChips.length > 0;
 
   const sidebarContent = (
@@ -82,6 +122,21 @@ export default function DivisionFilterSidebar({ groups }: Props) {
           <Button onClick={clearAll} variant="primary" size="sm" className="w-full">
             Șterge tot
           </Button>
+        </div>
+      )}
+
+      {priceRange && priceRange.max > priceRange.min && (
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">{priceRange.title}</p>
+          <PriceRangeSlider
+            min={priceRange.min}
+            max={priceRange.max}
+            selectedMin={priceMin}
+            selectedMax={priceMax}
+            onCommit={setPriceRange}
+            unit={priceRange.unit}
+            absoluteMax={priceRange.absoluteMax}
+          />
         </div>
       )}
 

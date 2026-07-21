@@ -7,20 +7,12 @@ import DivisionBenefits from "@/app/components/division/DivisionBenefits";
 import DivisionCta from "@/app/components/division/DivisionCta";
 import ContactForm from "@/app/components/ContactForm";
 import FurnitureCard from "@/app/components/FurnitureCard";
-import { furnitureListings, FURNITURE_TYPE_LABELS, type FurnitureType } from "@/lib/mobilaData";
+import { getFurnitureListings } from "@/lib/mobilaData";
 
 export const metadata: Metadata = {
   title: `Mobilă | ${SITE_NAME}`,
   description: `Fabricație de mobilier la comandă — birou și casă — de la ${SITE_NAME}.`,
 };
-
-const filterTabs: { label: string; value: FurnitureType | "toate" }[] = [
-  { label: "Toate", value: "toate" },
-  { label: FURNITURE_TYPE_LABELS.birou, value: "birou" },
-  { label: FURNITURE_TYPE_LABELS.casa, value: "casa" },
-  { label: FURNITURE_TYPE_LABELS.bucatarie, value: "bucatarie" },
-  { label: FURNITURE_TYPE_LABELS.comercial, value: "comercial" },
-];
 
 const benefits = [
   { icon: Palette, title: "Design la comandă", text: "Fiecare piesă este proiectată după cerințele și spațiul tău." },
@@ -35,8 +27,10 @@ export default async function MobilaPage({
   searchParams: Promise<{ tip?: string }>;
 }) {
   const { tip } = await searchParams;
-  const activeType = tip && tip !== "toate" ? (tip as FurnitureType) : "toate";
-  const listings = activeType === "toate" ? furnitureListings : furnitureListings.filter((l) => l.type === activeType);
+  const allListings = await getFurnitureListings();
+  const types = Array.from(new Set(allListings.map((l) => l.type))).sort();
+  const activeType = tip && types.includes(tip) ? tip : "toate";
+  const listings = activeType === "toate" ? allListings : allListings.filter((l) => l.type === activeType);
 
   return (
     <main className="bg-background">
@@ -75,17 +69,27 @@ export default async function MobilaPage({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap justify-center mb-8">
-            {filterTabs.map((tab) => (
+            <Link
+              href="/mobila#galerie"
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                activeType === "toate"
+                  ? "bg-primary text-white"
+                  : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
+              }`}
+            >
+              Toate
+            </Link>
+            {types.map((type) => (
               <Link
-                key={tab.value}
-                href={tab.value === "toate" ? "/mobila#galerie" : `/mobila?tip=${tab.value}#galerie`}
+                key={type}
+                href={`/mobila?tip=${encodeURIComponent(type)}#galerie`}
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                  activeType === tab.value
+                  activeType === type
                     ? "bg-primary text-white"
                     : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
                 }`}
               >
-                {tab.label}
+                {type}
               </Link>
             ))}
           </div>

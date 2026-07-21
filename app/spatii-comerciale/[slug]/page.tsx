@@ -2,31 +2,31 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MapPin, Ruler, ArrowRight, MessageCircle } from "lucide-react";
+import { MapPin, Ruler, ArrowRight, MessageCircle, ImageOff } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import SpaceCard from "@/app/components/SpaceCard";
 import ContactForm from "@/app/components/ContactForm";
 import { SITE_NAME } from "@/lib/constants";
-import { spaceListings, SPACE_TYPE_LABELS } from "@/lib/spatiiComercialeData";
+import { getSpaceListingBySlug, getSpaceListings } from "@/lib/spatiiComercialeData";
 
-export function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  return params.then(({ slug }) => {
-    const listing = spaceListings.find((l) => l.slug === slug);
-    if (!listing) return { title: `Spații comerciale | ${SITE_NAME}` };
-    return {
-      title: `${listing.title} | ${SITE_NAME}`,
-      description: listing.description,
-    };
-  });
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const listing = await getSpaceListingBySlug(slug);
+  if (!listing) return { title: `Spații comerciale | ${SITE_NAME}` };
+  return {
+    title: `${listing.title} | ${SITE_NAME}`,
+    description: listing.description ?? undefined,
+  };
 }
 
 export default async function SpaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const listing = spaceListings.find((l) => l.slug === slug);
+  const listing = await getSpaceListingBySlug(slug);
   if (!listing) notFound();
 
-  const related = spaceListings.filter((l) => l.type === listing.type && l.slug !== listing.slug).slice(0, 3);
+  const allListings = await getSpaceListings();
+  const related = allListings.filter((l) => l.type === listing.type && l.slug !== listing.slug).slice(0, 3);
 
   return (
     <main className="bg-background">
@@ -43,14 +43,14 @@ export default async function SpaceDetailPage({ params }: { params: Promise<{ sl
 
       {/* Title row */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-6">
-        <Badge className="mb-3">{SPACE_TYPE_LABELS[listing.type]}</Badge>
+        <Badge className="mb-3">{listing.type}</Badge>
         <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-primary leading-tight mb-2">
           {listing.title}
         </h1>
         <div className="flex items-center gap-4 flex-wrap text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <Ruler className="w-4 h-4" aria-hidden />
-            {listing.area}
+            {listing.area} m²
           </span>
           <span className="flex items-center gap-1.5">
             <MapPin className="w-4 h-4" aria-hidden />
@@ -62,15 +62,19 @@ export default async function SpaceDetailPage({ params }: { params: Promise<{ sl
       {/* Top section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <div className="relative h-72 sm:h-96 rounded-2xl overflow-hidden">
-            <Image src={listing.image} alt={listing.title} fill className="object-cover" priority sizes="(max-width: 1024px) 100vw, 50vw" />
+          <div className="relative h-72 sm:h-96 rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
+            {listing.image ? (
+              <Image src={listing.image} alt={listing.title} fill className="object-cover" priority sizes="(max-width: 1024px) 100vw, 50vw" />
+            ) : (
+              <ImageOff className="w-10 h-10 text-muted-foreground" aria-hidden />
+            )}
           </div>
 
           <div className="flex flex-col gap-6">
             <p className="text-foreground/80 text-[15px] leading-relaxed">{listing.description}</p>
 
             <div className="border border-border rounded-2xl p-5 bg-card">
-              <span className="text-2xl font-extrabold text-primary block mb-4">{listing.price}</span>
+              <span className="text-2xl font-extrabold text-primary block mb-4">{listing.priceLabel}</span>
               <Button asChild variant="accent" size="lg" className="w-full mb-3">
                 <Link href="#contact">
                   <MessageCircle className="w-4 h-4" aria-hidden />
@@ -86,20 +90,22 @@ export default async function SpaceDetailPage({ params }: { params: Promise<{ sl
       </section>
 
       {/* Characteristics */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-12">
-        <h2 className="text-2xl font-extrabold text-primary mb-6">Caracteristici</h2>
-        <div className="border border-border rounded-2xl overflow-hidden bg-card max-w-2xl">
-          {listing.characteristics.map((spec, i) => (
-            <div
-              key={`${spec.label}-${i}`}
-              className={`flex items-center justify-between px-5 py-3 ${i > 0 ? "border-t border-border" : ""} ${i % 2 === 1 ? "bg-muted/40" : ""}`}
-            >
-              <span className="text-sm text-muted-foreground">{spec.label}</span>
-              <span className="text-sm font-bold text-primary text-right">{spec.value}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {listing.characteristics.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-12">
+          <h2 className="text-2xl font-extrabold text-primary mb-6">Caracteristici</h2>
+          <div className="border border-border rounded-2xl overflow-hidden bg-card max-w-2xl">
+            {listing.characteristics.map((spec, i) => (
+              <div
+                key={`${spec.label}-${i}`}
+                className={`flex items-center justify-between px-5 py-3 ${i > 0 ? "border-t border-border" : ""} ${i % 2 === 1 ? "bg-muted/40" : ""}`}
+              >
+                <span className="text-sm text-muted-foreground">{spec.label}</span>
+                <span className="text-sm font-bold text-primary text-right">{spec.value}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Related */}
       {related.length > 0 && (

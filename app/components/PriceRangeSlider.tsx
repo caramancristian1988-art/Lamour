@@ -8,15 +8,17 @@ interface Props {
   selectedMin: number;
   selectedMax: number;
   onCommit: (min: number, max: number) => void;
+  unit?: string;
+  absoluteMax?: number;
 }
 
 // Allow the slider and manual input to go somewhat above the current
 // top product price so the user can filter near the catalogue's ceiling
 // even as it shifts.
-const ABSOLUTE_MAX = 10_000;
+const DEFAULT_ABSOLUTE_MAX = 10_000;
 
-export default function PriceRangeSlider({ min, max, selectedMin, selectedMax, onCommit }: Props) {
-  const sliderMax = Math.max(max, ABSOLUTE_MAX);
+export default function PriceRangeSlider({ min, max, selectedMin, selectedMax, onCommit, unit = "MDL", absoluteMax = DEFAULT_ABSOLUTE_MAX }: Props) {
+  const sliderMax = Math.max(max, absoluteMax);
   const [localMin, setLocalMin] = useState(selectedMin);
   const [localMax, setLocalMax] = useState(selectedMax);
   const [inputMin, setInputMin] = useState(String(Math.round(selectedMin)));
@@ -83,7 +85,7 @@ export default function PriceRangeSlider({ min, max, selectedMin, selectedMax, o
             onKeyDown={(e) => e.key === "Enter" && commitInputMin()}
             className={numberInputClass}
           />
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">MDL</span>
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">{unit}</span>
         </div>
         <span className="text-muted-foreground text-xs shrink-0" aria-hidden>—</span>
         <div className="relative flex-1">
@@ -98,7 +100,7 @@ export default function PriceRangeSlider({ min, max, selectedMin, selectedMax, o
             onKeyDown={(e) => e.key === "Enter" && commitInputMax()}
             className={numberInputClass}
           />
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">MDL</span>
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground pointer-events-none">{unit}</span>
         </div>
       </div>
 
