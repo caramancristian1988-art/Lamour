@@ -15,6 +15,7 @@ import LoadMoreButton from "../components/LoadMoreButton";
 import ProductFilterSidebar from "../components/ProductFilterSidebar";
 import FurnitureCard from "../components/FurnitureCard";
 import SpaceCard from "../components/SpaceCard";
+import DivisionFilterSidebar from "../components/DivisionFilterSidebar";
 import { furnitureListings, FURNITURE_TYPE_LABELS, type FurnitureType } from "@/lib/mobilaData";
 import { spaceListings, SPACE_TYPE_LABELS, type SpaceType } from "@/lib/spatiiComercialeData";
 import {
@@ -101,6 +102,50 @@ function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
+function selectedParams(value: string | string[] | undefined): string[] {
+  return (firstParam(value) ?? "").split(",").filter(Boolean);
+}
+
+function materialFamily(material: string): string {
+  if (material.includes("Lemn masiv")) return "Lemn masiv";
+  if (material.includes("PAL")) return "PAL";
+  if (material.includes("MDF")) return "MDF";
+  return material;
+}
+
+function areaNumber(area: string): number {
+  return Number(area.replace(/[^\d]/g, "")) || 0;
+}
+
+type AreaBucket = "sub-70" | "70-150" | "peste-150";
+const AREA_BUCKET_LABELS: Record<AreaBucket, string> = {
+  "sub-70": "Sub 70 m²",
+  "70-150": "70 - 150 m²",
+  "peste-150": "Peste 150 m²",
+};
+function areaBucket(area: string): AreaBucket {
+  const n = areaNumber(area);
+  if (n < 70) return "sub-70";
+  if (n <= 150) return "70-150";
+  return "peste-150";
+}
+
+function zoneLabel(location: string): string {
+  const parts = location.split(",");
+  return (parts[1] ?? parts[0]).trim();
+}
+
+function facetOptions<T>(items: T[], getValue: (item: T) => string, getLabel?: (value: string) => string): { value: string; label: string; count: number }[] {
+  const counts = new Map<string, number>();
+  items.forEach((item) => {
+    const value = getValue(item);
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+  });
+  return Array.from(counts.entries())
+    .map(([value, count]) => ({ value, label: getLabel ? getLabel(value) : value, count }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
 function DivisionTabs({ active }: { active: Division }) {
   return (
     <div className="flex items-center gap-2 sm:gap-3 flex-wrap mb-6">
@@ -152,7 +197,7 @@ export default async function ProdusePage({
   if (division === "mobila") {
     const tip = firstParam(query.tip);
     const activeType = tip && tip !== "toate" ? (tip as FurnitureType) : "toate";
-    const listings = activeType === "toate" ? furnitureListings : furnitureListings.filter((l) => l.type === activeType);
+    const byType = activeType === "toate" ? furnitureListings : furnitureListings.filter((l) => l.type === activeType);
     const typeTabs: { label: string; value: FurnitureType | "toate" }[] = [
       { label: "Toate", value: "toate" },
       { label: FURNITURE_TYPE_LABELS.birou, value: "birou" },
@@ -160,6 +205,12 @@ export default async function ProdusePage({
       { label: FURNITURE_TYPE_LABELS.bucatarie, value: "bucatarie" },
       { label: FURNITURE_TYPE_LABELS.comercial, value: "comercial" },
     ];
+
+    const selectedMaterials = selectedParams(query.material);
+    const materialOptions = facetOptions(byType, (l) => materialFamily(l.material));
+    const listings = selectedMaterials.length > 0
+      ? byType.filter((l) => selectedMaterials.includes(materialFamily(l.material)))
+      : byType;
 
     return (
       <main className="bg-background">
@@ -184,17 +235,23 @@ export default async function ProdusePage({
               ))}
             </div>
 
-            {listings.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {listings.map((listing) => (
-                  <FurnitureCard key={listing.slug} listing={listing} />
-                ))}
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+              <DivisionFilterSidebar groups={[{ title: "Material", paramKey: "material", options: materialOptions }]} />
+
+              <div className="flex-1 min-w-0">
+                {listings.length > 0 ? (
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                    {listings.map((listing) => (
+                      <FurnitureCard key={listing.slug} listing={listing} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                    <p className="text-muted-foreground">Momentan nu există lucrări disponibile în această categorie.</p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="text-center py-16 bg-card border border-border rounded-2xl">
-                <p className="text-muted-foreground">Momentan nu există lucrări disponibile în această categorie.</p>
-              </div>
-            )}
+            </div>
           </div>
         </section>
       </main>
@@ -205,7 +262,7 @@ export default async function ProdusePage({
   if (division === "chirie") {
     const tip = firstParam(query.tip);
     const activeType = tip && tip !== "toate" ? (tip as SpaceType) : "toate";
-    const listings = activeType === "toate" ? spaceListings : spaceListings.filter((l) => l.type === activeType);
+    const byType = activeType === "toate" ? spaceListings : spaceListings.filter((l) => l.type === activeType);
     const typeTabs: { label: string; value: SpaceType | "toate" }[] = [
       { label: "Toate", value: "toate" },
       { label: SPACE_TYPE_LABELS.apartament, value: "apartament" },
@@ -213,6 +270,16 @@ export default async function ProdusePage({
       { label: SPACE_TYPE_LABELS.birou, value: "birou" },
       { label: SPACE_TYPE_LABELS.depozit, value: "depozit" },
     ];
+
+    const selectedZones = selectedParams(query.zona);
+    const selectedAreas = selectedParams(query.suprafata) as AreaBucket[];
+    const zoneOptions = facetOptions(byType, (l) => zoneLabel(l.location));
+    const areaOptions = facetOptions(byType, (l) => areaBucket(l.area), (v) => AREA_BUCKET_LABELS[v as AreaBucket]);
+    const listings = byType.filter((l) => {
+      if (selectedZones.length > 0 && !selectedZones.includes(zoneLabel(l.location))) return false;
+      if (selectedAreas.length > 0 && !selectedAreas.includes(areaBucket(l.area))) return false;
+      return true;
+    });
 
     return (
       <main className="bg-background">
@@ -237,17 +304,28 @@ export default async function ProdusePage({
               ))}
             </div>
 
-            {listings.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {listings.map((listing) => (
-                  <SpaceCard key={listing.slug} listing={listing} />
-                ))}
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+              <DivisionFilterSidebar
+                groups={[
+                  { title: "Zonă", paramKey: "zona", options: zoneOptions },
+                  { title: "Suprafață", paramKey: "suprafata", options: areaOptions },
+                ]}
+              />
+
+              <div className="flex-1 min-w-0">
+                {listings.length > 0 ? (
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                    {listings.map((listing) => (
+                      <SpaceCard key={listing.slug} listing={listing} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                    <p className="text-muted-foreground">Momentan nu există spații disponibile în această categorie.</p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="text-center py-16 bg-card border border-border rounded-2xl">
-                <p className="text-muted-foreground">Momentan nu există spații disponibile în această categorie.</p>
-              </div>
-            )}
+            </div>
           </div>
         </section>
       </main>
