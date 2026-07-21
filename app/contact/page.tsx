@@ -60,30 +60,59 @@ export default async function ContactPage() {
 
   return (
     <div className="bg-background">
-      {/* ── HERO SECTION ── */}
-      <section className="relative overflow-hidden bg-background pb-8 sm:pb-10 lg:pb-12">
-        <div className="relative min-h-[360px] sm:min-h-[400px] lg:min-h-[460px]">
+      {/* ── HERO SECTION — MOBILE ── */}
+      <section className="sm:hidden relative bg-background">
+        <div className="px-5 pt-5 pb-4">
+          <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs text-muted-foreground mb-5">
+            <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
+            <span aria-hidden>›</span>
+            <span className="text-foreground font-medium">Contact</span>
+          </nav>
+          <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
+          <h1 className="text-3xl font-bold leading-tight tracking-tight mb-4 text-primary">
+            Contactează <span className="text-accent">{SITE_NAME}</span>
+          </h1>
+          <p className="text-sm text-foreground/80 leading-relaxed">
+            Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
+            Scrie-ne și revenim rapid cu un răspuns.
+          </p>
+        </div>
+        <div className="relative w-full aspect-[3/4]">
+          <Image
+            src="/contact-nevazatori-mobil.png"
+            alt="Susținem nevăzătorii — persoană cu baston alb"
+            fill
+            priority
+            className="object-cover object-top"
+            sizes="100vw"
+          />
+        </div>
+      </section>
+
+      {/* ── HERO SECTION — TABLET / DESKTOP ── */}
+      <section className="hidden sm:block relative overflow-hidden bg-background pb-10 lg:pb-12">
+        <div className="relative min-h-[400px] lg:min-h-[460px]">
           <Image
             src="/contact-nevazatori.png"
             alt="Susținem nevăzătorii — persoană cu baston alb"
             fill
             priority
-            className="object-cover object-[38%_center] sm:object-[32%_center] lg:object-center"
+            className="object-cover object-[32%_center] lg:object-center"
             sizes="100vw"
           />
-          <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-12 h-full">
-            <div className="flex items-center min-h-[360px] sm:min-h-[400px] lg:min-h-[460px] py-6">
+          <div className="relative max-w-7xl mx-auto px-6 lg:px-12 h-full">
+            <div className="flex items-center min-h-[400px] lg:min-h-[460px] py-6">
               <div className="relative z-10 max-w-sm lg:max-w-md">
-                <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-5">
+                <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-sm text-muted-foreground mb-5">
                   <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
                   <span aria-hidden>›</span>
                   <span className="text-foreground font-medium">Contact</span>
                 </nav>
                 <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary">
+                <h1 className="text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary">
                   Contactează <span className="text-accent">{SITE_NAME}</span>
                 </h1>
-                <p className="text-sm sm:text-base text-foreground/80 leading-relaxed">
+                <p className="text-base text-foreground/80 leading-relaxed">
                   Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
                   Scrie-ne și revenim rapid cu un răspuns.
                 </p>
