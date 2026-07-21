@@ -34,3 +34,7 @@ export async function getSpaceListingBySlug(slug: string): Promise<SpaceListing 
     return null;
   }
 }
+
+export function mapsSearchUrl(location: string): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+}

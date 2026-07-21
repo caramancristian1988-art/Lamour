@@ -8,7 +8,7 @@ import { Button } from "@/app/components/ui/button";
 import SpaceCard from "@/app/components/SpaceCard";
 import ContactForm from "@/app/components/ContactForm";
 import { SITE_NAME } from "@/lib/constants";
-import { getSpaceListingBySlug, getSpaceListings } from "@/lib/spatiiComercialeData";
+import { getSpaceListingBySlug, getSpaceListings, mapsSearchUrl } from "@/lib/spatiiComercialeData";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -52,10 +52,15 @@ export default async function SpaceDetailPage({ params }: { params: Promise<{ sl
             <Ruler className="w-4 h-4" aria-hidden />
             {listing.area} m²
           </span>
-          <span className="flex items-center gap-1.5">
+          <a
+            href={mapsSearchUrl(listing.location)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:text-accent hover:underline transition-colors"
+          >
             <MapPin className="w-4 h-4" aria-hidden />
             {listing.location}
-          </span>
+          </a>
         </div>
       </section>
 
