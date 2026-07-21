@@ -62,21 +62,6 @@ export default async function ContactPage() {
     <div className="bg-background">
       {/* ── HERO SECTION — MOBILE ── */}
       <section className="sm:hidden relative bg-background">
-        <div className="px-5 pt-5 pb-4">
-          <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs text-muted-foreground mb-5">
-            <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
-            <span aria-hidden>›</span>
-            <span className="text-foreground font-medium">Contact</span>
-          </nav>
-          <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
-          <h1 className="text-3xl font-bold leading-tight tracking-tight mb-4 text-primary">
-            Contactează <span className="text-accent">{SITE_NAME}</span>
-          </h1>
-          <p className="text-sm text-foreground/80 leading-relaxed">
-            Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
-            Scrie-ne și revenim rapid cu un răspuns.
-          </p>
-        </div>
         <div className="relative w-full aspect-[3/4]">
           <Image
             src="/contact-nevazatori-mobil.png"
@@ -86,6 +71,21 @@ export default async function ContactPage() {
             className="object-cover object-top"
             sizes="100vw"
           />
+          <div className="absolute inset-x-0 top-0 px-5 pt-5 pb-4">
+            <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs text-muted-foreground mb-5">
+              <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
+              <span aria-hidden>›</span>
+              <span className="text-foreground font-medium">Contact</span>
+            </nav>
+            <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
+            <h1 className="text-3xl font-bold leading-tight tracking-tight mb-4 text-primary">
+              Contactează <span className="text-accent">{SITE_NAME}</span>
+            </h1>
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
+              Scrie-ne și revenim rapid cu un răspuns.
+            </p>
+          </div>
         </div>
       </section>
 
