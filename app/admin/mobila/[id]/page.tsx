@@ -10,13 +10,13 @@ import { updateFurnitureAction } from "@/lib/adminFurnitureActions";
 
 export default async function EditFurnitureListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [listing, allListings] = await Promise.all([
+  const [listing, types, allListings] = await Promise.all([
     prisma.furnitureListing.findUnique({ where: { id } }),
-    prisma.furnitureListing.findMany({ select: { type: true, material: true } }),
+    prisma.furnitureType.findMany({ orderBy: { name: "asc" } }),
+    prisma.furnitureListing.findMany({ select: { material: true } }),
   ]);
   if (!listing) notFound();
 
-  const types = Array.from(new Set(allListings.map((l) => l.type))).sort();
   const materials = Array.from(new Set(allListings.map((l) => l.material))).sort();
 
   return (

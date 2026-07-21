@@ -4,7 +4,7 @@ import { SITE_NAME } from "@/lib/constants";
 import DivisionHero from "@/app/components/division/DivisionHero";
 import SpaceCard from "@/app/components/SpaceCard";
 import ContactForm from "@/app/components/ContactForm";
-import { getSpaceListings } from "@/lib/spatiiComercialeData";
+import { getSpaceListings, getSpaceTypes } from "@/lib/spatiiComercialeData";
 
 export const metadata: Metadata = {
   title: `Spații comerciale | ${SITE_NAME}`,
@@ -17,10 +17,9 @@ export default async function SpatiiComercialePage({
   searchParams: Promise<{ tip?: string }>;
 }) {
   const { tip } = await searchParams;
-  const allListings = await getSpaceListings();
-  const types = Array.from(new Set(allListings.map((l) => l.type))).sort();
-  const activeType = tip && types.includes(tip) ? tip : "toate";
-  const listings = activeType === "toate" ? allListings : allListings.filter((l) => l.type === activeType);
+  const [allListings, types] = await Promise.all([getSpaceListings(), getSpaceTypes()]);
+  const activeType = tip && types.some((t) => t.slug === tip) ? tip : "toate";
+  const listings = activeType === "toate" ? allListings : allListings.filter((l) => l.type.slug === activeType);
 
   return (
     <main className="bg-background">
@@ -50,15 +49,15 @@ export default async function SpatiiComercialePage({
             </Link>
             {types.map((type) => (
               <Link
-                key={type}
-                href={`/spatii-comerciale?tip=${encodeURIComponent(type)}`}
+                key={type.id}
+                href={`/spatii-comerciale?tip=${type.slug}`}
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                  activeType === type
+                  activeType === type.slug
                     ? "bg-primary text-white"
                     : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
                 }`}
               >
-                {type}
+                {type.name}
               </Link>
             ))}
           </div>

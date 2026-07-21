@@ -5,10 +5,17 @@ export interface SpaceCharacteristic {
   value: string;
 }
 
+export interface SpaceTypeOption {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface SpaceListing {
   id: string;
   slug: string;
-  type: string;
+  typeId: string;
+  type: SpaceTypeOption;
   title: string;
   priceLabel: string;
   price: number | null;
@@ -22,7 +29,10 @@ export interface SpaceListing {
 
 export async function getSpaceListings(): Promise<SpaceListing[]> {
   try {
-    return await prisma.spaceListing.findMany({ orderBy: [{ order: "asc" }, { createdAt: "desc" }] });
+    return await prisma.spaceListing.findMany({
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      include: { type: true },
+    });
   } catch {
     return [];
   }
@@ -30,9 +40,17 @@ export async function getSpaceListings(): Promise<SpaceListing[]> {
 
 export async function getSpaceListingBySlug(slug: string): Promise<SpaceListing | null> {
   try {
-    return await prisma.spaceListing.findUnique({ where: { slug } });
+    return await prisma.spaceListing.findUnique({ where: { slug }, include: { type: true } });
   } catch {
     return null;
+  }
+}
+
+export async function getSpaceTypes(): Promise<SpaceTypeOption[]> {
+  try {
+    return await prisma.spaceType.findMany({ orderBy: { name: "asc" } });
+  } catch {
+    return [];
   }
 }
 

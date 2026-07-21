@@ -7,7 +7,7 @@ import DivisionBenefits from "@/app/components/division/DivisionBenefits";
 import DivisionCta from "@/app/components/division/DivisionCta";
 import ContactForm from "@/app/components/ContactForm";
 import FurnitureCard from "@/app/components/FurnitureCard";
-import { getFurnitureListings } from "@/lib/mobilaData";
+import { getFurnitureListings, getFurnitureTypes } from "@/lib/mobilaData";
 
 export const metadata: Metadata = {
   title: `Mobilă | ${SITE_NAME}`,
@@ -27,10 +27,9 @@ export default async function MobilaPage({
   searchParams: Promise<{ tip?: string }>;
 }) {
   const { tip } = await searchParams;
-  const allListings = await getFurnitureListings();
-  const types = Array.from(new Set(allListings.map((l) => l.type))).sort();
-  const activeType = tip && types.includes(tip) ? tip : "toate";
-  const listings = activeType === "toate" ? allListings : allListings.filter((l) => l.type === activeType);
+  const [allListings, types] = await Promise.all([getFurnitureListings(), getFurnitureTypes()]);
+  const activeType = tip && types.some((t) => t.slug === tip) ? tip : "toate";
+  const listings = activeType === "toate" ? allListings : allListings.filter((l) => l.type.slug === activeType);
 
   return (
     <main className="bg-background">
@@ -81,15 +80,15 @@ export default async function MobilaPage({
             </Link>
             {types.map((type) => (
               <Link
-                key={type}
-                href={`/mobila?tip=${encodeURIComponent(type)}#galerie`}
+                key={type.id}
+                href={`/mobila?tip=${type.slug}#galerie`}
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                  activeType === type
+                  activeType === type.slug
                     ? "bg-primary text-white"
                     : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
                 }`}
               >
-                {type}
+                {type.name}
               </Link>
             ))}
           </div>

@@ -22,7 +22,7 @@ export default function FurnitureCard({ listing }: { listing: FurnitureListing }
         ) : (
           <ImageOff className="w-8 h-8 text-muted-foreground" aria-hidden />
         )}
-        <Badge className="absolute top-3 left-3">{listing.type}</Badge>
+        <Badge className="absolute top-3 left-3">{listing.type.name}</Badge>
       </div>
       <div className="flex flex-col flex-1 p-5">
         <h3 className="text-sm font-bold text-foreground leading-snug mb-2 line-clamp-2">{listing.title}</h3>

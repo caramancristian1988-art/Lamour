@@ -194,7 +194,7 @@ export default async function ProdusePage({
 
     const selectedTypes = selectedParams(query.tip);
     const selectedMaterials = selectedParams(query.material);
-    const typeOptions = facetOptions(allListings, (l) => l.type);
+    const typeOptions = facetOptions(allListings, (l) => l.type.slug, (slug) => allListings.find((l) => l.type.slug === slug)?.type.name ?? slug);
     const materialOptions = facetOptions(allListings, (l) => materialFamily(l.material));
 
     const prices = allListings.map((l) => l.price).filter((p): p is number => p != null);
@@ -209,7 +209,7 @@ export default async function ProdusePage({
     const priceFilterActive = priceMinParam !== undefined || priceMaxParam !== undefined;
 
     const listings = allListings.filter((l) => {
-      if (selectedTypes.length > 0 && !selectedTypes.includes(l.type)) return false;
+      if (selectedTypes.length > 0 && !selectedTypes.includes(l.type.slug)) return false;
       if (selectedMaterials.length > 0 && !selectedMaterials.includes(materialFamily(l.material))) return false;
       if (priceFilterActive && (l.price == null || l.price < priceMin || l.price > priceMax)) return false;
       return true;
@@ -262,7 +262,7 @@ export default async function ProdusePage({
     const selectedTypes = selectedParams(query.tip);
     const selectedZones = selectedParams(query.zona);
     const selectedAreas = selectedParams(query.suprafata) as AreaBucket[];
-    const typeOptions = facetOptions(allListings, (l) => l.type);
+    const typeOptions = facetOptions(allListings, (l) => l.type.slug, (slug) => allListings.find((l) => l.type.slug === slug)?.type.name ?? slug);
     const zoneOptions = facetOptions(allListings, (l) => zoneLabel(l.location));
     const areaOptions = facetOptions(allListings, (l) => areaBucket(l.area), (v) => AREA_BUCKET_LABELS[v as AreaBucket]);
 
@@ -278,7 +278,7 @@ export default async function ProdusePage({
     const priceFilterActive = priceMinParam !== undefined || priceMaxParam !== undefined;
 
     const listings = allListings.filter((l) => {
-      if (selectedTypes.length > 0 && !selectedTypes.includes(l.type)) return false;
+      if (selectedTypes.length > 0 && !selectedTypes.includes(l.type.slug)) return false;
       if (selectedZones.length > 0 && !selectedZones.includes(zoneLabel(l.location))) return false;
       if (selectedAreas.length > 0 && !selectedAreas.includes(areaBucket(l.area))) return false;
       if (priceFilterActive && (l.price == null || l.price < priceMin || l.price > priceMax)) return false;

@@ -21,7 +21,7 @@ function parseCharacteristics(formData: FormData): { label: string; value: strin
 
 function readFields(formData: FormData) {
   const slug = String(formData.get("slug") ?? "").trim();
-  const type = String(formData.get("type") ?? "").trim();
+  const typeId = String(formData.get("typeId") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
   const priceLabel = String(formData.get("priceLabel") ?? "").trim();
   const priceRaw = String(formData.get("price") ?? "").trim();
@@ -33,7 +33,7 @@ function readFields(formData: FormData) {
 
   return {
     slug,
-    type,
+    typeId,
     title,
     priceLabel,
     price: priceRaw ? Number(priceRaw) : null,
@@ -51,7 +51,7 @@ export async function createFurnitureAction(_prevState: FurnitureFormState, form
   const data = readFields(formData);
   if (!data.title) return { error: "Completează titlul." };
   if (!data.slug) return { error: "Completează slug-ul." };
-  if (!data.type) return { error: "Completează tipul." };
+  if (!data.typeId) return { error: "Alege un tip." };
   if (!data.priceLabel) return { error: "Completează prețul afișat." };
   if (!data.material) return { error: "Completează materialul." };
 
@@ -75,7 +75,7 @@ export async function updateFurnitureAction(_prevState: FurnitureFormState, form
   if (!id) return { error: "Lucrare invalidă." };
   if (!data.title) return { error: "Completează titlul." };
   if (!data.slug) return { error: "Completează slug-ul." };
-  if (!data.type) return { error: "Completează tipul." };
+  if (!data.typeId) return { error: "Alege un tip." };
   if (!data.priceLabel) return { error: "Completează prețul afișat." };
   if (!data.material) return { error: "Completează materialul." };
 

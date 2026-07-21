@@ -6,6 +6,7 @@ import ImageUploadField from "../components/ImageUploadField";
 import ManagedSelect from "../components/ManagedSelect";
 import SpecificationsEditor from "../components/SpecificationsEditor";
 import type { FurnitureFormState } from "@/lib/adminFurnitureActions";
+import { createFurnitureTypeInlineAction, deleteFurnitureTypeInlineAction } from "@/lib/adminFurnitureTypeActions";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 
@@ -18,10 +19,15 @@ const CHARACTERISTIC_TEMPLATE = [
   { label: "Livrare și montaj", value: "" },
 ];
 
+interface TypeOption {
+  id: string;
+  name: string;
+}
+
 interface FurnitureDefaults {
   id?: string;
   slug?: string;
-  type?: string;
+  typeId?: string;
   title?: string;
   priceLabel?: string;
   price?: number | null;
@@ -43,13 +49,12 @@ export default function FurnitureListingForm({
 }: {
   action: (prevState: FurnitureFormState, formData: FormData) => Promise<FurnitureFormState>;
   defaults?: FurnitureDefaults;
-  types: string[];
+  types: TypeOption[];
   materials: string[];
   submitLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
 
-  const typeOptions = defaults?.type && !types.includes(defaults.type) ? [...types, defaults.type] : types;
   const materialOptions = defaults?.material && !materials.includes(defaults.material) ? [...materials, defaults.material] : materials;
 
   return (
@@ -67,16 +72,25 @@ export default function FurnitureListingForm({
       <AdminTextarea label="Descriere" name="description" defaultValue={defaults?.description ?? ""} placeholder="Descrierea lucrării..." rows={3} />
 
       <ManagedSelect
-        name="type"
+        name="typeId"
         label="Tip"
         required
-        defaultOptions={typeOptions.map((value) => ({ value, label: value }))}
-        defaultValue={defaults?.type ?? ""}
+        defaultOptions={types.map((t) => ({ value: t.id, label: t.name }))}
+        defaultValue={defaults?.typeId ?? ""}
         emptyOptionLabel="Alege un tip"
         addPlaceholder="Tip nou, ex: Terasă"
-        deleteConfirmText="Elimini acest tip din listă? (nu șterge lucrările existente)"
-        onAdd={async (label) => ({ option: { value: label, label } })}
-        onDelete={async () => {}}
+        deleteConfirmText="Sigur vrei să ștergi acest tip? Funcționează doar dacă nicio lucrare nu îl folosește."
+        onAdd={async (label) => {
+          const formData = new FormData();
+          formData.set("name", label);
+          const result = await createFurnitureTypeInlineAction(formData);
+          if (result.error || !result.type) return { error: result.error ?? "Nu am putut crea tipul." };
+          return { option: { value: result.type.id, label: result.type.name } };
+        }}
+        onDelete={async (option) => {
+          const result = await deleteFurnitureTypeInlineAction(option.value);
+          if (result.error) return { error: result.error };
+        }}
       />
 
       <div className="grid grid-cols-2 gap-4">

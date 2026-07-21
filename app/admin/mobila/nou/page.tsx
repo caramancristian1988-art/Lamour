@@ -4,8 +4,10 @@ import FurnitureListingForm from "../FurnitureListingForm";
 import { createFurnitureAction } from "@/lib/adminFurnitureActions";
 
 export default async function NewFurnitureListingPage() {
-  const listings = await prisma.furnitureListing.findMany({ select: { type: true, material: true } });
-  const types = Array.from(new Set(listings.map((l) => l.type))).sort();
+  const [types, listings] = await Promise.all([
+    prisma.furnitureType.findMany({ orderBy: { name: "asc" } }),
+    prisma.furnitureListing.findMany({ select: { material: true } }),
+  ]);
   const materials = Array.from(new Set(listings.map((l) => l.material))).sort();
 
   return (

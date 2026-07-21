@@ -6,6 +6,7 @@ import ImageUploadField from "../components/ImageUploadField";
 import ManagedSelect from "../components/ManagedSelect";
 import SpecificationsEditor from "../components/SpecificationsEditor";
 import type { SpaceFormState } from "@/lib/adminSpaceActions";
+import { createSpaceTypeInlineAction, deleteSpaceTypeInlineAction } from "@/lib/adminSpaceTypeActions";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { Button } from "@/app/components/ui/button";
 
@@ -18,10 +19,15 @@ const CHARACTERISTIC_TEMPLATE = [
   { label: "Disponibilitate", value: "" },
 ];
 
+interface TypeOption {
+  id: string;
+  name: string;
+}
+
 interface SpaceDefaults {
   id?: string;
   slug?: string;
-  type?: string;
+  typeId?: string;
   title?: string;
   priceLabel?: string;
   price?: number | null;
@@ -43,12 +49,10 @@ export default function SpaceListingForm({
 }: {
   action: (prevState: SpaceFormState, formData: FormData) => Promise<SpaceFormState>;
   defaults?: SpaceDefaults;
-  types: string[];
+  types: TypeOption[];
   submitLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
-
-  const typeOptions = defaults?.type && !types.includes(defaults.type) ? [...types, defaults.type] : types;
 
   return (
     <form action={formAction} className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 max-w-2xl">
@@ -65,16 +69,25 @@ export default function SpaceListingForm({
       <AdminTextarea label="Descriere" name="description" defaultValue={defaults?.description ?? ""} placeholder="Descrierea anunțului..." rows={3} />
 
       <ManagedSelect
-        name="type"
+        name="typeId"
         label="Tip"
         required
-        defaultOptions={typeOptions.map((value) => ({ value, label: value }))}
-        defaultValue={defaults?.type ?? ""}
+        defaultOptions={types.map((t) => ({ value: t.id, label: t.name }))}
+        defaultValue={defaults?.typeId ?? ""}
         emptyOptionLabel="Alege un tip"
         addPlaceholder="Tip nou, ex: Vilă"
-        deleteConfirmText="Elimini acest tip din listă? (nu șterge anunțurile existente)"
-        onAdd={async (label) => ({ option: { value: label, label } })}
-        onDelete={async () => {}}
+        deleteConfirmText="Sigur vrei să ștergi acest tip? Funcționează doar dacă niciun anunț nu îl folosește."
+        onAdd={async (label) => {
+          const formData = new FormData();
+          formData.set("name", label);
+          const result = await createSpaceTypeInlineAction(formData);
+          if (result.error || !result.type) return { error: result.error ?? "Nu am putut crea tipul." };
+          return { option: { value: result.type.id, label: result.type.name } };
+        }}
+        onDelete={async (option) => {
+          const result = await deleteSpaceTypeInlineAction(option.value);
+          if (result.error) return { error: result.error };
+        }}
       />
 
       <div className="grid grid-cols-2 gap-4">

@@ -5,10 +5,17 @@ export interface FurnitureCharacteristic {
   value: string;
 }
 
+export interface FurnitureTypeOption {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface FurnitureListing {
   id: string;
   slug: string;
-  type: string;
+  typeId: string;
+  type: FurnitureTypeOption;
   title: string;
   priceLabel: string;
   price: number | null;
@@ -21,7 +28,10 @@ export interface FurnitureListing {
 
 export async function getFurnitureListings(): Promise<FurnitureListing[]> {
   try {
-    return await prisma.furnitureListing.findMany({ orderBy: [{ order: "asc" }, { createdAt: "desc" }] });
+    return await prisma.furnitureListing.findMany({
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      include: { type: true },
+    });
   } catch {
     return [];
   }
@@ -29,8 +39,16 @@ export async function getFurnitureListings(): Promise<FurnitureListing[]> {
 
 export async function getFurnitureListingBySlug(slug: string): Promise<FurnitureListing | null> {
   try {
-    return await prisma.furnitureListing.findUnique({ where: { slug } });
+    return await prisma.furnitureListing.findUnique({ where: { slug }, include: { type: true } });
   } catch {
     return null;
+  }
+}
+
+export async function getFurnitureTypes(): Promise<FurnitureTypeOption[]> {
+  try {
+    return await prisma.furnitureType.findMany({ orderBy: { name: "asc" } });
+  } catch {
+    return [];
   }
 }

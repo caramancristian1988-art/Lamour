@@ -4,8 +4,7 @@ import SpaceListingForm from "../SpaceListingForm";
 import { createSpaceAction } from "@/lib/adminSpaceActions";
 
 export default async function NewSpaceListingPage() {
-  const listings = await prisma.spaceListing.findMany({ select: { type: true } });
-  const types = Array.from(new Set(listings.map((l) => l.type))).sort();
+  const types = await prisma.spaceType.findMany({ orderBy: { name: "asc" } });
 
   return (
     <div>

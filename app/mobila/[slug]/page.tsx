@@ -26,7 +26,7 @@ export default async function FurnitureDetailPage({ params }: { params: Promise<
   if (!listing) notFound();
 
   const allListings = await getFurnitureListings();
-  const related = allListings.filter((l) => l.type === listing.type && l.slug !== listing.slug).slice(0, 3);
+  const related = allListings.filter((l) => l.typeId === listing.typeId && l.slug !== listing.slug).slice(0, 3);
 
   return (
     <main className="bg-background">
@@ -43,7 +43,7 @@ export default async function FurnitureDetailPage({ params }: { params: Promise<
 
       {/* Title row */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-6">
-        <Badge className="mb-3">{listing.type}</Badge>
+        <Badge className="mb-3">{listing.type.name}</Badge>
         <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-primary leading-tight mb-2">
           {listing.title}
         </h1>

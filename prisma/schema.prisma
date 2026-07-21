@@ -55,10 +55,19 @@ type ListingCharacteristic {
   value String
 }
 
+model FurnitureType {
+  id        String             @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String             @unique
+  listings  FurnitureListing[]
+  createdAt DateTime           @default(now())
+}
+
 model FurnitureListing {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   slug        String   @unique
-  type        String
+  typeId      String   @db.ObjectId
+  type        FurnitureType @relation(fields: [typeId], references: [id])
   title       String
   priceLabel  String
   price       Float?
@@ -71,10 +80,19 @@ model FurnitureListing {
   createdAt   DateTime @default(now())
 }
 
+model SpaceType {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String         @unique
+  listings  SpaceListing[]
+  createdAt DateTime       @default(now())
+}
+
 model SpaceListing {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   slug        String   @unique
-  type        String
+  typeId      String   @db.ObjectId
+  type        SpaceType @relation(fields: [typeId], references: [id])
   title       String
   priceLabel  String
   price       Float?

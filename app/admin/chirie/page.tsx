@@ -10,7 +10,7 @@ import { deleteSpaceAction } from "@/lib/adminSpaceActions";
 
 async function getListings() {
   try {
-    return await prisma.spaceListing.findMany({ orderBy: [{ order: "asc" }, { createdAt: "desc" }] });
+    return await prisma.spaceListing.findMany({ orderBy: [{ order: "asc" }, { createdAt: "desc" }], include: { type: true } });
   } catch {
     return [];
   }
@@ -31,7 +31,7 @@ function ListingRow({ listing }: { listing: Awaited<ReturnType<typeof getListing
       <div className="flex-1 min-w-0">
         <p className="font-bold text-sm text-primary line-clamp-2 leading-snug">{listing.title}</p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-          <Badge variant="outline">{listing.type}</Badge>
+          <Badge variant="outline">{listing.type.name}</Badge>
           <p className="text-sm text-muted-foreground">{listing.location}</p>
         </div>
         <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -65,12 +65,17 @@ export default async function AdminChiriePage() {
         title="Chirie"
         description="Anunțurile de spații de închiriat afișate pe site, la /spatii-comerciale și în divizia Chirie din /produse."
         action={
-          <Button variant="accent" asChild>
-            <Link href="/admin/chirie/nou">
-              <Plus className="w-4 h-4" aria-hidden />
-              Adaugă anunț
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/admin/chirie/categorii">Tipuri (filtre)</Link>
+            </Button>
+            <Button variant="accent" asChild>
+              <Link href="/admin/chirie/nou">
+                <Plus className="w-4 h-4" aria-hidden />
+                Adaugă anunț
+              </Link>
+            </Button>
+          </div>
         }
       />
 

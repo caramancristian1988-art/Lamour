@@ -10,13 +10,11 @@ import { updateSpaceAction } from "@/lib/adminSpaceActions";
 
 export default async function EditSpaceListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [listing, allListings] = await Promise.all([
+  const [listing, types] = await Promise.all([
     prisma.spaceListing.findUnique({ where: { id } }),
-    prisma.spaceListing.findMany({ select: { type: true } }),
+    prisma.spaceType.findMany({ orderBy: { name: "asc" } }),
   ]);
   if (!listing) notFound();
-
-  const types = Array.from(new Set(allListings.map((l) => l.type))).sort();
 
   return (
     <div>
