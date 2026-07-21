@@ -39,7 +39,7 @@ export default async function MobilaPage({
         title="Mobilier la comandă,"
         highlighted="pentru birou și pentru casă"
         description="Proiectăm și fabricăm mobilier personalizat — de la piese unicat pentru locuință, până la soluții complete de mobilare pentru birouri și spații comerciale."
-        image="https://placehold.co/800x600/9D5654/ffffff?text=Mobila+Lamour"
+        image="https://placehold.co/800x600/9D5654/ffffff?text=Mobila+LuminTehnica"
         primaryCta={{ label: "Cere o ofertă", href: "#contact" }}
         secondaryCta={{ label: "Vezi galeria", href: "#galerie" }}
       />

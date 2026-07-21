@@ -2,6 +2,7 @@ import Link from "next/link";
 import { HeartHandshake, Users, Sparkles } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { MotifBackground } from "@/app/components/ui/motif";
+import { SITE_NAME } from "@/lib/constants";
 
 const points = [
   { icon: Users, text: "O parte din echipa noastră este formată din angajați ai Asociației Nevăzătorilor din Moldova" },
@@ -20,7 +21,7 @@ export default function SocialImpact() {
             Credem într-o lume mai bună, în care fiecare persoană are șansa de a fi utilă și respectată.
           </h2>
           <p className="text-white/80 leading-relaxed mb-8 max-w-lg">
-            L&apos;amour Cu Dragoste colaborează cu Asociația Nevăzătorilor din Moldova, oferind locuri de
+            {SITE_NAME} colaborează cu Asociația Nevăzătorilor din Moldova, oferind locuri de
             muncă persoanelor cu dizabilități vizuale. Este parte din felul nostru de a face afaceri —
             cu grijă pentru oameni, nu doar pentru produse.
           </p>

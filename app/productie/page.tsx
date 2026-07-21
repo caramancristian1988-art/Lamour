@@ -34,7 +34,7 @@ export default function ProductiePage() {
         title="De la materie primă,"
         highlighted="la produsul finit"
         description="Producem în Moldova, cu echipamente moderne și control riguros al calității — de la materia primă, până la produsul ambalat și livrat."
-        image="https://placehold.co/800x600/710808/ffffff?text=Fabrica+Lamour"
+        image="https://placehold.co/800x600/710808/ffffff?text=Fabrica+LuminTehnica"
         primaryCta={{ label: "Cere detalii de producție", href: "#contact" }}
         secondaryCta={{ label: "Vezi fabrica", href: "#galerie" }}
       />

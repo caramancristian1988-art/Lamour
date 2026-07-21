@@ -230,7 +230,7 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
       <section className="sm:hidden relative h-[260px] overflow-hidden">
         {/* Placeholder — swap for a real category/product photo. */}
         <Image
-          src="https://placehold.co/800x600/D8B2B1/652F37?text=L%27amour+Cu+Dragoste"
+          src="https://placehold.co/800x600/D8B2B1/652F37?text=LuminTehnica+Cu+Dragoste"
           alt=""
           fill
           className="object-cover object-bottom"
@@ -258,7 +258,7 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
         <div className="absolute inset-0 flex justify-end">
           <div className="w-[65%] h-full relative">
             {/* Placeholder — swap for a real category/product photo. */}
-            <Image src="https://placehold.co/1200x600/D8B2B1/652F37?text=L%27amour+Cu+Dragoste" alt="" fill className="object-cover object-center" priority sizes="65vw" />
+            <Image src="https://placehold.co/1200x600/D8B2B1/652F37?text=LuminTehnica+Cu+Dragoste" alt="" fill className="object-cover object-center" priority sizes="65vw" />
           </div>
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-background from-25% via-background/60 via-40% to-transparent to-65% pointer-events-none" />

@@ -72,18 +72,18 @@ interface ProductSeed {
 }
 
 const productSeeds: ProductSeed[] = [
-  { id: "1", name: "Hârtie igienică L'amour Cu Dragoste, 32 role, 3 straturi", price: 120, oldPrice: 150, categoryId: "1" },
-  { id: "2", name: "Prosoape de hârtie L'amour, 2 role", price: 35, oldPrice: 41, categoryId: "3" },
-  { id: "3", name: "Șervețele L'amour, 100 buc", price: 18, oldPrice: 24, categoryId: "2" },
-  { id: "4", name: "Chibrite L'amour, 10 cutii", price: 10, oldPrice: 12.5, categoryId: "5" },
-  { id: "5", name: "Șervețele umede L'amour, 72 buc", price: 30, oldPrice: 33, categoryId: "4" },
-  { id: "6", name: "Hârtie igienică L'amour Cu Dragoste, 8 role, 2 straturi", price: 45, oldPrice: null, categoryId: "1" },
-  { id: "7", name: "Șervețele de masă L'amour, 50 buc", price: 12, oldPrice: null, categoryId: "2" },
-  { id: "8", name: "Prosoape de hârtie L'amour, 4 role", price: 62, oldPrice: null, categoryId: "3" },
-  { id: "9", name: "Șervețele umede pentru bebeluși L'amour, 64 buc", price: 22, oldPrice: null, categoryId: "4" },
-  { id: "10", name: "Detergent de vase L'amour, 500 ml", price: 28, oldPrice: null, categoryId: "6" },
-  { id: "11", name: "Hârtie igienică L'amour Cu Dragoste, 16 role, 3 straturi", price: 78, oldPrice: 95, categoryId: "1" },
-  { id: "12", name: "Șervețele umede antibacteriene L'amour, 80 buc", price: 34, oldPrice: 39, categoryId: "4" },
+  { id: "1", name: "Hârtie igienică LuminTehnica Cu Dragoste, 32 role, 3 straturi", price: 120, oldPrice: 150, categoryId: "1" },
+  { id: "2", name: "Prosoape de hârtie LuminTehnica, 2 role", price: 35, oldPrice: 41, categoryId: "3" },
+  { id: "3", name: "Șervețele LuminTehnica, 100 buc", price: 18, oldPrice: 24, categoryId: "2" },
+  { id: "4", name: "Chibrite LuminTehnica, 10 cutii", price: 10, oldPrice: 12.5, categoryId: "5" },
+  { id: "5", name: "Șervețele umede LuminTehnica, 72 buc", price: 30, oldPrice: 33, categoryId: "4" },
+  { id: "6", name: "Hârtie igienică LuminTehnica Cu Dragoste, 8 role, 2 straturi", price: 45, oldPrice: null, categoryId: "1" },
+  { id: "7", name: "Șervețele de masă LuminTehnica, 50 buc", price: 12, oldPrice: null, categoryId: "2" },
+  { id: "8", name: "Prosoape de hârtie LuminTehnica, 4 role", price: 62, oldPrice: null, categoryId: "3" },
+  { id: "9", name: "Șervețele umede pentru bebeluși LuminTehnica, 64 buc", price: 22, oldPrice: null, categoryId: "4" },
+  { id: "10", name: "Detergent de vase LuminTehnica, 500 ml", price: 28, oldPrice: null, categoryId: "6" },
+  { id: "11", name: "Hârtie igienică LuminTehnica Cu Dragoste, 16 role, 3 straturi", price: 78, oldPrice: 95, categoryId: "1" },
+  { id: "12", name: "Șervețele umede antibacteriene LuminTehnica, 80 buc", price: 34, oldPrice: 39, categoryId: "4" },
 ];
 
 function toProduct(seed: ProductSeed) {
@@ -92,7 +92,7 @@ function toProduct(seed: ProductSeed) {
     id: seed.id,
     name: seed.name,
     slug: `produs-${seed.id}`,
-    description: `${seed.name} — produs L'amour Cu Dragoste, fabricat în Moldova din 100% celuloză.`,
+    description: `${seed.name} — produs LuminTehnica Cu Dragoste, fabricat în Moldova din 100% celuloză.`,
     price: seed.price,
     oldPrice: seed.oldPrice,
     image: `https://placehold.co/400x400/ffffff/652F37?text=${encodeURIComponent(seed.name.split(",")[0])}`,
@@ -120,7 +120,7 @@ export const fallbackReviews = [
     name: "Maria G.",
     rating: 5,
     text: "Produse de calitate foarte bună! Recomand cu încredere.",
-    product: "Hârtie igienică L'amour Cu Dragoste, 32 role, 3 straturi",
+    product: "Hârtie igienică LuminTehnica Cu Dragoste, 32 role, 3 straturi",
     createdAt: new Date(),
   },
   {
@@ -128,7 +128,7 @@ export const fallbackReviews = [
     name: "Ion P.",
     rating: 4.5,
     text: "Foarte mulțumită de hârtia igienică, moale și rezistentă.",
-    product: "Hârtie igienică L'amour Cu Dragoste, 16 role, 3 straturi",
+    product: "Hârtie igienică LuminTehnica Cu Dragoste, 16 role, 3 straturi",
     createdAt: new Date(),
   },
   {
@@ -136,7 +136,7 @@ export const fallbackReviews = [
     name: "Anastasia L.",
     rating: 5,
     text: "O companie care chiar are grijă de oameni. Respect!",
-    product: "Șervețele umede L'amour, 72 buc",
+    product: "Șervețele umede LuminTehnica, 72 buc",
     createdAt: new Date(),
   },
 ];

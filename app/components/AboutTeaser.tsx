@@ -3,6 +3,7 @@ import Image from "next/image";
 import { HeartHandshake } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
+import { SITE_NAME } from "@/lib/constants";
 
 export default function AboutTeaser() {
   return (
@@ -35,7 +36,7 @@ export default function AboutTeaser() {
           <div className="relative h-64 sm:h-80 lg:h-auto rounded-2xl overflow-hidden">
             <Image
               src="/fabrica-lamour.png"
-              alt="Fabrica L'amour Cu Dragoste"
+              alt={`Fabrica ${SITE_NAME}`}
               fill
               className="object-cover"
             />

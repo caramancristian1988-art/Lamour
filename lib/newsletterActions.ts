@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 import { sendMail } from "./mailer";
-import { SITE_NAME } from "./constants";
+import { SITE_NAME, SITE_SHORT_NAME } from "./constants";
 
 export interface NewsletterFormState {
   error?: string;
@@ -132,7 +132,7 @@ export async function sendNewsletterCampaignAction(
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #D8B2B1">
             <tr>
               <td style="background:#710808;padding:26px 32px;text-align:center">
-                <span style="display:block;color:#ffffff;font-size:26px;font-style:italic;font-weight:bold;font-family:Georgia,'Times New Roman',serif">L&rsquo;amour</span>
+                <span style="display:block;color:#ffffff;font-size:26px;font-style:italic;font-weight:bold;font-family:Georgia,'Times New Roman',serif">${escapeHtml(SITE_SHORT_NAME)}</span>
                 <span style="display:block;margin-top:2px;color:#E9D0CE;font-size:11px;letter-spacing:3px;text-transform:uppercase">Cu Dragoste</span>
               </td>
             </tr>

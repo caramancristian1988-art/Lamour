@@ -3,13 +3,13 @@
 import { motion } from "framer-motion";
 import { MotifBackground, MotifCorner } from "@/app/components/ui/motif";
 import BannerCarousel, { type BannerSlide } from "@/app/components/BannerCarousel";
-import { SITE_TAGLINE } from "@/lib/constants";
+import { SITE_NAME, SITE_TAGLINE } from "@/lib/constants";
 
 const fallbackBanners: BannerSlide[] = [
   {
     id: "fallback-1",
     image: "https://placehold.co/1280x560/710808/710808",
-    alt: "Oferte speciale L'amour Cu Dragoste",
+    alt: `Oferte speciale ${SITE_NAME}`,
     title: "Oferte speciale",
     subtitle: SITE_TAGLINE,
     ctaLabel: "Vezi ofertele",

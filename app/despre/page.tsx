@@ -77,7 +77,7 @@ export default async function DesprePage() {
             <div className="relative w-full rounded-2xl overflow-hidden shadow-xl aspect-[4/3] lg:aspect-auto lg:h-[380px]">
               <Image
                 src="/fabrica-lamour.png"
-                alt="Fabrica L'amour Cu Dragoste"
+                alt={`Fabrica ${SITE_NAME}`}
                 fill
                 className="object-cover object-center"
                 priority
@@ -120,7 +120,7 @@ export default async function DesprePage() {
               <div className="relative aspect-[1717/916] rounded-2xl overflow-hidden shadow-xl bg-white">
                 <Image
                   src="/produsele-lamour.png"
-                  alt="Produsele L'amour Cu Dragoste"
+                  alt={`Produsele ${SITE_NAME}`}
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"
