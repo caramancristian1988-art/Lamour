@@ -72,7 +72,7 @@ export default function MessageStatusBadge({
       <div
         role="listbox"
         className={cn(
-          "absolute right-0 top-full mt-1.5 bg-card border border-border rounded-xl shadow-xl py-1.5 min-w-[180px] z-10 origin-top-right transition-all duration-150",
+          "absolute left-0 top-full mt-1.5 bg-card border border-border rounded-xl shadow-xl py-1.5 w-[180px] max-w-[calc(100vw-2.5rem)] z-10 origin-top-left transition-all duration-150",
           open ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
         )}
       >
