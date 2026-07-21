@@ -22,6 +22,23 @@ export default function CategoryGrid({ categories }: Props) {
     <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
+        {/* ── Division links ────────────────────────────────────────── */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {[
+            { label: "Produse de uz casnic", href: "/produse?division=uz-casnic" },
+            { label: "Mobilă",               href: "/produse?division=mobila" },
+            { label: "Chirie",               href: "/produse?division=chirie" },
+          ].map((d) => (
+            <Link
+              key={d.href}
+              href={d.href}
+              className="px-4 py-1.5 rounded-full text-sm font-bold border border-primary/40 text-primary hover:bg-primary hover:text-white hover:border-primary transition-colors"
+            >
+              {d.label}
+            </Link>
+          ))}
+        </div>
+
         <div className="flex items-center gap-4 mb-10 flex-wrap">
           <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight uppercase shrink-0">
             Categorii populare

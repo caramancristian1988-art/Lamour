@@ -1,13 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { fallbackCategories, fallbackOfferProducts } from "@/lib/fallbackData";
-import { furnitureListings } from "@/lib/mobilaData";
-import { spaceListings } from "@/lib/spatiiComercialeData";
 import Hero from "@/app/components/Hero";
 import TrustBar from "@/app/components/TrustBar";
 import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
-import FurnitureSection from "@/app/components/FurnitureSection";
-import SpaceSection from "@/app/components/SpaceSection";
 import ReviewsSection from "@/app/components/ReviewsSection";
 import AboutTeaser from "@/app/components/AboutTeaser";
 
@@ -15,7 +11,7 @@ export const revalidate = 3600;
 
 async function getData() {
   try {
-    const [rawCategories, offerProducts, newProducts, recommendedProducts, popularProducts, reviews, banners] =
+    const [rawCategories, offerProducts, newProducts, recommendedProducts, reviews, banners] =
       await Promise.all([
         prisma.category.findMany({
           orderBy: { createdAt: "asc" },
@@ -35,8 +31,6 @@ async function getData() {
         prisma.product.findMany({ orderBy: { createdAt: "desc" }, take: 4 }),
         // Recomandate din TOATE categoriile, după rating
         prisma.product.findMany({ orderBy: { rating: "desc" }, take: 8 }),
-        // Rândul "Produse de uz casnic" — din toate categoriile, după cele mai apreciate
-        prisma.product.findMany({ orderBy: { reviewCount: "desc" }, take: 4 }),
         prisma.review.findMany({
           where: { approved: true },
           orderBy: { createdAt: "desc" },
@@ -64,7 +58,6 @@ async function getData() {
       offerProducts: offerProducts.length > 0 ? offerProducts : fallbackOfferProducts.slice(0, 4),
       newProducts,
       recommendedProducts,
-      popularProducts,
       reviews,
       banners,
     };
@@ -74,7 +67,6 @@ async function getData() {
       offerProducts: fallbackOfferProducts.slice(0, 4),
       newProducts: [],
       recommendedProducts: [],
-      popularProducts: [],
       reviews: [],
       banners: [],
     };
@@ -82,26 +74,13 @@ async function getData() {
 }
 
 export default async function HomePage() {
-  const { categories, offerProducts, newProducts, recommendedProducts, popularProducts, reviews, banners } =
+  const { categories, offerProducts, newProducts, recommendedProducts, reviews, banners } =
     await getData();
 
   return (
     <main>
       <Hero banners={banners} />
       <TrustBar />
-
-      {popularProducts.length > 0 && (
-        <ProductsSection
-          products={popularProducts}
-          title="Produse"
-          highlighted="de uz casnic"
-          viewAllHref="/produse?division=uz-casnic"
-          viewAllLabel="Vezi toate produsele"
-        />
-      )}
-      <FurnitureSection listings={furnitureListings.slice(0, 4)} />
-      <SpaceSection listings={spaceListings.slice(0, 4)} />
-
       <CategoryGrid categories={categories} />
       <ProductsSection
         products={offerProducts}
@@ -109,7 +88,6 @@ export default async function HomePage() {
         highlighted="speciale"
         viewAllHref="/produse?division=uz-casnic&oferte=1"
         viewAllLabel="Vezi toate ofertele"
-        bg="bg-muted/30"
       />
       {newProducts.length > 0 && (
         <ProductsSection
@@ -127,7 +105,6 @@ export default async function HomePage() {
           highlighted="recomandate"
           viewAllHref="/produse?division=uz-casnic"
           viewAllLabel="Vezi toate produsele"
-          bg="bg-muted/30"
         />
       )}
       <AboutTeaser />
