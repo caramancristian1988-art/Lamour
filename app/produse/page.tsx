@@ -103,15 +103,15 @@ function firstParam(value: string | string[] | undefined): string | undefined {
 
 function DivisionTabs({ active }: { active: Division }) {
   return (
-    <div className="flex items-center gap-3 sm:gap-4 flex-wrap mb-8">
+    <div className="flex items-center gap-2 sm:gap-3 flex-wrap mb-6">
       {DIVISION_TABS.map((tab) => (
         <Link
           key={tab.value}
           href={`/produse?division=${tab.value}`}
-          className={`px-8 sm:px-10 py-4 sm:py-5 rounded-2xl text-base sm:text-lg font-bold transition-all ${
+          className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-bold transition-colors ${
             active === tab.value
-              ? "bg-primary text-white shadow-md scale-[1.02]"
-              : "bg-card border-2 border-border text-foreground hover:border-accent hover:text-accent hover:shadow-sm"
+              ? "bg-primary text-white shadow-sm"
+              : "bg-card border-2 border-border text-foreground hover:border-accent hover:text-accent"
           }`}
         >
           {tab.label}
