@@ -61,7 +61,7 @@ export default async function ContactPage() {
   return (
     <div className="bg-background">
       {/* ── HERO SECTION ── */}
-      <section className="relative overflow-hidden bg-background">
+      <section className="relative overflow-hidden bg-background pb-8 sm:pb-10 lg:pb-12">
         <div className="relative min-h-[360px] sm:min-h-[400px] lg:min-h-[460px]">
           <Image
             src="/contact-nevazatori.png"
