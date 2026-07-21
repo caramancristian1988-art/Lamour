@@ -40,16 +40,18 @@ async function getData() {
         prisma.banner.findMany({ orderBy: { order: "asc" } }),
       ]);
 
-    // Preferăm o poză reală a unui produs din categorie — poza categoriei
-    // în sine e aproape mereu doar un placeholder generat la seed.
+    // Preferăm poza setată explicit pe categorie (din admin); dacă nu există
+    // una reală, cădem pe prima poză de produs găsită — poza categoriei
+    // din seed e doar un placeholder.
     const isPlaceholder = (url: string | null | undefined) => !url || url.includes("placehold.co");
     const categories = rawCategories.map(({ products, ...cat }) => {
+      const categoryImage = isPlaceholder(cat.image) ? null : cat.image;
       const productImage = products
         .flatMap((p) => [p.image, ...p.images])
         .find((img) => !isPlaceholder(img));
       return {
         ...cat,
-        image: productImage ?? (isPlaceholder(cat.image) ? null : cat.image),
+        image: categoryImage ?? productImage ?? null,
       };
     });
 
