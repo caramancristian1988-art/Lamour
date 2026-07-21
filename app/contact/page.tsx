@@ -61,36 +61,33 @@ export default async function ContactPage() {
   return (
     <div className="bg-background">
       {/* ── HERO SECTION ── */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[260px] lg:min-h-[360px] items-center gap-8 py-6 lg:py-0">
-            {/* LEFT */}
-            <div className="relative z-10 py-6 lg:py-10">
-              <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-5">
-                <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
-                <span aria-hidden>›</span>
-                <span className="text-foreground font-medium">Contact</span>
-              </nav>
-              <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary">
-                Contactează <span className="text-accent">{SITE_NAME}</span>
-              </h1>
-              <p className="text-sm sm:text-base text-foreground/80 max-w-sm leading-relaxed">
-                Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
-                Scrie-ne și revenim rapid cu un răspuns.
-              </p>
-            </div>
-
-            {/* RIGHT: Image */}
-            <div className="relative w-full rounded-2xl overflow-hidden shadow-xl aspect-[4/3] lg:aspect-auto lg:h-[300px]">
-              <Image
-                src="/fabrica-lamour.png"
-                alt="Fabrica L'amour Cu Dragoste"
-                fill
-                className="object-cover object-center"
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
+      <section className="relative overflow-hidden bg-background">
+        <div className="relative min-h-[360px] sm:min-h-[400px] lg:min-h-[460px]">
+          <Image
+            src="/contact-nevazatori.png"
+            alt="Susținem nevăzătorii — persoană cu baston alb"
+            fill
+            priority
+            className="object-cover object-[38%_center] sm:object-[32%_center] lg:object-center"
+            sizes="100vw"
+          />
+          <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-12 h-full">
+            <div className="flex items-center min-h-[360px] sm:min-h-[400px] lg:min-h-[460px] py-6">
+              <div className="relative z-10 max-w-sm lg:max-w-md">
+                <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-5">
+                  <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
+                  <span aria-hidden>›</span>
+                  <span className="text-foreground font-medium">Contact</span>
+                </nav>
+                <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary">
+                  Contactează <span className="text-accent">{SITE_NAME}</span>
+                </h1>
+                <p className="text-sm sm:text-base text-foreground/80 leading-relaxed">
+                  Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
+                  Scrie-ne și revenim rapid cu un răspuns.
+                </p>
+              </div>
             </div>
           </div>
         </div>
