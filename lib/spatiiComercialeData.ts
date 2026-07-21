@@ -14,6 +14,7 @@ export interface SpaceListing {
   price: number | null;
   area: number;
   location: string;
+  mapAddress: string | null;
   image: string | null;
   description: string | null;
   characteristics: SpaceCharacteristic[];
@@ -35,6 +36,7 @@ export async function getSpaceListingBySlug(slug: string): Promise<SpaceListing 
   }
 }
 
-export function mapsSearchUrl(location: string): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+export function mapsSearchUrl(listing: Pick<SpaceListing, "location" | "mapAddress">): string {
+  const query = listing.mapAddress?.trim() || listing.location;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }

@@ -53,7 +53,7 @@ export default async function SpaceDetailPage({ params }: { params: Promise<{ sl
             {listing.area} m²
           </span>
           <a
-            href={mapsSearchUrl(listing.location)}
+            href={mapsSearchUrl(listing)}
             target="_blank"
             rel="noopener noreferrer"
             title="Deschide locația în Google Maps"

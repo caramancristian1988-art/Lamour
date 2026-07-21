@@ -27,6 +27,7 @@ function readFields(formData: FormData) {
   const priceRaw = String(formData.get("price") ?? "").trim();
   const areaRaw = String(formData.get("area") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
+  const mapAddress = String(formData.get("mapAddress") ?? "").trim() || null;
   const image = String(formData.get("image") ?? "").trim() || null;
   const description = String(formData.get("description") ?? "").trim() || null;
   const characteristics = parseCharacteristics(formData);
@@ -39,6 +40,7 @@ function readFields(formData: FormData) {
     price: priceRaw ? Number(priceRaw) : null,
     area: Number(areaRaw) || 0,
     location,
+    mapAddress,
     image,
     description,
     characteristics,

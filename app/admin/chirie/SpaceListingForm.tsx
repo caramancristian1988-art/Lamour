@@ -27,6 +27,7 @@ interface SpaceDefaults {
   price?: number | null;
   area?: number;
   location?: string;
+  mapAddress?: string | null;
   image?: string | null;
   description?: string | null;
   characteristics?: { label: string; value: string }[];
@@ -83,8 +84,18 @@ export default function SpaceListingForm({
 
       <div className="grid grid-cols-2 gap-4">
         <AdminInput label="Suprafață (m²)" name="area" type="number" required defaultValue={defaults?.area} placeholder="62" />
-        <AdminInput label="Locație" name="location" required defaultValue={defaults?.location} placeholder="Chișinău, sector Centru" />
+        <AdminInput label="Zonă (afișată pe card)" name="location" required defaultValue={defaults?.location} placeholder="Chișinău, sector Centru" />
       </div>
+
+      <AdminInput
+        label="Adresă exactă sau coordonate GPS (opțional)"
+        name="mapAddress"
+        defaultValue={defaults?.mapAddress ?? ""}
+        placeholder="Str. Ismail 45, Chișinău sau 47.0105, 28.8638"
+      />
+      <p className="text-xs text-muted-foreground -mt-2">
+        Folosită pentru linkul spre Google Maps. Dacă o lași goală, se folosește zona de mai sus.
+      </p>
 
       <ImageUploadField name="image" label="Imagine" defaultValue={defaults?.image} />
 

@@ -80,6 +80,7 @@ model SpaceListing {
   price       Float?
   area        Float
   location    String
+  mapAddress  String?
   image       String?
   description String?
   characteristics ListingCharacteristic[]
