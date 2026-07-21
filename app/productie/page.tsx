@@ -5,10 +5,19 @@ import DivisionHero from "@/app/components/division/DivisionHero";
 import DivisionGallery from "@/app/components/division/DivisionGallery";
 import DivisionCta from "@/app/components/division/DivisionCta";
 import ContactForm from "@/app/components/ContactForm";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
+
+const TITLE = `Producție | ${SITE_NAME}`;
+const DESCRIPTION = `Fabrica, echipamentele și liniile de producție ${SITE_NAME}.`;
 
 export const metadata: Metadata = {
-  title: `Producție | ${SITE_NAME}`,
-  description: `Fabrica, echipamentele, liniile de producție și certificările ${SITE_NAME}.`,
+  title: { absolute: TITLE },
+  description: DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/productie") },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: absoluteUrl("/productie") },
+  twitter: { title: TITLE, description: DESCRIPTION },
 };
 
 const galleryPhotos = [
@@ -28,6 +37,7 @@ const certifications = [
 export default function ProductiePage() {
   return (
     <main className="bg-background">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Producție", path: "/productie" }])} />
       <DivisionHero
         breadcrumbLabel="Producție"
         eyebrow="Fabrica noastră"

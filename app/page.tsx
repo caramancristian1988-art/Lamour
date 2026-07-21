@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { fallbackCategories, fallbackOfferProducts } from "@/lib/fallbackData";
 import Hero from "@/app/components/Hero";
@@ -6,8 +7,30 @@ import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
 import ReviewsSection from "@/app/components/ReviewsSection";
 import AboutTeaser from "@/app/components/AboutTeaser";
+import JsonLd from "@/app/components/JsonLd";
+import { homepageGraph } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
+
+const HOME_TITLE = "LuminTehnica | Produse fabricate în Moldova";
+const HOME_DESCRIPTION =
+  "Produse din hârtie și de uz casnic fabricate în Moldova, mobilă realizată la comandă în fabrica proprie și spații disponibile spre închiriere.";
+
+export const metadata: Metadata = {
+  title: { absolute: HOME_TITLE },
+  description: HOME_DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/") },
+  openGraph: {
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    url: absoluteUrl("/"),
+  },
+  twitter: {
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+  },
+};
 
 async function getData() {
   try {
@@ -81,6 +104,13 @@ export default async function HomePage() {
 
   return (
     <main>
+      <JsonLd
+        data={homepageGraph({
+          logoUrl: "/logo.png",
+          description: HOME_DESCRIPTION,
+        })}
+      />
+      <h1 className="sr-only">Produse și soluții realizate în Moldova</h1>
       <Hero banners={banners} />
       <TrustBar />
       <CategoryGrid categories={categories} />

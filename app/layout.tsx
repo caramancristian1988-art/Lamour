@@ -19,25 +19,68 @@ import { AuthModalProvider } from "./components/AuthModalProvider";
 import AuthModal from "./components/AuthModal";
 import { FloatingUIProvider } from "./components/FloatingUIState";
 import { getSectionFlags, getHeaderCategories, getSocialLinks, getContactInfo } from "@/lib/siteSettings";
-import { SITE_NAME, SITE_TAGLINE } from "@/lib/constants";
+import {
+  SITE_NAME,
+  SITE_URL,
+  DEFAULT_LOCALE,
+  DEFAULT_OG_IMAGE,
+  DEFAULT_DESCRIPTION,
+  GOOGLE_SITE_VERIFICATION,
+  BING_SITE_VERIFICATION,
+  absoluteUrl,
+} from "@/lib/seo";
+
+const DEFAULT_TITLE = "LuminTehnica | Produse fabricate în Moldova";
 
 export const metadata: Metadata = {
-  title: `${SITE_NAME} — Produse din hârtie și igienă`,
-  description: SITE_TAGLINE,
-  keywords: "hartie igienica, servetele, prosoape de hartie, servetele umede, produse de uz casnic, Moldova",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: DEFAULT_TITLE,
+    template: "%s | LuminTehnica",
+  },
+  description: DEFAULT_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: "hartie igienica, servetele, prosoape de hartie, servetele umede, produse de uz casnic, mobila la comanda, spatii de inchiriat, Moldova",
+  alternates: {
+    canonical: absoluteUrl("/"),
+  },
   openGraph: {
-    title: `${SITE_NAME} — Produse din hârtie și igienă`,
-    description: SITE_TAGLINE,
-    locale: "ro_MD",
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    locale: DEFAULT_LOCALE,
     type: "website",
-    url: "https://example.com",
+    url: absoluteUrl("/"),
     siteName: SITE_NAME,
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Produse din hârtie și igienă`,
-    description: SITE_TAGLINE,
+    title: DEFAULT_TITLE,
+    description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE.url],
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: "/icon.png",
+  },
+  manifest: "/manifest.webmanifest",
+  ...(GOOGLE_SITE_VERIFICATION || BING_SITE_VERIFICATION
+    ? {
+        verification: {
+          ...(GOOGLE_SITE_VERIFICATION ? { google: GOOGLE_SITE_VERIFICATION } : {}),
+          ...(BING_SITE_VERIFICATION ? { other: { "msvalidate.01": BING_SITE_VERIFICATION } } : {}),
+        },
+      }
+    : {}),
 };
 
 export default async function RootLayout({

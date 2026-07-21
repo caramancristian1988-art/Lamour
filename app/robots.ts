@@ -1,14 +1,21 @@
 import type { MetadataRoute } from "next";
-
-const BASE_URL = process.env.SITE_URL || "https://example.com";
+import { absoluteUrl } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin", "/api", "/cont", "/cos", "/finalizare-comanda"],
+      disallow: [
+        "/admin",
+        "/api",
+        "/login",
+        "/cont",
+        "/cos",
+        "/favorite",
+        "/finalizare-comanda",
+      ],
     },
-    sitemap: `${BASE_URL}/sitemap.xml`,
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

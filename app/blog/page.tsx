@@ -7,13 +7,28 @@ import { getSectionFlags } from "@/lib/siteSettings";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/app/components/ui/badge";
 import { SITE_NAME, SITE_SHORT_NAME } from "@/lib/constants";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList, collectionPage } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
 
+const BLOG_TITLE = `Blog | ${SITE_NAME}`;
+const BLOG_DESCRIPTION = `Articole, ghiduri și noutăți din activitatea ${SITE_NAME}.`;
+
 export const metadata: Metadata = {
-  title: "Blog | Asociația Nevăzătorilor din Moldova",
-  description:
-    "Articole, ghiduri și noutăți din activitatea și comunitatea asociației.",
+  title: { absolute: BLOG_TITLE },
+  description: BLOG_DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/blog") },
+  openGraph: {
+    title: BLOG_TITLE,
+    description: BLOG_DESCRIPTION,
+    url: absoluteUrl("/blog"),
+  },
+  twitter: {
+    title: BLOG_TITLE,
+    description: BLOG_DESCRIPTION,
+  },
 };
 
 const FALLBACK_ARTICLE = {
@@ -65,6 +80,15 @@ export default async function BlogPage() {
 
   return (
     <main className="bg-background">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Blog", path: "/blog" }])} />
+      <JsonLd
+        data={collectionPage({
+          name: BLOG_TITLE,
+          description: BLOG_DESCRIPTION,
+          url: "/blog",
+          items: articles.map((a) => ({ name: a.title, url: `/blog/${a.slug}`, image: a.image })),
+        })}
+      />
 
         {/* ── HEADER SECTION ── */}
 
@@ -87,7 +111,7 @@ export default async function BlogPage() {
             </nav>
             <h1 className="text-2xl font-extrabold text-primary mb-2">Blog</h1>
             <p className="text-foreground/80 text-xs max-w-[180px] leading-relaxed">
-              Articole, ghiduri și noutăți din activitatea și comunitatea asociației.
+              Articole, ghiduri și noutăți din activitatea {SITE_NAME}.
             </p>
           </div>
         </section>
@@ -115,7 +139,7 @@ export default async function BlogPage() {
             </nav>
             <h1 className="text-4xl lg:text-5xl font-extrabold text-primary mb-4">Blog</h1>
             <p className="text-foreground/80 text-sm lg:text-[17px] max-w-xs lg:max-w-sm leading-relaxed">
-              Articole, ghiduri și noutăți din activitatea și comunitatea asociației.
+              Articole, ghiduri și noutăți din activitatea {SITE_NAME}.
             </p>
           </div>
         </section>

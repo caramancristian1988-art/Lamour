@@ -4,7 +4,8 @@ import AdminSidebar from "./AdminSidebar";
 import { SITE_SHORT_NAME } from "@/lib/constants";
 
 export const metadata = {
-  title: `Admin | ${SITE_SHORT_NAME}`,
+  title: { absolute: `Admin | ${SITE_SHORT_NAME}` },
+  robots: { index: false, follow: false },
 };
 
 async function getNotifications() {

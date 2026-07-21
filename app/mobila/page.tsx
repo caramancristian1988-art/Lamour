@@ -8,10 +8,27 @@ import DivisionCta from "@/app/components/division/DivisionCta";
 import ContactForm from "@/app/components/ContactForm";
 import FurnitureCard from "@/app/components/FurnitureCard";
 import { getFurnitureListings, getFurnitureTypes } from "@/lib/mobilaData";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList, serviceSchema } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
+
+const MOBILA_TITLE = "Mobilă la comandă în Moldova | LuminTehnica";
+const MOBILA_DESCRIPTION =
+  "Mobilier personalizat pentru casă, birou și spații comerciale, proiectat și produs în fabrica proprie LuminTehnica.";
 
 export const metadata: Metadata = {
-  title: `Mobilă | ${SITE_NAME}`,
-  description: `Fabricație de mobilier la comandă — birou și casă — de la ${SITE_NAME}.`,
+  title: { absolute: MOBILA_TITLE },
+  description: MOBILA_DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/mobila") },
+  openGraph: {
+    title: MOBILA_TITLE,
+    description: MOBILA_DESCRIPTION,
+    url: absoluteUrl("/mobila"),
+  },
+  twitter: {
+    title: MOBILA_TITLE,
+    description: MOBILA_DESCRIPTION,
+  },
 };
 
 const benefits = [
@@ -33,6 +50,14 @@ export default async function MobilaPage({
 
   return (
     <main className="bg-background">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Mobilă", path: "/mobila" }])} />
+      <JsonLd
+        data={serviceSchema({
+          name: "Mobilier la comandă",
+          description: MOBILA_DESCRIPTION,
+          url: "/mobila",
+        })}
+      />
       <DivisionHero
         breadcrumbLabel="Mobilă"
         eyebrow="Divizia Mobilă"

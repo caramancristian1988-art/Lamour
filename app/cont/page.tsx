@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LayoutDashboard } from "lucide-react";
 import { getSession } from "@/lib/auth";
@@ -6,6 +7,11 @@ import { logoutAction } from "@/lib/authActions";
 import AccountStats from "../components/AccountStats";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
 import { Button } from "@/app/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Contul meu",
+  robots: { index: false, follow: true },
+};
 
 export default async function ContPage() {
   const user = await getSession();

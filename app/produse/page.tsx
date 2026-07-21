@@ -27,11 +27,27 @@ import {
   applyFilters,
 } from "@/lib/productListing";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
+import JsonLd from "../components/JsonLd";
+import { breadcrumbList, collectionPage } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
+
+const PRODUSE_TITLE = "Produse din hârtie și uz casnic | LuminTehnica";
+const PRODUSE_DESCRIPTION =
+  "Descoperă produsele LuminTehnica: hârtie igienică, șervețele, prosoape de hârtie, șervețele umede, chibrite, detergenți și alte produse de uz casnic.";
 
 export const metadata: Metadata = {
-  title: "Produse | Asociația Nevăzătorilor din Moldova",
-  description:
-    "Descoperă gama completă de produse și accesorii disponibile în magazinul asociației.",
+  title: { absolute: PRODUSE_TITLE },
+  description: PRODUSE_DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/produse") },
+  openGraph: {
+    title: PRODUSE_TITLE,
+    description: PRODUSE_DESCRIPTION,
+    url: absoluteUrl("/produse"),
+  },
+  twitter: {
+    title: PRODUSE_TITLE,
+    description: PRODUSE_DESCRIPTION,
+  },
 };
 
 export const revalidate = 3600;
@@ -211,10 +227,20 @@ export default async function ProdusePage({
 
     return (
       <main className="bg-background">
+        <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Produse", path: "/produse" }])} />
+        <JsonLd
+          data={collectionPage({
+            name: "Mobilă la comandă",
+            description: "Mobilier personalizat produs în fabrica proprie LuminTehnica.",
+            url: "/produse?division=mobila",
+            items: listings.map((l) => ({ name: l.title, url: `/mobila/${l.slug}`, image: l.image })),
+          })}
+        />
         <Breadcrumb />
         <section className="bg-background pt-2 pb-10 sm:py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <DivisionTabs active={division} />
+            <h1 className="sr-only">Mobilă la comandă</h1>
 
             <div className="flex flex-col lg:flex-row gap-8 items-start">
               <DivisionFilterSidebar
@@ -281,10 +307,20 @@ export default async function ProdusePage({
 
     return (
       <main className="bg-background">
+        <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Produse", path: "/produse" }])} />
+        <JsonLd
+          data={collectionPage({
+            name: "Spații disponibile spre închiriere",
+            description: "Apartamente, birouri, spații comerciale și depozite oferite spre închiriere de LuminTehnica.",
+            url: "/produse?division=chirie",
+            items: listings.map((l) => ({ name: l.title, url: `/spatii-comerciale/${l.slug}`, image: l.image })),
+          })}
+        />
         <Breadcrumb />
         <section className="bg-background pt-2 pb-10 sm:py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <DivisionTabs active={division} />
+            <h1 className="sr-only">Spații disponibile spre închiriere</h1>
 
             <div className="flex flex-col lg:flex-row gap-8 items-start">
               <DivisionFilterSidebar
@@ -368,6 +404,15 @@ export default async function ProdusePage({
 
   return (
     <main className="bg-background">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Produse", path: "/produse" }])} />
+      <JsonLd
+        data={collectionPage({
+          name: PRODUSE_TITLE,
+          description: PRODUSE_DESCRIPTION,
+          url: "/produse",
+          items: items.map((p) => ({ name: p.name, url: `/produse/${p.slug}`, image: p.image })),
+        })}
+      />
       <Breadcrumb />
 
       {/* ── PRODUCTS GRID ── */}

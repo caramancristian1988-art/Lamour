@@ -8,15 +8,41 @@ import { Button } from "@/app/components/ui/button";
 import SpaceCard from "@/app/components/SpaceCard";
 import ContactForm from "@/app/components/ContactForm";
 import { SITE_NAME } from "@/lib/constants";
-import { getSpaceListingBySlug, getSpaceListings, mapsSearchUrl } from "@/lib/spatiiComercialeData";
+import { getSpaceListingBySlug, getSpaceListings, mapsSearchUrl, type SpaceListing } from "@/lib/spatiiComercialeData";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList, placeListingSchema } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
+
+function schemaTypeForSpace(listing: Pick<SpaceListing, "type">): "Apartment" | "Office" | "Store" | "Place" {
+  const key = `${listing.type.slug} ${listing.type.name}`.toLowerCase();
+  if (key.includes("apartament")) return "Apartment";
+  if (key.includes("birou")) return "Office";
+  if (key.includes("comercial") || key.includes("magazin")) return "Store";
+  return "Place";
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const listing = await getSpaceListingBySlug(slug);
-  if (!listing) return { title: `Spații comerciale | ${SITE_NAME}` };
+  if (!listing) return { title: { absolute: `Spații comerciale | ${SITE_NAME}` }, robots: { index: false, follow: true } };
+  const title = `${listing.title} | ${SITE_NAME}`;
+  const description = listing.description ?? `Descoperă ${listing.title}, disponibil spre închiriere prin ${SITE_NAME}.`;
+  const canonical = absoluteUrl(`/spatii-comerciale/${slug}`);
   return {
-    title: `${listing.title} | ${SITE_NAME}`,
-    description: listing.description ?? undefined,
+    title: { absolute: title },
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      ...(listing.image ? { images: [{ url: listing.image, width: 800, height: 600, alt: listing.title }] } : {}),
+    },
+    twitter: {
+      title,
+      description,
+      ...(listing.image ? { images: [listing.image] } : {}),
+    },
   };
 }
 
@@ -30,6 +56,26 @@ export default async function SpaceDetailPage({ params }: { params: Promise<{ sl
 
   return (
     <main className="bg-background">
+      <JsonLd
+        data={breadcrumbList([
+          { name: "Acasă", path: "/" },
+          { name: "Spații comerciale", path: "/spatii-comerciale" },
+          { name: listing.title, path: `/spatii-comerciale/${listing.slug}` },
+        ])}
+      />
+      <JsonLd
+        data={placeListingSchema({
+          type: schemaTypeForSpace(listing),
+          name: listing.title,
+          description: listing.description,
+          image: listing.image,
+          url: `/spatii-comerciale/${listing.slug}`,
+          priceLabel: listing.priceLabel,
+          price: listing.price,
+          areaSquareMeters: listing.area,
+          address: listing.location,
+        })}
+      />
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-5 pb-2">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap" aria-label="Fir de ariadnă">

@@ -5,9 +5,11 @@ import { fallbackPopularProducts } from "@/lib/fallbackData";
 import CheckoutPanel from "@/app/components/CheckoutPanel";
 import ProductsSection from "@/app/components/ProductsSection";
 import TrustBar from "@/app/components/TrustBar";
+import { SITE_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "Finalizare comandă | Asociația Nevăzătorilor din Moldova",
+  title: { absolute: `Finalizare comandă | ${SITE_NAME}` },
+  robots: { index: false, follow: true },
 };
 
 async function getPopularProducts() {

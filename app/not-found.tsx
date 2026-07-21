@@ -5,7 +5,8 @@ import { SITE_NAME } from "@/lib/constants";
 import { Button } from "@/app/components/ui/button";
 
 export const metadata: Metadata = {
-  title: `Pagina nu a fost găsită | ${SITE_NAME}`,
+  title: { absolute: `Pagina nu a fost găsită | ${SITE_NAME}` },
+  robots: { index: false, follow: true },
 };
 
 export default function NotFound() {

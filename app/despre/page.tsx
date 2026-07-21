@@ -8,6 +8,9 @@ import { SITE_NAME } from "@/lib/constants";
 import { Button } from "@/app/components/ui/button";
 import { MotifDivider } from "@/app/components/ui/motif";
 import SocialImpact from "@/app/components/SocialImpact";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
 
 const milestones = [
   { year: "2014", text: `Înființarea ${SITE_NAME}, cu prima linie de producție de hârtie igienică.` },
@@ -26,9 +29,23 @@ const values = [
 
 export const revalidate = 3600;
 
+const DESPRE_TITLE = "Impact social și incluziune profesională | LuminTehnica";
+const DESPRE_DESCRIPTION =
+  "LuminTehnica colaborează cu Asociația Nevăzătorilor din Moldova și susține integrarea profesională a persoanelor cu dizabilități vizuale.";
+
 export const metadata: Metadata = {
-  title: `Despre noi | ${SITE_NAME}`,
-  description: `Află povestea ${SITE_NAME}, producător moldovenesc de hârtie igienică și produse de uz casnic, dedicat calității și incluziunii sociale.`,
+  title: { absolute: DESPRE_TITLE },
+  description: DESPRE_DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/despre") },
+  openGraph: {
+    title: DESPRE_TITLE,
+    description: DESPRE_DESCRIPTION,
+    url: absoluteUrl("/despre"),
+  },
+  twitter: {
+    title: DESPRE_TITLE,
+    description: DESPRE_DESCRIPTION,
+  },
 };
 
 export default async function DesprePage() {
@@ -37,6 +54,7 @@ export default async function DesprePage() {
 
   return (
     <main className="bg-background">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Despre noi", path: "/despre" }])} />
       {/* ── HERO SECTION ── */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">

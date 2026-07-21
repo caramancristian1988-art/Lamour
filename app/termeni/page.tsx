@@ -1,15 +1,25 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { SITE_NAME } from "@/lib/constants";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
+
+const TITLE = `Termeni și condiții | ${SITE_NAME}`;
+const DESCRIPTION = `Termenii și condițiile de utilizare a site-ului și de accesare a produselor și serviciilor ${SITE_NAME}.`;
 
 export const metadata: Metadata = {
-  title: `Termeni și condiții | ${SITE_NAME}`,
-  description: `Termenii și condițiile de utilizare a site-ului și de accesare a produselor și serviciilor ${SITE_NAME}.`,
+  title: { absolute: TITLE },
+  description: DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/termeni") },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: absoluteUrl("/termeni") },
+  twitter: { title: TITLE, description: DESCRIPTION },
 };
 
 export default function TermeniPage() {
   return (
     <main className="bg-background min-h-screen">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Termeni și condiții", path: "/termeni" }])} />
       <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
         <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-6">
           <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>

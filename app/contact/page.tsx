@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Phone, MessageCircle, Mail, Clock, HeadphonesIcon } from "lucide-react";
 import { prisma } from "@/lib/prisma";
@@ -9,8 +10,29 @@ import { SITE_NAME } from "@/lib/constants";
 import ProductsSection from "../components/ProductsSection";
 import FaqAccordion, { type FaqItem } from "../components/FaqAccordion";
 import ContactForm from "../components/ContactForm";
+import JsonLd from "../components/JsonLd";
+import { breadcrumbList } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
+
+const CONTACT_TITLE = `Contact | ${SITE_NAME}`;
+const CONTACT_DESCRIPTION = `Ai nevoie de sprijin, consultanță sau informații despre produsele și serviciile ${SITE_NAME}? Scrie-ne și revenim rapid cu un răspuns.`;
+
+export const metadata: Metadata = {
+  title: { absolute: CONTACT_TITLE },
+  description: CONTACT_DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/contact") },
+  openGraph: {
+    title: CONTACT_TITLE,
+    description: CONTACT_DESCRIPTION,
+    url: absoluteUrl("/contact"),
+  },
+  twitter: {
+    title: CONTACT_TITLE,
+    description: CONTACT_DESCRIPTION,
+  },
+};
 
 const FALLBACK_FAQS: FaqItem[] = [
   {
@@ -60,6 +82,7 @@ export default async function ContactPage() {
 
   return (
     <div className="bg-background">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Contact", path: "/contact" }])} />
       {/* ── HERO SECTION — MOBILE ── */}
       <section className="sm:hidden relative bg-background">
         <div className="relative w-full aspect-[3/4] overflow-hidden">

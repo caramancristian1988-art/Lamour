@@ -36,6 +36,9 @@ import FaqAccordion from "../../components/FaqAccordion";
 import ProductOfferBanner from "../../components/ProductOfferBanner";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { getPopupCountdownMinutes } from "@/lib/popupProduct";
+import JsonLd from "../../components/JsonLd";
+import { breadcrumbList, collectionPage, productSchema } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -101,11 +104,17 @@ export async function generateMetadata({
 
   const categoryData = await getCategoryData(slug);
   if (categoryData) {
+    const title = `${categoryData.category.name} | LuminTehnica`;
+    const description =
+      categoryData.category.description ??
+      `Descoperă gama de ${categoryData.category.name.toLowerCase()} LuminTehnica, fabricată în Moldova.`;
+    const canonical = absoluteUrl(`/produse/${slug}`);
     return {
-      title: `${categoryData.category.name} | Asociația Nevăzătorilor din Moldova`,
-      description:
-        categoryData.category.description ??
-        `Descoperă gama de ${categoryData.category.name.toLowerCase()} disponibilă în magazinul asociației.`,
+      title: { absolute: title },
+      description,
+      alternates: { canonical },
+      openGraph: { title, description, url: canonical },
+      twitter: { title, description },
     };
   }
 
@@ -114,26 +123,30 @@ export async function generateMetadata({
     const name = localProductNames[productData.product.slug] ?? productData.product.name;
     const description =
       productData.product.description ??
-      `Cumpără ${name} la cel mai bun preț.`;
+      `Descoperă ${name} din gama LuminTehnica, fabricate în Moldova.`;
     const image = productData.product.image;
+    const title = `${name} | LuminTehnica`;
+    const canonical = absoluteUrl(`/produse/${slug}`);
     return {
-      title: `${name} | Asociația Nevăzătorilor din Moldova`,
+      title: { absolute: title },
       description,
+      alternates: { canonical },
       openGraph: {
-        title: `${name} | Asociația Nevăzătorilor din Moldova`,
+        title,
         description,
+        url: canonical,
         ...(image ? { images: [{ url: image, width: 800, height: 600, alt: name }] } : {}),
       },
       twitter: {
         card: "summary_large_image",
-        title: `${name} | Asociația Nevăzătorilor din Moldova`,
+        title,
         description,
         ...(image ? { images: [image] } : {}),
       },
     };
   }
 
-  return { title: "Pagina nu a fost găsită | Asociația Nevăzătorilor din Moldova" };
+  return { title: "Pagina nu a fost găsită", robots: { index: false, follow: true } };
 }
 
 function QuickSpecRow({ label, value }: { label: string; value: string }) {
@@ -225,6 +238,21 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
 
   return (
     <main className="bg-background">
+      <JsonLd
+        data={breadcrumbList([
+          { name: "Acasă", path: "/" },
+          { name: "Produse", path: "/produse" },
+          { name: category.name, path: `/produse/${category.slug}` },
+        ])}
+      />
+      <JsonLd
+        data={collectionPage({
+          name: category.name,
+          description: category.description ?? undefined,
+          url: `/produse/${category.slug}`,
+          items: items.map((p) => ({ name: p.name, url: `/produse/${p.slug}`, image: p.image })),
+        })}
+      />
 
       {/* MOBILE hero */}
       <section className="sm:hidden relative h-[260px] overflow-hidden">
@@ -402,6 +430,11 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
   const productCode = product.id.slice(-6).toUpperCase();
   const countdownMinutes = discount ? await getPopupCountdownMinutes() : 0;
 
+  const findSpec = (labelMatch: string) =>
+    product.specifications?.find((s) => s.label.toLowerCase().includes(labelMatch))?.value ?? null;
+  const materialSpec = findSpec("material") ?? findSpec("compozi");
+  const countryOfOriginSpec = findSpec("fabrica") ?? findSpec("origine");
+
   const specs = [
     product.packageQuantity ? { label: "Cantitate", value: product.packageQuantity } : null,
     product.brand ? { label: "Brand", value: product.brand } : null,
@@ -434,6 +467,31 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
 
   return (
     <main className="bg-background">
+      <JsonLd
+        data={breadcrumbList([
+          { name: "Acasă", path: "/" },
+          { name: "Produse", path: "/produse" },
+          ...(category ? [{ name: category.name, path: `/produse/${category.slug}` }] : []),
+          { name: displayName, path: `/produse/${product.slug}` },
+        ])}
+      />
+      <JsonLd
+        data={productSchema({
+          name: displayName,
+          description: product.description,
+          image: displayImage,
+          images: product.images,
+          url: `/produse/${product.slug}`,
+          categoryName: category?.name ?? null,
+          price: product.price,
+          availability: product.availability,
+          material: materialSpec,
+          countryOfOrigin: countryOfOriginSpec,
+          ratingValue: product.rating > 0 ? product.rating : null,
+          reviewCount: product.reviewCount > 0 ? product.reviewCount : null,
+          reviews: reviews.slice(0, 10).map((r) => ({ author: r.name, reviewBody: r.text, ratingValue: r.rating })),
+        })}
+      />
 
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-5 pb-2">

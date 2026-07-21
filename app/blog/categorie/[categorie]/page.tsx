@@ -7,6 +7,9 @@ import { getSectionFlags } from "@/lib/siteSettings";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/app/components/ui/badge";
 import { SITE_NAME } from "@/lib/constants";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList, collectionPage } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -35,8 +38,16 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ categorie: string }> }): Promise<Metadata> {
   const { categorie } = await params;
-  const name = categoryNames[categorie] ?? categorie;
-  return { title: `${name} | Blog ${SITE_NAME}` };
+  if (!categoryNames[categorie]) return { robots: { index: false, follow: true } };
+  const name = categoryNames[categorie];
+  const title = `${name} | Blog ${SITE_NAME}`;
+  const canonical = absoluteUrl(`/blog/categorie/${categorie}`);
+  return {
+    title: { absolute: title },
+    alternates: { canonical },
+    openGraph: { title, url: canonical },
+    twitter: { title },
+  };
 }
 
 export default async function CategoriePage({ params }: { params: Promise<{ categorie: string }> }) {
@@ -53,6 +64,20 @@ export default async function CategoriePage({ params }: { params: Promise<{ cate
 
   return (
     <main className="bg-background">
+      <JsonLd
+        data={breadcrumbList([
+          { name: "Acasă", path: "/" },
+          { name: "Blog", path: "/blog" },
+          { name: categoryName, path: `/blog/categorie/${categorie}` },
+        ])}
+      />
+      <JsonLd
+        data={collectionPage({
+          name: `${categoryName} | Blog ${SITE_NAME}`,
+          url: `/blog/categorie/${categorie}`,
+          items: posts.map((p) => ({ name: p.title, url: `/blog/${p.slug}`, image: p.image })),
+        })}
+      />
       {/* Hero */}
       <section className="bg-background border-b border-border py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">

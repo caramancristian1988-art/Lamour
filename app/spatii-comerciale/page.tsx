@@ -1,14 +1,30 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { SITE_NAME } from "@/lib/constants";
 import DivisionHero from "@/app/components/division/DivisionHero";
 import SpaceCard from "@/app/components/SpaceCard";
 import ContactForm from "@/app/components/ContactForm";
 import { getSpaceListings, getSpaceTypes } from "@/lib/spatiiComercialeData";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList, collectionPage } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
+
+const SPATII_TITLE = "Spații de închiriat în Moldova | LuminTehnica";
+const SPATII_DESCRIPTION =
+  "Descoperă apartamentele, birourile, spațiile comerciale și depozitele oferite spre închiriere de LuminTehnica.";
 
 export const metadata: Metadata = {
-  title: `Spații comerciale | ${SITE_NAME}`,
-  description: `Apartamente, spații comerciale, birouri și depozite disponibile spre închiriere, de la ${SITE_NAME}.`,
+  title: { absolute: SPATII_TITLE },
+  description: SPATII_DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/spatii-comerciale") },
+  openGraph: {
+    title: SPATII_TITLE,
+    description: SPATII_DESCRIPTION,
+    url: absoluteUrl("/spatii-comerciale"),
+  },
+  twitter: {
+    title: SPATII_TITLE,
+    description: SPATII_DESCRIPTION,
+  },
 };
 
 export default async function SpatiiComercialePage({
@@ -23,6 +39,15 @@ export default async function SpatiiComercialePage({
 
   return (
     <main className="bg-background">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Spații comerciale", path: "/spatii-comerciale" }])} />
+      <JsonLd
+        data={collectionPage({
+          name: SPATII_TITLE,
+          description: SPATII_DESCRIPTION,
+          url: "/spatii-comerciale",
+          items: listings.map((l) => ({ name: l.title, url: `/spatii-comerciale/${l.slug}`, image: l.image })),
+        })}
+      />
       <DivisionHero
         breadcrumbLabel="Spații comerciale"
         eyebrow="Spații comerciale și industriale"

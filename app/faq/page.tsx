@@ -5,12 +5,28 @@ import { prisma } from "@/lib/prisma";
 import { SITE_NAME } from "@/lib/constants";
 import FaqAccordion, { type FaqItem } from "@/app/components/FaqAccordion";
 import { Button } from "@/app/components/ui/button";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList, faqPageSchema } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
 
+const FAQ_TITLE = `Întrebări frecvente | ${SITE_NAME}`;
+const FAQ_DESCRIPTION = `Răspunsuri la cele mai frecvente întrebări despre produsele și serviciile ${SITE_NAME}.`;
+
 export const metadata: Metadata = {
-  title: `Întrebări frecvente | ${SITE_NAME}`,
-  description: `Răspunsuri la cele mai frecvente întrebări despre serviciile și programele ${SITE_NAME}.`,
+  title: { absolute: FAQ_TITLE },
+  description: FAQ_DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/faq") },
+  openGraph: {
+    title: FAQ_TITLE,
+    description: FAQ_DESCRIPTION,
+    url: absoluteUrl("/faq"),
+  },
+  twitter: {
+    title: FAQ_TITLE,
+    description: FAQ_DESCRIPTION,
+  },
 };
 
 const FALLBACK_FAQS: FaqItem[] = [
@@ -35,6 +51,8 @@ export default async function FaqPage() {
 
   return (
     <main className="bg-background min-h-screen">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Întrebări frecvente", path: "/faq" }])} />
+      <JsonLd data={faqPageSchema(faqs)} />
       <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
         <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-6">
           <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>

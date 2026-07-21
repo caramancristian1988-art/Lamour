@@ -9,14 +9,32 @@ import FurnitureCard from "@/app/components/FurnitureCard";
 import ContactForm from "@/app/components/ContactForm";
 import { SITE_NAME } from "@/lib/constants";
 import { getFurnitureListingBySlug, getFurnitureListings } from "@/lib/mobilaData";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList, serviceSchema } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const listing = await getFurnitureListingBySlug(slug);
-  if (!listing) return { title: `Mobilă | ${SITE_NAME}` };
+  if (!listing) return { title: { absolute: `Mobilă | ${SITE_NAME}` }, robots: { index: false, follow: true } };
+  const title = `${listing.title} | ${SITE_NAME}`;
+  const description = listing.description ?? `Descoperă ${listing.title} din gama de mobilier la comandă ${SITE_NAME}.`;
+  const canonical = absoluteUrl(`/mobila/${slug}`);
   return {
-    title: `${listing.title} | ${SITE_NAME}`,
-    description: listing.description ?? undefined,
+    title: { absolute: title },
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      ...(listing.image ? { images: [{ url: listing.image, width: 800, height: 600, alt: listing.title }] } : {}),
+    },
+    twitter: {
+      title,
+      description,
+      ...(listing.image ? { images: [listing.image] } : {}),
+    },
   };
 }
 
@@ -30,6 +48,20 @@ export default async function FurnitureDetailPage({ params }: { params: Promise<
 
   return (
     <main className="bg-background">
+      <JsonLd
+        data={breadcrumbList([
+          { name: "Acasă", path: "/" },
+          { name: "Mobilă", path: "/mobila" },
+          { name: listing.title, path: `/mobila/${listing.slug}` },
+        ])}
+      />
+      <JsonLd
+        data={serviceSchema({
+          name: listing.title,
+          description: listing.description ?? `Mobilier la comandă produs în fabrica proprie ${SITE_NAME}.`,
+          url: `/mobila/${listing.slug}`,
+        })}
+      />
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-5 pb-2">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap" aria-label="Fir de ariadnă">

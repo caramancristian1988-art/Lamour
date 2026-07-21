@@ -8,6 +8,9 @@ import { getSectionFlags } from "@/lib/siteSettings";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/app/components/ui/badge";
 import { SITE_NAME } from "@/lib/constants";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList, articleSchema } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -24,11 +27,24 @@ const BLOG_CATEGORIES: { label: string; slug: string }[] = [
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const post = await prisma.blogPost.findFirst({ where: { slug, published: true }, select: { title: true, description: true, image: true } });
-  if (!post) return {};
+  if (!post) return { robots: { index: false, follow: true } };
+  const title = `${post.title} | Blog ${SITE_NAME}`;
+  const canonical = absoluteUrl(`/blog/${slug}`);
   return {
-    title: `${post.title} | Blog ${SITE_NAME}`,
+    title: { absolute: title },
     description: post.description,
-    openGraph: post.image ? { images: [{ url: post.image, alt: post.title }] } : undefined,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description: post.description,
+      url: canonical,
+      ...(post.image ? { images: [{ url: post.image, alt: post.title }] } : {}),
+    },
+    twitter: {
+      title,
+      description: post.description,
+      ...(post.image ? { images: [post.image] } : {}),
+    },
   };
 }
 
@@ -70,18 +86,22 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
-            headline: article.title,
-            author: { "@type": "Organization", name: article.author },
-            datePublished: post.createdAt.toISOString(),
-            publisher: { "@type": "Organization", name: SITE_NAME },
-          }),
-        }}
+      <JsonLd
+        data={articleSchema({
+          headline: article.title,
+          description: post.description,
+          image: post.image,
+          datePublished: post.createdAt.toISOString(),
+          url: `/blog/${slug}`,
+          authorName: article.author,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbList([
+          { name: "Acasă", path: "/" },
+          { name: "Blog", path: "/blog" },
+          { name: article.title, path: `/blog/${slug}` },
+        ])}
       />
 
       <main>

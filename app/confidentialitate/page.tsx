@@ -1,15 +1,25 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { SITE_NAME } from "@/lib/constants";
+import JsonLd from "@/app/components/JsonLd";
+import { breadcrumbList } from "@/lib/structuredData";
+import { absoluteUrl } from "@/lib/seo";
+
+const TITLE = `Politica de confidențialitate | ${SITE_NAME}`;
+const DESCRIPTION = `Politica de confidențialitate a ${SITE_NAME}. Află cum colectăm, utilizăm și protejăm datele tale personale.`;
 
 export const metadata: Metadata = {
-  title: `Politica de confidențialitate | ${SITE_NAME}`,
-  description: `Politica de confidențialitate a ${SITE_NAME}. Află cum colectăm, utilizăm și protejăm datele tale personale.`,
+  title: { absolute: TITLE },
+  description: DESCRIPTION,
+  alternates: { canonical: absoluteUrl("/confidentialitate") },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: absoluteUrl("/confidentialitate") },
+  twitter: { title: TITLE, description: DESCRIPTION },
 };
 
 export default function ConfidentialitatePage() {
   return (
     <main className="bg-background min-h-screen">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Politica de confidențialitate", path: "/confidentialitate" }])} />
       <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
         <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-6">
           <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
