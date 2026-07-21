@@ -53,7 +53,7 @@ export default function ProductForm({
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
 
-  const defaultBadges = ["A++", "Nou", "Reducere", "Cel mai vândut"];
+  const defaultBadges = ["Nou", "Reducere", "Cel mai vândut", "Eco"];
   const badgeOptions =
     defaults?.badge && !defaultBadges.includes(defaults.badge)
       ? [...defaultBadges, defaults.badge]

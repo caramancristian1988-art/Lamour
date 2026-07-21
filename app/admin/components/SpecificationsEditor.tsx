@@ -11,17 +11,12 @@ interface Spec {
 }
 
 const DEFAULT_SPEC_TEMPLATE: Spec[] = [
-  { label: "Model", value: "" },
-  { label: "Agent frigorific", value: "" },
+  { label: "Compoziție / Material", value: "" },
+  { label: "Cantitate / Ambalaj", value: "" },
   { label: "Țara de fabricație", value: "" },
   { label: "Garanție", value: "" },
-  { label: "Nivel de zgomot (interior)", value: "" },
-  { label: "Nivel de zgomot (exterior)", value: "" },
-  { label: "Debit de aer", value: "" },
-  { label: "Dimensiuni unitate interioară", value: "" },
-  { label: "Greutate unitate interioară", value: "" },
-  { label: "Dimensiuni unitate exterioară", value: "" },
-  { label: "Greutate unitate exterioară", value: "" },
+  { label: "Dimensiuni", value: "" },
+  { label: "Greutate", value: "" },
 ];
 
 export default function SpecificationsEditor({

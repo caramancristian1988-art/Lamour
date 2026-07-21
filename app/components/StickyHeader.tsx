@@ -2,6 +2,7 @@ import Link from "next/link";
 import { User, ShoppingCart } from "lucide-react";
 import type { SectionFlags, HeaderCategory } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
+import { SITE_SHORT_NAME } from "@/lib/constants";
 import SearchBar from "./SearchBar";
 import MobileMenuButton from "./MobileMenuButton";
 import CartBadge from "./CartBadge";
@@ -59,7 +60,7 @@ export default function StickyHeader({
                     textShadow:
                       "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 3px 3px rgba(17,17,17,0.35)",
                   }}
-                >LuminTehnica</span>
+                >{SITE_SHORT_NAME}</span>
                 <span
                   className="block text-[10px] font-bold tracking-widest uppercase"
                   style={{
@@ -116,7 +117,7 @@ export default function StickyHeader({
                   textShadow:
                     "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 4px 5px rgba(17,17,17,0.35)",
                 }}
-              >LuminTehnica</span>
+              >{SITE_SHORT_NAME}</span>
               <span
                 className="block text-xs font-bold tracking-[0.25em] uppercase mt-1"
                 style={{

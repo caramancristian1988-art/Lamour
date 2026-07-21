@@ -36,12 +36,6 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-const KNOWN_BRANDS = [
-  "Daikin", "Mitsubishi Electric", "Gree", "Midea", "Cooper&Hunter", "Electrolux",
-  "LG", "Samsung", "Haier", "Panasonic", "Fujitsu", "Hitachi", "Carrier", "Trane",
-  "Bosch", "Toshiba", "Ariston", "Hisense", "Whirlpool", "Sharp",
-];
-
 type Division = "uz-casnic" | "mobila" | "chirie";
 
 const DIVISION_TABS: { label: string; value: Division }[] = [
@@ -365,12 +359,7 @@ export default async function ProdusePage({
   const brandOptions = Array.from(new Set(baseProducts.map((p) => p.brand).filter((v): v is string => Boolean(v))))
     .map((value) => ({ value, count: productsForBrandFacet.filter((p) => p.brand === value).length }))
     .filter((opt) => opt.count > 0)
-    .sort((a, b) => {
-      const aKnown = KNOWN_BRANDS.includes(a.value);
-      const bKnown = KNOWN_BRANDS.includes(b.value);
-      if (aKnown !== bKnown) return aKnown ? -1 : 1;
-      return a.value.localeCompare(b.value);
-    });
+    .sort((a, b) => a.value.localeCompare(b.value));
 
   const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
 
