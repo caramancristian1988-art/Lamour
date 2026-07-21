@@ -62,7 +62,7 @@ export default async function ContactPage() {
     <div className="bg-background">
       {/* ── HERO SECTION — MOBILE ── */}
       <section className="sm:hidden relative bg-background">
-        <div className="relative w-full aspect-[3/4]">
+        <div className="relative w-full aspect-[3/4] overflow-hidden">
           <Image
             src="/contact-nevazatori-mobil.png"
             alt="Susținem nevăzătorii — persoană cu baston alb"
@@ -71,6 +71,8 @@ export default async function ContactPage() {
             className="object-cover object-top"
             sizes="100vw"
           />
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background via-background/85 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
           <div className="absolute inset-x-0 top-0 px-5 pt-5 pb-4">
             <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs text-muted-foreground mb-5">
               <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
