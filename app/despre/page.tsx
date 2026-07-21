@@ -40,9 +40,9 @@ export default async function DesprePage() {
       {/* ── HERO SECTION ── */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[300px] lg:min-h-[400px] items-center gap-8 py-8 lg:py-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[300px] lg:min-h-[400px] items-center gap-8 py-4 lg:py-0">
             {/* LEFT */}
-            <div className="relative z-10 py-6 lg:py-10">
+            <div className="relative z-10 py-3 lg:py-10">
               <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-5">
                 <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
                 <span aria-hidden>›</span>
