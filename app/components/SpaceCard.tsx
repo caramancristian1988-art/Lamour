@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Ruler, ArrowRight, ImageOff } from "lucide-react";
+import { MapPin, Ruler, ArrowRight, ExternalLink, ImageOff } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { mapsSearchUrl, type SpaceListing } from "@/lib/spatiiComercialeData";
 
@@ -38,10 +38,12 @@ export default function SpaceCard({ listing }: { listing: SpaceListing }) {
             href={mapsSearchUrl(listing.location)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-accent hover:underline transition-colors"
+            title="Deschide locația în Google Maps"
+            className="flex items-center gap-1 text-accent underline decoration-dotted underline-offset-2 hover:text-brand-red-dark transition-colors"
           >
-            <MapPin className="w-3.5 h-3.5" aria-hidden />
+            <MapPin className="w-3.5 h-3.5 shrink-0" aria-hidden />
             {listing.location}
+            <ExternalLink className="w-3 h-3 shrink-0" aria-hidden />
           </a>
         </div>
         <Link href={href} className="contents">

@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MapPin, Ruler, ArrowRight, MessageCircle, ImageOff } from "lucide-react";
+import { MapPin, Ruler, ArrowRight, ExternalLink, MessageCircle, ImageOff } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { Button } from "@/app/components/ui/button";
 import SpaceCard from "@/app/components/SpaceCard";
@@ -56,10 +56,12 @@ export default async function SpaceDetailPage({ params }: { params: Promise<{ sl
             href={mapsSearchUrl(listing.location)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-accent hover:underline transition-colors"
+            title="Deschide locația în Google Maps"
+            className="flex items-center gap-1.5 text-accent underline decoration-dotted underline-offset-2 hover:text-brand-red-dark transition-colors"
           >
-            <MapPin className="w-4 h-4" aria-hidden />
+            <MapPin className="w-4 h-4 shrink-0" aria-hidden />
             {listing.location}
+            <ExternalLink className="w-3.5 h-3.5 shrink-0" aria-hidden />
           </a>
         </div>
       </section>
