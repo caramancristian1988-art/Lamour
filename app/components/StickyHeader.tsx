@@ -59,7 +59,7 @@ export default function StickyHeader({
                     textShadow:
                       "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 3px 3px rgba(17,17,17,0.35)",
                   }}
-                >LuminaTehnica</span>
+                >LuminTehnica</span>
                 <span
                   className="block text-[10px] font-bold tracking-widest uppercase"
                   style={{
@@ -116,7 +116,7 @@ export default function StickyHeader({
                   textShadow:
                     "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 4px 5px rgba(17,17,17,0.35)",
                 }}
-              >LuminaTehnica</span>
+              >LuminTehnica</span>
               <span
                 className="block text-xs font-bold tracking-[0.25em] uppercase mt-1"
                 style={{
