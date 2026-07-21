@@ -13,6 +13,10 @@ import {
 import ProductCard from "../components/ProductCard";
 import LoadMoreButton from "../components/LoadMoreButton";
 import ProductFilterSidebar from "../components/ProductFilterSidebar";
+import FurnitureCard from "../components/FurnitureCard";
+import SpaceCard from "../components/SpaceCard";
+import { furnitureListings, FURNITURE_TYPE_LABELS, type FurnitureType } from "@/lib/mobilaData";
+import { spaceListings, SPACE_TYPE_LABELS, type SpaceType } from "@/lib/spatiiComercialeData";
 import {
   sortProducts,
   paginate,
@@ -35,6 +39,14 @@ const KNOWN_BRANDS = [
   "Daikin", "Mitsubishi Electric", "Gree", "Midea", "Cooper&Hunter", "Electrolux",
   "LG", "Samsung", "Haier", "Panasonic", "Fujitsu", "Hitachi", "Carrier", "Trane",
   "Bosch", "Toshiba", "Ariston", "Hisense", "Whirlpool", "Sharp",
+];
+
+type Division = "uz-casnic" | "mobila" | "chirie";
+
+const DIVISION_TABS: { label: string; value: Division }[] = [
+  { label: "Produse de uz casnic", value: "uz-casnic" },
+  { label: "Mobilă", value: "mobila" },
+  { label: "Chirie", value: "chirie" },
 ];
 
 interface CategoryRow {
@@ -85,6 +97,44 @@ async function getData(): Promise<{ categories: CategoryRow[]; products: Product
   }
 }
 
+function firstParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function DivisionTabs({ active }: { active: Division }) {
+  return (
+    <div className="flex items-center gap-2 sm:gap-3 flex-wrap mb-6">
+      {DIVISION_TABS.map((tab) => (
+        <Link
+          key={tab.value}
+          href={`/produse?division=${tab.value}`}
+          className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-bold transition-colors ${
+            active === tab.value
+              ? "bg-primary text-white shadow-sm"
+              : "bg-card border-2 border-border text-foreground hover:border-accent hover:text-accent"
+          }`}
+        >
+          {tab.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function Breadcrumb() {
+  return (
+    <section className="bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-1">
+        <nav className="flex items-center gap-1.5 text-xs text-muted-foreground" aria-label="Fir de ariadnă">
+          <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
+          <span aria-hidden>›</span>
+          <span className="text-foreground">Produse</span>
+        </nav>
+      </div>
+    </section>
+  );
+}
+
 export default async function ProdusePage({
   searchParams,
 }: {
@@ -94,6 +144,117 @@ export default async function ProdusePage({
   if (!produseEnabled) notFound();
 
   const query = await searchParams;
+  const divisionParam = firstParam(query.division);
+  const division: Division =
+    divisionParam === "mobila" || divisionParam === "chirie" ? divisionParam : "uz-casnic";
+
+  // ── MOBILĂ ──────────────────────────────────────────────────────────
+  if (division === "mobila") {
+    const tip = firstParam(query.tip);
+    const activeType = tip && tip !== "toate" ? (tip as FurnitureType) : "toate";
+    const listings = activeType === "toate" ? furnitureListings : furnitureListings.filter((l) => l.type === activeType);
+    const typeTabs: { label: string; value: FurnitureType | "toate" }[] = [
+      { label: "Toate", value: "toate" },
+      { label: FURNITURE_TYPE_LABELS.birou, value: "birou" },
+      { label: FURNITURE_TYPE_LABELS.casa, value: "casa" },
+      { label: FURNITURE_TYPE_LABELS.bucatarie, value: "bucatarie" },
+      { label: FURNITURE_TYPE_LABELS.comercial, value: "comercial" },
+    ];
+
+    return (
+      <main className="bg-background">
+        <Breadcrumb />
+        <section className="bg-background pt-2 pb-10 sm:py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <DivisionTabs active={division} />
+
+            <div className="flex items-center gap-2 flex-wrap mb-6">
+              {typeTabs.map((tab) => (
+                <Link
+                  key={tab.value}
+                  href={tab.value === "toate" ? "/produse?division=mobila" : `/produse?division=mobila&tip=${tab.value}`}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                    activeType === tab.value
+                      ? "bg-primary text-white"
+                      : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              ))}
+            </div>
+
+            {listings.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {listings.map((listing) => (
+                  <FurnitureCard key={listing.slug} listing={listing} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                <p className="text-muted-foreground">Momentan nu există lucrări disponibile în această categorie.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  // ── CHIRIE ──────────────────────────────────────────────────────────
+  if (division === "chirie") {
+    const tip = firstParam(query.tip);
+    const activeType = tip && tip !== "toate" ? (tip as SpaceType) : "toate";
+    const listings = activeType === "toate" ? spaceListings : spaceListings.filter((l) => l.type === activeType);
+    const typeTabs: { label: string; value: SpaceType | "toate" }[] = [
+      { label: "Toate", value: "toate" },
+      { label: SPACE_TYPE_LABELS.apartament, value: "apartament" },
+      { label: SPACE_TYPE_LABELS["spatiu-comercial"], value: "spatiu-comercial" },
+      { label: SPACE_TYPE_LABELS.birou, value: "birou" },
+      { label: SPACE_TYPE_LABELS.depozit, value: "depozit" },
+    ];
+
+    return (
+      <main className="bg-background">
+        <Breadcrumb />
+        <section className="bg-background pt-2 pb-10 sm:py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <DivisionTabs active={division} />
+
+            <div className="flex items-center gap-2 flex-wrap mb-6">
+              {typeTabs.map((tab) => (
+                <Link
+                  key={tab.value}
+                  href={tab.value === "toate" ? "/produse?division=chirie" : `/produse?division=chirie&tip=${tab.value}`}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                    activeType === tab.value
+                      ? "bg-primary text-white"
+                      : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              ))}
+            </div>
+
+            {listings.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {listings.map((listing) => (
+                  <SpaceCard key={listing.slug} listing={listing} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-card border border-border rounded-2xl">
+                <p className="text-muted-foreground">Momentan nu există spații disponibile în această categorie.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  // ── PRODUSE DE UZ CASNIC (implicit) ──────────────────────────────────
   const sort = parseSort(query.sort);
   const page = parsePage(query.page);
   const filters = parseFilters(query);
@@ -146,22 +307,13 @@ export default async function ProdusePage({
 
   return (
     <main className="bg-background">
-
-      {/* Breadcrumb */}
-      <section className="bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-1">
-          <nav className="flex items-center gap-1.5 text-xs text-muted-foreground" aria-label="Fir de ariadnă">
-            <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
-            <span aria-hidden>›</span>
-            <span className="text-foreground">Produse</span>
-          </nav>
-        </div>
-      </section>
+      <Breadcrumb />
 
       {/* ── PRODUCTS GRID ── */}
       <section className="bg-background pt-2 pb-10 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse</h1>
+          <DivisionTabs active={division} />
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse de uz casnic</h1>
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
               sort={sort}
