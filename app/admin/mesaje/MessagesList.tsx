@@ -172,20 +172,24 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                           {m.products.map((p) => (
                             <div
                               key={p.id}
-                              className="inline-flex items-center gap-2 text-[10px] font-bold text-accent bg-accent/10 px-2 py-1 rounded-full w-fit"
+                              className="inline-flex items-center gap-2 text-[10px] font-bold text-accent bg-accent/10 px-2 py-1 rounded-full max-w-full flex-wrap"
                             >
                               <Link
                                 href={`/produse/${p.slug}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 hover:underline transition-colors"
+                                className="inline-flex items-center gap-2 hover:underline transition-colors min-w-0"
                               >
-                                <span className="uppercase">Vezi produsul</span>
+                                <span className="uppercase shrink-0">Vezi produsul</span>
                                 <span className="opacity-70 truncate max-w-[160px]">{p.name}</span>
                                 <ExternalLink className="w-3 h-3 shrink-0" aria-hidden />
                               </Link>
-                              <span className="opacity-30">|</span>
-                              <CopyableId id={p.id} className="inline-flex items-center gap-1 font-mono opacity-70 normal-case hover:opacity-100 transition-opacity" />
+                              <span className="opacity-30 shrink-0">|</span>
+                              <CopyableId
+                                id={p.id}
+                                label={p.id.slice(-6)}
+                                className="inline-flex items-center gap-1 font-mono opacity-70 normal-case hover:opacity-100 transition-opacity shrink-0"
+                              />
                             </div>
                           ))}
                         </div>
