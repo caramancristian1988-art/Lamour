@@ -100,11 +100,13 @@ export default function BannerImagePositionField({
       {url && (
         <>
           <p className="text-xs text-muted-foreground mt-2">
-            Trage marcajul roșu ca să poziționezi butonul exact unde vrei pe banner.
+            Trage marcajul roșu ca să poziționezi butonul exact unde vrei pe banner. Previzualizarea are aceleași
+            proporții ca bannerul de pe site la lățimea curentă a ferestrei — redimensionează fereastra ca să
+            verifici poziția și pe mobil/tabletă.
           </p>
           <div
             ref={previewRef}
-            className="relative w-full aspect-[21/9] rounded-xl overflow-hidden border-2 border-border bg-muted cursor-crosshair select-none touch-none"
+            className="relative w-full aspect-video sm:aspect-[2/1] lg:aspect-[21/9] rounded-xl overflow-hidden border-2 border-border bg-muted cursor-crosshair select-none touch-none"
             onMouseDown={(e) => startDrag(e.clientX, e.clientY)}
             onTouchStart={(e) => {
               const t = e.touches[0];
