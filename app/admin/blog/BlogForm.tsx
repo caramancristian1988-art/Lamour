@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { AdminInput, AdminTextarea, AdminSelect } from "../components/AdminField";
 import ImageUploadField from "../components/ImageUploadField";
+import RichTextEditor from "../components/RichTextEditor";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Label } from "@/app/components/ui/label";
@@ -59,7 +60,7 @@ export default function BlogForm({
       </AdminSelect>
 
       <ImageUploadField name="image" label="Imagine principală" defaultValue={defaults?.image} />
-      <AdminTextarea label="Conținut" name="content" defaultValue={defaults?.content ?? ""} placeholder="Conținutul complet al articolului..." rows={10} />
+      <RichTextEditor label="Conținut" name="content" defaultValue={defaults?.content ?? ""} placeholder="Conținutul complet al articolului..." />
 
       <div className="flex items-center gap-2.5">
         <Checkbox id="field-published" name="published" defaultChecked={defaults?.published ?? true} />
