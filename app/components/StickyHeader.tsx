@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { User, ShoppingCart } from "lucide-react";
+import { User, ShoppingCart, Heart } from "lucide-react";
 import type { SectionFlags, HeaderCategory } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_SHORT_NAME } from "@/lib/constants";
 import SearchBar from "./SearchBar";
 import MobileMenuButton from "./MobileMenuButton";
 import CartBadge from "./CartBadge";
+import FavoritesBadge from "./FavoritesBadge";
 import AllCategoriesMenu from "./AllCategoriesMenu";
 import AccountMenuLink from "./AccountMenuLink";
 import AccessibilityToggle from "./AccessibilityToggle";
@@ -78,6 +79,14 @@ export default function StickyHeader({
                 <User className="w-6 h-6 shrink-0" aria-hidden />
               </AccountMenuLink>
               <Link
+                href="/favorite"
+                className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
+                aria-label="Produsele mele favorite"
+              >
+                <Heart className="w-6 h-6" aria-hidden />
+                <FavoritesBadge className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-accent rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
+              </Link>
+              <Link
                 href="/cos"
                 className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
                 aria-label="Coș"
@@ -141,6 +150,14 @@ export default function StickyHeader({
               <User className="w-5 h-5 shrink-0" aria-hidden />
               <span className="font-semibold">Contul meu</span>
             </AccountMenuLink>
+            <Link
+              href="/favorite"
+              className="flex items-center gap-1.5 px-2 h-11 rounded-xl text-sm text-foreground hover:bg-muted hover:text-accent transition-colors relative whitespace-nowrap"
+            >
+              <Heart className="w-5 h-5 shrink-0" aria-hidden />
+              <span className="font-semibold">Favorite</span>
+              <FavoritesBadge className="absolute -top-1 left-5 min-w-[18px] h-[18px] px-1 bg-accent rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
+            </Link>
             <Link
               href="/cos"
               className="flex items-center gap-1.5 px-2 h-11 rounded-xl text-sm text-foreground hover:bg-muted hover:text-accent transition-colors relative whitespace-nowrap"
