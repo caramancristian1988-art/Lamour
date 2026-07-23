@@ -32,6 +32,8 @@ function readProductFields(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const price = Number(formData.get("price") ?? 0);
   const oldPriceRaw = String(formData.get("oldPrice") ?? "").trim();
+  const bulkMinQtyRaw = String(formData.get("bulkMinQty") ?? "").trim();
+  const bulkPriceRaw = String(formData.get("bulkPrice") ?? "").trim();
   const image = String(formData.get("image") ?? "").trim() || null;
   const images = parseImageLines(formData);
   const packageQuantity = String(formData.get("packageQuantity") ?? "").trim() || null;
@@ -48,6 +50,8 @@ function readProductFields(formData: FormData) {
     description: description || null,
     price,
     oldPrice: oldPriceRaw ? Number(oldPriceRaw) : null,
+    bulkMinQty: bulkMinQtyRaw ? Number(bulkMinQtyRaw) : null,
+    bulkPrice: bulkPriceRaw ? Number(bulkPriceRaw) : null,
     image,
     images,
     packageQuantity,
@@ -68,6 +72,9 @@ export async function createProductAction(_prevState: ProductFormState, formData
   if (!data.slug) return { error: "Completează slug-ul." };
   if (!data.price || data.price <= 0) return { error: "Introdu un preț valid." };
   if (!data.categoryId) return { error: "Selectează o categorie." };
+  if ((data.bulkMinQty && !data.bulkPrice) || (!data.bulkMinQty && data.bulkPrice)) {
+    return { error: "Completează atât cantitatea minimă, cât și prețul per bucată la cantitate mare (sau lasă-le pe amândouă goale)." };
+  }
 
   const existing = await prisma.product.findUnique({ where: { slug: data.slug } });
   if (existing) return { error: "Există deja un produs cu acest slug." };
@@ -91,6 +98,9 @@ export async function updateProductAction(_prevState: ProductFormState, formData
   if (!data.slug) return { error: "Completează slug-ul." };
   if (!data.price || data.price <= 0) return { error: "Introdu un preț valid." };
   if (!data.categoryId) return { error: "Selectează o categorie." };
+  if ((data.bulkMinQty && !data.bulkPrice) || (!data.bulkMinQty && data.bulkPrice)) {
+    return { error: "Completează atât cantitatea minimă, cât și prețul per bucată la cantitate mare (sau lasă-le pe amândouă goale)." };
+  }
 
   const existing = await prisma.product.findUnique({ where: { slug: data.slug } });
   if (existing && existing.id !== id) return { error: "Există deja un produs cu acest slug." };

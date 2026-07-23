@@ -29,6 +29,10 @@ model Product {
   description String?
   price       Float
   oldPrice    Float?
+  // Preț pe bucată la cantitate mare (ex: "de la 6 role, 58 lei/bucată") — doar informativ,
+  // nu se aplică automat în coș. Ambele trebuie completate ca să apară pe pagina produsului.
+  bulkMinQty  Int?
+  bulkPrice   Float?
   image       String?
   images      String[] @default([])
   packageQuantity String?

@@ -95,6 +95,8 @@ function toProduct(seed: ProductSeed) {
     description: `${seed.name} — produs LuminTehnica Cu Dragoste, fabricat în Moldova din 100% celuloză.`,
     price: seed.price,
     oldPrice: seed.oldPrice,
+    bulkMinQty: null as number | null,
+    bulkPrice: null as number | null,
     image: `https://placehold.co/400x400/ffffff/652F37?text=${encodeURIComponent(seed.name.split(",")[0])}`,
     packageQuantity: null as string | null,
     rating: 4.7,

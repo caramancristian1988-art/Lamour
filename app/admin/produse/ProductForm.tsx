@@ -18,6 +18,18 @@ interface CategoryOption {
   name: string;
 }
 
+const PRODUCT_SPEC_TEMPLATE = [
+  { label: "Numărul de role în set", value: "" },
+  { label: "Numărul de straturi", value: "" },
+  { label: "Lungimea", value: "" },
+  { label: "Numărul de foi", value: "" },
+  { label: "Lățimea foii", value: "" },
+  { label: "Înălțimea foii", value: "" },
+  { label: "Greutatea", value: "" },
+  { label: "Densitatea (g/m²)", value: "" },
+  { label: "Dimensiunile setului", value: "" },
+];
+
 interface ProductDefaults {
   id?: string;
   name?: string;
@@ -25,6 +37,8 @@ interface ProductDefaults {
   description?: string | null;
   price?: number;
   oldPrice?: number | null;
+  bulkMinQty?: number | null;
+  bulkPrice?: number | null;
   image?: string | null;
   images?: string[];
   packageQuantity?: string | null;
@@ -121,6 +135,27 @@ export default function ProductForm({
         <AdminInput label="Preț vechi (opțional)" name="oldPrice" type="number" defaultValue={defaults?.oldPrice ?? ""} placeholder="14999" />
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <AdminInput
+          label="Cantitate minimă pentru preț redus (opțional)"
+          name="bulkMinQty"
+          type="number"
+          defaultValue={defaults?.bulkMinQty ?? ""}
+          placeholder="ex: 6"
+        />
+        <AdminInput
+          label="Preț per bucată la cantitate mare (opțional)"
+          name="bulkPrice"
+          type="number"
+          defaultValue={defaults?.bulkPrice ?? ""}
+          placeholder="ex: 58"
+        />
+      </div>
+      <p className="text-xs text-muted-foreground -mt-2">
+        Dacă le completezi pe amândouă, pe pagina produsului apare &quot;de la {"{cantitate}"} buc. preț {"{preț}"} lei&quot;.
+        Doar informativ — nu se aplică automat la adăugarea în coș.
+      </p>
+
       <AdminInput
         label="Cantitate / Ambalaj (opțional)"
         name="packageQuantity"
@@ -131,7 +166,7 @@ export default function ProductForm({
       <ImageUploadField name="image" label="Imagine principală" defaultValue={defaults?.image} />
       <MultiImageUploadField name="images" label="Galerie imagini (opțional)" defaultValue={defaults?.images} />
 
-      <SpecificationsEditor defaultValue={defaults?.specifications} />
+      <SpecificationsEditor defaultValue={defaults?.specifications} template={PRODUCT_SPEC_TEMPLATE} />
 
       <ManagedSelect
         name="badge"

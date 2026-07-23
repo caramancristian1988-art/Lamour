@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowRight, MessageCircle, ShoppingCart, Truck, PackageCheck, ShieldCheck } from "lucide-react";
+import { ArrowRight, MessageCircle, ShoppingCart, Truck, PackageCheck, ShieldCheck, ChevronDown } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
@@ -147,16 +147,6 @@ export async function generateMetadata({
   }
 
   return { title: "Pagina nu a fost găsită", robots: { index: false, follow: true } };
-}
-
-function QuickSpecRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline gap-2 text-sm">
-      <span className="text-muted-foreground shrink-0">{label}</span>
-      <span className="flex-1 border-b border-dotted border-border translate-y-[-3px]" />
-      <span className="font-bold text-primary text-right shrink-0">{value}</span>
-    </div>
-  );
 }
 
 export default async function ProduseSlugPage({
@@ -379,6 +369,8 @@ interface ProductViewProps {
     description: string | null;
     price: number;
     oldPrice: number | null;
+    bulkMinQty?: number | null;
+    bulkPrice?: number | null;
     image: string | null;
     images?: string[];
     packageQuantity?: string | null;
@@ -440,24 +432,11 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
     product.brand ? { label: "Brand", value: product.brand } : null,
     category ? { label: "Categorie", value: category.name } : null,
     { label: "Disponibilitate", value: product.availability },
-    product.rating > 0 ? { label: "Rating", value: `${product.rating.toFixed(1)} (${product.reviewCount} recenzii)` } : null,
   ].filter(Boolean) as { label: string; value: string }[];
+  const allSpecs = [...specs, ...(product.specifications ?? [])];
 
   const inStock = product.availability !== "Stoc epuizat";
-  const highlightLabels = ["Cantitate"];
-  const highlightSpecs = specs.filter((s) => highlightLabels.includes(s.label));
-  // The quick panel leads with the handful of specs that matter for a fast
-  // scan, then tops up from the admin-entered specifications (if any) so
-  // every product shows at least MIN_TOP_SPECS rows when the data exists.
-  // Everything still shows in full further down in "Caracteristici".
-  const MIN_TOP_SPECS = 5;
-  const topPanelLabels = ["Cantitate", "Brand"];
-  const essentialTopSpecs = specs.filter((s) => topPanelLabels.includes(s.label));
-  const extraTopSpecsNeeded = Math.max(0, MIN_TOP_SPECS - essentialTopSpecs.length);
-  const topPanelSpecs = [
-    ...essentialTopSpecs,
-    ...(product.specifications ?? []).slice(0, extraTopSpecsNeeded),
-  ];
+  const hasBulkPrice = product.bulkMinQty != null && product.bulkPrice != null;
   const installmentsEnabled = ratesEnabled && product.installmentsEnabled !== false;
   const galleryImages = product.images && product.images.length > 0
     ? product.images
@@ -510,51 +489,7 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
         </nav>
       </div>
 
-      {/* Title row */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-6">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-primary leading-tight mb-2">
-              {displayName}
-            </h1>
-            {highlightSpecs.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap">
-                {highlightSpecs.map((spec) => (
-                  <span
-                    key={spec.label}
-                    className="inline-flex items-center bg-muted border border-border rounded-full px-3 py-1.5 text-xs font-bold text-primary"
-                  >
-                    {spec.value}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-3 flex-wrap shrink-0">
-            <div className="flex items-center gap-2">
-              <StarRating rating={product.rating} size={20} />
-              <span className="text-sm text-muted-foreground">
-                {product.rating.toFixed(1)} ({product.reviewCount} recenzii)
-              </span>
-            </div>
-            <span className="text-xs text-muted-foreground">Cod produs: {productCode}</span>
-            <FavoriteButton
-              product={{
-                slug: product.slug,
-                name: displayName,
-                price: product.price,
-                oldPrice: product.oldPrice,
-                image: displayImage,
-                rating: product.rating,
-                reviewCount: product.reviewCount,
-                badge: displayBadge,
-              }}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Top section */}
+      {/* Top section: photo, then name → cod → preț → reducere → acțiuni, în ordinea asta pentru citire liniară (NVDA/mobil) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
@@ -563,28 +498,34 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
             <ProductGallery images={galleryImages} alt={displayName} badge={displayBadge} />
           </div>
 
-          {/* Right column: quick specs → price box → delivery info, stacked */}
-          <div className="flex flex-col gap-6">
+          {/* Info column: denumire → cod → preț/reducere → acțiuni → livrare → caracteristici (ascunse) */}
+          <div className="flex flex-col gap-5">
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-extrabold uppercase tracking-wide text-primary">Caracteristici</p>
-                <span className={`text-xs font-bold flex items-center gap-1.5 ${inStock ? "text-success" : "text-muted-foreground"}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-success" : "bg-muted-foreground"}`} aria-hidden />
-                  {product.availability}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2.5">
-                {topPanelSpecs.map((spec, i) => (
-                  <QuickSpecRow key={`${spec.label}-${i}`} label={spec.label} value={spec.value} />
-                ))}
+              <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-primary leading-tight mb-2">
+                {displayName}
+              </h1>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-sm text-muted-foreground">Cod produs: {productCode}</span>
+                <div className="flex items-center gap-2">
+                  <StarRating rating={product.rating} size={18} />
+                  <span className="text-sm text-muted-foreground">
+                    {product.rating.toFixed(1)} ({product.reviewCount} recenzii)
+                  </span>
+                </div>
+                <FavoriteButton
+                  product={{
+                    slug: product.slug,
+                    name: displayName,
+                    price: product.price,
+                    oldPrice: product.oldPrice,
+                    image: displayImage,
+                    rating: product.rating,
+                    reviewCount: product.reviewCount,
+                    badge: displayBadge,
+                  }}
+                />
               </div>
             </div>
-
-            {product.description && (
-              <p className="text-foreground/80 text-[15px] leading-relaxed">
-                {product.description}
-              </p>
-            )}
 
             {discount && countdownMinutes > 0 && (
               <ProductOfferBanner discount={discount} countdownMinutes={countdownMinutes} />
@@ -592,22 +533,32 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
 
             <div className="border border-border rounded-2xl p-5 bg-card">
               <div className="mb-1">
-                {product.oldPrice && discount && (
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <span className="text-sm text-muted-foreground line-through">
-                      {product.oldPrice.toLocaleString("ro-MD")} MDL
-                    </span>
-                    <Badge variant="accent" className="normal-case px-2.5 py-1">
-                      -{discountAmount?.toLocaleString("ro-MD")} MDL
-                    </Badge>
-                    <Badge variant="secondary" className="normal-case px-2.5 py-1">
-                      -{discount}%
-                    </Badge>
-                  </div>
-                )}
                 <span className="text-2xl font-extrabold text-foreground">
                   {product.price.toLocaleString("ro-MD")} MDL
                 </span>
+
+                {product.oldPrice && discount && (
+                  <div className="mt-2">
+                    <p className="text-xs font-extrabold uppercase tracking-wide text-accent mb-1.5">Reducere</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm text-muted-foreground line-through">
+                        {product.oldPrice.toLocaleString("ro-MD")} MDL
+                      </span>
+                      <Badge variant="accent" className="normal-case px-2.5 py-1">
+                        -{discountAmount?.toLocaleString("ro-MD")} MDL
+                      </Badge>
+                      <Badge variant="secondary" className="normal-case px-2.5 py-1">
+                        -{discount}%
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+
+                {hasBulkPrice && (
+                  <p className="text-sm font-bold text-primary mt-2">
+                    de la {product.bulkMinQty} buc. preț {product.bulkPrice!.toLocaleString("ro-MD")} MDL/bucată
+                  </p>
+                )}
               </div>
 
               {installmentsEnabled && (
@@ -681,45 +632,38 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
                 <p className="text-[11px] text-muted-foreground leading-snug">Garanție 2 ani</p>
               </div>
             </div>
+
+            {product.description && (
+              <p className="text-foreground/80 text-[15px] leading-relaxed">
+                {product.description}
+              </p>
+            )}
+
+            {allSpecs.length > 0 && (
+              <details className="group border border-border rounded-2xl bg-card overflow-hidden">
+                <summary className="cursor-pointer list-none flex items-center justify-between gap-3 px-5 py-4 font-bold text-primary select-none">
+                  <span className="flex items-center gap-2">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${inStock ? "bg-success" : "bg-muted-foreground"}`} aria-hidden />
+                    Vezi caracteristici
+                  </span>
+                  <ChevronDown className="w-4 h-4 shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden />
+                </summary>
+                <div className="border-t border-border">
+                  {allSpecs.map((spec, i) => (
+                    <div
+                      key={`${spec.label}-${i}`}
+                      className={`flex items-center justify-between px-5 py-3 ${i % 2 === 1 ? "bg-muted/40" : ""}`}
+                    >
+                      <span className="text-sm text-muted-foreground">{spec.label}</span>
+                      <span className="text-sm font-bold text-primary text-right">{spec.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
           </div>
         </div>
       </section>
-
-      {/* Full specs */}
-      {(specs.length > 0 || (product.specifications && product.specifications.length > 0)) && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pb-12">
-          <h2 className="text-2xl font-extrabold text-primary mb-6">Caracteristici</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="border border-border rounded-2xl overflow-hidden bg-card">
-              <div className="bg-muted px-5 py-3 text-sm font-extrabold text-primary">Informații generale</div>
-              {specs.map((spec, i) => (
-                <div
-                  key={`${spec.label}-${i}`}
-                  className={`flex items-center justify-between px-5 py-3 border-t border-border ${i % 2 === 1 ? "bg-muted/40" : ""}`}
-                >
-                  <span className="text-sm text-muted-foreground">{spec.label}</span>
-                  <span className="text-sm font-bold text-primary text-right">{spec.value}</span>
-                </div>
-              ))}
-            </div>
-
-            {product.specifications && product.specifications.length > 0 && (
-              <div className="border border-border rounded-2xl overflow-hidden bg-card">
-                <div className="bg-muted px-5 py-3 text-sm font-extrabold text-primary">Specificații suplimentare</div>
-                {product.specifications.map((spec, i) => (
-                  <div
-                    key={`${spec.label}-${i}`}
-                    className={`flex items-center justify-between px-5 py-3 border-t border-border ${i % 2 === 1 ? "bg-muted/40" : ""}`}
-                  >
-                    <span className="text-sm text-muted-foreground">{spec.label}</span>
-                    <span className="text-sm font-bold text-primary text-right">{spec.value}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
 
       {/* Reviews */}
       <section className="bg-muted border-y border-border py-12">
