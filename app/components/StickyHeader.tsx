@@ -159,11 +159,11 @@ export default function StickyHeader({
             </Link>
             <Link
               href="/cos"
-              className="flex items-center gap-1.5 px-2 h-11 rounded-xl text-sm text-foreground hover:bg-muted hover:text-accent transition-colors relative whitespace-nowrap"
+              aria-label="Coș"
+              className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
             >
               <ShoppingCart className="w-5 h-5 shrink-0" aria-hidden />
-              <span className="font-semibold">Coșul meu</span>
-              <CartBadge className="absolute -top-1 left-5 min-w-[18px] h-[18px] px-1 bg-accent rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
+              <CartBadge className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-accent rounded-full text-white text-[10px] font-bold flex items-center justify-center" />
             </Link>
           </div>
         </div>
