@@ -71,7 +71,7 @@ export default function StickyHeader({
                     textShadow:
                       "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 2px 2px rgba(17,17,17,0.35)",
                   }}
-                >Cu Dragoste</span>
+                >Lamour</span>
               </span>
             </Link>
             <div className="flex items-center gap-1">
@@ -136,7 +136,7 @@ export default function StickyHeader({
                   textShadow:
                     "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 2px 3px rgba(17,17,17,0.35)",
                 }}
-              >Cu Dragoste</span>
+              >Lamour</span>
             </span>
           </Link>
 
