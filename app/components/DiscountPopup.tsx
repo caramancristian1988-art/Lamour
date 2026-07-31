@@ -238,11 +238,12 @@ export default function DiscountPopup() {
         )}
 
         <button
+          type="button"
           onClick={close}
           aria-label="Închide oferta"
-          className="absolute top-6 right-3 z-20 w-9 h-9 rounded-full bg-card shadow-lg border border-border text-muted-foreground hover:text-accent flex items-center justify-center transition-colors"
+          className="absolute top-5 right-3 z-20 w-11 h-11 rounded-full bg-card shadow-lg border border-border text-muted-foreground hover:text-accent hover:border-accent flex items-center justify-center transition-colors"
         >
-          <X className="w-4 h-4" aria-hidden />
+          <X className="w-5 h-5" aria-hidden />
         </button>
 
         <Link
