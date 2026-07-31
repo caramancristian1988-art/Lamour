@@ -18,6 +18,11 @@ model Category {
   slug        String    @unique
   description String?
   image       String?
+  // Subcategorie opțională (ex: "Prosoape de bucătărie" -> "în 2 straturi", "în 3 straturi"),
+  // afișată ca filtre pe pagina categoriei părinte.
+  parentId    String?    @db.ObjectId
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    Category[] @relation("CategoryHierarchy")
   products    Product[]
   createdAt   DateTime  @default(now())
 }

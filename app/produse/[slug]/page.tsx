@@ -49,17 +49,22 @@ const allFallbackProducts = [
   ...fallbackDiscountProducts,
 ].map((p) => ({ ...p, images: [] as string[], brand: null as string | null }));
 
-const getCategoryData = cache(async (slug: string) => {
+const getCategoryData = cache(async (slug: string, activeChildSlug?: string) => {
   try {
     const category = await prisma.category.findUnique({ where: { slug } });
     if (!category) return null;
-    const products = await prisma.product.findMany({ where: { categoryId: category.id }, orderBy: { createdAt: "desc" } });
-    return { category, products };
+    const children = await prisma.category.findMany({ where: { parentId: category.id }, orderBy: { createdAt: "asc" } });
+
+    const activeChild = activeChildSlug ? children.find((c) => c.slug === activeChildSlug) : undefined;
+    const categoryIds = activeChild ? [activeChild.id] : [category.id, ...children.map((c) => c.id)];
+
+    const products = await prisma.product.findMany({ where: { categoryId: { in: categoryIds } }, orderBy: { createdAt: "desc" } });
+    return { category, products, children, activeChild: activeChild ?? null };
   } catch {
     const category = fallbackCategories.find((c) => c.slug === slug);
     if (!category) return null;
     const products = allFallbackProducts.filter((p) => p.categoryId === category.id);
-    return { category, products };
+    return { category, products, children: [] as { id: string; name: string; slug: string }[], activeChild: null };
   }
 });
 
@@ -162,7 +167,8 @@ export default async function ProduseSlugPage({
   const { slug } = await params;
   const query = await searchParams;
 
-  const categoryData = await getCategoryData(slug);
+  const subcat = typeof query.subcat === "string" ? query.subcat : undefined;
+  const categoryData = await getCategoryData(slug, subcat);
   if (categoryData) {
     return (
       <CategoryView
@@ -188,6 +194,8 @@ export default async function ProduseSlugPage({
 
 interface CategoryViewProps {
   category: { id: string; name: string; slug: string; description: string | null };
+  children: Array<{ id: string; name: string; slug: string }>;
+  activeChild: { id: string; name: string; slug: string } | null;
   products: Array<{
     id: string;
     name: string;
@@ -209,7 +217,7 @@ interface CategoryViewProps {
   installmentMonths: number;
 }
 
-function CategoryView({ category, products: baseProducts, sort, page, filters, ratesEnabled, installmentMonths }: CategoryViewProps) {
+function CategoryView({ category, children, activeChild, products: baseProducts, sort, page, filters, ratesEnabled, installmentMonths }: CategoryViewProps) {
   const products = applyFilters(baseProducts, filters);
 
   const priceBounds = baseProducts.reduce(
@@ -300,6 +308,33 @@ function CategoryView({ category, products: baseProducts, sort, page, filters, r
       {/* PRODUCTS GRID */}
       <section className="bg-background py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          {children.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap mb-6" role="group" aria-label="Filtrează după subcategorie">
+              <Link
+                href={`/produse/${category.slug}`}
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                  !activeChild
+                    ? "bg-primary text-white"
+                    : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
+                }`}
+              >
+                Toate
+              </Link>
+              {children.map((child) => (
+                <Link
+                  key={child.id}
+                  href={`/produse/${category.slug}?subcat=${child.slug}`}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                    activeChild?.slug === child.slug
+                      ? "bg-primary text-white"
+                      : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
+                  }`}
+                >
+                  {child.name}
+                </Link>
+              ))}
+            </div>
+          )}
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
               sort={sort}

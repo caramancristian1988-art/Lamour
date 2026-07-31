@@ -45,6 +45,10 @@ export async function deleteCategoryInlineAction(id: string): Promise<{ success?
   if (productCount > 0) {
     return { error: "Categoria este folosită de produse existente și nu poate fi ștearsă." };
   }
+  const childrenCount = await prisma.category.count({ where: { parentId: id } });
+  if (childrenCount > 0) {
+    return { error: "Categoria are subcategorii și nu poate fi ștearsă. Șterge sau mută mai întâi subcategoriile." };
+  }
 
   const cat = await prisma.category.findUnique({ where: { id }, select: { slug: true } });
   await prisma.category.delete({ where: { id } });
@@ -62,10 +66,11 @@ export async function createCategoryAction(formData: FormData) {
   const slug = String(formData.get("slug") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const image = String(formData.get("image") ?? "").trim() || null;
+  const parentId = String(formData.get("parentId") ?? "").trim() || null;
 
   if (!name || !slug) return;
 
-  await prisma.category.create({ data: { name, slug, description, image } });
+  await prisma.category.create({ data: { name, slug, description, image, parentId } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
   revalidatePath(`/produse/${slug}`);
@@ -80,11 +85,13 @@ export async function updateCategoryAction(formData: FormData) {
   const slug = String(formData.get("slug") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const image = String(formData.get("image") ?? "").trim() || null;
+  const parentId = String(formData.get("parentId") ?? "").trim() || null;
 
   if (!id || !name || !slug) return;
+  if (parentId === id) return; // can't be its own parent
 
   const existing = await prisma.category.findUnique({ where: { id }, select: { slug: true } });
-  await prisma.category.update({ where: { id }, data: { name, slug, description, image } });
+  await prisma.category.update({ where: { id }, data: { name, slug, description, image, parentId } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
   revalidatePath(`/produse/${slug}`);
@@ -100,6 +107,8 @@ export async function deleteCategoryAction(formData: FormData) {
 
   const productCount = await prisma.product.count({ where: { categoryId: id } });
   if (productCount > 0) return;
+  const childrenCount = await prisma.category.count({ where: { parentId: id } });
+  if (childrenCount > 0) return;
 
   const cat = await prisma.category.findUnique({ where: { id }, select: { slug: true } });
   await prisma.category.delete({ where: { id } });
