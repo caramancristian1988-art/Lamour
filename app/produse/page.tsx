@@ -172,6 +172,20 @@ function DivisionTabs({ active }: { active: Division }) {
   );
 }
 
+function buildCategoryHref(
+  query: { [key: string]: string | string[] | undefined },
+  slug: string
+): string {
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (key === "cat" || key === "page") return;
+    if (Array.isArray(value)) value.forEach((v) => params.append(key, v));
+    else if (value !== undefined) params.set(key, value);
+  });
+  params.set("cat", slug);
+  return `/produse?${params.toString()}`;
+}
+
 function Breadcrumb() {
   return (
     <section className="bg-background">
@@ -366,9 +380,34 @@ export default async function ProdusePage({
 
   const categoryById = new Map(categories.map((c) => [c.id, c.slug]));
   const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
+
+  // When exactly one category is selected, treat it as either a parent or a
+  // child in the (one-level) category hierarchy so we can show "în 2/3/4
+  // straturi"-style filter buttons and merge parent + children products by
+  // default, matching the behavior of a category's own /produse/[slug] page.
+  const singleCategorySlug = filters.categorySlugs.length === 1 ? filters.categorySlugs[0] : null;
+  const selectedCategory = singleCategorySlug
+    ? categories.find((c) => c.slug === singleCategorySlug)
+    : undefined;
+  const parentCategory = selectedCategory
+    ? selectedCategory.parentId
+      ? categories.find((c) => c.id === selectedCategory.parentId)
+      : selectedCategory
+    : undefined;
+  const siblingCategories = parentCategory
+    ? categories.filter((c) => c.parentId === parentCategory.id)
+    : [];
+  const showSubcategoryFilters = Boolean(parentCategory) && siblingCategories.length > 0;
+  const isParentActive = showSubcategoryFilters && selectedCategory!.id === parentCategory!.id;
+
+  const effectiveFilters =
+    showSubcategoryFilters && isParentActive
+      ? { ...filters, categorySlugs: [parentCategory!.slug, ...siblingCategories.map((c) => c.slug)] }
+      : filters;
+
   const products = applyFilters(
     baseProducts,
-    filters,
+    effectiveFilters,
     (p) => categoryById.get(p.categoryId) ?? "",
     (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.id.slice(-6)}`
   );
@@ -391,7 +430,7 @@ export default async function ProdusePage({
   // except the brand filter itself, so picking one brand doesn't hide the rest.
   const productsForBrandFacet = applyFilters(
     baseProducts,
-    { ...filters, brands: [] },
+    { ...effectiveFilters, brands: [] },
     (p) => categoryById.get(p.categoryId) ?? "",
     (p) => categoryNameById.get(p.categoryId) ?? ""
   );
@@ -423,6 +462,39 @@ export default async function ProdusePage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <DivisionTabs active={division} />
           <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse de uz casnic</h1>
+
+          {showSubcategoryFilters && (
+            <div
+              className="flex items-center gap-2 flex-wrap mb-6"
+              role="group"
+              aria-label="Filtrează după subcategorie"
+            >
+              <Link
+                href={buildCategoryHref(query, parentCategory!.slug)}
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                  isParentActive
+                    ? "bg-primary text-white"
+                    : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
+                }`}
+              >
+                Toate
+              </Link>
+              {siblingCategories.map((sibling) => (
+                <Link
+                  key={sibling.id}
+                  href={buildCategoryHref(query, sibling.slug)}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
+                    selectedCategory!.id === sibling.id
+                      ? "bg-primary text-white"
+                      : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
+                  }`}
+                >
+                  {sibling.name}
+                </Link>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
               sort={sort}
