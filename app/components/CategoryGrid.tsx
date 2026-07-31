@@ -52,10 +52,7 @@ export default function CategoryGrid({ categories }: Props) {
           </Button>
         </div>
 
-        <div
-          className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-[repeat(var(--cat-count),minmax(0,1fr))] gap-3 sm:gap-4"
-          style={{ "--cat-count": categories.length } as React.CSSProperties}
-        >
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           {categories.map((cat) => {
             const Icon = categoryIcons[cat.slug];
             return (

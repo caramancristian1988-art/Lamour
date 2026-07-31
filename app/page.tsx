@@ -38,6 +38,7 @@ async function getData() {
       await Promise.all([
         prisma.category.findMany({
           orderBy: { createdAt: "asc" },
+          take: 12,
           include: {
             products: {
               select: { image: true, images: true },
