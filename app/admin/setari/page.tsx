@@ -129,6 +129,62 @@ export default async function AdminSetariPage({
         </div>
 
         <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">Culori popup oferte</p>
+          <p className="text-xs text-muted-foreground mb-3">
+            Culorile de mai jos se aplică <strong>doar</strong> pe popup-ul de oferte speciale (butoanele
+            &quot;Vezi produsul&quot;/&quot;Adaugă în coș&quot; și banner-ul cu reducerea) — restul site-ului nu este afectat.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+              <Label htmlFor="field-popupColorsEnabled" className="cursor-pointer font-normal">
+                <span className="block text-sm font-bold text-primary">Culori personalizate pentru popup</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">
+                  Dezactivează ca popup-ul să revină la culorile implicite ale site-ului.
+                </span>
+              </Label>
+              <Switch
+                id="field-popupColorsEnabled"
+                name="popupColorsEnabled"
+                defaultChecked={Boolean(settings?.popupButtonColor || settings?.popupBannerColor)}
+                className="shrink-0"
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+              <Label htmlFor="field-popupButtonColor" className="cursor-pointer font-normal">
+                <span className="block text-sm font-bold text-primary">Culoare butoane</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">
+                  Fundalul butoanelor &quot;Vezi produsul&quot; și &quot;Adaugă în coș&quot; din popup.
+                </span>
+              </Label>
+              <input
+                id="field-popupButtonColor"
+                type="color"
+                name="popupButtonColor"
+                defaultValue={settings?.popupButtonColor ?? "#652f37"}
+                className="w-12 h-10 border-2 border-input rounded-lg p-1 bg-card shrink-0 cursor-pointer"
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+              <Label htmlFor="field-popupBannerColor" className="cursor-pointer font-normal">
+                <span className="block text-sm font-bold text-primary">Culoare banner</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">
+                  Eticheta cu reducerea (ex: &quot;-20%&quot;) și prețul evidențiat din popup.
+                </span>
+              </Label>
+              <input
+                id="field-popupBannerColor"
+                type="color"
+                name="popupBannerColor"
+                defaultValue={settings?.popupBannerColor ?? "#c0392b"}
+                className="w-12 h-10 border-2 border-input rounded-lg p-1 bg-card shrink-0 cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div>
           <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">Rețele sociale</p>
           <p className="text-xs text-muted-foreground mb-3">Linkurile către care duc iconițele din footer. Lasă gol ca să ascunzi o iconiță.</p>
           <div className="flex flex-col gap-3">

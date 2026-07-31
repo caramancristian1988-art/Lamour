@@ -18,7 +18,7 @@ import { AuthProvider } from "./components/AuthProvider";
 import { AuthModalProvider } from "./components/AuthModalProvider";
 import AuthModal from "./components/AuthModal";
 import { FloatingUIProvider } from "./components/FloatingUIState";
-import { getSectionFlags, getHeaderCategories, getSocialLinks, getContactInfo } from "@/lib/siteSettings";
+import { getSectionFlags, getHeaderCategories, getSocialLinks, getContactInfo, getPopupColors } from "@/lib/siteSettings";
 import {
   SITE_NAME,
   SITE_URL,
@@ -88,11 +88,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [sectionFlags, headerCategories, socialLinks, contactInfo] = await Promise.all([
+  const [sectionFlags, headerCategories, socialLinks, contactInfo, popupColors] = await Promise.all([
     getSectionFlags(),
     getHeaderCategories(),
     getSocialLinks(),
     getContactInfo(),
+    getPopupColors(),
   ]);
 
   return (
@@ -111,7 +112,7 @@ export default async function RootLayout({
                   <SiteFooter {...socialLinks} {...contactInfo} />
                   <FloatingUIProvider>
                     <SiteFloatingContact {...contactInfo} />
-                    <SiteDiscountPopup />
+                    <SiteDiscountPopup {...popupColors} />
                   </FloatingUIProvider>
                   <AuthModal />
                 </CartProvider>

@@ -52,7 +52,12 @@ function writeStored(state: StoredState) {
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(state));
 }
 
-export default function DiscountPopup() {
+interface DiscountPopupProps {
+  buttonColor?: string | null;
+  bannerColor?: string | null;
+}
+
+export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopupProps = {}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -184,7 +189,8 @@ export default function DiscountPopup() {
       <button
         onClick={reopen}
         aria-label="Revino la ofertă"
-        className={`fixed right-5 z-[70] flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white font-bold pl-2.5 pr-4 py-2.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 animate-pop ${
+        style={bannerColor ? { backgroundColor: bannerColor } : undefined}
+        className={`fixed right-5 z-[70] flex items-center gap-2 ${bannerColor ? "" : "bg-accent hover:bg-brand-red-dark"} text-white font-bold pl-2.5 pr-4 py-2.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 animate-pop ${
           contactMenuOpen ? "bottom-[290px]" : "bottom-24"
         }`}
       >
@@ -224,12 +230,18 @@ export default function DiscountPopup() {
             {products.map((_, i) => (
               <div key={i} className="h-1.5 flex-1 rounded-full bg-white/40 overflow-hidden">
                 {i < activeIndex ? (
-                  <div className="h-full w-full bg-accent rounded-full" />
+                  <div
+                    className={`h-full w-full rounded-full ${bannerColor ? "" : "bg-accent"}`}
+                    style={bannerColor ? { backgroundColor: bannerColor } : undefined}
+                  />
                 ) : i === activeIndex ? (
                   <div
                     key={activeIndex}
-                    className="h-full bg-accent rounded-full"
-                    style={{ animation: `popup-story ${STORY_INTERVAL_MS}ms linear forwards` }}
+                    className={`h-full rounded-full ${bannerColor ? "" : "bg-accent"}`}
+                    style={{
+                      animation: `popup-story ${STORY_INTERVAL_MS}ms linear forwards`,
+                      ...(bannerColor ? { backgroundColor: bannerColor } : {}),
+                    }}
                   />
                 ) : null}
               </div>
@@ -302,7 +314,10 @@ export default function DiscountPopup() {
           )}
 
           {discount && (
-            <div className="absolute top-9 left-3 bg-accent text-white text-sm font-extrabold px-3 py-1.5 rounded-full shadow-lg pointer-events-none">
+            <div
+              style={bannerColor ? { backgroundColor: bannerColor } : undefined}
+              className={`absolute top-9 left-3 ${bannerColor ? "" : "bg-accent"} text-white text-sm font-extrabold px-3 py-1.5 rounded-full shadow-lg pointer-events-none`}
+            >
               -{discount}%
             </div>
           )}
@@ -333,7 +348,12 @@ export default function DiscountPopup() {
             )}
 
             <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <span className="text-2xl font-extrabold text-accent">{product.price.toLocaleString("ro-MD")} MDL</span>
+              <span
+                style={bannerColor ? { color: bannerColor } : undefined}
+                className={`text-2xl font-extrabold ${bannerColor ? "" : "text-accent"}`}
+              >
+                {product.price.toLocaleString("ro-MD")} MDL
+              </span>
               {product.oldPrice && (
                 <span className="text-sm text-muted-foreground line-through">
                   {product.oldPrice.toLocaleString("ro-MD")} MDL
@@ -364,7 +384,8 @@ export default function DiscountPopup() {
                 setOpen(false);
                 setMinimized(true);
               }}
-              className="flex-1 text-center bg-primary hover:bg-brand-maroon-dark text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide"
+              style={buttonColor ? { backgroundColor: buttonColor } : undefined}
+              className={`flex-1 text-center ${buttonColor ? "" : "bg-primary hover:bg-brand-maroon-dark"} text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide`}
             >
               Vezi produsul
             </Link>
@@ -375,7 +396,8 @@ export default function DiscountPopup() {
                 setOpen(false);
                 setMinimized(true);
               }}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-accent hover:bg-brand-red-dark text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide"
+              style={buttonColor ? { backgroundColor: buttonColor } : undefined}
+              className={`flex-1 flex items-center justify-center gap-1.5 ${buttonColor ? "" : "bg-accent hover:bg-brand-red-dark"} text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide`}
             >
               <ShoppingCart className="w-4 h-4 shrink-0" aria-hidden />
               Adaugă în coș

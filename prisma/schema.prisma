@@ -217,6 +217,10 @@ model Settings {
   ratesEnabled    Boolean @default(true)
   installmentMonths Int @default(4)
   popupCountdownMinutes Int @default(10)
+  // Hex colors for the discount popup only (DiscountPopup.tsx) — null means
+  // keep the site's default theme colors. Never applied anywhere else.
+  popupButtonColor String?
+  popupBannerColor String?
 }
 
 model User {

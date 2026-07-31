@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
-import type { SectionFlags, HeaderCategory, SocialLinks, ContactInfo } from "@/lib/siteSettings";
+import type { SectionFlags, HeaderCategory, SocialLinks, ContactInfo, PopupColors } from "@/lib/siteSettings";
 import TopBar from "./TopBar";
 import ScrollAwareHeader from "./ScrollAwareHeader";
 import OrnamentalBorder from "./OrnamentalBorder";
@@ -42,6 +42,6 @@ export function SiteFloatingContact(props: Partial<ContactInfo>) {
   return <FloatingContact phone={props.phone} phoneTel={props.phoneTel} phoneDigits={props.phoneDigits} />;
 }
 
-export function SiteDiscountPopup() {
-  return <DiscountPopup />;
+export function SiteDiscountPopup(props: Partial<PopupColors>) {
+  return <DiscountPopup buttonColor={props.buttonColor ?? null} bannerColor={props.bannerColor ?? null} />;
 }

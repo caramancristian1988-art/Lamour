@@ -128,3 +128,19 @@ const getHeaderCategoriesRaw = unstable_cache(
 );
 
 export const getHeaderCategories = cache(getHeaderCategoriesRaw);
+
+export interface PopupColors {
+  buttonColor: string | null;
+  bannerColor: string | null;
+}
+
+const POPUP_COLORS_DEFAULTS: PopupColors = { buttonColor: null, bannerColor: null };
+
+export const getPopupColors = cache(async (): Promise<PopupColors> => {
+  const settings = await getSettings();
+  if (!settings) return POPUP_COLORS_DEFAULTS;
+  return {
+    buttonColor: settings.popupButtonColor ?? null,
+    bannerColor: settings.popupBannerColor ?? null,
+  };
+});
