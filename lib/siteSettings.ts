@@ -115,6 +115,7 @@ const getHeaderCategoriesRaw = unstable_cache(
   async (): Promise<HeaderCategory[]> => {
     try {
       return await prisma.category.findMany({
+        where: { parentId: null },
         orderBy: { createdAt: "asc" },
         select: { id: true, slug: true, name: true, image: true },
       });

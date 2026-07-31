@@ -66,6 +66,7 @@ interface CategoryRow {
   slug: string;
   description: string | null;
   image: string | null;
+  parentId: string | null;
   createdAt: Date;
 }
 
@@ -372,12 +373,14 @@ export default async function ProdusePage({
     (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.id.slice(-6)}`
   );
 
-  const categoryOptions = categories.map((cat) => ({
-    id: cat.id,
-    slug: cat.slug,
-    name: cat.name,
-    count: baseProducts.filter((p) => p.categoryId === cat.id).length,
-  }));
+  const categoryOptions = categories
+    .filter((cat) => !cat.parentId)
+    .map((cat) => ({
+      id: cat.id,
+      slug: cat.slug,
+      name: cat.name,
+      count: baseProducts.filter((p) => p.categoryId === cat.id).length,
+    }));
 
   const priceBounds = baseProducts.reduce(
     (acc, p) => ({ min: Math.min(acc.min, p.price), max: Math.max(acc.max, p.price) }),

@@ -10,6 +10,7 @@ export const fallbackCategories = [
     slug: "hartie-igienica",
     description: "Hârtie igienică moale, din 100% celuloză.",
     image: "https://placehold.co/400x300/D8B2B1/652F37?text=Hartie+igienica",
+    parentId: null,
     createdAt: new Date(),
   },
   {
@@ -18,6 +19,7 @@ export const fallbackCategories = [
     slug: "servetele",
     description: "Șervețele de masă și de bucătărie.",
     image: "https://placehold.co/400x300/D8B2B1/652F37?text=Servetele",
+    parentId: null,
     createdAt: new Date(),
   },
   {
@@ -26,6 +28,7 @@ export const fallbackCategories = [
     slug: "prosoape-de-hartie",
     description: "Prosoape de hârtie absorbante, pentru bucătărie.",
     image: "https://placehold.co/400x300/D8B2B1/652F37?text=Prosoape",
+    parentId: null,
     createdAt: new Date(),
   },
   {
@@ -34,6 +37,7 @@ export const fallbackCategories = [
     slug: "servetele-umede",
     description: "Șervețele umede pentru igiena zilnică.",
     image: "https://placehold.co/400x300/D8B2B1/652F37?text=Servetele+umede",
+    parentId: null,
     createdAt: new Date(),
   },
   {
@@ -42,6 +46,7 @@ export const fallbackCategories = [
     slug: "chibrite",
     description: "Chibrite de uz casnic.",
     image: "https://placehold.co/400x300/D8B2B1/652F37?text=Chibrite",
+    parentId: null,
     createdAt: new Date(),
   },
   {
@@ -50,6 +55,7 @@ export const fallbackCategories = [
     slug: "alte-produse",
     description: "Alte produse de uz casnic.",
     image: "https://placehold.co/400x300/D8B2B1/652F37?text=Alte+produse",
+    parentId: null,
     createdAt: new Date(),
   },
   {
@@ -58,6 +64,7 @@ export const fallbackCategories = [
     slug: "produse-de-uz-casnic",
     description: "Produse de curățenie și uz casnic pentru fiecare zi.",
     image: "https://placehold.co/400x300/D8B2B1/652F37?text=Uz+casnic",
+    parentId: null,
     createdAt: new Date(),
   },
 ];

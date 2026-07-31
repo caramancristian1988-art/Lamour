@@ -37,6 +37,7 @@ async function getData() {
     const [rawCategories, offerProducts, newProducts, recommendedProducts, reviews, banners] =
       await Promise.all([
         prisma.category.findMany({
+          where: { parentId: null },
           orderBy: { createdAt: "asc" },
           take: 12,
           include: {
