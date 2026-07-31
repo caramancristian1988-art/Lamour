@@ -62,16 +62,9 @@ export default function StickyHeader({
                       "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 3px 3px rgba(17,17,17,0.35)",
                   }}
                 >{SITE_SHORT_NAME}</span>
-                <span
-                  className="block text-[10px] font-bold tracking-widest uppercase"
-                  style={{
-                    color: "#FEFEFE",
-                    WebkitTextStroke: "0.8px #111111",
-                    paintOrder: "stroke fill",
-                    textShadow:
-                      "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 2px 2px rgba(17,17,17,0.35)",
-                  }}
-                >Lamour</span>
+                <span className="block text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent -mt-0.5">
+                  Lamour
+                </span>
               </span>
             </Link>
             <div className="flex items-center gap-1">
@@ -127,16 +120,9 @@ export default function StickyHeader({
                     "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 4px 5px rgba(17,17,17,0.35)",
                 }}
               >{SITE_SHORT_NAME}</span>
-              <span
-                className="block text-xs font-bold tracking-[0.25em] uppercase mt-1"
-                style={{
-                  color: "#FEFEFE",
-                  WebkitTextStroke: "1px #111111",
-                  paintOrder: "stroke fill",
-                  textShadow:
-                    "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 2px 3px rgba(17,17,17,0.35)",
-                }}
-              >Lamour</span>
+              <span className="block text-3xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent -mt-1">
+                Lamour
+              </span>
             </span>
           </Link>
 
