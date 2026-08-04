@@ -16,10 +16,11 @@ import { createAdminReviewAction, deleteAdminReviewAction } from "@/lib/adminRev
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [product, categories, brandRows] = await Promise.all([
+  const [product, categories, brandRows, variantOptions] = await Promise.all([
     prisma.product.findUnique({ where: { id } }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.product.findMany({ where: { brand: { not: null } }, distinct: ["brand"], select: { brand: true }, orderBy: { brand: "asc" } }),
+    prisma.product.findMany({ where: { variantGroupId: null, id: { not: id } }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
   if (!product) notFound();
   const brands = brandRows.map((b) => b.brand!).filter(Boolean);
@@ -52,7 +53,14 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           </div>
         }
       />
-      <ProductForm action={updateProductAction} defaults={product} categories={categories} brands={brands} submitLabel="Salvează modificările" />
+      <ProductForm
+        action={updateProductAction}
+        defaults={product}
+        categories={categories}
+        brands={brands}
+        variantOptions={variantOptions}
+        submitLabel="Salvează modificările"
+      />
 
       <div className="mt-8">
         <AdminPageHeader

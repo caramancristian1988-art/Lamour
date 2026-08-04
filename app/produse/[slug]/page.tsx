@@ -24,6 +24,7 @@ import {
   parsePage,
   parseFilters,
   applyFilters,
+  dedupeVariants,
 } from "@/lib/productListing";
 import ProductCard from "../../components/ProductCard";
 import LoadMoreButton from "../../components/LoadMoreButton";
@@ -47,7 +48,7 @@ const allFallbackProducts = [
   ...fallbackPopularProducts,
   ...fallbackOfferProducts,
   ...fallbackDiscountProducts,
-].map((p) => ({ ...p, images: [] as string[], brand: null as string | null }));
+].map((p) => ({ ...p, images: [] as string[], brand: null as string | null, variantGroupId: null as string | null }));
 
 const getCategoryData = cache(async (slug: string, activeChildSlug?: string) => {
   try {
@@ -59,12 +60,12 @@ const getCategoryData = cache(async (slug: string, activeChildSlug?: string) => 
     const categoryIds = activeChild ? [activeChild.id] : [category.id, ...children.map((c) => c.id)];
 
     const products = await prisma.product.findMany({ where: { categoryId: { in: categoryIds } }, orderBy: { createdAt: "desc" } });
-    return { category, products, children, activeChild: activeChild ?? null };
+    return { category, products: dedupeVariants(products), children, activeChild: activeChild ?? null };
   } catch {
     const category = fallbackCategories.find((c) => c.slug === slug);
     if (!category) return null;
     const products = allFallbackProducts.filter((p) => p.categoryId === category.id);
-    return { category, products, children: [] as { id: string; name: string; slug: string }[], activeChild: null };
+    return { category, products: dedupeVariants(products), children: [] as { id: string; name: string; slug: string }[], activeChild: null };
   }
 });
 
@@ -72,13 +73,18 @@ const getProductData = cache(async (slug: string) => {
   try {
     const product = await prisma.product.findUnique({ where: { slug }, include: { category: true } });
     if (!product) return null;
-    const [related, reviews] = await Promise.all([
+    const familyId = product.variantGroupId ?? product.id;
+    const [relatedRaw, reviews] = await Promise.all([
       prisma.product.findMany({
-        where: { categoryId: product.categoryId, NOT: { id: product.id } },
+        where: {
+          categoryId: product.categoryId,
+          NOT: [{ id: product.id }, { variantGroupId: familyId }, { id: familyId }],
+        },
         take: 4,
       }),
       prisma.review.findMany({ where: { product: product.name, approved: true } }),
     ]);
+    const related = dedupeVariants(relatedRaw);
     // Fetched separately so a hiccup here (e.g. a not-yet-migrated client)
     // can't take down the whole product page and fall back to demo data.
     let faqs: Awaited<ReturnType<typeof prisma.productFaq.findMany>> = [];
@@ -87,7 +93,21 @@ const getProductData = cache(async (slug: string) => {
     } catch {
       faqs = [];
     }
-    return { product, category: product.category, related, reviews, faqs };
+
+    // Variant family: the primary product (variantGroupId null) plus every
+    // sibling — resolved regardless of which variant's page we're on.
+    let variants: { id: string; slug: string; variantLabel: string | null; price: number; oldPrice: number | null }[] = [];
+    try {
+      const primaryId = product.variantGroupId ?? product.id;
+      variants = await prisma.product.findMany({
+        where: { OR: [{ id: primaryId }, { variantGroupId: primaryId }] },
+        select: { id: true, slug: true, variantLabel: true, price: true, oldPrice: true },
+      });
+    } catch {
+      variants = [];
+    }
+
+    return { product, category: product.category, related, reviews, faqs, variants };
   } catch {
     const product = allFallbackProducts.find((p) => p.slug === slug);
     if (!product) return null;
@@ -96,7 +116,7 @@ const getProductData = cache(async (slug: string) => {
       .filter((p) => p.categoryId === product.categoryId && p.id !== product.id)
       .slice(0, 4);
     const reviews = fallbackReviews.filter((r) => r.product === product.name);
-    return { product, category, related, reviews, faqs: [] };
+    return { product, category, related, reviews, faqs: [], variants: [] };
   }
 });
 
@@ -444,11 +464,23 @@ interface ProductViewProps {
     question: string;
     answer: string;
   }>;
+  variants: Array<{
+    id: string;
+    slug: string;
+    variantLabel: string | null;
+    price: number;
+    oldPrice: number | null;
+  }>;
   ratesEnabled: boolean;
   installmentMonths: number;
 }
 
-async function ProductView({ product, category, related, reviews, faqs, ratesEnabled, installmentMonths }: ProductViewProps) {
+function variantSortValue(label: string | null): number {
+  const m = label?.match(/[\d]+([.,]\d+)?/);
+  return m ? parseFloat(m[0].replace(",", ".")) : 0;
+}
+
+async function ProductView({ product, category, related, reviews, faqs, variants, ratesEnabled, installmentMonths }: ProductViewProps) {
   const displayName = localProductNames[product.slug] ?? product.name;
   const displayImage = localProductImages[product.slug] ?? product.image;
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
@@ -564,6 +596,40 @@ async function ProductView({ product, category, related, reviews, faqs, ratesEna
 
             {discount && countdownMinutes > 0 && (
               <ProductOfferBanner discount={discount} countdownMinutes={countdownMinutes} />
+            )}
+
+            {variants.length > 1 && (
+              <div className="border border-border rounded-2xl p-5 bg-card">
+                <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">
+                  Selectează capacitatea
+                </p>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                  {[...variants]
+                    .sort((a, b) => variantSortValue(a.variantLabel) - variantSortValue(b.variantLabel))
+                    .map((v) => {
+                      const active = v.id === product.id;
+                      return (
+                        <Link
+                          key={v.id}
+                          href={`/produse/${v.slug}`}
+                          aria-current={active ? "true" : undefined}
+                          className={`flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-2 py-2.5 text-center transition-colors ${
+                            active
+                              ? "border-accent bg-accent/5"
+                              : "border-border hover:border-accent/50"
+                          }`}
+                        >
+                          <span className={`text-sm font-bold ${active ? "text-accent" : "text-foreground"}`}>
+                            {v.variantLabel ?? "—"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {v.price.toLocaleString("ro-MD")} MDL
+                          </span>
+                        </Link>
+                      );
+                    })}
+                </div>
+              </div>
             )}
 
             <div className="border border-border rounded-2xl p-5 bg-card">

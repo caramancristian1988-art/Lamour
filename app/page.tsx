@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { fallbackCategories, fallbackOfferProducts } from "@/lib/fallbackData";
+import { dedupeVariants } from "@/lib/productListing";
 import Hero from "@/app/components/Hero";
 import TrustBar from "@/app/components/TrustBar";
 import CategoryGrid from "@/app/components/CategoryGrid";
@@ -82,9 +83,9 @@ async function getData() {
 
     return {
       categories,
-      offerProducts: offerProducts.length > 0 ? offerProducts : fallbackOfferProducts.slice(0, 4),
-      newProducts,
-      recommendedProducts,
+      offerProducts: offerProducts.length > 0 ? dedupeVariants(offerProducts) : fallbackOfferProducts.slice(0, 4),
+      newProducts: dedupeVariants(newProducts),
+      recommendedProducts: dedupeVariants(recommendedProducts),
       reviews,
       banners,
     };

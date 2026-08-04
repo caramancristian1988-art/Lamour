@@ -25,6 +25,7 @@ import {
   parsePage,
   parseFilters,
   applyFilters,
+  dedupeVariants,
 } from "@/lib/productListing";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 import JsonLd from "../components/JsonLd";
@@ -86,6 +87,7 @@ interface ProductRow {
   installmentsEnabled?: boolean;
   categoryId: string;
   createdAt: Date;
+  variantGroupId: string | null;
 }
 
 async function getData(): Promise<{ categories: CategoryRow[]; products: ProductRow[] }> {
@@ -104,7 +106,7 @@ async function getData(): Promise<{ categories: CategoryRow[]; products: Product
         ...fallbackPopularProducts,
         ...fallbackOfferProducts,
         ...fallbackDiscountProducts,
-      ].map((p) => ({ ...p, images: [] as string[], brand: null as string | null })),
+      ].map((p) => ({ ...p, images: [] as string[], brand: null as string | null, variantGroupId: null as string | null })),
     };
   }
 }
@@ -376,7 +378,8 @@ export default async function ProdusePage({
   const page = parsePage(query.page);
   const filters = parseFilters(query);
 
-  const { categories, products: baseProducts } = await getData();
+  const { categories, products: allProducts } = await getData();
+  const baseProducts = dedupeVariants(allProducts);
 
   const categoryById = new Map(categories.map((c) => [c.id, c.slug]));
   const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));

@@ -43,6 +43,8 @@ function readProductFields(formData: FormData) {
   const installmentsEnabled = formData.get("installmentsEnabled") === "on";
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const specifications = parseSpecifications(formData);
+  const variantGroupId = String(formData.get("variantGroupId") ?? "").trim() || null;
+  const variantLabel = String(formData.get("variantLabel") ?? "").trim() || null;
 
   return {
     name,
@@ -61,6 +63,8 @@ function readProductFields(formData: FormData) {
     installmentsEnabled,
     categoryId,
     specifications,
+    variantGroupId,
+    variantLabel,
   };
 }
 
@@ -80,11 +84,28 @@ export async function createProductAction(_prevState: ProductFormState, formData
   if (existing) return { error: "Există deja un produs cu acest slug." };
 
   await prisma.product.create({ data });
+  if (data.variantGroupId) await revalidateVariantFamily(data.variantGroupId);
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
   revalidatePath(`/produse/${data.slug}`);
   revalidatePath("/");
   redirect("/admin/produse");
+}
+
+// A variant's price/label change affects how the whole family's selector
+// renders, so every sibling's (and the primary's) page needs revalidating.
+async function revalidateVariantFamily(anyProductId: string) {
+  const product = await prisma.product.findUnique({
+    where: { id: anyProductId },
+    select: { slug: true, variantGroupId: true },
+  });
+  if (!product) return;
+  const primaryId = product.variantGroupId ?? anyProductId;
+  const family = await prisma.product.findMany({
+    where: { OR: [{ id: primaryId }, { variantGroupId: primaryId }] },
+    select: { slug: true },
+  });
+  family.forEach((p) => revalidatePath(`/produse/${p.slug}`));
 }
 
 export async function updateProductAction(_prevState: ProductFormState, formData: FormData): Promise<ProductFormState> {
@@ -101,11 +122,18 @@ export async function updateProductAction(_prevState: ProductFormState, formData
   if ((data.bulkMinQty && !data.bulkPrice) || (!data.bulkMinQty && data.bulkPrice)) {
     return { error: "Completează atât cantitatea minimă, cât și prețul per bucată la cantitate mare (sau lasă-le pe amândouă goale)." };
   }
+  if (data.variantGroupId === id) return { error: "Un produs nu poate fi variantă a lui însuși." };
 
   const existing = await prisma.product.findUnique({ where: { slug: data.slug } });
   if (existing && existing.id !== id) return { error: "Există deja un produs cu acest slug." };
 
+  const previous = await prisma.product.findUnique({ where: { id }, select: { variantGroupId: true } });
+
   await prisma.product.update({ where: { id }, data });
+  await revalidateVariantFamily(id);
+  if (previous?.variantGroupId && previous.variantGroupId !== data.variantGroupId) {
+    await revalidateVariantFamily(previous.variantGroupId);
+  }
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
   revalidatePath(`/produse/${data.slug}`);
@@ -117,8 +145,13 @@ export async function deleteProductAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  const product = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
+
+  const variantCount = await prisma.product.count({ where: { variantGroupId: id } });
+  if (variantCount > 0) return;
+
+  const product = await prisma.product.findUnique({ where: { id }, select: { slug: true, variantGroupId: true } });
   await prisma.product.delete({ where: { id } });
+  if (product?.variantGroupId) await revalidateVariantFamily(product.variantGroupId);
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
   if (product?.slug) revalidatePath(`/produse/${product.slug}`);

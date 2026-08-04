@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { AdminInput, AdminTextarea } from "../components/AdminField";
+import { AdminInput, AdminTextarea, AdminSelect } from "../components/AdminField";
 import ImageUploadField from "../components/ImageUploadField";
 import MultiImageUploadField from "../components/MultiImageUploadField";
 import ManagedSelect from "../components/ManagedSelect";
@@ -14,6 +14,11 @@ import { Label } from "@/app/components/ui/label";
 import { Button } from "@/app/components/ui/button";
 
 interface CategoryOption {
+  id: string;
+  name: string;
+}
+
+interface VariantOption {
   id: string;
   name: string;
 }
@@ -48,6 +53,8 @@ interface ProductDefaults {
   installmentsEnabled?: boolean;
   categoryId?: string;
   specifications?: { label: string; value: string }[];
+  variantGroupId?: string | null;
+  variantLabel?: string | null;
 }
 
 const initialState: ProductFormState = {};
@@ -57,12 +64,14 @@ export default function ProductForm({
   defaults,
   categories,
   brands,
+  variantOptions,
   submitLabel,
 }: {
   action: (prevState: ProductFormState, formData: FormData) => Promise<ProductFormState>;
   defaults?: ProductDefaults;
   categories: CategoryOption[];
   brands: string[];
+  variantOptions: VariantOption[];
   submitLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -162,6 +171,33 @@ export default function ProductForm({
         defaultValue={defaults?.packageQuantity ?? ""}
         placeholder="ex: 32 role, 100 buc, 500 ml"
       />
+
+      <div className="border border-border rounded-xl p-4 flex flex-col gap-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-primary">
+          Variante (opțional)
+        </p>
+        <p className="text-xs text-muted-foreground -mt-1.5">
+          Dacă acest produs e doar o variantă de mărime/cantitate a altui produs deja existent
+          (ex: același borcan, dar la 2L în loc de 1L), alege-l mai jos — vor apărea împreună ca
+          butoane de selecție pe pagina produsului, cu propriul preț fiecare.
+        </p>
+        <AdminSelect
+          name="variantGroupId"
+          label="Este o variantă a produsului"
+          defaultValue={defaults?.variantGroupId ?? ""}
+        >
+          <option value="">— Nu, e un produs de sine stătător —</option>
+          {variantOptions.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </AdminSelect>
+        <AdminInput
+          label="Etichetă variantă (ex: 1 litru, 35 m², 8 role)"
+          name="variantLabel"
+          defaultValue={defaults?.variantLabel ?? ""}
+          placeholder="ex: 2 litri"
+        />
+      </div>
 
       <ImageUploadField name="image" label="Imagine principală" defaultValue={defaults?.image} />
       <MultiImageUploadField name="images" label="Galerie imagini (opțional)" defaultValue={defaults?.images} />

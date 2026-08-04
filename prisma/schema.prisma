@@ -52,6 +52,14 @@ model Product {
   categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])
   createdAt   DateTime @default(now())
+  // Variante ale aceluiași produs (ex: 1L / 2L / 4L, sau 35 m² / 50 m²) —
+  // fiecare variantă e propriul Product (slug, poze, recenzii proprii),
+  // grupate printr-un produs "principal" (variantGroupId = null).
+  // variantLabel e eticheta scurtă afișată pe butonul de selecție.
+  variantGroupId String?   @db.ObjectId
+  variantGroup   Product?  @relation("ProductVariants", fields: [variantGroupId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  variants       Product[] @relation("ProductVariants")
+  variantLabel   String?
 }
 
 type ProductSpec {

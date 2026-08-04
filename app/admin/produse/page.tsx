@@ -47,7 +47,11 @@ async function getData(catFilter: string, sort: string, page: number, search: st
         orderBy,
         skip: (page - 1) * PER_PAGE,
         take: PER_PAGE,
-        include: { category: true },
+        include: {
+          category: true,
+          variantGroup: { select: { name: true } },
+          _count: { select: { variants: true } },
+        },
       }),
       prisma.product.count({ where }),
       prisma.category.findMany({ orderBy: { name: "asc" } }),
@@ -75,6 +79,12 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <p className="text-sm text-muted-foreground">{product.category?.name ?? "Fără categorie"}</p>
           <CopyableId id={product.id} />
+          {product.variantGroup && (
+            <Badge variant="secondary" className="normal-case">Variantă a: {product.variantGroup.name}</Badge>
+          )}
+          {product._count.variants > 0 && (
+            <Badge variant="secondary" className="normal-case">{product._count.variants} variante</Badge>
+          )}
         </div>
         <div className="flex items-center gap-2 mt-2 flex-wrap">
           <span className="text-sm font-bold text-primary">{product.price.toLocaleString("ro-MD")} MDL</span>
@@ -97,7 +107,9 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
                 <Pencil className="w-4 h-4" aria-hidden />
               </Link>
             </Button>
-            <DeleteButton action={deleteAction} id={product.id} confirmText="Sigur vrei să ștergi acest produs?" label={`Șterge produsul ${product.name}`} />
+            {product._count.variants === 0 && (
+              <DeleteButton action={deleteAction} id={product.id} confirmText="Sigur vrei să ștergi acest produs?" label={`Șterge produsul ${product.name}`} />
+            )}
           </div>
         </div>
       </div>

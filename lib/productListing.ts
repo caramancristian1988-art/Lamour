@@ -1,5 +1,12 @@
 export type SortKey = "newest" | "price-asc" | "price-desc" | "rating";
 
+// Products that are just a size/quantity variant of another product
+// (variantGroupId set) are hidden from grids/listings — only the primary
+// variant shows as a card, with the rest reachable via its own selector.
+export function dedupeVariants<T extends { variantGroupId?: string | null }>(products: T[]): T[] {
+  return products.filter((p) => !p.variantGroupId);
+}
+
 interface SortableProduct {
   price: number;
   rating: number;
