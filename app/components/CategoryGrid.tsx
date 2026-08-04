@@ -1,6 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ImageOff } from "lucide-react";
+import { ImageOff, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { categoryIcons } from "./CategoryIcons";
 import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
@@ -17,7 +20,13 @@ interface Props {
   categories: Category[];
 }
 
+const COLLAPSED_COUNT = 6;
+
 export default function CategoryGrid({ categories }: Props) {
+  const [expanded, setExpanded] = useState(false);
+  const hasMore = categories.length > COLLAPSED_COUNT;
+  const visible = expanded ? categories : categories.slice(0, COLLAPSED_COUNT);
+
   return (
     <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
       <MotifBackground />
@@ -28,7 +37,7 @@ export default function CategoryGrid({ categories }: Props) {
           </h2>
           <div className="flex items-center gap-3 flex-1 min-w-[60px]">
             <HeadingFlourish />
-            <span className="h-px flex-1 bg-gradient-to-r from-brand-rose to-transparent" />
+            <span className="h-px flex-1 bg-gradient-to-r from-brand-rose to-brand-rose/15" />
           </div>
           <Button asChild variant="accent" size="sm" className="shrink-0">
             <Link href="/produse?division=uz-casnic">Vezi toate categoriile</Link>
@@ -36,7 +45,7 @@ export default function CategoryGrid({ categories }: Props) {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-          {categories.map((cat) => {
+          {visible.map((cat) => {
             const Icon = categoryIcons[cat.slug];
             return (
               <Link
@@ -66,6 +75,20 @@ export default function CategoryGrid({ categories }: Props) {
             );
           })}
         </div>
+
+        {hasMore && (
+          <div className="flex justify-center mt-8">
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-border text-sm font-bold text-primary hover:border-accent hover:text-accent transition-colors"
+              aria-expanded={expanded}
+            >
+              {expanded ? "Vezi mai puține categorii" : "Vezi mai multe categorii"}
+              {expanded ? <ChevronUp className="w-4 h-4" aria-hidden /> : <ChevronDown className="w-4 h-4" aria-hidden />}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

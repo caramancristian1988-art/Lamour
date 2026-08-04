@@ -40,7 +40,7 @@ export default async function ProductsSection({ products, title = "Produse", hig
           </h2>
           <div className="flex items-center gap-3 flex-1 min-w-[60px]">
             <HeadingFlourish />
-            <span className="h-px flex-1 bg-gradient-to-r from-brand-rose to-transparent" />
+            <span className="h-px flex-1 bg-gradient-to-r from-brand-rose to-brand-rose/15" />
           </div>
           <Button asChild variant="accent" size="sm" className="shrink-0">
             <Link href={viewAllHref}>{viewAllLabel}</Link>
