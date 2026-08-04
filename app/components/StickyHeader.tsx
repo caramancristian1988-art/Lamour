@@ -50,7 +50,7 @@ export default function StickyHeader({
         <div className="lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
             <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-lg">
-              <Logo size={56} />
+              <Logo size={68} className="border-2 border-brand-rose shadow-sm" />
               <span className="block leading-tight">
                 <span className="block text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent">
                   {SITE_SHORT_NAME}
@@ -101,7 +101,7 @@ export default function StickyHeader({
         {/* DESKTOP layout */}
         <div className="hidden lg:grid grid-cols-[auto_1fr_auto] gap-x-6 max-w-[96rem] mx-auto px-6">
           <Link href="/" className="flex items-center gap-4 py-4 shrink-0 rounded-lg">
-            <Logo size={132} />
+            <Logo size={152} className="border-2 border-brand-rose shadow-sm" />
             <span className="block leading-tight">
               <span className="block text-4xl font-serif italic font-bold tracking-tight whitespace-nowrap bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent">
                 {SITE_SHORT_NAME}
