@@ -52,17 +52,10 @@ export default function StickyHeader({
             <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-lg">
               <Logo size={56} />
               <span className="block leading-tight">
-                <span
-                  className="block text-lg font-serif italic font-bold tracking-tight"
-                  style={{
-                    color: "#FEFEFE",
-                    WebkitTextStroke: "1.5px #111111",
-                    paintOrder: "stroke fill",
-                    textShadow:
-                      "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 3px 3px rgba(17,17,17,0.35)",
-                  }}
-                >{SITE_SHORT_NAME}</span>
-                <span className="block text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent -mt-0.5">
+                <span className="block text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent">
+                  {SITE_SHORT_NAME}
+                </span>
+                <span className="block text-base font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent -mt-0.5">
                   Lamour
                 </span>
               </span>
@@ -110,17 +103,10 @@ export default function StickyHeader({
           <Link href="/" className="flex items-center gap-4 py-4 shrink-0 rounded-lg">
             <Logo size={132} />
             <span className="block leading-tight">
-              <span
-                className="block text-3xl font-serif italic font-bold tracking-tight whitespace-nowrap"
-                style={{
-                  color: "#FEFEFE",
-                  WebkitTextStroke: "2px #111111",
-                  paintOrder: "stroke fill",
-                  textShadow:
-                    "0 1px 0 #6C6D6F, 0 2px 0 #3A3A3C, 0 4px 5px rgba(17,17,17,0.35)",
-                }}
-              >{SITE_SHORT_NAME}</span>
-              <span className="block text-3xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent -mt-1">
+              <span className="block text-4xl font-serif italic font-bold tracking-tight whitespace-nowrap bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent">
+                {SITE_SHORT_NAME}
+              </span>
+              <span className="block text-2xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent -mt-1">
                 Lamour
               </span>
             </span>
