@@ -129,18 +129,18 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
           </div>
 
           <div className="flex sm:justify-end lg:justify-start">
-            <div className="flex items-center gap-3 max-w-[220px]">
-              <div className="relative w-[56px] h-[56px] shrink-0">
+            <div className="flex items-center gap-3.5 max-w-[260px]">
+              <div className="relative w-[76px] h-[76px] shrink-0 rounded-full bg-white shadow-md ring-2 ring-brand-rose-light/60 p-2">
                 <Image
                   src="/logo-asociatia-nevazatorilor-lamour-transparent.png"
                   alt="Asociația Nevăzătorilor din Moldova"
                   fill
-                  className="object-contain"
+                  className="object-contain p-1"
                 />
               </div>
               <div>
-                <p className="text-[11px] font-bold text-brand-rose-light uppercase tracking-wider leading-tight">Suntem alături de</p>
-                <p className="text-xs font-bold text-white leading-tight mt-1">
+                <p className="text-xs font-semibold text-brand-rose-light leading-tight">Suntem alături de</p>
+                <p className="text-sm font-bold text-white leading-snug mt-1">
                   Asociația Nevăzătorilor din Moldova
                 </p>
               </div>
@@ -148,7 +148,7 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
           </div>
         </div>
 
-        <MotifDivider className="opacity-40 mt-10" />
+        <MotifDivider tone="onDark" className="mt-10" />
       </div>
 
       <div className="border-t border-white/10">

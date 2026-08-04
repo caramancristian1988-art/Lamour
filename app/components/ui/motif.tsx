@@ -6,20 +6,29 @@ import { cn } from "@/lib/utils";
  * and background texture. Never the dominant visual.
  */
 
-export function MotifDivider({ className }: { className?: string }) {
+export function MotifDivider({
+  className,
+  tone = "default",
+}: {
+  className?: string;
+  /** "onDark" swaps to lighter, higher-contrast tones for dark backgrounds (e.g. the footer). */
+  tone?: "default" | "onDark";
+}) {
+  const lineColor = tone === "onDark" ? "to-brand-rose-light" : "to-brand-red";
+  const iconColor = tone === "onDark" ? "text-brand-rose-light" : "text-brand-red";
   return (
     <div className={cn("flex items-center justify-center gap-3 py-2", className)} aria-hidden>
-      <span className="h-px w-12 bg-gradient-to-r from-transparent to-brand-rose sm:w-20" />
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" className="text-brand-red">
-        <g stroke="currentColor" strokeWidth="1.1">
+      <span className={cn("h-[1.5px] w-12 bg-gradient-to-r from-transparent sm:w-20", lineColor)} />
+      <svg width="26" height="26" viewBox="0 0 22 22" fill="none" className={iconColor}>
+        <g stroke="currentColor" strokeWidth="1.6">
           <ellipse cx="11" cy="6.5" rx="2.1" ry="4" />
           <ellipse cx="11" cy="15.5" rx="2.1" ry="4" />
           <ellipse cx="6.5" cy="11" rx="4" ry="2.1" />
           <ellipse cx="15.5" cy="11" rx="4" ry="2.1" />
         </g>
-        <circle cx="11" cy="11" r="1.8" fill="currentColor" />
+        <circle cx="11" cy="11" r="2" fill="currentColor" />
       </svg>
-      <span className="h-px w-12 bg-gradient-to-l from-transparent to-brand-rose sm:w-20" />
+      <span className={cn("h-[1.5px] w-12 bg-gradient-to-l from-transparent sm:w-20", lineColor)} />
     </div>
   );
 }
@@ -28,20 +37,20 @@ export function MotifDivider({ className }: { className?: string }) {
 export function HeadingFlourish({ className }: { className?: string }) {
   return (
     <svg
-      width="20"
-      height="20"
+      width="22"
+      height="22"
       viewBox="0 0 20 20"
       fill="none"
       aria-hidden
       className={cn("text-brand-red shrink-0 inline-block align-middle", className)}
     >
-      <g stroke="currentColor" strokeWidth="1.1">
+      <g stroke="currentColor" strokeWidth="1.6">
         <ellipse cx="10" cy="6.5" rx="2.1" ry="4" />
         <ellipse cx="10" cy="13.5" rx="2.1" ry="4" />
         <ellipse cx="5.5" cy="10" rx="4" ry="2.1" />
         <ellipse cx="14.5" cy="10" rx="4" ry="2.1" />
       </g>
-      <circle cx="10" cy="10" r="1.8" fill="currentColor" />
+      <circle cx="10" cy="10" r="2" fill="currentColor" />
     </svg>
   );
 }
