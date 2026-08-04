@@ -7,6 +7,20 @@ export function dedupeVariants<T extends { variantGroupId?: string | null }>(pro
   return products.filter((p) => !p.variantGroupId);
 }
 
+// Maps a primary product's id to its full variant family (itself + siblings),
+// so cards for that primary can show a compact size/quantity pill row.
+export function buildVariantOptionsMap<
+  T extends { id: string; slug: string; variantGroupId?: string | null; variantLabel?: string | null }
+>(products: T[]): Map<string, { slug: string; variantLabel: string | null }[]> {
+  const map = new Map<string, { slug: string; variantLabel: string | null }[]>();
+  for (const p of products) {
+    const primaryId = p.variantGroupId ?? p.id;
+    if (!map.has(primaryId)) map.set(primaryId, []);
+    map.get(primaryId)!.push({ slug: p.slug, variantLabel: p.variantLabel ?? null });
+  }
+  return map;
+}
+
 interface SortableProduct {
   price: number;
   rating: number;

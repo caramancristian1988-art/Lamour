@@ -8,6 +8,11 @@ import AddToCartButton from "./AddToCartButton";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
 
+interface VariantOption {
+  slug: string;
+  variantLabel: string | null;
+}
+
 interface ProductCardProps {
   name: string;
   slug: string;
@@ -22,6 +27,7 @@ interface ProductCardProps {
   showDiscount?: boolean;
   installmentsEnabled?: boolean;
   installmentMonths?: number;
+  variantOptions?: VariantOption[];
 }
 
 export default function ProductCard({
@@ -37,6 +43,7 @@ export default function ProductCard({
   badge,
   installmentsEnabled,
   installmentMonths = 4,
+  variantOptions,
 }: ProductCardProps) {
   // A leftover placehold.co seed image doesn't count as a "real" main image —
   // prefer an actual uploaded gallery photo over it when one exists.
@@ -92,10 +99,31 @@ export default function ProductCard({
 
         {specs && <p className="text-xs text-muted-foreground mb-3">{specs}</p>}
 
-        <div className="flex items-center gap-2 mb-4">
+        <div className={`flex items-center gap-2 ${variantOptions && variantOptions.length > 1 ? "mb-2" : "mb-4"}`}>
           <StarRating rating={rating} />
           <span className="text-sm text-muted-foreground">({reviewCount})</span>
         </div>
+
+        {variantOptions && variantOptions.length > 1 && (
+          <div className="flex items-center gap-1.5 flex-wrap mb-3">
+            {variantOptions.map((v) => {
+              const active = v.slug === slug;
+              return (
+                <Link
+                  key={v.slug}
+                  href={`/produse/${v.slug}`}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${
+                    active
+                      ? "bg-primary text-white border-primary"
+                      : "bg-card text-muted-foreground border-border hover:border-accent hover:text-accent"
+                  }`}
+                >
+                  {v.variantLabel ?? "—"}
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
         <div className="mt-auto">
           <div className="mb-2">

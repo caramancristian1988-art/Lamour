@@ -25,6 +25,7 @@ import {
   parseFilters,
   applyFilters,
   dedupeVariants,
+  buildVariantOptionsMap,
 } from "@/lib/productListing";
 import ProductCard from "../../components/ProductCard";
 import LoadMoreButton from "../../components/LoadMoreButton";
@@ -60,12 +61,24 @@ const getCategoryData = cache(async (slug: string, activeChildSlug?: string) => 
     const categoryIds = activeChild ? [activeChild.id] : [category.id, ...children.map((c) => c.id)];
 
     const products = await prisma.product.findMany({ where: { categoryId: { in: categoryIds } }, orderBy: { createdAt: "desc" } });
-    return { category, products: dedupeVariants(products), children, activeChild: activeChild ?? null };
+    return {
+      category,
+      products: dedupeVariants(products),
+      variantOptionsMap: buildVariantOptionsMap(products),
+      children,
+      activeChild: activeChild ?? null,
+    };
   } catch {
     const category = fallbackCategories.find((c) => c.slug === slug);
     if (!category) return null;
     const products = allFallbackProducts.filter((p) => p.categoryId === category.id);
-    return { category, products: dedupeVariants(products), children: [] as { id: string; name: string; slug: string }[], activeChild: null };
+    return {
+      category,
+      products: dedupeVariants(products),
+      variantOptionsMap: buildVariantOptionsMap(products),
+      children: [] as { id: string; name: string; slug: string }[],
+      activeChild: null,
+    };
   }
 });
 
@@ -230,6 +243,7 @@ interface CategoryViewProps {
     installmentsEnabled?: boolean;
     createdAt: Date;
   }>;
+  variantOptionsMap: Map<string, { slug: string; variantLabel: string | null }[]>;
   sort: ReturnType<typeof parseSort>;
   page: number;
   filters: ReturnType<typeof parseFilters>;
@@ -237,7 +251,7 @@ interface CategoryViewProps {
   installmentMonths: number;
 }
 
-function CategoryView({ category, children, activeChild, products: baseProducts, sort, page, filters, ratesEnabled, installmentMonths }: CategoryViewProps) {
+function CategoryView({ category, children, activeChild, products: baseProducts, variantOptionsMap, sort, page, filters, ratesEnabled, installmentMonths }: CategoryViewProps) {
   const products = applyFilters(baseProducts, filters);
 
   const priceBounds = baseProducts.reduce(
@@ -378,6 +392,7 @@ function CategoryView({ category, children, activeChild, products: baseProducts,
                       showDiscount={filters.offersOnly}
                       installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
                       installmentMonths={installmentMonths}
+                      variantOptions={variantOptionsMap.get(product.id)}
                     />
                   ))}
                 </div>
