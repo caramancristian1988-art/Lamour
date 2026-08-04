@@ -39,7 +39,7 @@ async function getData() {
         prisma.category.findMany({
           where: { parentId: null },
           orderBy: { createdAt: "asc" },
-          take: 12,
+          take: 6,
           include: {
             products: {
               select: { image: true, images: true },
