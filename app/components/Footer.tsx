@@ -132,15 +132,15 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
             <div className="flex items-center gap-3 max-w-[220px]">
               <div className="relative w-[56px] h-[56px] shrink-0">
                 <Image
-                  src="/logo-asociatia-nevazatorilor.png"
+                  src="/logo-asociatia-nevazatorilor-lamour-transparent.png"
                   alt="Asociația Nevăzătorilor din Moldova"
                   fill
                   className="object-contain"
                 />
               </div>
               <div>
-                <p className="text-[11px] text-white/60 leading-tight">Suntem alături de</p>
-                <p className="text-xs font-bold text-white leading-tight mt-0.5">
+                <p className="text-[11px] font-bold text-brand-rose-light uppercase tracking-wider leading-tight">Suntem alături de</p>
+                <p className="text-xs font-bold text-white leading-tight mt-1">
                   Asociația Nevăzătorilor din Moldova
                 </p>
               </div>
