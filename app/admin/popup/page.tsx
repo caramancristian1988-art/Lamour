@@ -19,7 +19,9 @@ import {
   updatePopupProductsAction,
   getPopupCountdownMinutes,
   updatePopupTimerAction,
+  updatePopupColorsAction,
 } from "@/lib/popupProduct";
+import { Switch } from "@/app/components/ui/switch";
 import { getPopupStatsByProduct } from "@/lib/popupStatActions";
 
 const PER_PAGE = 9;
@@ -86,11 +88,13 @@ export default async function AdminPopupPage({
 
   const saved = typeof query.saved === "string" ? query.saved : "";
 
-  const [{ products, total, categories, enabledIds }, countdownMinutes, allProductStats] = await Promise.all([
-    getData(catFilter, sort, page),
-    getPopupCountdownMinutes(),
-    getPopupStatsByProduct(statCat || undefined, statQ || undefined),
-  ]);
+  const [{ products, total, categories, enabledIds }, countdownMinutes, allProductStats, popupSettings] =
+    await Promise.all([
+      getData(catFilter, sort, page),
+      getPopupCountdownMinutes(),
+      getPopupStatsByProduct(statCat || undefined, statQ || undefined),
+      prisma.settings.findFirst().catch(() => null),
+    ]);
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   const statTotalPages = Math.max(1, Math.ceil(allProductStats.length / STATS_PER_PAGE));
@@ -125,6 +129,64 @@ export default async function AdminPopupPage({
             />
           </div>
           <SaveButton label="Salvează durata" />
+        </form>
+      </Card>
+
+      <Card className="p-6 mb-6">
+        <p className="text-xs font-bold uppercase tracking-wide text-primary mb-1">Culori popup</p>
+        <p className="text-xs text-muted-foreground mb-4">
+          Culorile de mai jos se aplică <strong>doar</strong> pe acest popup (butoanele &quot;Vezi produsul&quot;/
+          &quot;Adaugă în coș&quot; și banner-ul cu reducerea) — restul site-ului nu este afectat.
+        </p>
+        <form action={updatePopupColorsAction} className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+            <Label htmlFor="field-popupColorsEnabled" className="cursor-pointer font-normal">
+              <span className="block text-sm font-bold text-primary">Culori personalizate</span>
+              <span className="block text-xs text-muted-foreground mt-0.5">
+                Dezactivează ca popup-ul să revină la culorile implicite ale site-ului.
+              </span>
+            </Label>
+            <Switch
+              id="field-popupColorsEnabled"
+              name="popupColorsEnabled"
+              defaultChecked={Boolean(popupSettings?.popupButtonColor || popupSettings?.popupBannerColor)}
+              className="shrink-0"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+            <Label htmlFor="field-popupButtonColor" className="cursor-pointer font-normal">
+              <span className="block text-sm font-bold text-primary">Culoare butoane</span>
+              <span className="block text-xs text-muted-foreground mt-0.5">
+                Fundalul butoanelor &quot;Vezi produsul&quot; și &quot;Adaugă în coș&quot;.
+              </span>
+            </Label>
+            <input
+              id="field-popupButtonColor"
+              type="color"
+              name="popupButtonColor"
+              defaultValue={popupSettings?.popupButtonColor ?? "#652f37"}
+              className="w-12 h-10 border-2 border-input rounded-lg p-1 bg-card shrink-0 cursor-pointer"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+            <Label htmlFor="field-popupBannerColor" className="cursor-pointer font-normal">
+              <span className="block text-sm font-bold text-primary">Culoare banner</span>
+              <span className="block text-xs text-muted-foreground mt-0.5">
+                Eticheta cu reducerea (ex: &quot;-20%&quot;) și prețul evidențiat.
+              </span>
+            </Label>
+            <input
+              id="field-popupBannerColor"
+              type="color"
+              name="popupBannerColor"
+              defaultValue={popupSettings?.popupBannerColor ?? "#c0392b"}
+              className="w-12 h-10 border-2 border-input rounded-lg p-1 bg-card shrink-0 cursor-pointer"
+            />
+          </div>
+
+          <SaveButton label="Salvează culorile" />
         </form>
       </Card>
 

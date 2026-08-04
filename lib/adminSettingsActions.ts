@@ -5,13 +5,6 @@ import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 
-const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
-
-function parseHexColor(value: FormDataEntryValue | null): string | null {
-  const trimmed = String(value ?? "").trim();
-  return HEX_COLOR_RE.test(trimmed) ? trimmed : null;
-}
-
 export async function updateSettingsAction(formData: FormData) {
   await requireAdmin();
 
@@ -23,10 +16,6 @@ export async function updateSettingsAction(formData: FormData) {
     ratesEnabled: formData.get("ratesEnabled") === "on",
     installmentMonths: Math.max(1, Math.min(60, Number(formData.get("installmentMonths")) || 4)),
     popupCountdownMinutes: Math.max(1, Math.min(120, Number(formData.get("popupCountdownMinutes")) || 10)),
-    popupButtonColor:
-      formData.get("popupColorsEnabled") === "on" ? parseHexColor(formData.get("popupButtonColor")) : null,
-    popupBannerColor:
-      formData.get("popupColorsEnabled") === "on" ? parseHexColor(formData.get("popupBannerColor")) : null,
     facebook: String(formData.get("facebook") ?? "").trim() || null,
     instagram: String(formData.get("instagram") ?? "").trim() || null,
     tiktok: String(formData.get("tiktok") ?? "").trim() || null,

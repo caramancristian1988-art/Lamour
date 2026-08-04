@@ -209,3 +209,30 @@ export async function updatePopupTimerAction(formData: FormData) {
 
   revalidatePath("/admin/popup");
 }
+
+const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+
+function parseHexColor(value: FormDataEntryValue | null): string | null {
+  const trimmed = String(value ?? "").trim();
+  return HEX_COLOR_RE.test(trimmed) ? trimmed : null;
+}
+
+export async function updatePopupColorsAction(formData: FormData) {
+  await requireAdmin();
+
+  const enabled = formData.get("popupColorsEnabled") === "on";
+  const data = {
+    popupButtonColor: enabled ? parseHexColor(formData.get("popupButtonColor")) : null,
+    popupBannerColor: enabled ? parseHexColor(formData.get("popupBannerColor")) : null,
+  };
+
+  const existing = await prisma.settings.findFirst();
+  if (existing) {
+    await prisma.settings.update({ where: { id: existing.id }, data });
+  } else {
+    await prisma.settings.create({ data });
+  }
+
+  revalidatePath("/admin/popup");
+  revalidatePath("/", "layout");
+}
