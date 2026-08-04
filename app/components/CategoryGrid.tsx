@@ -77,14 +77,15 @@ export default function CategoryGrid({ categories }: Props) {
         </div>
 
         {hasMore && (
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-end mt-3">
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-border text-sm font-bold text-primary hover:border-accent hover:text-accent transition-colors"
               aria-expanded={expanded}
+              aria-label={expanded ? "Vezi mai puține categorii" : "Vezi mai multe categorii"}
+              title={expanded ? "Vezi mai puține categorii" : "Vezi mai multe categorii"}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground/60 hover:text-accent hover:bg-muted transition-colors"
             >
-              {expanded ? "Vezi mai puține categorii" : "Vezi mai multe categorii"}
               {expanded ? <ChevronUp className="w-4 h-4" aria-hidden /> : <ChevronDown className="w-4 h-4" aria-hidden />}
             </button>
           </div>
