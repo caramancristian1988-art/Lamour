@@ -130,12 +130,12 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
 
           <div className="flex sm:justify-end lg:justify-start">
             <div className="flex items-center gap-3.5 max-w-[260px]">
-              <div className="relative w-[76px] h-[76px] shrink-0 rounded-full bg-white shadow-md ring-2 ring-brand-rose-light/60 p-2">
+              <div className="relative w-[96px] h-[96px] shrink-0">
                 <Image
                   src="/logo-asociatia-nevazatorilor-lamour-transparent.png"
                   alt="Asociația Nevăzătorilor din Moldova"
                   fill
-                  className="object-contain p-1"
+                  className="object-contain"
                 />
               </div>
               <div>
