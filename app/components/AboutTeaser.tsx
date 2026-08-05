@@ -7,7 +7,7 @@ import { SITE_NAME } from "@/lib/constants";
 
 export default function AboutTeaser() {
   return (
-    <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
+    <section className="relative overflow-hidden py-8 sm:py-10 bg-background">
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 lg:items-stretch">

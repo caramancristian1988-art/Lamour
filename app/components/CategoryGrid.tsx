@@ -28,10 +28,10 @@ export default function CategoryGrid({ categories }: Props) {
   const visible = expanded ? categories : categories.slice(0, COLLAPSED_COUNT);
 
   return (
-    <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
+    <section className="relative overflow-hidden py-8 sm:py-10 bg-background">
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
-        <div className="flex items-center gap-4 mb-10 flex-wrap">
+        <div className="flex items-center gap-4 mb-6 flex-wrap">
           <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight uppercase shrink-0">
             Categorii populare
           </h2>

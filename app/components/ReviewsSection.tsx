@@ -26,10 +26,10 @@ function getInitials(name: string) {
 
 export default function ReviewsSection({ reviews }: Props) {
   return (
-    <section className="relative overflow-hidden py-12 sm:py-16 bg-background">
+    <section className="relative overflow-hidden py-8 sm:py-10 bg-background">
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
-        <div className="text-center mb-10">
+        <div className="text-center mb-6">
           <h2 className="flex items-center justify-center gap-2.5 text-3xl font-bold text-primary tracking-tight">
             Ce spun clienții noștri
             <HeadingFlourish />
