@@ -42,6 +42,7 @@ async function getSearchableData() {
         installmentsEnabled: true,
         variantGroupId: null as string | null,
         variantLabel: null as string | null,
+        salesCount: 0,
       })),
     };
   }

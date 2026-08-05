@@ -124,14 +124,38 @@ async function syncTelegramMessage(updated: {
   await editTelegramMessage(updated.telegramMessageId, text, buttons);
 }
 
+// "achitat" is the only status that represents a confirmed sale — bump each
+// linked product's counter once when it's first marked as paid, and undo it
+// if the status is later corrected away from "achitat". Shared by the admin
+// UI action and the Telegram webhook (both can change a message's status).
+export async function applySalesCountForStatusChange(
+  previousStatus: string,
+  newStatus: string,
+  productIds: string[]
+) {
+  if (productIds.length === 0 || previousStatus === newStatus) return;
+  if (newStatus === "achitat") {
+    await prisma.product.updateMany({ where: { id: { in: productIds } }, data: { salesCount: { increment: 1 } } });
+  } else if (previousStatus === "achitat") {
+    await prisma.product.updateMany({ where: { id: { in: productIds }, salesCount: { gt: 0 } }, data: { salesCount: { decrement: 1 } } });
+  }
+}
+
 export async function setMessageStatusAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "");
   if (!id || !MESSAGE_STATUSES.some((s) => s.value === status)) return;
+
+  const existing = await prisma.contactMessage.findUnique({ where: { id }, select: { status: true, productIds: true } });
   const updated = await prisma.contactMessage.update({ where: { id }, data: { status, read: true } });
+
+  if (existing) await applySalesCountForStatusChange(existing.status, status, existing.productIds);
+
   await syncTelegramMessage(updated);
   revalidatePath("/admin/mesaje");
+  revalidatePath("/admin/produse");
+  revalidatePath("/produse");
 }
 
 export async function setMoodAction(formData: FormData) {

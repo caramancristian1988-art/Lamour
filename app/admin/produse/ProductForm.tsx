@@ -55,6 +55,7 @@ interface ProductDefaults {
   specifications?: { label: string; value: string }[];
   variantGroupId?: string | null;
   variantLabel?: string | null;
+  salesCount?: number;
 }
 
 const initialState: ProductFormState = {};
@@ -225,6 +226,20 @@ export default function ProductForm({
         onAdd={async (label) => ({ option: { value: label, label } })}
         onDelete={async () => {}}
       />
+
+      <div>
+        <AdminInput
+          label="Vânzări (numărul de bucăți vândute)"
+          name="salesCount"
+          type="number"
+          defaultValue={defaults?.salesCount ?? 0}
+          placeholder="0"
+        />
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Crește automat cu 1 când marchezi o comandă legată de acest produs ca &quot;Achitat&quot; în Mesaje.
+          Poți și corecta manual aici. Rămâne ascuns pe site sub 10 bucăți vândute.
+        </p>
+      </div>
 
       <div className="flex items-center gap-2.5">
         <Checkbox

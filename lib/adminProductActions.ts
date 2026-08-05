@@ -45,6 +45,8 @@ function readProductFields(formData: FormData) {
   const specifications = parseSpecifications(formData);
   const variantGroupId = String(formData.get("variantGroupId") ?? "").trim() || null;
   const variantLabel = String(formData.get("variantLabel") ?? "").trim() || null;
+  const salesCountRaw = String(formData.get("salesCount") ?? "").trim();
+  const salesCount = Math.max(0, Math.floor(Number(salesCountRaw) || 0));
 
   return {
     name,
@@ -65,6 +67,7 @@ function readProductFields(formData: FormData) {
     specifications,
     variantGroupId,
     variantLabel,
+    salesCount,
   };
 }
 

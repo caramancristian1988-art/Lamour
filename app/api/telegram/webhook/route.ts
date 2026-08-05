@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUSES } from "@/lib/messageStatuses";
+import { applySalesCountForStatusChange } from "@/lib/adminMessageActions";
 import { MOODS } from "@/lib/moods";
 import {
   editTelegramMessage,
@@ -71,10 +72,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const updated =
-      isStatus || isConfirm
-        ? await prisma.contactMessage.update({ where: { id }, data: { status: value, read: true } })
-        : await prisma.contactMessage.update({ where: { id }, data: { mood: value } });
+    let updated;
+    if (isStatus || isConfirm) {
+      const previous = await prisma.contactMessage.findUnique({ where: { id }, select: { status: true, productIds: true } });
+      updated = await prisma.contactMessage.update({ where: { id }, data: { status: value, read: true } });
+      if (previous) await applySalesCountForStatusChange(previous.status, value, previous.productIds);
+    } else {
+      updated = await prisma.contactMessage.update({ where: { id }, data: { mood: value } });
+    }
 
     const statusLabel = MESSAGE_STATUSES.find((s) => s.value === updated.status)?.label ?? updated.status;
     const moodLabel = MOODS.find((m) => m.value === updated.mood)?.label ?? null;
@@ -96,6 +101,10 @@ export async function POST(request: NextRequest) {
     const confirmText = isMood ? `Reacție: ${moodLabel}` : `Status: ${statusLabel}`;
     await answerCallbackQuery(callbackQuery.id, confirmText);
     revalidatePath("/admin/mesaje");
+    if (isStatus || isConfirm) {
+      revalidatePath("/admin/produse");
+      revalidatePath("/produse");
+    }
   } catch {
     await answerCallbackQuery(callbackQuery.id, "Mesajul nu mai există.");
   }

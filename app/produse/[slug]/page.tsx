@@ -451,6 +451,7 @@ interface ProductViewProps {
     availability: string;
     installmentsEnabled?: boolean;
     specifications?: { label: string; value: string }[];
+    salesCount?: number;
   };
   category: { id: string; name: string; slug: string } | null;
   related: Array<{
@@ -594,6 +595,11 @@ async function ProductView({ product, category, related, reviews, faqs, variants
                     {product.rating.toFixed(1)} ({product.reviewCount} recenzii)
                   </span>
                 </div>
+                {(product.salesCount ?? 0) >= 10 && (
+                  <Badge variant="success" className="normal-case">
+                    {product.salesCount} vândute
+                  </Badge>
+                )}
                 <FavoriteButton
                   product={{
                     slug: product.slug,

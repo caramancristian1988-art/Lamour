@@ -46,6 +46,10 @@ model Product {
   reviewCount Int      @default(0)
   badge       String?
   availability String  @default("În stoc")
+  // Numărul de vânzări confirmate — crește automat când un mesaj de comandă
+  // legat de acest produs e marcat "achitat" din admin, sau poate fi ajustat
+  // manual. Rămâne ascuns pe site sub 10, apoi apare vizibil.
+  salesCount  Int     @default(0)
   popupEnabled Boolean @default(false)
   installmentsEnabled Boolean @default(true)
   specifications ProductSpec[]
