@@ -165,7 +165,7 @@ export default async function AdminPopupPage({
               id="field-popupButtonColor"
               type="color"
               name="popupButtonColor"
-              defaultValue={popupSettings?.popupButtonColor ?? "#652f37"}
+              defaultValue={popupSettings?.popupButtonColor ?? "#185830"}
               className="w-12 h-10 border-2 border-input rounded-lg p-1 bg-card shrink-0 cursor-pointer"
             />
           </div>
@@ -181,7 +181,7 @@ export default async function AdminPopupPage({
               id="field-popupBannerColor"
               type="color"
               name="popupBannerColor"
-              defaultValue={popupSettings?.popupBannerColor ?? "#c0392b"}
+              defaultValue={popupSettings?.popupBannerColor ?? "#681818"}
               className="w-12 h-10 border-2 border-input rounded-lg p-1 bg-card shrink-0 cursor-pointer"
             />
           </div>
