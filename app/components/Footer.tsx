@@ -128,22 +128,23 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
             </ul>
           </div>
 
-        </div>
-
-        <div className="flex items-center gap-3.5 mt-10">
-          <div className="relative w-[96px] h-[96px] shrink-0">
-            <Image
-              src="/logo-asociatia-nevazatorilor-lamour-transparent.png"
-              alt="Asociația Nevăzătorilor din Moldova"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-brand-rose-light leading-tight">Suntem alături de</p>
-            <p className="text-sm font-bold text-white leading-snug mt-1 whitespace-nowrap">
-              Asociația Nevăzătorilor din Moldova
-            </p>
+          <div className="flex sm:justify-end lg:justify-start">
+            <div className="flex items-center gap-3.5 max-w-[260px]">
+              <div className="relative w-[96px] h-[96px] shrink-0">
+                <Image
+                  src="/logo-asociatia-nevazatorilor-lamour-transparent.png"
+                  alt="Asociația Nevăzătorilor din Moldova"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-brand-rose-light leading-tight">Suntem alături de</p>
+                <p className="text-sm font-bold text-white leading-snug mt-1">
+                  Asociația Nevăzătorilor din Moldova
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
