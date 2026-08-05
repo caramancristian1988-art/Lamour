@@ -51,6 +51,10 @@ model Product {
   // manual. Rămâne ascuns pe site sub 10, apoi apare vizibil.
   salesCount  Int     @default(0)
   popupEnabled Boolean @default(false)
+  // Suprascrie culorile implicite ale popup-ului de oferte doar cât timp
+  // acest produs e cel afișat — null înseamnă "folosește culorile implicite".
+  popupButtonColor String?
+  popupBannerColor String?
   installmentsEnabled Boolean @default(true)
   specifications ProductSpec[]
   categoryId  String   @db.ObjectId

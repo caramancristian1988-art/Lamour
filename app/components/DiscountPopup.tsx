@@ -28,6 +28,8 @@ export interface PopupProduct {
   reviewCount: number;
   review: { name: string; text: string; rating: number } | null;
   installmentsEnabled?: boolean;
+  buttonColor?: string | null;
+  bannerColor?: string | null;
 }
 
 interface StoredState {
@@ -163,6 +165,8 @@ export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopu
   if (!open && !minimized) return null;
 
   const product = products[activeIndex];
+  const effectiveButtonColor = product.buttonColor ?? buttonColor;
+  const effectiveBannerColor = product.bannerColor ?? bannerColor;
 
   function close() {
     logPopupEvent(product.slug, "close");
@@ -189,8 +193,8 @@ export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopu
       <button
         onClick={reopen}
         aria-label="Revino la ofertă"
-        style={bannerColor ? { backgroundColor: bannerColor } : undefined}
-        className={`fixed right-5 z-[70] flex items-center gap-2 ${bannerColor ? "" : "bg-accent hover:bg-brand-red-dark"} text-white font-bold pl-2.5 pr-4 py-2.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 animate-pop ${
+        style={effectiveBannerColor ? { backgroundColor: effectiveBannerColor } : undefined}
+        className={`fixed right-5 z-[70] flex items-center gap-2 ${effectiveBannerColor ? "" : "bg-accent hover:bg-brand-red-dark"} text-white font-bold pl-2.5 pr-4 py-2.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 animate-pop ${
           contactMenuOpen ? "bottom-[290px]" : "bottom-24"
         }`}
       >
@@ -231,16 +235,16 @@ export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopu
               <div key={i} className="h-1.5 flex-1 rounded-full bg-white/40 overflow-hidden">
                 {i < activeIndex ? (
                   <div
-                    className={`h-full w-full rounded-full ${bannerColor ? "" : "bg-accent"}`}
-                    style={bannerColor ? { backgroundColor: bannerColor } : undefined}
+                    className={`h-full w-full rounded-full ${effectiveBannerColor ? "" : "bg-accent"}`}
+                    style={effectiveBannerColor ? { backgroundColor: effectiveBannerColor } : undefined}
                   />
                 ) : i === activeIndex ? (
                   <div
                     key={activeIndex}
-                    className={`h-full rounded-full ${bannerColor ? "" : "bg-accent"}`}
+                    className={`h-full rounded-full ${effectiveBannerColor ? "" : "bg-accent"}`}
                     style={{
                       animation: `popup-story ${STORY_INTERVAL_MS}ms linear forwards`,
-                      ...(bannerColor ? { backgroundColor: bannerColor } : {}),
+                      ...(effectiveBannerColor ? { backgroundColor: effectiveBannerColor } : {}),
                     }}
                   />
                 ) : null}
@@ -315,8 +319,8 @@ export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopu
 
           {discount && (
             <div
-              style={bannerColor ? { backgroundColor: bannerColor } : undefined}
-              className={`absolute top-9 left-3 ${bannerColor ? "" : "bg-accent"} text-white text-sm font-extrabold px-3 py-1.5 rounded-full shadow-lg pointer-events-none`}
+              style={effectiveBannerColor ? { backgroundColor: effectiveBannerColor } : undefined}
+              className={`absolute top-9 left-3 ${effectiveBannerColor ? "" : "bg-accent"} text-white text-sm font-extrabold px-3 py-1.5 rounded-full shadow-lg pointer-events-none`}
             >
               -{discount}%
             </div>
@@ -349,8 +353,8 @@ export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopu
 
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               <span
-                style={bannerColor ? { color: bannerColor } : undefined}
-                className={`text-2xl font-extrabold ${bannerColor ? "" : "text-accent"}`}
+                style={effectiveBannerColor ? { color: effectiveBannerColor } : undefined}
+                className={`text-2xl font-extrabold ${effectiveBannerColor ? "" : "text-accent"}`}
               >
                 {product.price.toLocaleString("ro-MD")} MDL
               </span>
@@ -384,8 +388,8 @@ export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopu
                 setOpen(false);
                 setMinimized(true);
               }}
-              style={buttonColor ? { backgroundColor: buttonColor } : undefined}
-              className={`flex-1 text-center ${buttonColor ? "" : "bg-primary hover:bg-brand-maroon-dark"} text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide`}
+              style={effectiveButtonColor ? { backgroundColor: effectiveButtonColor } : undefined}
+              className={`flex-1 text-center ${effectiveButtonColor ? "" : "bg-primary hover:bg-brand-maroon-dark"} text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide`}
             >
               Vezi produsul
             </Link>
@@ -396,8 +400,8 @@ export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopu
                 setOpen(false);
                 setMinimized(true);
               }}
-              style={buttonColor ? { backgroundColor: buttonColor } : undefined}
-              className={`flex-1 flex items-center justify-center gap-1.5 ${buttonColor ? "" : "bg-accent hover:bg-brand-red-dark"} text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide`}
+              style={effectiveButtonColor ? { backgroundColor: effectiveButtonColor } : undefined}
+              className={`flex-1 flex items-center justify-center gap-1.5 ${effectiveButtonColor ? "" : "bg-accent hover:bg-brand-red-dark"} text-white font-bold py-3 rounded-xl transition-colors text-sm uppercase tracking-wide`}
             >
               <ShoppingCart className="w-4 h-4 shrink-0" aria-hidden />
               Adaugă în coș

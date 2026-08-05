@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Label } from "@/app/components/ui/label";
 import { Button } from "@/app/components/ui/button";
+import { Switch } from "@/app/components/ui/switch";
 
 interface CategoryOption {
   id: string;
@@ -56,6 +57,8 @@ interface ProductDefaults {
   variantGroupId?: string | null;
   variantLabel?: string | null;
   salesCount?: number;
+  popupButtonColor?: string | null;
+  popupBannerColor?: string | null;
 }
 
 const initialState: ProductFormState = {};
@@ -239,6 +242,54 @@ export default function ProductForm({
           Crește automat cu 1 când marchezi o comandă legată de acest produs ca &quot;Achitat&quot; în Mesaje.
           Poți și corecta manual aici. Rămâne ascuns pe site sub 10 bucăți vândute.
         </p>
+      </div>
+
+      <div className="border border-border rounded-xl p-4 flex flex-col gap-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-primary">
+          Culori popup pentru acest produs (opțional)
+        </p>
+        <p className="text-xs text-muted-foreground -mt-1.5">
+          Când popup-ul de oferte arată acest produs, poți folosi alte culori decât cele implicite —
+          util dacă vrei o ofertă specială care iasă în evidență altfel.
+        </p>
+        <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+          <Label htmlFor="field-popupProductColorsEnabled" className="cursor-pointer font-normal">
+            <span className="block text-sm font-bold text-primary">Culori personalizate pentru acest produs</span>
+            <span className="block text-xs text-muted-foreground mt-0.5">
+              Dezactivează ca să folosească din nou culorile implicite ale popup-ului.
+            </span>
+          </Label>
+          <Switch
+            id="field-popupProductColorsEnabled"
+            name="popupProductColorsEnabled"
+            defaultChecked={Boolean(defaults?.popupButtonColor || defaults?.popupBannerColor)}
+            className="shrink-0"
+          />
+        </div>
+        <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+          <Label htmlFor="field-popupButtonColor" className="cursor-pointer font-normal">
+            <span className="block text-sm font-bold text-primary">Culoare butoane</span>
+          </Label>
+          <input
+            id="field-popupButtonColor"
+            type="color"
+            name="popupButtonColor"
+            defaultValue={defaults?.popupButtonColor ?? "#185830"}
+            className="w-12 h-10 border-2 border-input rounded-lg p-1 bg-card shrink-0 cursor-pointer"
+          />
+        </div>
+        <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+          <Label htmlFor="field-popupBannerColor" className="cursor-pointer font-normal">
+            <span className="block text-sm font-bold text-primary">Culoare banner</span>
+          </Label>
+          <input
+            id="field-popupBannerColor"
+            type="color"
+            name="popupBannerColor"
+            defaultValue={defaults?.popupBannerColor ?? "#681818"}
+            className="w-12 h-10 border-2 border-input rounded-lg p-1 bg-card shrink-0 cursor-pointer"
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-2.5">

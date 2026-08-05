@@ -25,6 +25,8 @@ function randomFallback(): PopupProduct {
     reviewCount: pick.reviewCount,
     review: FALLBACK_REVIEW,
     installmentsEnabled: true,
+    buttonColor: null,
+    bannerColor: null,
   };
 }
 
@@ -68,6 +70,8 @@ export async function getPopupProduct(): Promise<PopupProduct | null> {
       reviewCount: pick.reviewCount,
       review,
       installmentsEnabled: pick.installmentsEnabled,
+      buttonColor: pick.popupButtonColor ?? null,
+      bannerColor: pick.popupBannerColor ?? null,
     };
   } catch {
     return randomFallback();
@@ -95,6 +99,8 @@ export async function getPopupProducts(count: number): Promise<PopupProduct[]> {
         reviewCount: pick.reviewCount,
         review: FALLBACK_REVIEW,
         installmentsEnabled: true,
+        buttonColor: null,
+        bannerColor: null,
       }));
     }
 
@@ -112,6 +118,8 @@ export async function getPopupProducts(count: number): Promise<PopupProduct[]> {
           reviewCount: pick.reviewCount,
           review,
           installmentsEnabled: pick.installmentsEnabled,
+          buttonColor: pick.popupButtonColor ?? null,
+          bannerColor: pick.popupBannerColor ?? null,
         };
       })
     );
