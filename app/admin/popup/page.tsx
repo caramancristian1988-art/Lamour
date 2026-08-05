@@ -22,6 +22,7 @@ import {
   updatePopupColorsAction,
 } from "@/lib/popupProduct";
 import { Switch } from "@/app/components/ui/switch";
+import PopupColorPresets from "./PopupColorPresets";
 import { getPopupStatsByProduct } from "@/lib/popupStatActions";
 
 const PER_PAGE = 9;
@@ -153,6 +154,8 @@ export default async function AdminPopupPage({
               className="shrink-0"
             />
           </div>
+
+          <PopupColorPresets />
 
           <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
             <Label htmlFor="field-popupButtonColor" className="cursor-pointer font-normal">
