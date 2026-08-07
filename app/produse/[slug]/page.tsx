@@ -99,6 +99,7 @@ const getProductData = cache(async (slug: string) => {
       prisma.review.findMany({ where: { product: product.name, approved: true } }),
     ]);
     const related = dedupeVariants(relatedRaw);
+    const relatedVariantOptionsMap = buildVariantOptionsMap(relatedRaw);
     // Fetched separately so a hiccup here (e.g. a not-yet-migrated client)
     // can't take down the whole product page and fall back to demo data.
     let faqs: Awaited<ReturnType<typeof prisma.productFaq.findMany>> = [];
@@ -121,7 +122,7 @@ const getProductData = cache(async (slug: string) => {
       variants = [];
     }
 
-    return { product, category: product.category, related, reviews, faqs, variants };
+    return { product, category: product.category, related, relatedVariantOptionsMap, reviews, faqs, variants };
   } catch {
     const product = allFallbackProducts.find((p) => p.slug === slug);
     if (!product) return null;
@@ -130,7 +131,7 @@ const getProductData = cache(async (slug: string) => {
       .filter((p) => p.categoryId === product.categoryId && p.id !== product.id)
       .slice(0, 4);
     const reviews = fallbackReviews.filter((r) => r.product === product.name);
-    return { product, category, related, reviews, faqs: [], variants: [] };
+    return { product, category, related, relatedVariantOptionsMap: new Map(), reviews, faqs: [], variants: [] };
   }
 });
 
@@ -467,6 +468,7 @@ interface ProductViewProps {
     badge: string | null;
     installmentsEnabled?: boolean;
   }>;
+  relatedVariantOptionsMap: Map<string, VariantOption[]>;
   reviews: Array<{
     id: string;
     name: string;
@@ -497,7 +499,7 @@ function variantSortValue(label: string | null): number {
   return m ? parseFloat(m[0].replace(",", ".")) : 0;
 }
 
-async function ProductView({ product, category, related, reviews, faqs, variants, ratesEnabled, installmentMonths }: ProductViewProps) {
+async function ProductView({ product, category, related, relatedVariantOptionsMap, reviews, faqs, variants, ratesEnabled, installmentMonths }: ProductViewProps) {
   const displayName = localProductNames[product.slug] ?? product.name;
   const displayImage = localProductImages[product.slug] ?? product.image;
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
@@ -635,10 +637,10 @@ async function ProductView({ product, category, related, reviews, faqs, variants
                           key={v.id}
                           href={`/produse/${v.slug}`}
                           aria-current={active ? "true" : undefined}
-                          className={`flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-2 py-2.5 text-center transition-colors ${
+                          className={`flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-2 py-2.5 text-center transition-all active:scale-90 ${
                             active
-                              ? "border-accent bg-accent/5"
-                              : "border-border hover:border-accent/50"
+                              ? "border-accent bg-accent/5 shadow-sm"
+                              : "border-border hover:border-accent/50 hover:shadow-sm"
                           }`}
                         >
                           <span className={`text-sm font-bold ${active ? "text-accent" : "text-foreground"}`}>
@@ -826,6 +828,7 @@ async function ProductView({ product, category, related, reviews, faqs, variants
                   badge={localProductBadges[p.slug] ?? p.badge}
                   installmentsEnabled={ratesEnabled && p.installmentsEnabled !== false}
                   installmentMonths={installmentMonths}
+                  variantOptions={relatedVariantOptionsMap.get(p.id)}
                 />
               ))}
             </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { fallbackCategories, fallbackOfferProducts } from "@/lib/fallbackData";
-import { dedupeVariants } from "@/lib/productListing";
+import { dedupeVariants, buildVariantOptionsMap } from "@/lib/productListing";
 import Hero from "@/app/components/Hero";
 import TrustBar from "@/app/components/TrustBar";
 import CategoryGrid from "@/app/components/CategoryGrid";
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 
 async function getData() {
   try {
-    const [rawCategories, offerProducts, newProducts, recommendedProducts, reviews, banners] =
+    const [rawCategories, offerProducts, newProducts, recommendedProducts, reviews, banners, variantRows] =
       await Promise.all([
         prisma.category.findMany({
           where: { parentId: null },
@@ -64,7 +64,14 @@ async function getData() {
           select: { id: true, name: true, rating: true, text: true, product: true },
         }),
         prisma.banner.findMany({ orderBy: { order: "asc" } }),
+        // Lightweight full-catalog pull just to build the variant-siblings
+        // map — homepage sections only fetch a handful of products each, not
+        // enough to know a shown product's other sizes.
+        prisma.product.findMany({
+          select: { id: true, slug: true, variantGroupId: true, variantLabel: true, price: true, oldPrice: true },
+        }),
       ]);
+      const variantOptionsMap = buildVariantOptionsMap(variantRows);
 
     // Preferăm poza setată explicit pe categorie (din admin); dacă nu există
     // una reală, cădem pe prima poză de produs găsită — poza categoriei
@@ -88,6 +95,7 @@ async function getData() {
       recommendedProducts: dedupeVariants(recommendedProducts),
       reviews,
       banners,
+      variantOptionsMap,
     };
   } catch {
     return {
@@ -97,12 +105,13 @@ async function getData() {
       recommendedProducts: [],
       reviews: [],
       banners: [],
+      variantOptionsMap: new Map(),
     };
   }
 }
 
 export default async function HomePage() {
-  const { categories, offerProducts, newProducts, recommendedProducts, reviews, banners } =
+  const { categories, offerProducts, newProducts, recommendedProducts, reviews, banners, variantOptionsMap } =
     await getData();
 
   return (
@@ -123,6 +132,7 @@ export default async function HomePage() {
         highlighted="speciale"
         viewAllHref="/produse?division=uz-casnic&oferte=1"
         viewAllLabel="Vezi toate ofertele"
+        variantOptionsMap={variantOptionsMap}
       />
       {newProducts.length > 0 && (
         <ProductsSection
@@ -131,6 +141,7 @@ export default async function HomePage() {
           highlighted="noi"
           viewAllHref="/produse?division=uz-casnic"
           viewAllLabel="Vezi toate produsele"
+          variantOptionsMap={variantOptionsMap}
         />
       )}
       {recommendedProducts.length > 0 && (
@@ -140,6 +151,7 @@ export default async function HomePage() {
           highlighted="recomandate"
           viewAllHref="/produse?division=uz-casnic"
           viewAllLabel="Vezi toate produsele"
+          variantOptionsMap={variantOptionsMap}
         />
       )}
       <AboutTeaser />

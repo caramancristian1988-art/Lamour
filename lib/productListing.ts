@@ -1,5 +1,18 @@
 export type SortKey = "newest" | "price-asc" | "price-desc" | "rating";
 
+// A product that has variant siblings already shows its size/quantity via
+// the pill selector, so the raw trailing "1L" / "2 role" etc. baked into the
+// name is redundant clutter on the title — strip it there, keep the full
+// name everywhere else (cart, favorites, "Cod produs" etc. stay exact).
+export function stripVariantSuffix(name: string, variantLabel: string | null): string {
+  if (!variantLabel) return name;
+  const trimmedLabel = variantLabel.trim();
+  if (!trimmedLabel) return name;
+  const idx = name.toLowerCase().lastIndexOf(trimmedLabel.toLowerCase());
+  if (idx === -1 || idx + trimmedLabel.length !== name.length) return name;
+  return name.slice(0, idx).replace(/[\s,;.-]+$/, "").trim() || name;
+}
+
 // Products that are just a size/quantity variant of another product
 // (variantGroupId set) are hidden from grids/listings — only the primary
 // variant shows as a card, with the rest reachable via its own selector.

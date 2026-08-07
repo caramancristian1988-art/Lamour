@@ -18,6 +18,13 @@ interface Product {
   installmentsEnabled?: boolean;
 }
 
+interface VariantOption {
+  slug: string;
+  variantLabel: string | null;
+  price: number;
+  oldPrice: number | null;
+}
+
 interface Props {
   products: Product[];
   title?: string;
@@ -26,9 +33,10 @@ interface Props {
   viewAllLabel?: string;
   bg?: string;
   showDiscount?: boolean;
+  variantOptionsMap?: Map<string, VariantOption[]>;
 }
 
-export default async function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", viewAllLabel = "Vezi toate produsele", bg = "bg-background", showDiscount = false }: Props) {
+export default async function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", viewAllLabel = "Vezi toate produsele", bg = "bg-background", showDiscount = false, variantOptionsMap }: Props) {
   const { ratesEnabled, installmentMonths } = await getSectionFlags();
   return (
     <section className={`relative overflow-hidden py-8 sm:py-10 ${bg}`}>
@@ -58,6 +66,7 @@ export default async function ProductsSection({ products, title = "Produse", hig
               showDiscount={showDiscount}
               installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
               installmentMonths={installmentMonths}
+              variantOptions={variantOptionsMap?.get(product.id)}
             />
           ))}
         </div>

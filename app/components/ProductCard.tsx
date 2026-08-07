@@ -8,6 +8,7 @@ import FavoriteButton from "./FavoriteButton";
 import AddToCartButton from "./AddToCartButton";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
+import { stripVariantSuffix } from "@/lib/productListing";
 
 interface VariantOption {
   slug: string;
@@ -64,12 +65,19 @@ export default function ProductCard({
   const activeSlug = activeVariant.slug;
   const activePrice = activeVariant.price;
   const activeOldPrice = activeVariant.oldPrice;
+  const [pulseSlug, setPulseSlug] = useState<string | null>(null);
 
   const discount = activeOldPrice ? Math.round((1 - activePrice / activeOldPrice) * 100) : null;
   const discountAmount = activeOldPrice ? Math.round(activeOldPrice - activePrice) : null;
   const displayBadge = badge ?? (discount ? `-${discount}%` : null);
 
   const specs = [packageQuantity || null].filter(Boolean).join(", ");
+
+  // With variant pills already showing the size/quantity, drop the same
+  // trailing text from the title so it doesn't read twice.
+  const hasVariants = Boolean(variantOptions && variantOptions.length > 1);
+  const ownVariantLabel = variantOptions?.find((v) => v.slug === slug)?.variantLabel ?? null;
+  const displayTitle = hasVariants ? stripVariantSuffix(name, ownVariantLabel) : name;
 
   return (
     <div className="group bg-card rounded-2xl border border-border overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
@@ -109,13 +117,13 @@ export default function ProductCard({
       <div className="flex flex-col flex-1 p-5">
         <Link href={`/produse/${activeSlug}`} className="rounded">
           <h3 className="text-[15px] lg:text-[17px] font-bold text-foreground leading-snug line-clamp-3 mb-2 hover:text-accent transition-colors">
-            {name}
+            {displayTitle}
           </h3>
         </Link>
 
         {specs && <p className="text-xs text-muted-foreground mb-3">{specs}</p>}
 
-        <div className={`flex items-center gap-2 ${variantOptions && variantOptions.length > 1 ? "mb-2" : "mb-4"}`}>
+        <div className={`flex items-center gap-2 ${hasVariants ? "mb-2" : "mb-4"}`}>
           <StarRating rating={rating} />
           <span className="text-sm text-muted-foreground">({reviewCount})</span>
         </div>
@@ -131,12 +139,14 @@ export default function ProductCard({
                   onClick={(e) => {
                     e.preventDefault();
                     setActiveVariant(v);
+                    setPulseSlug(v.slug);
+                    window.setTimeout(() => setPulseSlug((cur) => (cur === v.slug ? null : cur)), 400);
                   }}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold border-2 transition-all active:scale-90 ${
                     active
                       ? "bg-primary text-white border-primary shadow-md scale-105"
                       : "bg-card text-foreground border-border hover:border-accent hover:text-accent hover:shadow-sm"
-                  }`}
+                  } ${pulseSlug === v.slug ? "animate-bump" : ""}`}
                 >
                   {v.variantLabel ?? "—"}
                 </button>
