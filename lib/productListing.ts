@@ -9,14 +9,33 @@ export function dedupeVariants<T extends { variantGroupId?: string | null }>(pro
 
 // Maps a primary product's id to its full variant family (itself + siblings),
 // so cards for that primary can show a compact size/quantity pill row.
+export interface VariantOption {
+  slug: string;
+  variantLabel: string | null;
+  price: number;
+  oldPrice: number | null;
+}
+
 export function buildVariantOptionsMap<
-  T extends { id: string; slug: string; variantGroupId?: string | null; variantLabel?: string | null }
->(products: T[]): Map<string, { slug: string; variantLabel: string | null }[]> {
-  const map = new Map<string, { slug: string; variantLabel: string | null }[]>();
+  T extends {
+    id: string;
+    slug: string;
+    variantGroupId?: string | null;
+    variantLabel?: string | null;
+    price: number;
+    oldPrice?: number | null;
+  }
+>(products: T[]): Map<string, VariantOption[]> {
+  const map = new Map<string, VariantOption[]>();
   for (const p of products) {
     const primaryId = p.variantGroupId ?? p.id;
     if (!map.has(primaryId)) map.set(primaryId, []);
-    map.get(primaryId)!.push({ slug: p.slug, variantLabel: p.variantLabel ?? null });
+    map.get(primaryId)!.push({
+      slug: p.slug,
+      variantLabel: p.variantLabel ?? null,
+      price: p.price,
+      oldPrice: p.oldPrice ?? null,
+    });
   }
   return map;
 }

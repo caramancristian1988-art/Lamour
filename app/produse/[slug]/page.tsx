@@ -26,6 +26,7 @@ import {
   applyFilters,
   dedupeVariants,
   buildVariantOptionsMap,
+  type VariantOption,
 } from "@/lib/productListing";
 import ProductCard from "../../components/ProductCard";
 import LoadMoreButton from "../../components/LoadMoreButton";
@@ -243,7 +244,7 @@ interface CategoryViewProps {
     installmentsEnabled?: boolean;
     createdAt: Date;
   }>;
-  variantOptionsMap: Map<string, { slug: string; variantLabel: string | null }[]>;
+  variantOptionsMap: Map<string, VariantOption[]>;
   sort: ReturnType<typeof parseSort>;
   page: number;
   filters: ReturnType<typeof parseFilters>;

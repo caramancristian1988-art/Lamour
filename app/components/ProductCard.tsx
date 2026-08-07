@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ImageOff, ShoppingCart, Eye } from "lucide-react";
@@ -11,6 +12,8 @@ import { Badge } from "@/app/components/ui/badge";
 interface VariantOption {
   slug: string;
   variantLabel: string | null;
+  price: number;
+  oldPrice: number | null;
 }
 
 interface ProductCardProps {
@@ -49,8 +52,21 @@ export default function ProductCard({
   // prefer an actual uploaded gallery photo over it when one exists.
   const isPlaceholder = image?.includes("placehold.co") ?? false;
   const displayImage = (!isPlaceholder && image) || images?.[0] || image || null;
-  const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
-  const discountAmount = oldPrice ? Math.round(oldPrice - price) : null;
+
+  // Picking a variant pill swaps price/slug in place — no navigation. The
+  // photo/name/rating stay as the card's own (variants share the same look).
+  const [activeVariant, setActiveVariant] = useState<VariantOption>({
+    slug,
+    variantLabel: null,
+    price,
+    oldPrice: oldPrice ?? null,
+  });
+  const activeSlug = activeVariant.slug;
+  const activePrice = activeVariant.price;
+  const activeOldPrice = activeVariant.oldPrice;
+
+  const discount = activeOldPrice ? Math.round((1 - activePrice / activeOldPrice) * 100) : null;
+  const discountAmount = activeOldPrice ? Math.round(activeOldPrice - activePrice) : null;
   const displayBadge = badge ?? (discount ? `-${discount}%` : null);
 
   const specs = [packageQuantity || null].filter(Boolean).join(", ");
@@ -59,7 +75,7 @@ export default function ProductCard({
     <div className="group bg-card rounded-2xl border border-border overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
       {/* Image area */}
       <div className="relative aspect-[4/3] flex items-center justify-center bg-white overflow-hidden">
-        <Link href={`/produse/${slug}`} className="w-full h-full flex items-center justify-center rounded-lg">
+        <Link href={`/produse/${activeSlug}`} className="w-full h-full flex items-center justify-center rounded-lg">
           {displayImage ? (
             <Image
               src={displayImage}
@@ -84,14 +100,14 @@ export default function ProductCard({
 
         <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
           <FavoriteButton
-            product={{ slug, name, price, oldPrice, image: displayImage, rating, reviewCount, badge }}
+            product={{ slug: activeSlug, name, price: activePrice, oldPrice: activeOldPrice, image: displayImage, rating, reviewCount, badge }}
           />
         </div>
       </div>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-5">
-        <Link href={`/produse/${slug}`} className="rounded">
+        <Link href={`/produse/${activeSlug}`} className="rounded">
           <h3 className="text-[15px] lg:text-[17px] font-bold text-foreground leading-snug line-clamp-3 mb-2 hover:text-accent transition-colors">
             {name}
           </h3>
@@ -105,21 +121,25 @@ export default function ProductCard({
         </div>
 
         {variantOptions && variantOptions.length > 1 && (
-          <div className="flex items-center gap-1.5 flex-wrap mb-3">
+          <div className="flex items-center gap-2 flex-wrap mb-3">
             {variantOptions.map((v) => {
-              const active = v.slug === slug;
+              const active = v.slug === activeSlug;
               return (
-                <Link
+                <button
                   key={v.slug}
-                  href={`/produse/${v.slug}`}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveVariant(v);
+                  }}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
                     active
-                      ? "bg-primary text-white border-primary"
-                      : "bg-card text-muted-foreground border-border hover:border-accent hover:text-accent"
+                      ? "bg-primary text-white border-primary shadow-md scale-105"
+                      : "bg-card text-foreground border-border hover:border-accent hover:text-accent hover:shadow-sm"
                   }`}
                 >
                   {v.variantLabel ?? "—"}
-                </Link>
+                </button>
               );
             })}
           </div>
@@ -127,10 +147,10 @@ export default function ProductCard({
 
         <div className="mt-auto">
           <div className="mb-2">
-            {oldPrice && discount && (
+            {activeOldPrice && discount && (
               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                 <span className="text-xs text-muted-foreground line-through">
-                  {oldPrice.toLocaleString("ro-MD")} MDL
+                  {activeOldPrice.toLocaleString("ro-MD")} MDL
                 </span>
                 <Badge variant="accent" className="normal-case px-2 py-0.5">
                   -{discountAmount?.toLocaleString("ro-MD")} MDL
@@ -140,7 +160,7 @@ export default function ProductCard({
                 </Badge>
               </div>
             )}
-            <span className="text-lg lg:text-xl font-bold text-foreground">{price.toLocaleString("ro-MD")} MDL</span>
+            <span className="text-lg lg:text-xl font-bold text-foreground">{activePrice.toLocaleString("ro-MD")} MDL</span>
           </div>
 
           {installmentsEnabled !== false && (
@@ -149,17 +169,17 @@ export default function ProductCard({
                 Rate
               </span>
               <span className="text-[10px] font-bold text-primary">
-                de la {Math.ceil(price / installmentMonths).toLocaleString("ro-MD")} lei/lună
+                de la {Math.ceil(activePrice / installmentMonths).toLocaleString("ro-MD")} lei/lună
               </span>
             </div>
           )}
 
           <div className="flex items-center gap-1.5 sm:gap-2">
             <AddToCartButton
-              slug={slug}
+              slug={activeSlug}
               name={name}
-              price={price}
-              oldPrice={oldPrice ?? null}
+              price={activePrice}
+              oldPrice={activeOldPrice}
               image={image ?? null}
               className="flex-1 h-10 sm:h-11 bg-accent hover:bg-brand-red-dark text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-muted disabled:text-muted-foreground active:scale-95 hover:shadow-md"
             >
@@ -167,7 +187,7 @@ export default function ProductCard({
               <span className="hidden sm:inline">Adaugă în coș</span>
             </AddToCartButton>
             <Link
-              href={`/produse/${slug}`}
+              href={`/produse/${activeSlug}`}
               aria-label={`Vezi detalii pentru ${name}`}
               className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center border border-border rounded-full shrink-0 text-muted-foreground hover:border-accent hover:text-accent hover:shadow-md transition-all active:scale-95"
             >
