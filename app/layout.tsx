@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   description: DEFAULT_DESCRIPTION,
   applicationName: SITE_NAME,
-  keywords: "hartie igienica, servetele, prosoape de hartie, servetele umede, produse de uz casnic, mobila la comanda, spatii de inchiriat, Moldova",
+  keywords: "hartie igienica Moldova, servetele, prosoape de hartie, servetele umede, chibrite, produse de uz casnic, mobila la comanda, mobila Chisinau, spatii comerciale de inchiriat, LuminTehnica, cumparaturi online Moldova, Chisinau",
   alternates: {
     canonical: absoluteUrl("/"),
   },

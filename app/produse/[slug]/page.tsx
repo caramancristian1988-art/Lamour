@@ -144,14 +144,28 @@ export async function generateMetadata({
 
   const categoryData = await getCategoryData(slug);
   if (categoryData) {
-    const title = `${categoryData.category.name} | LuminTehnica`;
+    const catName = categoryData.category.name;
+    const count = categoryData.products.length;
+    const title = `${catName} – preț bun, livrare în Moldova | LuminTehnica`;
     const description =
       categoryData.category.description ??
-      `Descoperă gama de ${categoryData.category.name.toLowerCase()} LuminTehnica, fabricată în Moldova.`;
+      `${catName} LuminTehnica${count > 0 ? ` — ${count} produse` : ""}: calitate garantată, fabricate în Moldova. Comandă online, livrare rapidă în Chișinău și în toată țara.`;
     const canonical = absoluteUrl(`/produse/${slug}`);
+    const keywords = Array.from(
+      new Set([
+        catName,
+        catName.toLowerCase(),
+        ...categoryData.children.map((c) => c.name),
+        "LuminTehnica",
+        "produse Moldova",
+        "cumpără online",
+        "Chișinău",
+      ])
+    );
     return {
       title: { absolute: title },
       description,
+      keywords,
       alternates: { canonical },
       openGraph: { title, description, url: canonical },
       twitter: { title, description },
@@ -160,16 +174,30 @@ export async function generateMetadata({
 
   const productData = await getProductData(slug);
   if (productData) {
-    const name = localProductNames[productData.product.slug] ?? productData.product.name;
+    const { product, category } = productData;
+    const name = localProductNames[product.slug] ?? product.name;
+    const catName = category?.name ?? null;
     const description =
-      productData.product.description ??
-      `Descoperă ${name} din gama LuminTehnica, fabricate în Moldova.`;
-    const image = productData.product.image;
-    const title = `${name} | LuminTehnica`;
+      product.description ??
+      [
+        `${name}${product.packageQuantity ? `, ${product.packageQuantity}` : ""} — ${product.price.toLocaleString("ro-MD")} MDL.`,
+        `Produs LuminTehnica${product.brand ? ` de la ${product.brand}` : ""}${catName ? `, din categoria ${catName.toLowerCase()}` : ""}, fabricat în Moldova.`,
+        "Comandă online, livrare rapidă în Chișinău și în toată țara.",
+      ].join(" ");
+    const image = product.image;
+    const title = `${name}${catName ? ` – ${catName}` : ""} | LuminTehnica`;
     const canonical = absoluteUrl(`/produse/${slug}`);
+    const keywords = Array.from(
+      new Set(
+        [name, catName, product.brand, "LuminTehnica", "cumpără online", "preț", "Moldova", "Chișinău"].filter(
+          (k): k is string => Boolean(k)
+        )
+      )
+    );
     return {
       title: { absolute: title },
       description,
+      keywords,
       alternates: { canonical },
       openGraph: {
         title,

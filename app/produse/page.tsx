@@ -40,6 +40,17 @@ const PRODUSE_DESCRIPTION =
 export const metadata: Metadata = {
   title: { absolute: PRODUSE_TITLE },
   description: PRODUSE_DESCRIPTION,
+  keywords: [
+    "hârtie igienică Moldova",
+    "șervețele",
+    "prosoape de hârtie",
+    "șervețele umede",
+    "chibrite",
+    "detergenți",
+    "produse de uz casnic",
+    "LuminTehnica",
+    "cumpără online Chișinău",
+  ],
   alternates: { canonical: absoluteUrl("/produse") },
   openGraph: {
     title: PRODUSE_TITLE,
