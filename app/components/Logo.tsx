@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { SITE_NAME } from "@/lib/constants";
 
@@ -11,12 +12,12 @@ interface LogoProps {
 export function Logo({ className, size = 44, src = "/logo.png" }: LogoProps) {
   if (src) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <Image
         src={src}
         alt={SITE_NAME}
         width={size}
         height={size}
+        quality={95}
         className={cn("rounded-full object-cover", className)}
       />
     );
