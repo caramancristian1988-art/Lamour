@@ -667,7 +667,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
                           aria-current={active ? "true" : undefined}
                           className={`flex flex-col items-center justify-center gap-0.5 rounded-xl border-2 px-2 py-2.5 text-center transition-all active:scale-90 ${
                             active
-                              ? "border-accent bg-accent/5 shadow-sm"
+                              ? "border-accent bg-accent/5 shadow-sm animate-pop"
                               : "border-border hover:border-accent/50 hover:shadow-sm"
                           }`}
                         >
@@ -684,7 +684,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
               </div>
             )}
 
-            <div className="border border-border rounded-2xl p-5 bg-card">
+            <div key={product.id} className="border border-border rounded-2xl p-5 bg-card animate-pop">
               <div className="mb-1">
                 <span className="text-2xl font-extrabold text-foreground">
                   {product.price.toLocaleString("ro-MD")} MDL
