@@ -98,7 +98,8 @@ export async function createProductAction(_prevState: ProductFormState, formData
   const existing = await prisma.product.findUnique({ where: { slug: data.slug } });
   if (existing) return { error: "Există deja un produs cu acest slug." };
 
-  await prisma.product.create({ data });
+  const created = await prisma.product.create({ data });
+  await revalidateVariantFamily(created.id);
   if (data.variantGroupId) await revalidateVariantFamily(data.variantGroupId);
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
@@ -108,7 +109,9 @@ export async function createProductAction(_prevState: ProductFormState, formData
 }
 
 // A variant's price/label change affects how the whole family's selector
-// renders, so every sibling's (and the primary's) page needs revalidating.
+// renders, so every sibling's (and the primary's) page needs revalidating —
+// plus every category page any of them lives in, since that's where the
+// merged card + variant pills actually show up in listings.
 async function revalidateVariantFamily(anyProductId: string) {
   const product = await prisma.product.findUnique({
     where: { id: anyProductId },
@@ -118,9 +121,25 @@ async function revalidateVariantFamily(anyProductId: string) {
   const primaryId = product.variantGroupId ?? anyProductId;
   const family = await prisma.product.findMany({
     where: { OR: [{ id: primaryId }, { variantGroupId: primaryId }] },
-    select: { slug: true },
+    select: { slug: true, categoryId: true },
   });
   family.forEach((p) => revalidatePath(`/produse/${p.slug}`));
+  await revalidateCategoryPaths(family.map((p) => p.categoryId));
+}
+
+async function revalidateCategoryPaths(categoryIds: string[]) {
+  const uniqueIds = Array.from(new Set(categoryIds));
+  if (uniqueIds.length === 0) return;
+  const categories = await prisma.category.findMany({
+    where: { id: { in: uniqueIds } },
+    select: { slug: true, parentId: true },
+  });
+  const parentIds = categories.map((c) => c.parentId).filter((id): id is string => !!id);
+  const parents = parentIds.length
+    ? await prisma.category.findMany({ where: { id: { in: parentIds } }, select: { slug: true } })
+    : [];
+  categories.forEach((c) => revalidatePath(`/produse/${c.slug}`));
+  parents.forEach((c) => revalidatePath(`/produse/${c.slug}`));
 }
 
 export async function updateProductAction(_prevState: ProductFormState, formData: FormData): Promise<ProductFormState> {
@@ -142,12 +161,16 @@ export async function updateProductAction(_prevState: ProductFormState, formData
   const existing = await prisma.product.findUnique({ where: { slug: data.slug } });
   if (existing && existing.id !== id) return { error: "Există deja un produs cu acest slug." };
 
-  const previous = await prisma.product.findUnique({ where: { id }, select: { variantGroupId: true } });
+  const previous = await prisma.product.findUnique({ where: { id }, select: { variantGroupId: true, categoryId: true } });
 
   await prisma.product.update({ where: { id }, data });
   await revalidateVariantFamily(id);
   if (previous?.variantGroupId && previous.variantGroupId !== data.variantGroupId) {
     await revalidateVariantFamily(previous.variantGroupId);
+  }
+  // Moving categories means the old category's listing also needs to drop this product.
+  if (previous && previous.categoryId !== data.categoryId) {
+    await revalidateCategoryPaths([previous.categoryId]);
   }
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
@@ -164,9 +187,10 @@ export async function deleteProductAction(formData: FormData) {
   const variantCount = await prisma.product.count({ where: { variantGroupId: id } });
   if (variantCount > 0) return;
 
-  const product = await prisma.product.findUnique({ where: { id }, select: { slug: true, variantGroupId: true } });
+  const product = await prisma.product.findUnique({ where: { id }, select: { slug: true, variantGroupId: true, categoryId: true } });
   await prisma.product.delete({ where: { id } });
   if (product?.variantGroupId) await revalidateVariantFamily(product.variantGroupId);
+  if (product?.categoryId) await revalidateCategoryPaths([product.categoryId]);
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
   if (product?.slug) revalidatePath(`/produse/${product.slug}`);
