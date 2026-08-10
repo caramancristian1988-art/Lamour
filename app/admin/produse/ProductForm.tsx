@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { AdminInput, AdminTextarea, AdminSelect } from "../components/AdminField";
 import ImageUploadField from "../components/ImageUploadField";
 import MultiImageUploadField from "../components/MultiImageUploadField";
@@ -79,6 +79,7 @@ export default function ProductForm({
   submitLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
+  const [isVariant, setIsVariant] = useState(Boolean(defaults?.variantGroupId));
 
   const defaultBadges = ["Nou", "Reducere", "Cel mai vândut", "Eco"];
   const badgeOptions =
@@ -178,29 +179,52 @@ export default function ProductForm({
 
       <div className="border border-border rounded-xl p-4 flex flex-col gap-3">
         <p className="text-xs font-bold uppercase tracking-wide text-primary">
-          Variante (opțional)
+          Variante de mărime / cantitate
         </p>
         <p className="text-xs text-muted-foreground -mt-1.5">
-          Dacă acest produs e doar o variantă de mărime/cantitate a altui produs deja existent
-          (ex: același borcan, dar la 2L în loc de 1L), alege-l mai jos — vor apărea împreună ca
-          butoane de selecție pe pagina produsului, cu propriul preț fiecare.
+          Ai deja pe site un produs asemănător (ex: același borcan, dar la 1L) și vrei ca ăsta să
+          apară lângă el ca buton de mărime, nu ca produs separat în listă? Activează mai jos.
         </p>
-        <AdminSelect
-          name="variantGroupId"
-          label="Este o variantă a produsului"
-          defaultValue={defaults?.variantGroupId ?? ""}
-        >
-          <option value="">— Nu, e un produs de sine stătător —</option>
-          {variantOptions.map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </AdminSelect>
-        <AdminInput
-          label="Etichetă variantă (ex: 1 litru, 35 m², 8 role)"
-          name="variantLabel"
-          defaultValue={defaults?.variantLabel ?? ""}
-          placeholder="ex: 2 litri"
-        />
+
+        <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+          <Label htmlFor="field-isVariant" className="cursor-pointer font-normal">
+            <span className="block text-sm font-bold text-primary">E o mărime/variantă a altui produs</span>
+            <span className="block text-xs text-muted-foreground mt-0.5">
+              Dezactivat = produs de sine stătător, apare normal în listă.
+            </span>
+          </Label>
+          <Switch
+            id="field-isVariant"
+            checked={isVariant}
+            onCheckedChange={setIsVariant}
+            className="shrink-0"
+          />
+        </div>
+
+        {isVariant && (
+          <>
+            <AdminSelect
+              name="variantGroupId"
+              label="1. Care e produsul deja existent pe site?"
+              defaultValue={defaults?.variantGroupId ?? ""}
+            >
+              <option value="">— Alege produsul —</option>
+              {variantOptions.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </AdminSelect>
+            <AdminInput
+              label="2. Ce scrie pe butonul de selecție pentru mărimea asta?"
+              name="variantLabel"
+              defaultValue={defaults?.variantLabel ?? ""}
+              placeholder="ex: 2 litri, 35 m², 8 role"
+            />
+            <p className="text-xs text-muted-foreground -mt-1.5">
+              Ex: dacă alegi &quot;Borcan din plastic 1L&quot; și scrii &quot;2 litri&quot;, pe pagina lui va
+              apărea un buton &quot;2 litri&quot; care duce la produsul ăsta, cu prețul lui.
+            </p>
+          </>
+        )}
       </div>
 
       <ImageUploadField name="image" label="Imagine principală" defaultValue={defaults?.image} />
