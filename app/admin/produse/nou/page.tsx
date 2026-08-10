@@ -3,7 +3,12 @@ import AdminPageHeader from "../../components/AdminPageHeader";
 import ProductForm from "../ProductForm";
 import { createProductAction } from "@/lib/adminProductActions";
 
-export default async function NewProductPage() {
+export default async function NewProductPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ variantGroupId?: string }>;
+}) {
+  const { variantGroupId } = await searchParams;
   const [categories, brandRows, variantOptions] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.product.findMany({ where: { brand: { not: null } }, distinct: ["brand"], select: { brand: true }, orderBy: { brand: "asc" } }),
@@ -16,6 +21,7 @@ export default async function NewProductPage() {
       <AdminPageHeader title="Adaugă produs" />
       <ProductForm
         action={createProductAction}
+        defaults={variantGroupId ? { variantGroupId } : undefined}
         categories={categories}
         brands={brands}
         variantOptions={variantOptions}

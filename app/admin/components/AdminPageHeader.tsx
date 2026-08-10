@@ -4,7 +4,7 @@ export default function AdminPageHeader({
   action,
 }: {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   action?: React.ReactNode;
 }) {
   return (

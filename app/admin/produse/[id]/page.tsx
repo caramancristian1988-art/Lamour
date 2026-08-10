@@ -10,7 +10,7 @@ import AdminPageHeader from "../../components/AdminPageHeader";
 import DeleteButton from "../../components/DeleteButton";
 import CopyableId from "../../components/CopyableId";
 import ProductForm from "../ProductForm";
-import { updateProductAction } from "@/lib/adminProductActions";
+import { updateProductAction, deleteProductAction } from "@/lib/adminProductActions";
 import { deleteProductFaqAction } from "@/lib/adminProductFaqActions";
 import { createAdminReviewAction, deleteAdminReviewAction } from "@/lib/adminReviewActions";
 
@@ -24,6 +24,20 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   ]);
   if (!product) notFound();
   const brands = brandRows.map((b) => b.brand!).filter(Boolean);
+
+  // Variantele grupului din care face parte acest produs — dacă produsul e el
+  // însuși o variantă, arătăm variantele "fraților" lui; altfel, ale lui direct.
+  const variantFamilyId = product.variantGroupId ?? product.id;
+  const [primaryProduct, siblingVariants] = await Promise.all([
+    product.variantGroupId
+      ? prisma.product.findUnique({ where: { id: product.variantGroupId }, select: { id: true, name: true, slug: true } })
+      : Promise.resolve(null),
+    prisma.product.findMany({
+      where: { variantGroupId: variantFamilyId, id: { not: id } },
+      select: { id: true, name: true, slug: true, variantLabel: true, price: true },
+      orderBy: { variantLabel: "asc" },
+    }),
+  ]);
 
   let faqs: Awaited<ReturnType<typeof prisma.productFaq.findMany>> = [];
   let productReviews: Awaited<ReturnType<typeof prisma.review.findMany>> = [];
@@ -61,6 +75,59 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         variantOptions={variantOptions}
         submitLabel="Salvează modificările"
       />
+
+      <div className="mt-8">
+        <AdminPageHeader
+          title="Variante de mărime / cantitate"
+          description={
+            primaryProduct
+              ? <>Acesta e o variantă a <Link href={`/admin/produse/${primaryProduct.id}`} className="font-bold text-accent hover:underline">{primaryProduct.name}</Link>. Mai jos sunt celelalte mărimi din același grup.</>
+              : "Produsele legate ca mărimi/variante ale acestuia. Le poți edita, șterge sau adăuga altele noi."
+          }
+          action={
+            <Button variant="accent" asChild>
+              <Link href={`/admin/produse/nou?variantGroupId=${primaryProduct?.id ?? product.id}`}>
+                <Plus className="w-4 h-4" aria-hidden />
+                Adaugă variantă
+              </Link>
+            </Button>
+          }
+        />
+
+        {siblingVariants.length === 0 ? (
+          <div className="bg-card border border-border rounded-2xl p-10 text-center text-muted-foreground max-w-xl">
+            Nu există alte variante legate încă.
+          </div>
+        ) : (
+          <div className="bg-card border border-border rounded-2xl overflow-hidden max-w-xl">
+            <div className="divide-y divide-border">
+              {siblingVariants.map((v) => (
+                <div key={v.id} className="flex items-center gap-4 p-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-primary truncate">{v.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {v.variantLabel ?? "fără etichetă"} · {v.price} lei
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/admin/produse/${v.id}`} aria-label={`Editează varianta ${v.name}`}>
+                        <Pencil className="w-4 h-4" aria-hidden />
+                      </Link>
+                    </Button>
+                    <DeleteButton
+                      action={deleteProductAction}
+                      id={v.id}
+                      confirmText={`Sigur vrei să ștergi varianta "${v.name}"?`}
+                      label={`Șterge varianta ${v.name}`}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="mt-8">
         <AdminPageHeader
