@@ -24,31 +24,33 @@ const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
 const PRODUCT_CODE_RE = /\b[0-9a-fA-F]{6}\b/;
 
 async function getData(catFilter: string, sort: string, page: number, search: string) {
+  // A "Cod produs" match is an exact, unambiguous identifier — search across
+  // the whole catalog for it, ignoring any active category filter. Otherwise
+  // a leftover ?cat= from earlier browsing silently hides the exact product
+  // the admin is looking for, which reads as "the search doesn't work".
   let codeMatchIds: string[] = [];
   const codeMatch = search.match(PRODUCT_CODE_RE);
   if (codeMatch) {
-    const idScope = await prisma.product.findMany({
-      where: catFilter ? { categoryId: catFilter } : {},
-      select: { id: true },
-    });
+    const allIds = await prisma.product.findMany({ select: { id: true } });
     const needle = codeMatch[0].toLowerCase();
-    codeMatchIds = idScope.filter((p) => p.id.slice(-6).toLowerCase() === needle).map((p) => p.id);
+    codeMatchIds = allIds.filter((p) => p.id.slice(-6).toLowerCase() === needle).map((p) => p.id);
   }
 
-  const where: Prisma.ProductWhereInput = {
-    ...(catFilter ? { categoryId: catFilter } : {}),
-    ...(search
-      ? {
-          OR: [
-            { name: { contains: search, mode: "insensitive" } },
-            { slug: { contains: search, mode: "insensitive" } },
-            { brand: { contains: search, mode: "insensitive" } },
-            ...(OBJECT_ID_RE.test(search) ? [{ id: search }] : []),
-            ...(codeMatchIds.length ? [{ id: { in: codeMatchIds } }] : []),
-          ],
-        }
-      : {}),
-  };
+  const where: Prisma.ProductWhereInput = codeMatchIds.length
+    ? { id: { in: codeMatchIds } }
+    : {
+        ...(catFilter ? { categoryId: catFilter } : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: "insensitive" } },
+                { slug: { contains: search, mode: "insensitive" } },
+                { brand: { contains: search, mode: "insensitive" } },
+                ...(OBJECT_ID_RE.test(search) ? [{ id: search }] : []),
+              ],
+            }
+          : {}),
+      };
 
   const orderBy: Prisma.ProductOrderByWithRelationInput =
     sort === "name-asc"
