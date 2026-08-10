@@ -52,10 +52,10 @@ export default function StickyHeader({
             <Link href="/" className="flex items-center gap-2.5 shrink-0 rounded-lg">
               <Logo size={68} className="border-2 border-logo-silver shadow-sm" />
               <span className="block leading-tight">
-                <span className="block text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent">
+                <span className="block pr-1 text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)]">
                   {SITE_SHORT_NAME}
                 </span>
-                <span className="block text-base font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent -mt-0.5">
+                <span className="block pr-1 text-base font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)] -mt-0.5">
                   Lamour
                 </span>
               </span>
@@ -103,10 +103,10 @@ export default function StickyHeader({
           <Link href="/" className="flex items-center gap-4 py-4 shrink-0 rounded-lg">
             <Logo size={152} className="border-2 border-logo-silver shadow-sm" />
             <span className="block leading-tight">
-              <span className="block text-4xl font-serif italic font-bold tracking-tight whitespace-nowrap bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent">
+              <span className="block pr-2 text-4xl font-serif italic font-bold tracking-tight whitespace-nowrap bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.4px_var(--brand-maroon)]">
                 {SITE_SHORT_NAME}
               </span>
-              <span className="block text-2xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent -mt-1">
+              <span className="block pr-2 text-2xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.4px_var(--brand-maroon)] -mt-1">
                 Lamour
               </span>
             </span>
