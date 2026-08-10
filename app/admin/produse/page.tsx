@@ -18,16 +18,20 @@ const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
 // "Cod produs" shown to customers on the product page is just the last 6 hex
 // characters of the internal id (see app/produse/[slug]/page.tsx) — not a
 // stored field, so it can't be matched with a Prisma `where` filter directly.
-const PRODUCT_CODE_RE = /^[0-9a-fA-F]{6}$/;
+// Pulled out with a word-boundary match (not a full-string match) so pasting
+// the whole displayed line — "Cod produs: 9A8F70" — still works, not just
+// the bare code.
+const PRODUCT_CODE_RE = /\b[0-9a-fA-F]{6}\b/;
 
 async function getData(catFilter: string, sort: string, page: number, search: string) {
   let codeMatchIds: string[] = [];
-  if (PRODUCT_CODE_RE.test(search)) {
+  const codeMatch = search.match(PRODUCT_CODE_RE);
+  if (codeMatch) {
     const idScope = await prisma.product.findMany({
       where: catFilter ? { categoryId: catFilter } : {},
       select: { id: true },
     });
-    const needle = search.toLowerCase();
+    const needle = codeMatch[0].toLowerCase();
     codeMatchIds = idScope.filter((p) => p.id.slice(-6).toLowerCase() === needle).map((p) => p.id);
   }
 
