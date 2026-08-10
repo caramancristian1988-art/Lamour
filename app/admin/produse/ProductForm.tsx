@@ -24,6 +24,15 @@ interface VariantOption {
   name: string;
 }
 
+const COMMON_VARIANT_LABELS = [
+  "1 L", "2 L", "5 L", "10 L", "20 L",
+  "100 ml", "250 ml", "500 ml",
+  "100 g", "250 g", "500 g", "1 kg",
+  "1 buc", "2 buc", "6 buc", "12 buc", "24 buc",
+  "1 m²", "5 m²", "10 m²", "20 m²",
+  "1 rolă", "2 role", "4 role", "8 role", "12 role", "24 role",
+];
+
 const PRODUCT_SPEC_TEMPLATE = [
   { label: "Numărul de role în set", value: "" },
   { label: "Numărul de straturi", value: "" },
@@ -67,6 +76,7 @@ export default function ProductForm({
   categories,
   brands,
   variantOptions,
+  variantLabels,
   submitLabel,
 }: {
   action: (prevState: ProductFormState, formData: FormData) => Promise<ProductFormState>;
@@ -74,6 +84,7 @@ export default function ProductForm({
   categories: CategoryOption[];
   brands: string[];
   variantOptions: VariantOption[];
+  variantLabels: string[];
   submitLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -87,6 +98,10 @@ export default function ProductForm({
 
   const brandOptions =
     defaults?.brand && !brands.includes(defaults.brand) ? [...brands, defaults.brand] : brands;
+
+  const variantLabelOptions = Array.from(
+    new Set([...COMMON_VARIANT_LABELS, ...variantLabels, ...(defaults?.variantLabel ? [defaults.variantLabel] : [])])
+  );
 
   const defaultAvailabilities = ["În stoc", "Stoc epuizat", "La comandă"];
   const availabilityOptions =
@@ -211,15 +226,21 @@ export default function ProductForm({
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </AdminSelect>
-            <AdminInput
-              label="2. Ce scrie pe butonul de selecție pentru mărimea asta?"
+            <ManagedSelect
               name="variantLabel"
+              label="2. Ce scrie pe butonul de selecție pentru mărimea asta?"
+              defaultOptions={variantLabelOptions.map((value) => ({ value, label: value }))}
               defaultValue={defaults?.variantLabel ?? ""}
-              placeholder="ex: 2 litri, 35 m², 8 role"
+              emptyOptionLabel="Alege o etichetă"
+              addPlaceholder="Etichetă nouă, ex: 35 m², 16 role"
+              deleteConfirmText="Sigur vrei să ștergi această etichetă din listă?"
+              onAdd={async (label) => ({ option: { value: label, label } })}
+              onDelete={async () => {}}
             />
             <p className="text-xs text-muted-foreground -mt-1.5">
-              Ex: dacă alegi &quot;Borcan din plastic 1L&quot; și scrii &quot;2 litri&quot;, pe pagina lui va
-              apărea un buton &quot;2 litri&quot; care duce la produsul ăsta, cu prețul lui.
+              Alege una din listă (ex: &quot;2 L&quot;, &quot;35 m²&quot;, &quot;8 role&quot;) sau apasă
+              &quot;Adaugă&quot; pentru una nouă — rămâne disponibilă și pentru variantele viitoare.
+              Pe pagina produsului va apărea un buton cu eticheta asta, care duce la produsul ăsta cu prețul lui.
             </p>
           </>
         )}

@@ -17,14 +17,16 @@ import { createAdminReviewAction, deleteAdminReviewAction } from "@/lib/adminRev
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [product, categories, brandRows, variantOptions] = await Promise.all([
+  const [product, categories, brandRows, variantOptions, variantLabelRows] = await Promise.all([
     prisma.product.findUnique({ where: { id } }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
     prisma.product.findMany({ where: { brand: { not: null } }, distinct: ["brand"], select: { brand: true }, orderBy: { brand: "asc" } }),
     prisma.product.findMany({ where: { variantGroupId: null, id: { not: id } }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    prisma.product.findMany({ where: { variantLabel: { not: null } }, distinct: ["variantLabel"], select: { variantLabel: true }, orderBy: { variantLabel: "asc" } }),
   ]);
   if (!product) notFound();
   const brands = brandRows.map((b) => b.brand!).filter(Boolean);
+  const variantLabels = variantLabelRows.map((v) => v.variantLabel!).filter(Boolean);
 
   // Variantele grupului din care face parte acest produs — dacă produsul e el
   // însuși o variantă, arătăm variantele "fraților" lui; altfel, ale lui direct.
@@ -74,6 +76,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         categories={categories}
         brands={brands}
         variantOptions={variantOptions}
+        variantLabels={variantLabels}
         submitLabel="Salvează modificările"
       />
 
