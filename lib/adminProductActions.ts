@@ -26,13 +26,6 @@ function parseSpecifications(formData: FormData): { label: string; value: string
   return specs;
 }
 
-const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
-
-function parseHexColor(value: FormDataEntryValue | null): string | null {
-  const trimmed = String(value ?? "").trim();
-  return HEX_COLOR_RE.test(trimmed) ? trimmed : null;
-}
-
 function readProductFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
@@ -54,9 +47,6 @@ function readProductFields(formData: FormData) {
   const variantLabel = String(formData.get("variantLabel") ?? "").trim() || null;
   const salesCountRaw = String(formData.get("salesCount") ?? "").trim();
   const salesCount = Math.max(0, Math.floor(Number(salesCountRaw) || 0));
-  const popupProductColorsEnabled = formData.get("popupProductColorsEnabled") === "on";
-  const popupButtonColor = popupProductColorsEnabled ? parseHexColor(formData.get("popupButtonColor")) : null;
-  const popupBannerColor = popupProductColorsEnabled ? parseHexColor(formData.get("popupBannerColor")) : null;
 
   return {
     name,
@@ -78,8 +68,6 @@ function readProductFields(formData: FormData) {
     variantGroupId,
     variantLabel,
     salesCount,
-    popupButtonColor,
-    popupBannerColor,
   };
 }
 

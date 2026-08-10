@@ -28,8 +28,6 @@ export interface PopupProduct {
   reviewCount: number;
   review: { name: string; text: string; rating: number } | null;
   installmentsEnabled?: boolean;
-  buttonColor?: string | null;
-  bannerColor?: string | null;
 }
 
 interface StoredState {
@@ -165,8 +163,8 @@ export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopu
   if (!open && !minimized) return null;
 
   const product = products[activeIndex];
-  const effectiveButtonColor = product.buttonColor ?? buttonColor;
-  const effectiveBannerColor = product.bannerColor ?? bannerColor;
+  const effectiveButtonColor = buttonColor;
+  const effectiveBannerColor = bannerColor;
 
   function close() {
     logPopupEvent(product.slug, "close");

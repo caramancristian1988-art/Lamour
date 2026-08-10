@@ -43,8 +43,6 @@ async function getSearchableData() {
         variantGroupId: null as string | null,
         variantLabel: null as string | null,
         salesCount: 0,
-        popupButtonColor: null as string | null,
-        popupBannerColor: null as string | null,
       })),
     };
   }
