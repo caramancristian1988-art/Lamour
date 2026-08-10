@@ -17,8 +17,8 @@ export function Logo({ className, size = 44, src = "/logo.png" }: LogoProps) {
         alt={SITE_NAME}
         width={size}
         height={size}
-        quality={95}
-        className={cn("rounded-full object-cover", className)}
+        style={{ width: size, height: size }}
+        className={cn("rounded-full object-cover shrink-0", className)}
       />
     );
   }
