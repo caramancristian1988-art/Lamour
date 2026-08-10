@@ -24,14 +24,17 @@ interface VariantOption {
   name: string;
 }
 
-const COMMON_VARIANT_LABELS = [
-  "1 L", "2 L", "5 L", "10 L", "20 L",
-  "100 ml", "250 ml", "500 ml",
-  "100 g", "250 g", "500 g", "1 kg",
-  "1 buc", "2 buc", "6 buc", "12 buc", "24 buc",
-  "1 m²", "5 m²", "10 m²", "20 m²",
-  "1 rolă", "2 role", "4 role", "8 role", "12 role", "24 role",
-];
+const COMMON_VARIANT_UNITS = ["L", "ml", "kg", "g", "m²", "buc", "rolă", "set", "pachet"];
+
+// A saved variantLabel is stored as one string ("12 buc"), but the form edits
+// it as two separate fields (number + unit) so units become pickable presets
+// instead of the admin retyping the symbol every time. Split on the first
+// run of digits to prefill those two fields when editing an existing variant.
+function splitVariantLabel(label: string): { qty: string; unit: string } {
+  const match = label.trim().match(/^([\d.,]+)\s*(.*)$/);
+  if (!match) return { qty: "", unit: label.trim() };
+  return { qty: match[1], unit: match[2].trim() };
+}
 
 const PRODUCT_SPEC_TEMPLATE = [
   { label: "Numărul de role în set", value: "" },
@@ -99,8 +102,13 @@ export default function ProductForm({
   const brandOptions =
     defaults?.brand && !brands.includes(defaults.brand) ? [...brands, defaults.brand] : brands;
 
-  const variantLabelOptions = Array.from(
-    new Set([...COMMON_VARIANT_LABELS, ...variantLabels, ...(defaults?.variantLabel ? [defaults.variantLabel] : [])])
+  const currentVariantLabel = splitVariantLabel(defaults?.variantLabel ?? "");
+  const variantUnitOptions = Array.from(
+    new Set([
+      ...COMMON_VARIANT_UNITS,
+      ...variantLabels.map((l) => splitVariantLabel(l).unit).filter(Boolean),
+      ...(currentVariantLabel.unit ? [currentVariantLabel.unit] : []),
+    ])
   );
 
   const defaultAvailabilities = ["În stoc", "Stoc epuizat", "La comandă"];
@@ -226,21 +234,33 @@ export default function ProductForm({
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </AdminSelect>
-            <ManagedSelect
-              name="variantLabel"
-              label="2. Ce scrie pe butonul de selecție pentru mărimea asta?"
-              defaultOptions={variantLabelOptions.map((value) => ({ value, label: value }))}
-              defaultValue={defaults?.variantLabel ?? ""}
-              emptyOptionLabel="Alege o etichetă"
-              addPlaceholder="Etichetă nouă, ex: 35 m², 16 role"
-              deleteConfirmText="Sigur vrei să ștergi această etichetă din listă?"
-              onAdd={async (label) => ({ option: { value: label, label } })}
-              onDelete={async () => {}}
-            />
+            <p className="text-xs font-bold text-primary -mb-1.5">
+              2. Ce scrie pe butonul de selecție pentru mărimea asta?
+            </p>
+            <div className="grid grid-cols-[1fr_1.4fr] gap-3">
+              <AdminInput
+                label="Număr"
+                name="variantQty"
+                defaultValue={currentVariantLabel.qty}
+                placeholder="ex: 12, 2, 35"
+              />
+              <ManagedSelect
+                name="variantUnit"
+                label="Unitate"
+                defaultOptions={variantUnitOptions.map((value) => ({ value, label: value }))}
+                defaultValue={currentVariantLabel.unit}
+                emptyOptionLabel="Alege unitatea"
+                addPlaceholder="Unitate nouă, ex: seturi"
+                deleteConfirmText="Sigur vrei să ștergi această unitate din listă?"
+                onAdd={async (label) => ({ option: { value: label, label } })}
+                onDelete={async () => {}}
+              />
+            </div>
             <p className="text-xs text-muted-foreground -mt-1.5">
-              Alege una din listă (ex: &quot;2 L&quot;, &quot;35 m²&quot;, &quot;8 role&quot;) sau apasă
-              &quot;Adaugă&quot; pentru una nouă — rămâne disponibilă și pentru variantele viitoare.
-              Pe pagina produsului va apărea un buton cu eticheta asta, care duce la produsul ăsta cu prețul lui.
+              Numărul îl scrii tu de fiecare dată, unitatea o alegi din listă (sau apeși
+              &quot;Adaugă&quot; pentru una nouă, care rămâne disponibilă și pentru variantele
+              viitoare). Ex: &quot;12&quot; + &quot;buc&quot; → pe pagina produsului apare un buton
+              &quot;12 buc&quot; care duce la produsul ăsta, cu prețul lui.
             </p>
           </>
         )}

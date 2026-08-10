@@ -44,7 +44,9 @@ function readProductFields(formData: FormData) {
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const specifications = parseSpecifications(formData);
   const variantGroupId = String(formData.get("variantGroupId") ?? "").trim() || null;
-  const variantLabel = String(formData.get("variantLabel") ?? "").trim() || null;
+  const variantQty = String(formData.get("variantQty") ?? "").trim();
+  const variantUnit = String(formData.get("variantUnit") ?? "").trim();
+  const variantLabel = [variantQty, variantUnit].filter(Boolean).join(" ") || null;
   const salesCountRaw = String(formData.get("salesCount") ?? "").trim();
   const salesCount = Math.max(0, Math.floor(Number(salesCountRaw) || 0));
 
