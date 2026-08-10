@@ -52,7 +52,7 @@ export default function AdminProductFilters({ categories }: { categories: Catego
           type="text"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Caută după nume, ID sau brand..."
+          placeholder="Caută după nume, cod produs, ID sau brand..."
           className="text-sm font-semibold text-foreground border-2 border-input rounded-xl pl-9 pr-3 py-2 focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 bg-card w-64 transition-colors"
         />
       </div>

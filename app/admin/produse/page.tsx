@@ -15,8 +15,22 @@ import { deleteProductAction } from "@/lib/adminProductActions";
 const PER_PAGE = 10;
 
 const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
+// "Cod produs" shown to customers on the product page is just the last 6 hex
+// characters of the internal id (see app/produse/[slug]/page.tsx) — not a
+// stored field, so it can't be matched with a Prisma `where` filter directly.
+const PRODUCT_CODE_RE = /^[0-9a-fA-F]{6}$/;
 
 async function getData(catFilter: string, sort: string, page: number, search: string) {
+  let codeMatchIds: string[] = [];
+  if (PRODUCT_CODE_RE.test(search)) {
+    const idScope = await prisma.product.findMany({
+      where: catFilter ? { categoryId: catFilter } : {},
+      select: { id: true },
+    });
+    const needle = search.toLowerCase();
+    codeMatchIds = idScope.filter((p) => p.id.slice(-6).toLowerCase() === needle).map((p) => p.id);
+  }
+
   const where: Prisma.ProductWhereInput = {
     ...(catFilter ? { categoryId: catFilter } : {}),
     ...(search
@@ -26,6 +40,7 @@ async function getData(catFilter: string, sort: string, page: number, search: st
             { slug: { contains: search, mode: "insensitive" } },
             { brand: { contains: search, mode: "insensitive" } },
             ...(OBJECT_ID_RE.test(search) ? [{ id: search }] : []),
+            ...(codeMatchIds.length ? [{ id: { in: codeMatchIds } }] : []),
           ],
         }
       : {}),
@@ -78,6 +93,7 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
         <p className="font-bold text-sm text-primary line-clamp-2 leading-snug">{product.name}</p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <p className="text-sm text-muted-foreground">{product.category?.name ?? "Fără categorie"}</p>
+          <CopyableId id={product.id} prefix="Cod" label={product.id.slice(-6).toUpperCase()} copyValue={product.id.slice(-6).toUpperCase()} />
           <CopyableId id={product.id} />
           {product.variantGroup && (
             <Badge variant="secondary" className="normal-case">Variantă a: {product.variantGroup.name}</Badge>
