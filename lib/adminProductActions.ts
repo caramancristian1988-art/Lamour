@@ -167,6 +167,28 @@ export async function updateProductAction(_prevState: ProductFormState, formData
   redirect("/admin/produse");
 }
 
+// Lightweight action for the inline price editor on the variant-list section
+// of the product edit page — only touches price/oldPrice, no full form.
+export async function updateVariantPriceAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "");
+  const returnId = String(formData.get("returnId") ?? "");
+  const price = Number(formData.get("price") ?? 0);
+  const oldPriceRaw = String(formData.get("oldPrice") ?? "").trim();
+  if (!id || !price || price <= 0) return;
+
+  await prisma.product.update({
+    where: { id },
+    data: { price, oldPrice: oldPriceRaw ? Number(oldPriceRaw) : null },
+  });
+  await revalidateVariantFamily(id);
+  const product = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
+  if (product?.slug) revalidatePath(`/produse/${product.slug}`);
+  revalidatePath("/admin/produse");
+  if (returnId) revalidatePath(`/admin/produse/${returnId}`);
+}
+
 export async function deleteProductAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");

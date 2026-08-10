@@ -10,7 +10,8 @@ import AdminPageHeader from "../../components/AdminPageHeader";
 import DeleteButton from "../../components/DeleteButton";
 import CopyableId from "../../components/CopyableId";
 import ProductForm from "../ProductForm";
-import { updateProductAction, deleteProductAction } from "@/lib/adminProductActions";
+import { updateProductAction, deleteProductAction, updateVariantPriceAction } from "@/lib/adminProductActions";
+import { Input } from "@/app/components/ui/input";
 import { deleteProductFaqAction } from "@/lib/adminProductFaqActions";
 import { createAdminReviewAction, deleteAdminReviewAction } from "@/lib/adminReviewActions";
 
@@ -34,7 +35,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       : Promise.resolve(null),
     prisma.product.findMany({
       where: { variantGroupId: variantFamilyId, id: { not: id } },
-      select: { id: true, name: true, slug: true, variantLabel: true, price: true },
+      select: { id: true, name: true, slug: true, variantLabel: true, price: true, oldPrice: true },
       orderBy: { variantLabel: "asc" },
     }),
   ]);
@@ -95,20 +96,57 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         />
 
         {siblingVariants.length === 0 ? (
-          <div className="bg-card border border-border rounded-2xl p-10 text-center text-muted-foreground max-w-xl">
+          <div className="bg-card border border-border rounded-2xl p-10 text-center text-muted-foreground max-w-3xl">
             Nu există alte variante legate încă.
           </div>
         ) : (
-          <div className="bg-card border border-border rounded-2xl overflow-hidden max-w-xl">
+          <div className="bg-card border border-border rounded-2xl overflow-hidden max-w-3xl">
             <div className="divide-y divide-border">
               {siblingVariants.map((v) => (
-                <div key={v.id} className="flex items-center gap-4 p-4">
-                  <div className="flex-1 min-w-0">
+                <div key={v.id} className="flex items-center gap-4 p-4 flex-wrap">
+                  <div className="min-w-0">
                     <p className="font-bold text-sm text-primary truncate">{v.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {v.variantLabel ?? "fără etichetă"} · {v.price} lei
-                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{v.variantLabel ?? "fără etichetă"}</p>
                   </div>
+
+                  <form action={updateVariantPriceAction} className="flex items-end gap-2 ml-auto">
+                    <input type="hidden" name="id" value={v.id} />
+                    <input type="hidden" name="returnId" value={product.id} />
+                    <div className="flex flex-col gap-1">
+                      <label htmlFor={`price-${v.id}`} className="text-[10px] font-bold text-muted-foreground">
+                        Preț (lei)
+                      </label>
+                      <Input
+                        id={`price-${v.id}`}
+                        name="price"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                        defaultValue={v.price}
+                        className="h-9 w-24 px-2.5 py-1.5 text-sm"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label htmlFor={`oldprice-${v.id}`} className="text-[10px] font-bold text-muted-foreground">
+                        Preț vechi
+                      </label>
+                      <Input
+                        id={`oldprice-${v.id}`}
+                        name="oldPrice"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        defaultValue={v.oldPrice ?? ""}
+                        placeholder="—"
+                        className="h-9 w-24 px-2.5 py-1.5 text-sm"
+                      />
+                    </div>
+                    <Button type="submit" variant="secondary" size="sm" className="h-9">
+                      Salvează
+                    </Button>
+                  </form>
+
                   <div className="flex items-center gap-0.5 shrink-0">
                     <Button variant="ghost" size="icon" asChild>
                       <Link href={`/admin/produse/${v.id}`} aria-label={`Editează varianta ${v.name}`}>
