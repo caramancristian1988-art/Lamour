@@ -26,6 +26,52 @@ function parseSpecifications(formData: FormData): { label: string; value: string
   return specs;
 }
 
+interface VariantRowInput {
+  qty: string;
+  unit: string;
+  price: number;
+  oldPrice: number | null;
+}
+
+// Lets an admin add extra size/quantity variants straight from the "new
+// product" form, instead of having to save the product first and add each
+// variant separately afterwards. Rows missing a valid price are skipped
+// silently (e.g. a blank template row left over from removing others).
+function parseVariantRows(formData: FormData): VariantRowInput[] {
+  const qtys = formData.getAll("variantRowQty").map((v) => String(v).trim());
+  const units = formData.getAll("variantRowUnit").map((v) => String(v).trim());
+  const prices = formData.getAll("variantRowPrice").map((v) => String(v).trim());
+  const oldPrices = formData.getAll("variantRowOldPrice").map((v) => String(v).trim());
+
+  const rows: VariantRowInput[] = [];
+  for (let i = 0; i < qtys.length; i++) {
+    const price = Number(prices[i]);
+    if (!qtys[i] && !units[i]) continue;
+    if (!price || price <= 0) continue;
+    rows.push({ qty: qtys[i], unit: units[i], price, oldPrice: oldPrices[i] ? Number(oldPrices[i]) : null });
+  }
+  return rows;
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function uniqueSlug(base: string): Promise<string> {
+  let slug = base;
+  let n = 2;
+  while (await prisma.product.findUnique({ where: { slug } })) {
+    slug = `${base}-${n}`;
+    n++;
+  }
+  return slug;
+}
+
 function readProductFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
@@ -89,6 +135,37 @@ export async function createProductAction(_prevState: ProductFormState, formData
   if (existing) return { error: "Există deja un produs cu acest slug." };
 
   const created = await prisma.product.create({ data });
+
+  // Extra size/quantity variants entered on the same "new product" form —
+  // only meaningful when this product isn't itself already a variant of
+  // something else.
+  if (!data.variantGroupId) {
+    for (const row of parseVariantRows(formData)) {
+      const label = [row.qty, row.unit].filter(Boolean).join(" ");
+      const variantName = `${data.name} ${label}`.trim();
+      const slug = await uniqueSlug(slugify(variantName));
+      await prisma.product.create({
+        data: {
+          name: variantName,
+          slug,
+          description: data.description,
+          price: row.price,
+          oldPrice: row.oldPrice,
+          image: data.image,
+          images: data.images,
+          packageQuantity: data.packageQuantity,
+          brand: data.brand,
+          availability: data.availability,
+          installmentsEnabled: data.installmentsEnabled,
+          categoryId: data.categoryId,
+          specifications: data.specifications,
+          variantGroupId: created.id,
+          variantLabel: label,
+        },
+      });
+    }
+  }
+
   await revalidateVariantFamily(created.id);
   if (data.variantGroupId) await revalidateVariantFamily(data.variantGroupId);
   revalidatePath("/admin/produse");

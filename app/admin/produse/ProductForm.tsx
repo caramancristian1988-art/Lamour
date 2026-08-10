@@ -6,6 +6,7 @@ import ImageUploadField from "../components/ImageUploadField";
 import MultiImageUploadField from "../components/MultiImageUploadField";
 import ManagedSelect from "../components/ManagedSelect";
 import SpecificationsEditor from "../components/SpecificationsEditor";
+import VariantRowsEditor from "../components/VariantRowsEditor";
 import type { ProductFormState } from "@/lib/adminProductActions";
 import { createCategoryInlineAction, deleteCategoryInlineAction } from "@/lib/adminCategoryActions";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
@@ -264,6 +265,8 @@ export default function ProductForm({
             </p>
           </>
         )}
+
+        {!defaults?.id && !isVariant && <VariantRowsEditor unitOptions={variantUnitOptions} />}
       </div>
 
       <ImageUploadField name="image" label="Imagine principală" defaultValue={defaults?.image} />
