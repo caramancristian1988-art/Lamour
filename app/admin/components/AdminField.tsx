@@ -18,7 +18,7 @@ export function AdminInput({
 }: FieldProps & { type?: string; defaultValue?: string | number; placeholder?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={`field-${name}`}>
+      <Label htmlFor={`field-${name}`} className="min-h-[2.5rem] flex items-end">
         {label} {required && <span className="text-accent">*</span>}
       </Label>
       <Input
@@ -42,7 +42,7 @@ export function AdminSelect({
 }: FieldProps & { defaultValue?: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={`field-${name}`}>
+      <Label htmlFor={`field-${name}`} className="min-h-[2.5rem] flex items-end">
         {label} {required && <span className="text-accent">*</span>}
       </Label>
       <select
@@ -68,7 +68,7 @@ export function AdminTextarea({
 }: FieldProps & { defaultValue?: string; rows?: number; placeholder?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={`field-${name}`}>
+      <Label htmlFor={`field-${name}`} className="min-h-[2.5rem] flex items-end">
         {label} {required && <span className="text-accent">*</span>}
       </Label>
       <Textarea
