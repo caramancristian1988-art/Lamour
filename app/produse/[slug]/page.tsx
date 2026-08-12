@@ -371,7 +371,7 @@ function CategoryView({ category, children, activeChild, products: baseProducts,
 
       {/* PRODUCTS GRID */}
       <section className="bg-background py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-[96rem] mx-auto px-4 sm:px-6">
           {children.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap mb-6" role="group" aria-label="Filtrează după subcategorie">
               <Link
@@ -411,7 +411,7 @@ function CategoryView({ category, children, activeChild, products: baseProducts,
               <p className="text-sm text-muted-foreground mb-6">{products.length} produse găsite</p>
 
               {items.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                   {items.map((product) => (
                     <ProductCard
                       key={product.id}
