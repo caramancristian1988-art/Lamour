@@ -178,6 +178,19 @@ export default function ProductCard({
                   +{hiddenCount}
                 </button>
               )}
+              {variantsExpanded && variantOptions.length > MAX_VISIBLE && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setVariantsExpanded(false);
+                  }}
+                  aria-label="Ascunde variantele suplimentare"
+                  className="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border-2 border-dashed border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors"
+                >
+                  Ascunde
+                </button>
+              )}
             </div>
           );
         })()}
