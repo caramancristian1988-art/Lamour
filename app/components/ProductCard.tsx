@@ -188,10 +188,12 @@ export default function ProductCard({
           <div className="flex items-center gap-1.5 sm:gap-2">
             <AddToCartButton
               slug={activeSlug}
-              name={name}
+              name={displayTitle}
               price={activePrice}
               oldPrice={activeOldPrice}
               image={image ?? null}
+              variantOptions={variantOptions}
+              variantLabel={activeVariant.variantLabel}
               className="flex-1 h-10 sm:h-11 bg-accent hover:bg-brand-red-dark text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-muted disabled:text-muted-foreground active:scale-95 hover:shadow-md"
             >
               <ShoppingCart className="w-4 h-4" aria-hidden />

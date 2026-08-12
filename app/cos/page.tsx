@@ -8,7 +8,7 @@ import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 
 export default function CosPage() {
-  const { items, cartCount, removeFromCart, updateQuantity } = useCart();
+  const { items, cartCount, removeFromCart, updateQuantity, changeVariant } = useCart();
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const savings = items.reduce((sum, i) => sum + (i.oldPrice ? (i.oldPrice - i.price) * i.quantity : 0), 0);
 
@@ -68,7 +68,42 @@ export default function CosPage() {
                               </Badge>
                             </>
                           )}
+                          {item.variantLabel && (
+                            <Badge variant="secondary" className="normal-case px-1.5 py-0.5">
+                              {item.variantLabel}
+                            </Badge>
+                          )}
                         </div>
+
+                        {item.variantOptions && item.variantOptions.length > 1 && (
+                          <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                            {item.variantOptions.map((v) => (
+                              <button
+                                key={v.slug}
+                                type="button"
+                                onClick={() =>
+                                  v.slug !== item.slug &&
+                                  changeVariant(item.slug, {
+                                    slug: v.slug,
+                                    name: item.name,
+                                    price: v.price,
+                                    oldPrice: v.oldPrice,
+                                    image: item.image,
+                                    variantLabel: v.variantLabel,
+                                    variantOptions: item.variantOptions,
+                                  })
+                                }
+                                className={`px-2.5 py-1 rounded-full text-xs font-bold border-2 transition-all active:scale-95 ${
+                                  v.slug === item.slug
+                                    ? "bg-primary text-white border-primary"
+                                    : "bg-card text-foreground border-border hover:border-accent hover:text-accent"
+                                }`}
+                              >
+                                {v.variantLabel ?? "—"}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 

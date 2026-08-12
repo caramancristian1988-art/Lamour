@@ -50,7 +50,7 @@ const allFallbackProducts = [
   ...fallbackPopularProducts,
   ...fallbackOfferProducts,
   ...fallbackDiscountProducts,
-].map((p) => ({ ...p, images: [] as string[], brand: null as string | null, variantGroupId: null as string | null }));
+].map((p) => ({ ...p, images: [] as string[], brand: null as string | null, variantGroupId: null as string | null, variantLabel: null as string | null }));
 
 const getCategoryData = cache(async (slug: string, activeChildSlug?: string) => {
   try {
@@ -482,6 +482,7 @@ interface ProductViewProps {
     installmentsEnabled?: boolean;
     specifications?: { label: string; value: string }[];
     salesCount?: number;
+    variantLabel?: string | null;
   };
   category: { id: string; name: string; slug: string } | null;
   related: Array<{
@@ -733,6 +734,9 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
                   oldPrice={product.oldPrice}
                   image={displayImage}
                   inStock={inStock}
+                  variantOptions={variants.length > 1 ? variants : undefined}
+                  variantLabel={product.variantLabel}
+                  promptVariant={false}
                   className={`${installmentsEnabled ? "flex-[3]" : "flex-1"} h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors ${
                     inStock
                       ? "bg-accent hover:bg-brand-red-dark text-accent-foreground"
