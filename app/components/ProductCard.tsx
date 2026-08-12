@@ -81,7 +81,7 @@ export default function ProductCard({
   const displayTitle = hasVariants ? stripVariantSuffix(name, ownVariantLabel) : name;
 
   return (
-    <div className="group bg-card rounded-2xl border border-border overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
+    <div className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
       {/* Image area */}
       <div className="relative aspect-[4/3] flex items-center justify-center bg-white overflow-hidden">
         <Link href={`/produse/${activeSlug}`} className="w-full h-full flex items-center justify-center rounded-lg">
