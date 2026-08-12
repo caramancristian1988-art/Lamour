@@ -210,7 +210,7 @@ function buildCategoryHref(
 function Breadcrumb() {
   return (
     <section className="bg-background">
-      <div className="max-w-[96rem] mx-auto px-4 sm:px-6 pt-4 pb-1">
+      <div className="max-w-[110rem] mx-auto px-4 sm:px-6 pt-4 pb-1">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground" aria-label="Fir de ariadnă">
           <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
           <span aria-hidden>›</span>
@@ -274,7 +274,7 @@ export default async function ProdusePage({
         />
         <Breadcrumb />
         <section className="bg-background pt-2 pb-10 sm:py-10">
-          <div className="max-w-[96rem] mx-auto px-4 sm:px-6">
+          <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
             <DivisionTabs active={division} />
             <h1 className="sr-only">Mobilă la comandă</h1>
 
@@ -293,7 +293,7 @@ export default async function ProdusePage({
 
               <div className="flex-1 min-w-0">
                 {listings.length > 0 ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                  <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
                     {listings.map((listing) => (
                       <FurnitureCard key={listing.slug} listing={listing} />
                     ))}
@@ -354,7 +354,7 @@ export default async function ProdusePage({
         />
         <Breadcrumb />
         <section className="bg-background pt-2 pb-10 sm:py-10">
-          <div className="max-w-[96rem] mx-auto px-4 sm:px-6">
+          <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
             <DivisionTabs active={division} />
             <h1 className="sr-only">Spații disponibile spre închiriere</h1>
 
@@ -374,7 +374,7 @@ export default async function ProdusePage({
 
               <div className="flex-1 min-w-0">
                 {listings.length > 0 ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                  <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
                     {listings.map((listing) => (
                       <SpaceCard key={listing.slug} listing={listing} />
                     ))}
@@ -482,7 +482,7 @@ export default async function ProdusePage({
 
       {/* ── PRODUCTS GRID ── */}
       <section className="bg-background pt-2 pb-10 sm:py-10">
-        <div className="max-w-[96rem] mx-auto px-4 sm:px-6">
+        <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
           <DivisionTabs active={division} />
           <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse de uz casnic</h1>
 
@@ -537,7 +537,7 @@ export default async function ProdusePage({
               )}
 
               {items.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+                <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-5">
                   {items.map((product) => (
                     <ProductCard
                       key={product.id}

@@ -11,7 +11,7 @@ export default function TopBar({
 }) {
   return (
     <div className="bg-brand-maroon text-white text-sm py-2.5 px-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+      <div className="max-w-[110rem] mx-auto flex items-center justify-between gap-2 sm:gap-4">
         <div className="flex items-center gap-1.5 min-w-0">
           <HandHeart className="w-4 h-4 text-white/70 shrink-0" aria-hidden />
           <span className="truncate text-xs sm:text-sm">Suntem alături de tine, la fiecare pas</span>

@@ -99,7 +99,7 @@ export default function StickyHeader({
         </div>
 
         {/* DESKTOP layout */}
-        <div className="hidden lg:grid grid-cols-[auto_1fr_auto] gap-x-6 max-w-[96rem] mx-auto px-6">
+        <div className="hidden lg:grid grid-cols-[auto_1fr_auto] gap-x-6 max-w-[110rem] mx-auto px-6">
           <Link href="/" className="flex items-center gap-4 py-4 shrink-0 rounded-lg">
             <Logo size={152} className="border-2 border-logo-silver shadow-sm" />
             <span className="block leading-tight">
@@ -142,7 +142,7 @@ export default function StickyHeader({
       </div>
 
       {/* ══ ROW 2: Navbar — desktop only ══ */}
-      <div className="hidden lg:flex items-center justify-center gap-10 max-w-[96rem] mx-auto px-6 border-b border-border">
+      <div className="hidden lg:flex items-center justify-center gap-10 max-w-[110rem] mx-auto px-6 border-b border-border">
         {produseEnabled && (
           <AllCategoriesMenu categories={productsDropdown} buttonClassName="flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white text-sm font-bold px-5 h-10 rounded-xl transition-colors uppercase tracking-wide shrink-0" />
         )}
