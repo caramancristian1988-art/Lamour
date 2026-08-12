@@ -4,13 +4,32 @@ export type SortKey = "newest" | "price-asc" | "price-desc" | "rating";
 // the pill selector, so the raw trailing "1L" / "2 role" etc. baked into the
 // name is redundant clutter on the title — strip it there, keep the full
 // name everywhere else (cart, favorites, "Cod produs" etc. stay exact).
+// Punctuation/casing in a hand-picked variantLabel ("Nr.1-3, 1.6L") often
+// doesn't byte-match the name's own trailing text ("nr.1-3; 1.6L") even
+// though they describe the same thing, so compare on normalized content
+// (letters/digits only, punctuation and spacing collapsed) instead of an
+// exact substring.
+function normalizeForMatch(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[.,;:\-–—"'“”‘’„]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function stripVariantSuffix(name: string, variantLabel: string | null): string {
   if (!variantLabel) return name;
   const trimmedLabel = variantLabel.trim();
   if (!trimmedLabel) return name;
-  const idx = name.toLowerCase().lastIndexOf(trimmedLabel.toLowerCase());
-  if (idx === -1 || idx + trimmedLabel.length !== name.length) return name;
-  return name.slice(0, idx).replace(/[\s,;.-]+$/, "").trim() || name;
+  const normLabel = normalizeForMatch(trimmedLabel);
+  if (!normLabel) return name;
+
+  for (let cut = 0; cut < name.length; cut++) {
+    if (normalizeForMatch(name.slice(cut)) === normLabel) {
+      return name.slice(0, cut).replace(/[\s,;.-]+$/, "").trim() || name;
+    }
+  }
+  return name;
 }
 
 // Products that are just a size/quantity variant of another product
