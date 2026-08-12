@@ -129,7 +129,13 @@ export default function ProductCard({
         </div>
 
         {variantOptions && variantOptions.length > 1 && (
-          <div className="flex items-center gap-2 flex-wrap mb-3">
+          // Wrapping to multiple lines made cards with many variants (e.g. 4
+          // sizes) far taller than their row neighbors — CSS Grid still sizes
+          // the whole row to the tallest card even with items-start, leaving
+          // a gap of bare page background beside the shorter cards. Keeping
+          // the pill row to a single line (scrollable if it overflows) caps
+          // every card's height difference to "has a pill row or not".
+          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 mb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {variantOptions.map((v) => {
               const active = v.slug === activeSlug;
               return (
@@ -143,7 +149,7 @@ export default function ProductCard({
                     window.setTimeout(() => setPulseSlug((cur) => (cur === v.slug ? null : cur)), 400);
                   }}
                   title={v.variantLabel ?? undefined}
-                  className={`max-w-[110px] truncate px-3.5 py-1.5 rounded-full text-xs font-bold border-2 transition-all active:scale-90 ${
+                  className={`shrink-0 max-w-[110px] truncate px-3.5 py-1.5 rounded-full text-xs font-bold border-2 transition-all active:scale-90 ${
                     active
                       ? "bg-primary text-white border-primary shadow-md scale-105"
                       : "bg-card text-foreground border-border hover:border-accent hover:text-accent hover:shadow-sm"

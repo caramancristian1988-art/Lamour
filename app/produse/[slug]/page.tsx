@@ -26,6 +26,7 @@ import {
   applyFilters,
   dedupeVariants,
   buildVariantOptionsMap,
+  variantSortValue,
   type VariantOption,
 } from "@/lib/productListing";
 import ProductCard from "../../components/ProductCard";
@@ -521,11 +522,6 @@ interface ProductViewProps {
   }>;
   ratesEnabled: boolean;
   installmentMonths: number;
-}
-
-function variantSortValue(label: string | null): number {
-  const m = label?.match(/[\d]+([.,]\d+)?/);
-  return m ? parseFloat(m[0].replace(",", ".")) : 0;
 }
 
 async function ProductView({ product, category, related, relatedVariantOptionsMap, reviews, faqs, variants, ratesEnabled, installmentMonths }: ProductViewProps) {

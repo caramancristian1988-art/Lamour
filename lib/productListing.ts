@@ -48,6 +48,14 @@ export interface VariantOption {
   oldPrice: number | null;
 }
 
+// Sizes/quantities read left-to-right smallest-to-largest everywhere in the
+// UI (card pills, cart pills, the detail-page selector) — pull out a
+// variant's leading number ("Nr.1" -> 1, "2 role" -> 2) to sort on.
+export function variantSortValue(label: string | null): number {
+  const m = label?.match(/\d+([.,]\d+)?/);
+  return m ? parseFloat(m[0].replace(",", ".")) : 0;
+}
+
 export function buildVariantOptionsMap<
   T extends {
     id: string;
@@ -68,6 +76,9 @@ export function buildVariantOptionsMap<
       price: p.price,
       oldPrice: p.oldPrice ?? null,
     });
+  }
+  for (const options of map.values()) {
+    options.sort((a, b) => variantSortValue(a.variantLabel) - variantSortValue(b.variantLabel));
   }
   return map;
 }
