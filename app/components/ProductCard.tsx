@@ -66,6 +66,7 @@ export default function ProductCard({
   const activePrice = activeVariant.price;
   const activeOldPrice = activeVariant.oldPrice;
   const [pulseSlug, setPulseSlug] = useState<string | null>(null);
+  const [variantsExpanded, setVariantsExpanded] = useState(false);
 
   const discount = activeOldPrice ? Math.round((1 - activePrice / activeOldPrice) * 100) : null;
   const discountAmount = activeOldPrice ? Math.round(activeOldPrice - activePrice) : null;
@@ -128,39 +129,58 @@ export default function ProductCard({
           <span className="text-sm text-muted-foreground">({reviewCount})</span>
         </div>
 
-        {variantOptions && variantOptions.length > 1 && (
-          // Wrapping to multiple lines made cards with many variants (e.g. 4
-          // sizes) far taller than their row neighbors — CSS Grid still sizes
-          // the whole row to the tallest card even with items-start, leaving
-          // a gap of bare page background beside the shorter cards. Keeping
-          // the pill row to a single line (scrollable if it overflows) caps
-          // every card's height difference to "has a pill row or not".
-          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 mb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {variantOptions.map((v) => {
-              const active = v.slug === activeSlug;
-              return (
+        {variantOptions && variantOptions.length > 1 && (() => {
+          // Wrapping every pill made cards with many variants (e.g. 4 sizes)
+          // far taller than their row neighbors — CSS Grid still sizes the
+          // whole row to the tallest card even with items-start, leaving a
+          // gap of bare page background beside the shorter cards. Cap to a
+          // couple pills by default (a horizontal scroll row read badly on
+          // desktop) and let a "+N" chip reveal the rest on demand, only
+          // growing that one card when the shopper actually asks for it.
+          const MAX_VISIBLE = 2;
+          const visible = variantsExpanded ? variantOptions : variantOptions.slice(0, MAX_VISIBLE);
+          const hiddenCount = variantOptions.length - visible.length;
+          return (
+            <div className="flex items-center gap-2 flex-wrap mb-3">
+              {visible.map((v) => {
+                const active = v.slug === activeSlug;
+                return (
+                  <button
+                    key={v.slug}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveVariant(v);
+                      setPulseSlug(v.slug);
+                      window.setTimeout(() => setPulseSlug((cur) => (cur === v.slug ? null : cur)), 400);
+                    }}
+                    title={v.variantLabel ?? undefined}
+                    className={`shrink-0 max-w-[110px] truncate px-3.5 py-1.5 rounded-full text-xs font-bold border-2 transition-all active:scale-90 ${
+                      active
+                        ? "bg-primary text-white border-primary shadow-md scale-105"
+                        : "bg-card text-foreground border-border hover:border-accent hover:text-accent hover:shadow-sm"
+                    } ${pulseSlug === v.slug ? "animate-bump" : ""}`}
+                  >
+                    {v.variantLabel ?? "—"}
+                  </button>
+                );
+              })}
+              {hiddenCount > 0 && (
                 <button
-                  key={v.slug}
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    setActiveVariant(v);
-                    setPulseSlug(v.slug);
-                    window.setTimeout(() => setPulseSlug((cur) => (cur === v.slug ? null : cur)), 400);
+                    setVariantsExpanded(true);
                   }}
-                  title={v.variantLabel ?? undefined}
-                  className={`shrink-0 max-w-[110px] truncate px-3.5 py-1.5 rounded-full text-xs font-bold border-2 transition-all active:scale-90 ${
-                    active
-                      ? "bg-primary text-white border-primary shadow-md scale-105"
-                      : "bg-card text-foreground border-border hover:border-accent hover:text-accent hover:shadow-sm"
-                  } ${pulseSlug === v.slug ? "animate-bump" : ""}`}
+                  aria-label={`Arată încă ${hiddenCount} variante`}
+                  className="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border-2 border-dashed border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors"
                 >
-                  {v.variantLabel ?? "—"}
+                  +{hiddenCount}
                 </button>
-              );
-            })}
-          </div>
-        )}
+              )}
+            </div>
+          );
+        })()}
 
         <div className="mt-auto">
           <div className="mb-2">
