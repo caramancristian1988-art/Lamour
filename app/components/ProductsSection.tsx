@@ -55,7 +55,7 @@ export default async function ProductsSection({ products, title = "Produse", hig
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-5">
+        <div className="grid items-start grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-5">
           {products.map((product) => (
             <ProductCard
               key={product.id}

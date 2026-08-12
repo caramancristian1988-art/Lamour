@@ -293,7 +293,7 @@ export default async function ProdusePage({
 
               <div className="flex-1 min-w-0">
                 {listings.length > 0 ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
+                  <div className="grid items-start grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
                     {listings.map((listing) => (
                       <FurnitureCard key={listing.slug} listing={listing} />
                     ))}
@@ -374,7 +374,7 @@ export default async function ProdusePage({
 
               <div className="flex-1 min-w-0">
                 {listings.length > 0 ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
+                  <div className="grid items-start grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
                     {listings.map((listing) => (
                       <SpaceCard key={listing.slug} listing={listing} />
                     ))}
@@ -537,7 +537,7 @@ export default async function ProdusePage({
               )}
 
               {items.length > 0 ? (
-                <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-5">
+                <div className="grid items-start grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-5">
                   {items.map((product) => (
                     <ProductCard
                       key={product.id}

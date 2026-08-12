@@ -142,7 +142,8 @@ export default function ProductCard({
                     setPulseSlug(v.slug);
                     window.setTimeout(() => setPulseSlug((cur) => (cur === v.slug ? null : cur)), 400);
                   }}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold border-2 transition-all active:scale-90 ${
+                  title={v.variantLabel ?? undefined}
+                  className={`max-w-[110px] truncate px-3.5 py-1.5 rounded-full text-xs font-bold border-2 transition-all active:scale-90 ${
                     active
                       ? "bg-primary text-white border-primary shadow-md scale-105"
                       : "bg-card text-foreground border-border hover:border-accent hover:text-accent hover:shadow-sm"

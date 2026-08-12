@@ -411,7 +411,7 @@ function CategoryView({ category, children, activeChild, products: baseProducts,
               <p className="text-sm text-muted-foreground mb-6">{products.length} produse găsite</p>
 
               {items.length > 0 ? (
-                <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-5">
+                <div className="grid items-start grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-5">
                   {items.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -846,7 +846,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
             <h2 className="text-2xl font-extrabold text-foreground uppercase tracking-wide mb-8">
               Produse <span className="text-accent">similare</span>
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+            <div className="grid items-start grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
               {related.map((p) => (
                 <ProductCard
                   key={p.id}
