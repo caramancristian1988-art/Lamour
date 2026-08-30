@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,15 @@ export default function TierQuantityPicker({
   const saved = (price - unitPrice) * quantity;
   const upcoming = nextTier(price, tiers, quantity);
 
+  // Ce s-a tastat in campul de cantitate, cat timp e in editare (poate fi si gol).
+  const [draft, setDraft] = useState<string | null>(null);
+
+  // Orice schimbare din butoane sau trepte inlocuieste ce era tastat.
+  function setQuantity(next: number) {
+    setDraft(null);
+    onQuantityChange(next);
+  }
+
   // Prețul de listă e prima treaptă, de la 1 bucată.
   const steps = [{ minQty: 1, price }, ...tiers];
   const activeIndex = steps.reduce((best, step, i) => (quantity >= step.minQty ? i : best), 0);
@@ -67,7 +77,12 @@ export default function TierQuantityPicker({
                 <button
                   key={`${step.minQty}-${step.price}`}
                   type="button"
-                  onClick={() => onQuantityChange(Math.max(quantity, step.minQty))}
+                  onClick={() => {
+                    // Click pe treapta curentă nu scade cantitatea aleasă deja
+                    // (ex: 15 buc. rămâne 15, nu sare înapoi la 10).
+                    if (i === activeIndex) return;
+                    setQuantity(step.minQty);
+                  }}
                   aria-pressed={isActive}
                   className={cn(
                     "flex items-center justify-between gap-3 rounded-xl border-2 text-left transition-colors",
@@ -100,27 +115,33 @@ export default function TierQuantityPicker({
         <div className="flex items-center gap-1 border-2 border-border rounded-xl">
           <button
             type="button"
-            onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
+            onClick={() => setQuantity(Math.max(1, quantity - 1))}
             disabled={quantity <= 1}
             aria-label="Scade cantitatea"
             className="w-10 h-11 flex items-center justify-center text-muted-foreground hover:text-accent disabled:text-muted-foreground/40 transition-colors"
           >
             <Minus className="w-4 h-4" aria-hidden />
           </button>
+          {/* Câmpul păstrează ce tastezi (`draft`), inclusiv gol, ca să poți șterge
+              cifre și scrie un număr mai mic. Cu `value={quantity}` direct, un câmp
+              golit devenea instant 1 și nu mai puteai trece de la 100 la 20. */}
           <input
-            type="number"
-            min={1}
-            value={quantity}
+            type="text"
+            inputMode="numeric"
+            value={draft ?? String(quantity)}
             onChange={(e) => {
-              const parsed = Math.floor(Number(e.target.value));
-              onQuantityChange(Number.isFinite(parsed) && parsed > 0 ? parsed : 1);
+              const digits = e.target.value.replace(/\D/g, "");
+              setDraft(digits);
+              const parsed = Number(digits);
+              if (digits !== "" && parsed > 0) onQuantityChange(parsed);
             }}
+            onBlur={() => setDraft(null)}
             aria-label="Cantitate"
-            className="w-14 h-11 bg-transparent text-center text-sm font-bold text-foreground focus-visible:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="w-16 h-11 bg-transparent text-center text-sm font-bold text-foreground focus-visible:outline-none"
           />
           <button
             type="button"
-            onClick={() => onQuantityChange(quantity + 1)}
+            onClick={() => setQuantity(quantity + 1)}
             aria-label="Crește cantitatea"
             className="w-10 h-11 flex items-center justify-center text-muted-foreground hover:text-accent transition-colors"
           >
@@ -147,7 +168,7 @@ export default function TierQuantityPicker({
       {upcoming && (
         <button
           type="button"
-          onClick={() => onQuantityChange(upcoming.tier.minQty)}
+          onClick={() => setQuantity(upcoming.tier.minQty)}
           className="text-left text-sm text-primary hover:text-accent transition-colors"
         >
           Mai adaugă <b>{upcoming.missingQty} buc.</b> și plătești{" "}
