@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowRight, MessageCircle, ShoppingCart, Truck, PackageCheck, ShieldCheck, ChevronDown } from "lucide-react";
+import { ArrowRight, MessageCircle, Truck, PackageCheck, ShieldCheck, ChevronDown } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
@@ -31,7 +31,8 @@ import {
 } from "@/lib/productListing";
 import ProductCard from "../../components/ProductCard";
 import LoadMoreButton from "../../components/LoadMoreButton";
-import AddToCartButton from "../../components/AddToCartButton";
+import ProductBuyBox from "../../components/ProductBuyBox";
+import { normalizeTiers, type PriceTier } from "@/lib/pricing";
 import ProductGallery from "../../components/ProductGallery";
 import FavoriteButton from "../../components/FavoriteButton";
 import ProductFilterSidebar from "../../components/ProductFilterSidebar";
@@ -112,12 +113,21 @@ const getProductData = cache(async (slug: string) => {
 
     // Variant family: the primary product (variantGroupId null) plus every
     // sibling — resolved regardless of which variant's page we're on.
-    let variants: { id: string; slug: string; variantLabel: string | null; price: number; oldPrice: number | null }[] = [];
+    let variants: {
+      id: string;
+      slug: string;
+      variantLabel: string | null;
+      price: number;
+      oldPrice: number | null;
+      priceTiers?: PriceTier[];
+    }[] = [];
     try {
       const primaryId = product.variantGroupId ?? product.id;
       variants = await prisma.product.findMany({
         where: { OR: [{ id: primaryId }, { variantGroupId: primaryId }] },
-        select: { id: true, slug: true, variantLabel: true, price: true, oldPrice: true },
+        // priceTiers: fiecare variantă are pragurile ei, iar popup-ul de adăugare
+        // în coș trebuie să le poată arăta pentru varianta aleasă.
+        select: { id: true, slug: true, variantLabel: true, price: true, oldPrice: true, priceTiers: true },
       });
     } catch {
       variants = [];
@@ -472,6 +482,7 @@ interface ProductViewProps {
     oldPrice: number | null;
     bulkMinQty?: number | null;
     bulkPrice?: number | null;
+    priceTiers?: PriceTier[];
     image: string | null;
     images?: string[];
     packageQuantity?: string | null;
@@ -519,6 +530,7 @@ interface ProductViewProps {
     variantLabel: string | null;
     price: number;
     oldPrice: number | null;
+    priceTiers?: PriceTier[];
   }>;
   ratesEnabled: boolean;
   installmentMonths: number;
@@ -547,13 +559,13 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
   const allSpecs = [...specs, ...(product.specifications ?? [])];
 
   const inStock = product.availability !== "Stoc epuizat";
-  const hasBulkPrice = product.bulkMinQty != null && product.bulkPrice != null;
+  const tiers = normalizeTiers(product);
   const installmentsEnabled = ratesEnabled && product.installmentsEnabled !== false;
-  const galleryImages = product.images && product.images.length > 0
-    ? product.images
-    : displayImage
-    ? [displayImage]
-    : [];
+  // Imaginea principală plus galeria, fără duplicate — altfel, când galeria
+  // avea poze, imaginea principală era pur și simplu aruncată.
+  const galleryImages = Array.from(
+    new Set([displayImage, ...(product.images ?? [])].filter(Boolean) as string[])
+  );
 
   return (
     <main className="bg-background">
@@ -704,11 +716,6 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
                   </div>
                 )}
 
-                {hasBulkPrice && (
-                  <p className="text-sm font-bold text-primary mt-2">
-                    de la {product.bulkMinQty} buc. preț {product.bulkPrice!.toLocaleString("ro-MD")} MDL/bucată
-                  </p>
-                )}
               </div>
 
               {installmentsEnabled && (
@@ -722,39 +729,31 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
                 </div>
               )}
 
-              <div className="flex items-stretch gap-3 mb-3">
-                <AddToCartButton
+              <div className="mb-3">
+                <ProductBuyBox
                   slug={product.slug}
                   name={displayName}
                   price={product.price}
                   oldPrice={product.oldPrice}
                   image={displayImage}
                   inStock={inStock}
+                  tiers={tiers}
                   variantOptions={variants.length > 1 ? variants : undefined}
                   variantLabel={product.variantLabel}
-                  promptVariant={false}
-                  className={`${installmentsEnabled ? "flex-[3]" : "flex-1"} h-12 rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-colors ${
-                    inStock
-                      ? "bg-accent hover:bg-brand-red-dark text-accent-foreground"
-                      : "bg-muted text-muted-foreground cursor-not-allowed"
-                  }`}
                 >
-                  <ShoppingCart className="w-4 h-4 shrink-0" aria-hidden />
-                  {inStock ? "Adaugă în coș" : "Stoc epuizat"}
-                </AddToCartButton>
-
-                {installmentsEnabled && (
-                  <ProductOfferModal
-                    productId={product.id}
-                    productName={displayName}
-                    productImage={displayImage}
-                    title="Cumpără în rate"
-                    sourceLabel="Cerere achiziție în rate"
-                    className="flex-[2] h-12 flex items-center justify-center border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold rounded-xl transition-all duration-300 text-sm uppercase tracking-wide text-center hover:-translate-y-0.5 hover:shadow-md active:scale-95 active:translate-y-0"
-                  >
-                    Cumpără în rate
-                  </ProductOfferModal>
-                )}
+                  {installmentsEnabled && (
+                    <ProductOfferModal
+                      productId={product.id}
+                      productName={displayName}
+                      productImage={displayImage}
+                      title="Cumpără în rate"
+                      sourceLabel="Cerere achiziție în rate"
+                      className="flex-[2] h-12 flex items-center justify-center border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold rounded-xl transition-all duration-300 text-sm uppercase tracking-wide text-center hover:-translate-y-0.5 hover:shadow-md active:scale-95 active:translate-y-0"
+                    >
+                      Cumpără în rate
+                    </ProductOfferModal>
+                  )}
+                </ProductBuyBox>
               </div>
 
               <ProductOfferModal
@@ -787,7 +786,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
             </div>
 
             {product.description && (
-              <p className="text-foreground/80 text-[15px] leading-relaxed">
+              <p className="text-foreground/80 text-[15px] leading-relaxed whitespace-pre-line">
                 {product.description}
               </p>
             )}

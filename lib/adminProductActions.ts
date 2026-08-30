@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
+import { parseDecimalInput } from "./pricing";
 
 export interface ProductFormState {
   error?: string;
@@ -14,6 +15,25 @@ function parseImageLines(formData: FormData): string[] {
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+// Praguri de preț pe cantitate, din rândurile editorului (tierMinQty/tierPrice).
+// Rândurile incomplete sau invalide se ignoră, ca la specificații.
+function parsePriceTiers(formData: FormData): { minQty: number; price: number }[] {
+  const qtys = formData.getAll("tierMinQty").map((v) => String(v).trim());
+  const prices = formData.getAll("tierPrice").map((v) => String(v).trim());
+  const byQty = new Map<number, number>();
+  for (let i = 0; i < qtys.length; i++) {
+    if (qtys[i] === "" || prices[i] === "" || prices[i] === undefined) continue;
+    const minQty = Math.floor(Number(qtys[i]));
+    const price = parseDecimalInput(prices[i]);
+    if (!Number.isFinite(minQty) || !Number.isFinite(price)) continue;
+    if (minQty < 2 || price <= 0) continue;
+    byQty.set(minQty, price);
+  }
+  return [...byQty.entries()]
+    .map(([minQty, price]) => ({ minQty, price }))
+    .sort((a, b) => a.minQty - b.minQty);
 }
 
 function parseSpecifications(formData: FormData): { label: string; value: string }[] {
@@ -45,10 +65,11 @@ function parseVariantRows(formData: FormData): VariantRowInput[] {
 
   const rows: VariantRowInput[] = [];
   for (let i = 0; i < qtys.length; i++) {
-    const price = Number(prices[i]);
+    const price = parseDecimalInput(prices[i]);
     if (!qtys[i] && !units[i]) continue;
     if (!price || price <= 0) continue;
-    rows.push({ qty: qtys[i], unit: units[i], price, oldPrice: oldPrices[i] ? Number(oldPrices[i]) : null });
+    const oldPrice = parseDecimalInput(oldPrices[i]);
+    rows.push({ qty: qtys[i], unit: units[i], price, oldPrice: Number.isFinite(oldPrice) ? oldPrice : null });
   }
   return rows;
 }
@@ -76,12 +97,13 @@ function readProductFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const price = Number(formData.get("price") ?? 0);
-  const oldPriceRaw = String(formData.get("oldPrice") ?? "").trim();
+  const price = parseDecimalInput(formData.get("price")) || 0;
+  const oldPrice = parseDecimalInput(formData.get("oldPrice"));
   const bulkMinQtyRaw = String(formData.get("bulkMinQty") ?? "").trim();
   const bulkPriceRaw = String(formData.get("bulkPrice") ?? "").trim();
   const image = String(formData.get("image") ?? "").trim() || null;
   const images = parseImageLines(formData);
+  const priceTiers = parsePriceTiers(formData);
   const packageQuantity = String(formData.get("packageQuantity") ?? "").trim() || null;
   const brand = String(formData.get("brand") ?? "").trim() || null;
   const badge = String(formData.get("badge") ?? "").trim() || null;
@@ -101,11 +123,12 @@ function readProductFields(formData: FormData) {
     slug,
     description: description || null,
     price,
-    oldPrice: oldPriceRaw ? Number(oldPriceRaw) : null,
+    oldPrice: Number.isFinite(oldPrice) ? oldPrice : null,
     bulkMinQty: bulkMinQtyRaw ? Number(bulkMinQtyRaw) : null,
     bulkPrice: bulkPriceRaw ? Number(bulkPriceRaw) : null,
     image,
     images,
+    priceTiers,
     packageQuantity,
     brand,
     badge,
@@ -253,13 +276,13 @@ export async function updateVariantPriceAction(formData: FormData) {
 
   const id = String(formData.get("id") ?? "");
   const returnId = String(formData.get("returnId") ?? "");
-  const price = Number(formData.get("price") ?? 0);
-  const oldPriceRaw = String(formData.get("oldPrice") ?? "").trim();
+  const price = parseDecimalInput(formData.get("price")) || 0;
+  const oldPrice = parseDecimalInput(formData.get("oldPrice"));
   if (!id || !price || price <= 0) return;
 
   await prisma.product.update({
     where: { id },
-    data: { price, oldPrice: oldPriceRaw ? Number(oldPriceRaw) : null },
+    data: { price, oldPrice: Number.isFinite(oldPrice) ? oldPrice : null },
   });
   await revalidateVariantFamily(id);
   const product = await prisma.product.findUnique({ where: { id }, select: { slug: true } });

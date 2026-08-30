@@ -6,8 +6,10 @@ import ImageUploadField from "../components/ImageUploadField";
 import MultiImageUploadField from "../components/MultiImageUploadField";
 import ManagedSelect from "../components/ManagedSelect";
 import SpecificationsEditor from "../components/SpecificationsEditor";
+import PriceTiersEditor from "../components/PriceTiersEditor";
 import VariantRowsEditor from "../components/VariantRowsEditor";
 import type { ProductFormState } from "@/lib/adminProductActions";
+import { normalizeTiers, type PriceTier } from "@/lib/pricing";
 import { createCategoryInlineAction, deleteCategoryInlineAction } from "@/lib/adminCategoryActions";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { Checkbox } from "@/app/components/ui/checkbox";
@@ -58,6 +60,7 @@ interface ProductDefaults {
   oldPrice?: number | null;
   bulkMinQty?: number | null;
   bulkPrice?: number | null;
+  priceTiers?: PriceTier[];
   image?: string | null;
   images?: string[];
   packageQuantity?: string | null;
@@ -167,30 +170,20 @@ export default function ProductForm({
       />
 
       <div className="grid grid-cols-2 gap-4">
-        <AdminInput label="Preț (MDL)" name="price" type="number" required defaultValue={defaults?.price} placeholder="12999" />
-        <AdminInput label="Preț vechi (opțional)" name="oldPrice" type="number" defaultValue={defaults?.oldPrice ?? ""} placeholder="14999" />
+        {/* type="text" + inputMode="decimal": un input type="number" respinge virgula,
+            iar prețurile se scriu în română cu virgulă ("20,50"). Serverul acceptă ambele. */}
+        <AdminInput label="Preț (MDL)" name="price" inputMode="decimal" required defaultValue={defaults?.price} placeholder="20,50" />
+        <AdminInput label="Preț vechi (opțional)" name="oldPrice" inputMode="decimal" defaultValue={defaults?.oldPrice ?? ""} placeholder="24,90" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <AdminInput
-          label="Cantitate minimă pentru preț redus (opțional)"
-          name="bulkMinQty"
-          type="number"
-          defaultValue={defaults?.bulkMinQty ?? ""}
-          placeholder="ex: 6"
-        />
-        <AdminInput
-          label="Preț per bucată la cantitate mare (opțional)"
-          name="bulkPrice"
-          type="number"
-          defaultValue={defaults?.bulkPrice ?? ""}
-          placeholder="ex: 58"
-        />
-      </div>
-      <p className="text-xs text-muted-foreground -mt-2">
-        Dacă le completezi pe amândouă, pe pagina produsului apare &quot;de la {"{cantitate}"} buc. preț {"{preț}"} lei&quot;.
-        Doar informativ — nu se aplică automat la adăugarea în coș.
-      </p>
+      <PriceTiersEditor
+        basePrice={defaults?.price ?? null}
+        defaultValue={normalizeTiers({
+          priceTiers: defaults?.priceTiers,
+          bulkMinQty: defaults?.bulkMinQty,
+          bulkPrice: defaults?.bulkPrice,
+        })}
+      />
 
       <AdminInput
         label="Cantitate / Ambalaj (opțional)"

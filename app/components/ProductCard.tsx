@@ -8,6 +8,7 @@ import AddToCartButton from "./AddToCartButton";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
 import { stripVariantSuffix } from "@/lib/productListing";
+import { normalizeTiers, type PriceTier } from "@/lib/pricing";
 
 interface VariantOption {
   slug: string;
@@ -31,6 +32,9 @@ interface ProductCardProps {
   installmentsEnabled?: boolean;
   installmentMonths?: number;
   variantOptions?: VariantOption[];
+  priceTiers?: PriceTier[];
+  bulkMinQty?: number | null;
+  bulkPrice?: number | null;
 }
 
 export default function ProductCard({
@@ -47,6 +51,9 @@ export default function ProductCard({
   installmentsEnabled,
   installmentMonths = 4,
   variantOptions,
+  priceTiers,
+  bulkMinQty,
+  bulkPrice,
 }: ProductCardProps) {
   // A leftover placehold.co seed image doesn't count as a "real" main image —
   // prefer an actual uploaded gallery photo over it when one exists.
@@ -153,6 +160,7 @@ export default function ProductCard({
               image={image ?? null}
               variantOptions={variantOptions}
               variantLabel={ownVariantLabel}
+              tiers={normalizeTiers({ priceTiers, bulkMinQty, bulkPrice })}
               className="flex-1 h-10 sm:h-11 bg-accent hover:bg-brand-red-dark text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-muted disabled:text-muted-foreground active:scale-95 hover:shadow-md"
             >
               <ShoppingCart className="w-4 h-4" aria-hidden />

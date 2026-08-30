@@ -1,17 +1,21 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { lineTotal, normalizeTiers, savingsPercent, unitPriceFor, type PriceTier } from "@/lib/pricing";
 
 export interface CartVariantOption {
   slug: string;
   variantLabel: string | null;
   price: number;
   oldPrice: number | null;
+  // Fiecare variantă e propriul Product, deci are propriile praguri de cantitate.
+  priceTiers?: PriceTier[];
 }
 
 export interface CartItem {
   slug: string;
   name: string;
+  /** Prețul de listă per bucată. Pragurile din `tiers` îl pot reduce, niciodată majora. */
   price: number;
   oldPrice: number | null;
   image: string | null;
@@ -21,12 +25,30 @@ export interface CartItem {
   // a server round-trip, since the whole family was already fetched once.
   variantLabel?: string | null;
   variantOptions?: CartVariantOption[];
+  // Praguri de preț pe cantitate, copiate din produs la adăugare, ca recalcularea
+  // din coș să nu aibă nevoie de server. Sunt ale variantei din `slug`.
+  tiers?: PriceTier[];
+}
+
+/** O linie din coș cu prețul deja rezolvat pe baza cantității. */
+export interface CartLine extends CartItem {
+  tiers: PriceTier[];
+  /** Prețul per bucată efectiv plătit, după aplicarea pragului. */
+  unitPrice: number;
+  /** unitPrice × quantity. */
+  total: number;
+  /** Câte procente sub prețul de listă e unitPrice (0 dacă nu s-a atins niciun prag). */
+  tierPercent: number;
 }
 
 interface CartContextValue {
   items: CartItem[];
+  lines: CartLine[];
   cartCount: number;
-  addToCart: (item: Omit<CartItem, "quantity">) => void;
+  subtotal: number;
+  /** Reducerea totală: preț vechi + praguri de cantitate. */
+  savings: number;
+  addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
   removeFromCart: (slug: string) => void;
   updateQuantity: (slug: string, quantity: number) => void;
   changeVariant: (oldSlug: string, next: Omit<CartItem, "quantity">) => void;
@@ -42,7 +64,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored) setItems(JSON.parse(stored));
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) setItems(parsed);
+    } catch {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
   }, []);
 
   function persist(next: CartItem[]) {
@@ -50,12 +78,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   }
 
-  function addToCart(item: Omit<CartItem, "quantity">) {
+  function addToCart(item: Omit<CartItem, "quantity">, quantity = 1) {
+    const qty = Math.max(1, Math.floor(quantity));
     setItems((prev) => {
       const existing = prev.find((i) => i.slug === item.slug);
       const next = existing
-        ? prev.map((i) => (i.slug === item.slug ? { ...i, quantity: i.quantity + 1 } : i))
-        : [...prev, { ...item, quantity: 1 }];
+        ? // Câmpurile se reîmprospătează din produs, ca un coș vechi din localStorage
+          // să nu rămână blocat pe praguri sau prețuri care nu mai există.
+          prev.map((i) => (i.slug === item.slug ? { ...i, ...item, quantity: i.quantity + qty } : i))
+        : [...prev, { ...item, quantity: qty }];
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
     });
@@ -94,10 +125,44 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     persist([]);
   }
 
-  const cartCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const lines = useMemo<CartLine[]>(
+    () =>
+      items.map((item) => {
+        const tiers = normalizeTiers({ priceTiers: item.tiers });
+        const unitPrice = unitPriceFor(item.price, tiers, item.quantity);
+        return {
+          ...item,
+          tiers,
+          unitPrice,
+          total: lineTotal(item.price, tiers, item.quantity),
+          tierPercent: savingsPercent(item.price, unitPrice),
+        };
+      }),
+    [items]
+  );
+
+  const cartCount = lines.reduce((sum, l) => sum + l.quantity, 0);
+  const subtotal = lines.reduce((sum, l) => sum + l.total, 0);
+  const savings = lines.reduce((sum, l) => {
+    const reference = l.oldPrice ?? l.price;
+    return sum + Math.max(0, reference - l.unitPrice) * l.quantity;
+  }, 0);
 
   return (
-    <CartContext.Provider value={{ items, cartCount, addToCart, removeFromCart, updateQuantity, changeVariant, clearCart }}>
+    <CartContext.Provider
+      value={{
+        items,
+        lines,
+        cartCount,
+        subtotal,
+        savings,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        changeVariant,
+        clearCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

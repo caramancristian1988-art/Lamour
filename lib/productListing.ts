@@ -1,3 +1,5 @@
+import type { PriceTier } from "./pricing";
+
 export type SortKey = "newest" | "price-asc" | "price-desc" | "rating";
 
 // A product that has variant siblings already shows its size/quantity via
@@ -46,6 +48,8 @@ export interface VariantOption {
   variantLabel: string | null;
   price: number;
   oldPrice: number | null;
+  // Fiecare variantă e propriul Product, deci are propriile praguri de cantitate.
+  priceTiers?: PriceTier[];
 }
 
 // Sizes/quantities read left-to-right smallest-to-largest everywhere in the
@@ -64,6 +68,7 @@ export function buildVariantOptionsMap<
     variantLabel?: string | null;
     price: number;
     oldPrice?: number | null;
+    priceTiers?: PriceTier[];
   }
 >(products: T[]): Map<string, VariantOption[]> {
   const map = new Map<string, VariantOption[]>();
@@ -75,6 +80,7 @@ export function buildVariantOptionsMap<
       variantLabel: p.variantLabel ?? null,
       price: p.price,
       oldPrice: p.oldPrice ?? null,
+      priceTiers: p.priceTiers,
     });
   }
   for (const options of map.values()) {

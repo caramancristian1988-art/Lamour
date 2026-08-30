@@ -77,10 +77,10 @@ export default function VariantRowsEditor({ unitOptions }: { unitOptions: string
                 <Input
                   id={`variant-row-price-${i}`}
                   name="variantRowPrice"
-                  type="number"
+                  inputMode="decimal"
                   value={row.price}
                   onChange={(e) => updateRow(i, "price", e.target.value)}
-                  placeholder="ex: 199"
+                  placeholder="ex: 20,50"
                   aria-label={`Preț variantă ${i + 1}`}
                   className="h-10 w-28"
                 />
@@ -90,7 +90,7 @@ export default function VariantRowsEditor({ unitOptions }: { unitOptions: string
                 <Input
                   id={`variant-row-oldprice-${i}`}
                   name="variantRowOldPrice"
-                  type="number"
+                  inputMode="decimal"
                   value={row.oldPrice}
                   onChange={(e) => updateRow(i, "oldPrice", e.target.value)}
                   placeholder="opțional"
