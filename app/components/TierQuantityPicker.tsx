@@ -67,7 +67,12 @@ export default function TierQuantityPicker({
                 <button
                   key={`${step.minQty}-${step.price}`}
                   type="button"
-                  onClick={() => onQuantityChange(Math.max(quantity, step.minQty))}
+                  onClick={() => {
+                    // Click pe treapta curentă nu scade cantitatea aleasă deja
+                    // (ex: 15 buc. rămâne 15, nu sare înapoi la 10).
+                    if (i === activeIndex) return;
+                    onQuantityChange(step.minQty);
+                  }}
                   aria-pressed={isActive}
                   className={cn(
                     "flex items-center justify-between gap-3 rounded-xl border-2 text-left transition-colors",
