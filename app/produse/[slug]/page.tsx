@@ -786,9 +786,20 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
             </div>
 
             {product.description && (
-              <p className="text-foreground/80 text-[15px] leading-relaxed whitespace-pre-line">
-                {product.description}
-              </p>
+              <details className="group border border-border rounded-2xl bg-card overflow-hidden">
+                <summary className="cursor-pointer list-none flex items-center justify-between gap-3 px-5 py-4 font-bold text-primary select-none">
+                  <span className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-accent" aria-hidden />
+                    Vezi descrierea
+                  </span>
+                  <ChevronDown className="w-4 h-4 shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden />
+                </summary>
+                <div className="border-t border-border px-5 py-4">
+                  <p className="text-foreground/80 text-[15px] leading-relaxed whitespace-pre-line">
+                    {product.description}
+                  </p>
+                </div>
+              </details>
             )}
 
             {allSpecs.length > 0 && (
