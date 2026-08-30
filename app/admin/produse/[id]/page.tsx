@@ -122,9 +122,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
                       <Input
                         id={`price-${v.id}`}
                         name="price"
-                        type="number"
-                        min="0"
-                        step="0.01"
+                        inputMode="decimal"
                         required
                         defaultValue={v.price}
                         className="h-9 w-24 px-2.5 py-1.5 text-sm"
@@ -137,9 +135,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
                       <Input
                         id={`oldprice-${v.id}`}
                         name="oldPrice"
-                        type="number"
-                        min="0"
-                        step="0.01"
+                        inputMode="decimal"
                         defaultValue={v.oldPrice ?? ""}
                         placeholder="—"
                         className="h-9 w-24 px-2.5 py-1.5 text-sm"

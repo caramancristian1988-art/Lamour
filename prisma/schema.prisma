@@ -34,10 +34,14 @@ model Product {
   description String?
   price       Float
   oldPrice    Float?
-  // Preț pe bucată la cantitate mare (ex: "de la 6 role, 58 lei/bucată") — doar informativ,
-  // nu se aplică automat în coș. Ambele trebuie completate ca să apară pe pagina produsului.
+  // Prag unic, forma veche (ex: "de la 6 role, 58 lei/bucată"). Ambele trebuie completate.
+  // Se folosește doar dacă priceTiers e gol; altfel priceTiers are prioritate.
   bulkMinQty  Int?
   bulkPrice   Float?
+  // Praguri de preț pe cantitate (ex: de la 10 buc. 25 lei/buc, de la 30 buc. 20.50 lei/buc).
+  // Se aplică AUTOMAT în coș, în funcție de cantitatea comandată din acel produs.
+  // Dacă e gol, se folosesc bulkMinQty/bulkPrice de mai sus ca prag unic.
+  priceTiers  PriceTier[]
   image       String?
   images      String[] @default([])
   packageQuantity String?
@@ -69,6 +73,12 @@ model Product {
 type ProductSpec {
   label String
   value String
+}
+
+// Un prag de cantitate: de la `minQty` bucăți, prețul per bucată devine `price`.
+type PriceTier {
+  minQty Int
+  price  Float
 }
 
 type ListingCharacteristic {

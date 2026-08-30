@@ -15,7 +15,15 @@ export function AdminInput({
   type = "text",
   defaultValue,
   placeholder,
-}: FieldProps & { type?: string; defaultValue?: string | number; placeholder?: string }) {
+  step,
+  inputMode,
+}: FieldProps & {
+  type?: string;
+  defaultValue?: string | number;
+  placeholder?: string;
+  step?: string | number;
+  inputMode?: "text" | "decimal" | "numeric";
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={`field-${name}`} className="min-h-[2.5rem] flex items-end">
@@ -28,6 +36,8 @@ export function AdminInput({
         required={required}
         defaultValue={defaultValue}
         placeholder={placeholder}
+        step={step}
+        inputMode={inputMode}
       />
     </div>
   );

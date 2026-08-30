@@ -37,6 +37,7 @@ async function getSearchableData() {
         ...p,
         images: [] as string[],
         brand: null as string | null,
+        priceTiers: [] as { minQty: number; price: number }[],
         specifications: [] as { label: string; value: string }[],
         popupEnabled: false,
         installmentsEnabled: true,

@@ -94,7 +94,7 @@ export default function FurnitureListingForm({
       />
 
       <div className="grid grid-cols-2 gap-4">
-        <AdminInput label="Preț de la (MDL, opțional)" name="price" type="number" defaultValue={defaults?.price ?? ""} placeholder="8500" />
+        <AdminInput label="Preț de la (MDL, opțional)" name="price" type="number" defaultValue={defaults?.price ?? ""} placeholder="8500" step="0.01" />
         <AdminInput label="Preț afișat" name="priceLabel" required defaultValue={defaults?.priceLabel} placeholder="De la 8.500 MDL" />
       </div>
 

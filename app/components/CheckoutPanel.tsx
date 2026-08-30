@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle, ImageOff, ShoppingCart } from "lucide-react";
 import { useCart } from "./CartProvider";
+import { formatPrice } from "@/lib/pricing";
 import { submitContactMessageAction } from "@/lib/adminMessageActions";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
@@ -15,12 +16,9 @@ import { SuccessState } from "@/app/components/ui/success-state";
 type Status = "idle" | "error" | "success" | "pending";
 
 export default function CheckoutPanel() {
-  const { items, clearCart } = useCart();
+  const { lines, clearCart, subtotal, savings } = useCart();
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
-
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const savings = items.reduce((sum, i) => sum + (i.oldPrice ? (i.oldPrice - i.price) * i.quantity : 0), 0);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -37,14 +35,20 @@ export default function CheckoutPanel() {
       return;
     }
 
-    const itemsList = items
-      .map((i) => `${i.quantity}x ${i.name} — ${i.price.toLocaleString("ro-MD")} MDL/buc`)
+    // Numele produsului stă pe rândul lui, ca linkify-ul din lib/telegram.ts
+    // să îl poată transforma în link către pagina produsului.
+    const itemsList = lines
+      .map((l) => {
+        const tierNote = l.tierPercent > 0 ? ` (preț de la ${l.quantity} buc., −${l.tierPercent}%)` : "";
+        return `• ${l.name}\n   ${l.quantity} buc × ${formatPrice(l.unitPrice)} MDL = ${formatPrice(l.total)} MDL${tierNote}`;
+      })
       .join("\n");
     const message = [
       "Produse comandate:",
       itemsList,
       "",
-      `Total: ${subtotal.toLocaleString("ro-MD")} MDL`,
+      `Total: ${formatPrice(subtotal)} MDL`,
+      savings > 0 ? `Economisește: ${formatPrice(savings)} MDL` : null,
       extra ? `\nMesaj client: ${extra}` : null,
     ]
       .filter((l) => l !== null)
@@ -55,7 +59,7 @@ export default function CheckoutPanel() {
     submitData.set("phone", phone);
     submitData.set("message", message);
     submitData.set("source", "Comandă din coș");
-    submitData.set("productSlugs", items.map((i) => i.slug).join(","));
+    submitData.set("productSlugs", lines.map((l) => l.slug).join(","));
 
     setStatus("pending");
     const result = await submitContactMessageAction({}, submitData);
@@ -86,7 +90,7 @@ export default function CheckoutPanel() {
     );
   }
 
-  if (items.length === 0) {
+  if (lines.length === 0) {
     return (
       <div className="text-center py-16">
         <ShoppingCart className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" strokeWidth={1.5} aria-hidden />
@@ -126,7 +130,7 @@ export default function CheckoutPanel() {
         <h2 className="font-extrabold text-primary mb-4">Sumar comandă</h2>
 
         <div className="flex flex-col gap-2.5 mb-4 max-h-64 overflow-y-auto pr-1">
-          {items.map((item) => (
+          {lines.map((item) => (
             <div key={item.slug} className="flex items-center gap-3 p-2.5 border border-border rounded-xl bg-muted">
               <span className="relative w-11 h-11 rounded-lg bg-card overflow-hidden shrink-0 border border-border flex items-center justify-center">
                 {item.image ? (
@@ -137,7 +141,13 @@ export default function CheckoutPanel() {
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-primary line-clamp-1">{item.name}</p>
-                <p className="text-xs text-muted-foreground">{item.quantity} × {item.price.toLocaleString("ro-MD")} MDL</p>
+                <p className="text-xs text-muted-foreground">
+                  {item.quantity} buc × {formatPrice(item.unitPrice)} MDL ={" "}
+                  <b className="text-foreground">{formatPrice(item.total)} MDL</b>
+                  {item.tierPercent > 0 && (
+                    <span className="text-success font-bold"> (−{item.tierPercent}%)</span>
+                  )}
+                </p>
               </div>
             </div>
           ))}
@@ -145,18 +155,18 @@ export default function CheckoutPanel() {
 
         <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
           <span>Subtotal</span>
-          <span className="font-bold text-foreground">{subtotal.toLocaleString("ro-MD")} MDL</span>
+          <span className="font-bold text-foreground">{formatPrice(subtotal)} MDL</span>
         </div>
         {savings > 0 && (
           <div className="flex items-center justify-between text-sm text-success mb-2">
             <span>Economisești</span>
-            <span className="font-bold">−{savings.toLocaleString("ro-MD")} MDL</span>
+            <span className="font-bold">−{formatPrice(savings)} MDL</span>
           </div>
         )}
         <p className="text-xs text-muted-foreground mb-4">Costul livrării se stabilește la confirmarea comenzii.</p>
         <div className="flex items-center justify-between border-t border-border pt-4">
           <span className="font-bold text-primary">Total</span>
-          <span className="font-extrabold text-xl text-primary">{subtotal.toLocaleString("ro-MD")} MDL</span>
+          <span className="font-extrabold text-xl text-primary">{formatPrice(subtotal)} MDL</span>
         </div>
       </div>
     </div>

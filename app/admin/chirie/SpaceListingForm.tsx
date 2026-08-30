@@ -91,7 +91,7 @@ export default function SpaceListingForm({
       />
 
       <div className="grid grid-cols-2 gap-4">
-        <AdminInput label="Preț numeric (opțional)" name="price" type="number" defaultValue={defaults?.price ?? ""} placeholder="350" />
+        <AdminInput label="Preț numeric (opțional)" name="price" type="number" defaultValue={defaults?.price ?? ""} placeholder="350" step="0.01" />
         <AdminInput label="Preț afișat" name="priceLabel" required defaultValue={defaults?.priceLabel} placeholder="350 €/lună" />
       </div>
 

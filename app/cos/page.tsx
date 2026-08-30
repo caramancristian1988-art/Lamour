@@ -6,11 +6,37 @@ import { ImageOff, Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { useCart } from "../components/CartProvider";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
+import { formatPrice, nextTier, type PriceTier } from "@/lib/pricing";
+
+/** Îndemn spre următorul prag: „mai adaugă 4 buc. → 20,50 MDL/buc (−32%)”. */
+function NextTierNudge({
+  price,
+  tiers,
+  quantity,
+  onPick,
+}: {
+  price: number;
+  tiers: PriceTier[];
+  quantity: number;
+  onPick: (quantity: number) => void;
+}) {
+  const upcoming = nextTier(price, tiers, quantity);
+  if (!upcoming) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onPick(upcoming.tier.minQty)}
+      className="mt-1 text-left text-xs text-primary hover:text-accent transition-colors"
+    >
+      Mai adaugă <b>{upcoming.missingQty} buc.</b> → {formatPrice(upcoming.tier.price)} MDL/buc (−
+      {upcoming.percent}%)
+    </button>
+  );
+}
 
 export default function CosPage() {
-  const { items, cartCount, removeFromCart, updateQuantity, changeVariant } = useCart();
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const savings = items.reduce((sum, i) => sum + (i.oldPrice ? (i.oldPrice - i.price) * i.quantity : 0), 0);
+  const { lines, cartCount, removeFromCart, updateQuantity, changeVariant, subtotal, savings } = useCart();
 
   return (
     <main className="bg-background min-h-[60vh]">
@@ -32,11 +58,11 @@ export default function CosPage() {
 
       <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          {items.length > 0 ? (
+          {lines.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
               {/* Items */}
               <div className="flex flex-col gap-4">
-                {items.map((item) => (
+                {lines.map((item) => (
                   <div
                     key={item.slug}
                     className="flex flex-col sm:flex-row sm:items-center gap-4 border border-border rounded-2xl p-4 bg-card"
@@ -56,17 +82,33 @@ export default function CosPage() {
                         </Link>
                         <div className="flex items-center gap-2 flex-wrap mt-1">
                           <p className="text-sm font-extrabold text-foreground">
-                            {item.price.toLocaleString("ro-MD")} MDL
+                            {formatPrice(item.unitPrice)} MDL
                           </p>
-                          {item.oldPrice && (
+                          {/* Prețul barat e cel de listă când un prag de cantitate l-a
+                              redus, altfel prețul vechi din ofertă. */}
+                          {item.tierPercent > 0 ? (
                             <>
                               <p className="text-xs text-muted-foreground line-through">
-                                {item.oldPrice.toLocaleString("ro-MD")} MDL
+                                {formatPrice(item.price)} MDL
                               </p>
                               <Badge variant="accent" className="normal-case px-1.5 py-0.5">
-                                -{Math.round((1 - item.price / item.oldPrice) * 100)}%
+                                −{item.tierPercent}%
                               </Badge>
+                              <span className="text-[11px] font-bold text-success">
+                                preț de la {item.quantity} buc.
+                              </span>
                             </>
+                          ) : (
+                            item.oldPrice && (
+                              <>
+                                <p className="text-xs text-muted-foreground line-through">
+                                  {formatPrice(item.oldPrice)} MDL
+                                </p>
+                                <Badge variant="accent" className="normal-case px-1.5 py-0.5">
+                                  -{Math.round((1 - item.price / item.oldPrice) * 100)}%
+                                </Badge>
+                              </>
+                            )
                           )}
                           {item.variantLabel && (
                             <Badge variant="secondary" className="normal-case px-1.5 py-0.5">
@@ -74,6 +116,13 @@ export default function CosPage() {
                             </Badge>
                           )}
                         </div>
+
+                        <NextTierNudge
+                          price={item.price}
+                          tiers={item.tiers}
+                          quantity={item.quantity}
+                          onPick={(qty) => updateQuantity(item.slug, qty)}
+                        />
 
                         {item.variantOptions && item.variantOptions.length > 1 && (
                           <div className="flex items-center gap-1.5 flex-wrap mt-2">
@@ -91,6 +140,9 @@ export default function CosPage() {
                                     image: item.image,
                                     variantLabel: v.variantLabel,
                                     variantOptions: item.variantOptions,
+                                    // Fiecare variantă are pragurile ei, deci le
+                                    // schimbăm odată cu prețul.
+                                    tiers: v.priceTiers,
                                   })
                                 }
                                 className={`px-2.5 py-1 rounded-full text-xs font-bold border-2 transition-all active:scale-95 ${
@@ -129,7 +181,7 @@ export default function CosPage() {
 
                       <div className="flex items-center gap-3 sm:gap-4 shrink-0">
                         <p className="text-sm font-extrabold text-primary sm:w-24 sm:text-right">
-                          {(item.price * item.quantity).toLocaleString("ro-MD")} MDL
+                          {formatPrice(item.total)} MDL
                         </p>
 
                         <button
@@ -150,18 +202,18 @@ export default function CosPage() {
                 <h2 className="font-extrabold text-primary mb-4">Sumar comandă</h2>
                 <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
                   <span>Subtotal</span>
-                  <span className="font-bold text-foreground">{subtotal.toLocaleString("ro-MD")} MDL</span>
+                  <span className="font-bold text-foreground">{formatPrice(subtotal)} MDL</span>
                 </div>
                 {savings > 0 && (
                   <div className="flex items-center justify-between text-sm text-success mb-2">
                     <span>Economisești</span>
-                    <span className="font-bold">−{savings.toLocaleString("ro-MD")} MDL</span>
+                    <span className="font-bold">−{formatPrice(savings)} MDL</span>
                   </div>
                 )}
                 <p className="text-xs text-muted-foreground mb-4">Costul livrării se stabilește la confirmarea comenzii.</p>
                 <div className="flex items-center justify-between border-t border-border pt-4 mb-6">
                   <span className="font-bold text-primary">Total</span>
-                  <span className="font-extrabold text-xl text-primary">{subtotal.toLocaleString("ro-MD")} MDL</span>
+                  <span className="font-extrabold text-xl text-primary">{formatPrice(subtotal)} MDL</span>
                 </div>
                 <Button asChild variant="accent" className="w-full">
                   <Link href="/finalizare-comanda">Finalizează comanda</Link>
