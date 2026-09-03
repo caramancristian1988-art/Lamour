@@ -1,3 +1,5 @@
+import { SITE_URL } from "./seo";
+
 const TELEGRAM_API = "https://api.telegram.org";
 
 interface InlineButton {
@@ -16,6 +18,29 @@ function clampForTelegram(text: string): string {
   return text.slice(0, TELEGRAM_MAX_LEN - notice.length) + notice;
 }
 
+/** Scoate marcajul HTML, pentru retrimiterea ca text simplu. */
+function stripHtml(html: string): string {
+  return html
+    .replace(/<a [^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/g, "$2")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+async function postSendMessage(
+  token: string,
+  body: Record<string, unknown>
+): Promise<{ ok: boolean; status: number; data: unknown }> {
+  const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  return { ok: Boolean((data as { ok?: boolean })?.ok), status: res.status, data };
+}
+
 export async function sendTelegramMessage(text: string, buttons: InlineButton[][]): Promise<number | null> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -24,25 +49,35 @@ export async function sendTelegramMessage(text: string, buttons: InlineButton[][
     return null;
   }
 
+  const clamped = clampForTelegram(text);
+
   try {
-    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: clampForTelegram(text),
-        parse_mode: "HTML",
-        reply_markup: { inline_keyboard: buttons },
-      }),
+    const html = await postSendMessage(token, {
+      chat_id: chatId,
+      text: clamped,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: buttons },
     });
-    const data = await res.json();
+    if (html.ok) return (html.data as { result?: { message_id?: number } })?.result?.message_id ?? null;
+
     // Esecurile erau inghitite in tacere, deci o comanda pierduta nu lasa nicio urma.
-    // Acum motivul apare in logurile serverului (description-ul de la Telegram).
-    if (!data?.ok) {
-      console.error("telegram sendMessage a esuat:", res.status, JSON.stringify(data));
-      return null;
+    console.error("telegram: varianta HTML respinsa:", html.status, JSON.stringify(html.data));
+
+    // Plasa de siguranta: orice problema de formatare (entitate invalida, link
+    // refuzat) facea sa se piarda comanda intreaga. Continutul conteaza mai mult
+    // decat formatarea, deci reincercam ca text simplu.
+    const plain = await postSendMessage(token, {
+      chat_id: chatId,
+      text: clampForTelegram(stripHtml(clamped)),
+      reply_markup: { inline_keyboard: buttons },
+    });
+    if (plain.ok) {
+      console.error("telegram: trimis ca text simplu, fara formatare");
+      return (plain.data as { result?: { message_id?: number } })?.result?.message_id ?? null;
     }
-    return data?.result?.message_id ?? null;
+
+    console.error("telegram: si varianta text simplu a esuat:", plain.status, JSON.stringify(plain.data));
+    return null;
   } catch (err) {
     console.error("telegram sendMessage a aruncat:", err);
     return null;
@@ -110,10 +145,24 @@ function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// Aceeasi rezolvare ca restul aplicatiei (include VERCEL_URL), nu una separata
+// care cadea pe localhost cand SITE_URL lipsea.
 function getSiteUrl(): string {
-  // TODO: set SITE_URL in production so Telegram notification links point at the real domain.
-  if (process.env.SITE_URL) return process.env.SITE_URL;
-  return "http://localhost:3000";
+  return SITE_URL;
+}
+
+// Telegram valideaza URL-urile din <a href> si respinge tot mesajul daca sunt
+// catre localhost sau au alt protocol. Un link decorativ nu are voie sa coste o
+// comanda, asa ca atunci cand adresa nu e publica trimitem text simplu.
+function canLinkToSite(): boolean {
+  try {
+    const url = new URL(SITE_URL);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+    const host = url.hostname;
+    return host !== "localhost" && host !== "127.0.0.1" && host !== "0.0.0.0" && !host.endsWith(".local");
+  } catch {
+    return false;
+  }
 }
 
 // Wraps any mentioned product names in an HTML link to that product's page,
@@ -131,6 +180,8 @@ function linkifyProducts(text: string, products: { name: string; slug: string }[
   // ("Taz rotund cu mâner 24 L" ⊂ "Taz rotund cu mâner 24 L (cat II color)").
   // Al doilea replace nimerea inauntrul primului link, iar Telegram respingea
   // tot mesajul cu 400 "can't parse entities", deci comanda se pierdea.
+  if (!canLinkToSite()) return text;
+
   const usable = products
     .map((p) => ({ ...p, escapedName: escapeHtml(p.name) }))
     .filter((p) => p.escapedName)
