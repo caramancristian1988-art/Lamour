@@ -119,15 +119,32 @@ function getSiteUrl(): string {
 // Wraps any mentioned product names in an HTML link to that product's page,
 // so tapping the (already-visible) product name in Telegram jumps straight
 // to it — no extra/visible URL text cluttering the message.
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function linkifyProducts(text: string, products: { name: string; slug: string }[]): string {
-  let result = text;
-  for (const p of products) {
-    const escapedName = escapeHtml(p.name);
-    if (!escapedName || !result.includes(escapedName)) continue;
-    const url = `${getSiteUrl()}/produse/${p.slug}`;
-    result = result.split(escapedName).join(`<a href="${url}">${escapedName}</a>`);
-  }
-  return result;
+  // O singură trecere, cu numele lungi întâi.
+  //
+  // Varianta pe iterații (un replace per produs) producea <a> imbricate cand un
+  // nume era continut in altul — iar catalogul e plin de asemenea perechi
+  // ("Taz rotund cu mâner 24 L" ⊂ "Taz rotund cu mâner 24 L (cat II color)").
+  // Al doilea replace nimerea inauntrul primului link, iar Telegram respingea
+  // tot mesajul cu 400 "can't parse entities", deci comanda se pierdea.
+  const usable = products
+    .map((p) => ({ ...p, escapedName: escapeHtml(p.name) }))
+    .filter((p) => p.escapedName)
+    .sort((a, b) => b.escapedName.length - a.escapedName.length);
+  if (usable.length === 0) return text;
+
+  const bySnippet = new Map(usable.map((p) => [p.escapedName, p]));
+  const pattern = new RegExp(usable.map((p) => escapeRegExp(p.escapedName)).join("|"), "g");
+
+  return text.replace(pattern, (match) => {
+    const p = bySnippet.get(match);
+    if (!p) return match;
+    return `<a href="${getSiteUrl()}/produse/${p.slug}">${match}</a>`;
+  });
 }
 
 export function buildContactMessageText(message: {
