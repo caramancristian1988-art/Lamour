@@ -10,6 +10,7 @@ import { submitContactMessageAction } from "@/lib/adminMessageActions";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Button } from "@/app/components/ui/button";
+import { Checkbox } from "@/app/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { SuccessState } from "@/app/components/ui/success-state";
 
@@ -19,6 +20,7 @@ export default function CheckoutPanel() {
   const { lines, clearCart, subtotal, savings } = useCart();
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [needsInvoice, setNeedsInvoice] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -26,11 +28,28 @@ export default function CheckoutPanel() {
     const data = new FormData(e.currentTarget);
     const name = String(data.get("name") ?? "").trim();
     const phone = String(data.get("phone") ?? "").trim();
+    const email = String(data.get("email") ?? "").trim();
+    const locality = String(data.get("locality") ?? "").trim();
+    const address = String(data.get("address") ?? "").trim();
     const extra = String(data.get("extraMessage") ?? "").trim();
 
-    const missing = [!name && "numele", !phone && "numărul de telefon"].filter(Boolean);
+    const companyName = String(data.get("companyName") ?? "").trim();
+    const companyIdno = String(data.get("companyIdno") ?? "").trim();
+    const companyAddress = String(data.get("companyAddress") ?? "").trim();
+    const companyVat = String(data.get("companyVat") ?? "").trim();
+
+    const missing = [
+      !name && "numele",
+      !phone && "numărul de telefon",
+      !locality && "localitatea",
+      !address && "adresa",
+      // Fără denumire și IDNO nu se poate emite factura, deci le cerem aici,
+      // nu după ce comanda a plecat.
+      needsInvoice && !companyName && "denumirea companiei",
+      needsInvoice && !companyIdno && "IDNO-ul companiei",
+    ].filter(Boolean);
     if (missing.length > 0) {
-      setErrorMsg(`Lipsește ${missing.join(" și ")}.`);
+      setErrorMsg(`Lipsește ${missing.join(", ")}.`);
       setStatus("error");
       return;
     }
@@ -49,6 +68,14 @@ export default function CheckoutPanel() {
       "",
       `Total: ${formatPrice(subtotal)} MDL`,
       savings > 0 ? `Economisește: ${formatPrice(savings)} MDL` : null,
+      "",
+      `Livrare: ${locality}, ${address}`,
+      // Marcat vizibil, ca factura sa nu fie ratata la procesarea comenzii.
+      needsInvoice ? "\n🧾 CERE FACTURĂ (companie):" : null,
+      needsInvoice ? `Denumire: ${companyName}` : null,
+      needsInvoice ? `IDNO / Cod fiscal: ${companyIdno}` : null,
+      needsInvoice && companyAddress ? `Adresa juridică: ${companyAddress}` : null,
+      needsInvoice && companyVat ? `Cod TVA: ${companyVat}` : null,
       extra ? `\nMesaj client: ${extra}` : null,
     ]
       .filter((l) => l !== null)
@@ -57,6 +84,7 @@ export default function CheckoutPanel() {
     const submitData = new FormData();
     submitData.set("name", name);
     submitData.set("phone", phone);
+    if (email) submitData.set("email", email);
     submitData.set("message", message);
     submitData.set("source", "Comandă din coș");
     submitData.set("productSlugs", lines.map((l) => l.slug).join(","));
@@ -116,6 +144,50 @@ export default function CheckoutPanel() {
 
         <Input type="text" name="name" required placeholder="Nume complet" aria-label="Nume complet" />
         <Input type="tel" name="phone" required placeholder="Telefon" aria-label="Telefon" />
+        <Input type="email" name="email" placeholder="Email (opțional)" aria-label="Email" />
+
+        <h3 className="font-bold text-primary text-sm mt-2">Livrare</h3>
+        <Input type="text" name="locality" required placeholder="Localitate" aria-label="Localitate" />
+        <Input
+          type="text"
+          name="address"
+          required
+          placeholder="Adresa (stradă, număr, bloc/apartament)"
+          aria-label="Adresa"
+        />
+
+        {/* Facturarea pe companie cere date pe care un client persoană fizică nu le
+            are, deci câmpurile apar doar când sunt cerute. */}
+        <label className="flex items-center gap-3 mt-2 cursor-pointer select-none">
+          <Checkbox
+            id="needsInvoice"
+            name="needsInvoice"
+            checked={needsInvoice}
+            onCheckedChange={(v) => setNeedsInvoice(v === true)}
+          />
+          <span className="text-sm font-bold text-primary">Am nevoie de factură (companie)</span>
+        </label>
+
+        {needsInvoice && (
+          <div className="flex flex-col gap-3.5 border-l-2 border-accent pl-4">
+            <Input
+              type="text"
+              name="companyName"
+              required
+              placeholder="Denumirea companiei"
+              aria-label="Denumirea companiei"
+            />
+            <Input type="text" name="companyIdno" required placeholder="IDNO / Cod fiscal" aria-label="IDNO sau cod fiscal" />
+            <Input
+              type="text"
+              name="companyAddress"
+              placeholder="Adresa juridică (opțional)"
+              aria-label="Adresa juridică"
+            />
+            <Input type="text" name="companyVat" placeholder="Cod TVA (opțional)" aria-label="Cod TVA" />
+          </div>
+        )}
+
         <Textarea name="extraMessage" placeholder="Mesaj suplimentar (opțional)" rows={3} className="min-h-0" aria-label="Mesaj suplimentar" />
 
         <Button type="submit" variant="accent" disabled={status === "pending"} className="mt-1">

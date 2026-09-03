@@ -5,10 +5,24 @@ interface InlineButton {
   callback_data: string;
 }
 
+// Telegram respinge orice mesaj peste 4096 de caractere, cu 400 si fara sa trimita
+// nimic. O comanda cu multe produse poate depasi limita, asa ca taiem coada in loc
+// sa pierdem comanda cu totul — datele clientului sunt in primele randuri.
+const TELEGRAM_MAX_LEN = 4096;
+
+function clampForTelegram(text: string): string {
+  if (text.length <= TELEGRAM_MAX_LEN) return text;
+  const notice = "\n\n… listă prescurtată, vezi comanda completă în admin.";
+  return text.slice(0, TELEGRAM_MAX_LEN - notice.length) + notice;
+}
+
 export async function sendTelegramMessage(text: string, buttons: InlineButton[][]): Promise<number | null> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return null;
+  if (!token || !chatId) {
+    console.error("telegram: TELEGRAM_BOT_TOKEN sau TELEGRAM_CHAT_ID lipseste — mesajul nu a fost trimis");
+    return null;
+  }
 
   try {
     const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
@@ -16,14 +30,21 @@ export async function sendTelegramMessage(text: string, buttons: InlineButton[][
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId,
-        text,
+        text: clampForTelegram(text),
         parse_mode: "HTML",
         reply_markup: { inline_keyboard: buttons },
       }),
     });
     const data = await res.json();
+    // Esecurile erau inghitite in tacere, deci o comanda pierduta nu lasa nicio urma.
+    // Acum motivul apare in logurile serverului (description-ul de la Telegram).
+    if (!data?.ok) {
+      console.error("telegram sendMessage a esuat:", res.status, JSON.stringify(data));
+      return null;
+    }
     return data?.result?.message_id ?? null;
-  } catch {
+  } catch (err) {
+    console.error("telegram sendMessage a aruncat:", err);
     return null;
   }
 }
