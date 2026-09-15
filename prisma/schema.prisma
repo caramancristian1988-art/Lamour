@@ -213,6 +213,11 @@ model ContactMessage {
   telegramMessageId Int?
   productIds        String[] @default([]) @db.ObjectId
   createdAt         DateTime @default(now())
+  // Livrare EVS Express — completate când admin generează AWB-ul din
+  // /admin/mesaje. awbStatus e ultimul status citit de la EVS (GetGroupAWBActions).
+  awbCode           String?
+  awbStatus         String?
+  awbCreatedAt      DateTime?
 }
 
 model PopupEvent {

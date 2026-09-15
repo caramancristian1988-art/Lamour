@@ -11,6 +11,7 @@ import MessageStatusBadge from "../components/MessageStatusBadge";
 import MoodBadge from "../components/MoodBadge";
 import LinkedProductText from "../components/LinkedProductText";
 import CopyableId from "../components/CopyableId";
+import EvsShipmentPanel from "../components/EvsShipmentPanel";
 import { markMessageReadAction, deleteMessageAction } from "@/lib/adminMessageActions";
 
 interface Message {
@@ -25,6 +26,18 @@ interface Message {
   mood: string | null;
   createdAt: Date;
   products: { id: string; name: string; slug: string }[];
+  awbCode: string | null;
+  awbStatus: string | null;
+}
+
+// Comenzile din coș includ o linie "Livrare: localitate, adresă" în textul
+// liber al mesajului (vezi CheckoutPanel) — o extragem ca sugestie de
+// adresă pre-completată în formularul de livrare EVS Express, ca admin-ul
+// să nu retasteze de la zero.
+function extractDeliveryLine(message: string | null): string {
+  if (!message) return "";
+  const match = message.match(/^Livrare:\s*(.+)$/m);
+  return match ? match[1].trim() : "";
 }
 
 type Category = "oferte" | "contact" | "comenzi";
@@ -219,6 +232,16 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                           <LinkedProductText text={m.message} products={m.products} />
                         </p>
                       )}
+
+                      <EvsShipmentPanel
+                        messageId={m.id}
+                        defaultName={m.name}
+                        defaultPhone={m.phone}
+                        defaultEmail={m.email}
+                        defaultAddress={extractDeliveryLine(m.message)}
+                        awbCode={m.awbCode}
+                        awbStatus={m.awbStatus}
+                      />
                     </div>
                   </div>
                 </div>
