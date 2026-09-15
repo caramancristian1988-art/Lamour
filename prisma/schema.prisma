@@ -239,6 +239,10 @@ model Settings {
   ratesEnabled    Boolean @default(true)
   installmentMonths Int @default(4)
   popupCountdownMinutes Int @default(10)
+  // Cele 2 tarife de livrare afișate la checkout — Chișinău (local) vs restul
+  // țării (național). Editabile din /admin/setari, în loc să fie fixe în cod.
+  deliveryPriceChisinau  Float @default(0)
+  deliveryPriceNational  Float @default(0)
   // Hex colors for the discount popup only (DiscountPopup.tsx) — null means
   // keep the site's default theme colors. Never applied anywhere else.
   popupButtonColor String?

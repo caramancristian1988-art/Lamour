@@ -50,6 +50,22 @@ export const getSectionFlags = cache(async (): Promise<SectionFlags> => {
   };
 });
 
+export interface DeliveryPrices {
+  chisinau: number;
+  national: number;
+}
+
+const DELIVERY_PRICE_DEFAULTS: DeliveryPrices = { chisinau: 0, national: 0 };
+
+export const getDeliveryPrices = cache(async (): Promise<DeliveryPrices> => {
+  const settings = await getSettings();
+  if (!settings) return DELIVERY_PRICE_DEFAULTS;
+  return {
+    chisinau: settings.deliveryPriceChisinau ?? DELIVERY_PRICE_DEFAULTS.chisinau,
+    national: settings.deliveryPriceNational ?? DELIVERY_PRICE_DEFAULTS.national,
+  };
+});
+
 export interface SocialLinks {
   facebook: string | null;
   instagram: string | null;

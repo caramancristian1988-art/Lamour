@@ -16,11 +16,33 @@ import { SuccessState } from "@/app/components/ui/success-state";
 
 type Status = "idle" | "error" | "success" | "pending";
 
-export default function CheckoutPanel() {
+interface DeliveryPrices {
+  chisinau: number;
+  national: number;
+}
+
+// Chișinău are tarif separat de restul țării — acceptă orice variantă de
+// scriere/diacritice a localității ("Chișinău", "Chisinau", "chisinau", etc).
+function isChisinau(locality: string): boolean {
+  const normalized = locality
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+  return normalized.includes("chisinau");
+}
+
+export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: DeliveryPrices }) {
   const { lines, clearCart, subtotal, savings } = useCart();
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [needsInvoice, setNeedsInvoice] = useState(false);
+  const [locality, setLocality] = useState("");
+
+  const deliveryPrice = locality.trim()
+    ? isChisinau(locality)
+      ? deliveryPrices.chisinau
+      : deliveryPrices.national
+    : null;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,7 +51,6 @@ export default function CheckoutPanel() {
     const name = String(data.get("name") ?? "").trim();
     const phone = String(data.get("phone") ?? "").trim();
     const email = String(data.get("email") ?? "").trim();
-    const locality = String(data.get("locality") ?? "").trim();
     const address = String(data.get("address") ?? "").trim();
     const extra = String(data.get("extraMessage") ?? "").trim();
 
@@ -38,10 +59,12 @@ export default function CheckoutPanel() {
     const companyAddress = String(data.get("companyAddress") ?? "").trim();
     const companyVat = String(data.get("companyVat") ?? "").trim();
 
+    const trimmedLocality = locality.trim();
+
     const missing = [
       !name && "numele",
       !phone && "numărul de telefon",
-      !locality && "localitatea",
+      !trimmedLocality && "localitatea",
       !address && "adresa",
       // Fără denumire și IDNO nu se poate emite factura, deci le cerem aici,
       // nu după ce comanda a plecat.
@@ -66,10 +89,12 @@ export default function CheckoutPanel() {
       "Produse comandate:",
       itemsList,
       "",
-      `Total: ${formatPrice(subtotal)} MDL`,
+      `Subtotal: ${formatPrice(subtotal)} MDL`,
       savings > 0 ? `Economisește: ${formatPrice(savings)} MDL` : null,
+      deliveryPrice !== null ? `Livrare (${isChisinau(trimmedLocality) ? "Chișinău" : "național"}): ${formatPrice(deliveryPrice)} MDL` : null,
+      deliveryPrice !== null ? `Total cu livrare: ${formatPrice(subtotal + deliveryPrice)} MDL` : null,
       "",
-      `Livrare: ${locality}, ${address}`,
+      `Livrare: ${trimmedLocality}, ${address}`,
       // Marcat vizibil, ca factura sa nu fie ratata la procesarea comenzii.
       needsInvoice ? "\n🧾 CERE FACTURĂ (companie):" : null,
       needsInvoice ? `Denumire: ${companyName}` : null,
@@ -147,7 +172,20 @@ export default function CheckoutPanel() {
         <Input type="email" name="email" placeholder="Email (opțional)" aria-label="Email" />
 
         <h3 className="font-bold text-primary text-sm mt-2">Livrare</h3>
-        <Input type="text" name="locality" required placeholder="Localitate" aria-label="Localitate" />
+        <Input
+          type="text"
+          name="locality"
+          required
+          placeholder="Localitate"
+          aria-label="Localitate"
+          value={locality}
+          onChange={(e) => setLocality(e.target.value)}
+        />
+        {deliveryPrice !== null && (deliveryPrices.chisinau > 0 || deliveryPrices.national > 0) && (
+          <p className="text-xs text-muted-foreground -mt-1.5">
+            Cost livrare estimat ({isChisinau(locality) ? "Chișinău" : "restul țării"}): <b className="text-foreground">{formatPrice(deliveryPrice)} MDL</b>
+          </p>
+        )}
         <Input
           type="text"
           name="address"
@@ -235,10 +273,19 @@ export default function CheckoutPanel() {
             <span className="font-bold">−{formatPrice(savings)} MDL</span>
           </div>
         )}
-        <p className="text-xs text-muted-foreground mb-4">Costul livrării se stabilește la confirmarea comenzii.</p>
+        {deliveryPrice !== null ? (
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+            <span>Livrare ({isChisinau(locality) ? "Chișinău" : "restul țării"})</span>
+            <span className="font-bold text-foreground">{formatPrice(deliveryPrice)} MDL</span>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground mb-4">Costul livrării se stabilește la confirmarea comenzii.</p>
+        )}
         <div className="flex items-center justify-between border-t border-border pt-4">
           <span className="font-bold text-primary">Total</span>
-          <span className="font-extrabold text-xl text-primary">{formatPrice(subtotal)} MDL</span>
+          <span className="font-extrabold text-xl text-primary">
+            {formatPrice(subtotal + (deliveryPrice ?? 0))} MDL
+          </span>
         </div>
       </div>
     </div>
