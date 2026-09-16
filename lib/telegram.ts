@@ -1,8 +1,12 @@
 const TELEGRAM_API = "https://api.telegram.org";
 
+// Telegram cere exact una dintre cele două — callback_data pentru butoane
+// gestionate de webhook, url pentru butoane care deschid direct un link
+// (ex: Editează, care duce la /editare-comanda?token=...).
 interface InlineButton {
   text: string;
-  callback_data: string;
+  callback_data?: string;
+  url?: string;
 }
 
 // Telegram respinge orice mesaj peste 4096 de caractere, cu 400 si fara sa trimita
@@ -110,7 +114,7 @@ function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function getSiteUrl(): string {
+export function getSiteUrl(): string {
   // TODO: set SITE_URL in production so Telegram notification links point at the real domain.
   if (process.env.SITE_URL) return process.env.SITE_URL;
   return "http://localhost:3000";
@@ -208,6 +212,36 @@ export function buildConfirmButtons(messageId: string, value: string): InlineBut
     [
       { text: "✅ Da", callback_data: `confirm:${messageId}:${value}` },
       { text: "❌ Nu", callback_data: `cancel:${messageId}` },
+    ],
+  ];
+}
+
+// Fluxul separat pentru comenzi din coș (operator -> depozitar -> curier) —
+// vezi lib/orderStages.ts. Nu se amestecă cu STATUS_BUTTON_ROWS/prefixele
+// "status"/"confirm"/"cancel" de mai sus, ca să nu existe ambiguitate în
+// webhook între cele două fluxuri.
+export function buildOrderStageButtons(messageId: string, stage: string, editUrl: string): InlineButton[][] {
+  if (stage === "noua") {
+    return [
+      [{ text: "✅ Confirmă", callback_data: `ord_confirm:${messageId}` }],
+      [{ text: "✏️ Editează", url: editUrl }],
+      [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }],
+    ];
+  }
+  if (stage === "confirmata") {
+    return [
+      [{ text: "📦 Predă curierului", callback_data: `ord_ready:${messageId}` }],
+      [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }],
+    ];
+  }
+  return [];
+}
+
+export function buildOrderCancelConfirmButtons(messageId: string): InlineButton[][] {
+  return [
+    [
+      { text: "✅ Da, anulează", callback_data: `ord_cancel_yes:${messageId}` },
+      { text: "↩️ Renunță", callback_data: `ord_cancel_no:${messageId}` },
     ],
   ];
 }

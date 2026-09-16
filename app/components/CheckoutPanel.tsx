@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle, ImageOff, ShoppingCart } from "lucide-react";
 import { useCart } from "./CartProvider";
 import { formatPrice } from "@/lib/pricing";
-import { submitContactMessageAction } from "@/lib/adminMessageActions";
+import { submitContactMessageAction, updateOrderMessageAction } from "@/lib/adminMessageActions";
+import { ORDER_EDIT_SESSION_KEY, type OrderEditSession } from "@/app/editare-comanda/EditSessionHydrator";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Button } from "@/app/components/ui/button";
@@ -37,6 +38,32 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
   const [errorMsg, setErrorMsg] = useState("");
   const [needsInvoice, setNeedsInvoice] = useState(false);
   const [locality, setLocality] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [zip, setZip] = useState("");
+  // Prezent doar când operatorul a ajuns aici prin linkul "Editează" din
+  // Telegram (vezi app/editare-comanda) — pre-completează formularul și
+  // trimite spre updateOrderMessageAction în loc de a crea o comandă nouă.
+  const [editSession, setEditSession] = useState<OrderEditSession | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(ORDER_EDIT_SESSION_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as OrderEditSession;
+      setEditSession(parsed);
+      setName(parsed.name);
+      setPhone(parsed.phone);
+      setEmail(parsed.email);
+      setLocality(parsed.locality);
+      setAddress(parsed.address);
+      setZip(parsed.zip);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const deliveryPrice = locality.trim()
     ? isChisinau(locality)
@@ -48,11 +75,6 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
     e.preventDefault();
 
     const data = new FormData(e.currentTarget);
-    const name = String(data.get("name") ?? "").trim();
-    const phone = String(data.get("phone") ?? "").trim();
-    const email = String(data.get("email") ?? "").trim();
-    const address = String(data.get("address") ?? "").trim();
-    const zip = String(data.get("zip") ?? "").trim();
     const extra = String(data.get("extraMessage") ?? "").trim();
 
     const companyName = String(data.get("companyName") ?? "").trim();
@@ -60,14 +82,19 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
     const companyAddress = String(data.get("companyAddress") ?? "").trim();
     const companyVat = String(data.get("companyVat") ?? "").trim();
 
+    const trimmedName = name.trim();
+    const trimmedPhone = phone.trim();
+    const trimmedEmail = email.trim();
     const trimmedLocality = locality.trim();
+    const trimmedAddress = address.trim();
+    const trimmedZip = zip.trim();
 
     const missing = [
-      !name && "numele",
-      !phone && "numărul de telefon",
+      !trimmedName && "numele",
+      !trimmedPhone && "numărul de telefon",
       !trimmedLocality && "localitatea",
-      !address && "adresa",
-      !zip && "codul poștal",
+      !trimmedAddress && "adresa",
+      !trimmedZip && "codul poștal",
       // Fără denumire și IDNO nu se poate emite factura, deci le cerem aici,
       // nu după ce comanda a plecat.
       needsInvoice && !companyName && "denumirea companiei",
@@ -96,7 +123,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
       deliveryPrice !== null ? `Livrare (${isChisinau(trimmedLocality) ? "Chișinău" : "național"}): ${formatPrice(deliveryPrice)} MDL` : null,
       deliveryPrice !== null ? `Total cu livrare: ${formatPrice(subtotal + deliveryPrice)} MDL` : null,
       "",
-      `Livrare: ${trimmedLocality}, ${address}, ${zip}`,
+      `Livrare: ${trimmedLocality}, ${trimmedAddress}, ${trimmedZip}`,
       // Marcat vizibil, ca factura sa nu fie ratata la procesarea comenzii.
       needsInvoice ? "\n🧾 CERE FACTURĂ (companie):" : null,
       needsInvoice ? `Denumire: ${companyName}` : null,
@@ -108,26 +135,33 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
       .filter((l) => l !== null)
       .join("\n");
 
-    // Date structurate de livrare — folosite pentru a crea automat expedierea
-    // EVS Express când comanda e marcată "Achitat" în admin (fără să fie
-    // nevoie ca cineva să retasteze adresa din textul liber al mesajului).
+    // Date structurate de livrare + cantități — folosite pentru a crea automat
+    // expedierea EVS Express la predarea către curier, și pentru a putea
+    // reconstitui coșul dacă operatorul deschide linkul de editare.
     const totalQuantity = lines.reduce((sum, l) => sum + l.quantity, 0);
 
     const submitData = new FormData();
-    submitData.set("name", name);
-    submitData.set("phone", phone);
-    if (email) submitData.set("email", email);
+    submitData.set("name", trimmedName);
+    submitData.set("phone", trimmedPhone);
+    if (trimmedEmail) submitData.set("email", trimmedEmail);
     submitData.set("message", message);
     submitData.set("source", "Comandă din coș");
     submitData.set("productSlugs", lines.map((l) => l.slug).join(","));
+    submitData.set("orderItems", JSON.stringify(lines.map((l) => ({ slug: l.slug, quantity: l.quantity }))));
     submitData.set("deliveryLocality", trimmedLocality);
-    submitData.set("deliveryAddress", address);
-    submitData.set("deliveryZip", zip);
+    submitData.set("deliveryAddress", trimmedAddress);
+    submitData.set("deliveryZip", trimmedZip);
     submitData.set("deliveryWeightKg", String(Math.max(1, totalQuantity)));
     submitData.set("deliveryCodAmount", String(subtotal + (deliveryPrice ?? 0)));
 
     setStatus("pending");
-    const result = await submitContactMessageAction({}, submitData);
+    const result = editSession
+      ? await (async () => {
+          submitData.set("messageId", editSession.messageId);
+          submitData.set("editToken", editSession.editToken);
+          return updateOrderMessageAction({}, submitData);
+        })()
+      : await submitContactMessageAction({}, submitData);
 
     if (result.error) {
       setErrorMsg(result.error);
@@ -135,6 +169,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
       return;
     }
 
+    if (editSession) window.localStorage.removeItem(ORDER_EDIT_SESSION_KEY);
     setStatus("success");
     clearCart();
   }
@@ -143,8 +178,12 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
     return (
       <div className="max-w-md mx-auto py-8">
         <SuccessState
-          title="Comanda ta a fost trimisă!"
-          description="Te vom contacta în cel mai scurt timp pentru confirmare."
+          title={editSession ? "Comanda a fost actualizată!" : "Comanda ta a fost trimisă!"}
+          description={
+            editSession
+              ? "Mesajul din Telegram a fost actualizat cu noile date."
+              : "Te vom contacta în cel mai scurt timp pentru confirmare."
+          }
         />
         <div className="flex justify-center mt-4">
           <Button asChild variant="primary">
@@ -179,9 +218,32 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
           </Alert>
         )}
 
-        <Input type="text" name="name" required placeholder="Nume complet" aria-label="Nume complet" />
-        <Input type="tel" name="phone" required placeholder="Telefon" aria-label="Telefon" />
-        <Input type="email" name="email" placeholder="Email (opțional)" aria-label="Email" />
+        <Input
+          type="text"
+          name="name"
+          required
+          placeholder="Nume complet"
+          aria-label="Nume complet"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Input
+          type="tel"
+          name="phone"
+          required
+          placeholder="Telefon"
+          aria-label="Telefon"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+        <Input
+          type="email"
+          name="email"
+          placeholder="Email (opțional)"
+          aria-label="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
         <h3 className="font-bold text-primary text-sm mt-2">Livrare</h3>
         <Input
@@ -204,8 +266,18 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
           required
           placeholder="Adresa (stradă, număr, bloc/apartament)"
           aria-label="Adresa"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
         />
-        <Input type="text" name="zip" required placeholder="Cod poștal" aria-label="Cod poștal" />
+        <Input
+          type="text"
+          name="zip"
+          required
+          placeholder="Cod poștal"
+          aria-label="Cod poștal"
+          value={zip}
+          onChange={(e) => setZip(e.target.value)}
+        />
 
         {/* Facturarea pe companie cere date pe care un client persoană fizică nu le
             are, deci câmpurile apar doar când sunt cerute. */}
@@ -242,10 +314,12 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
         <Textarea name="extraMessage" placeholder="Mesaj suplimentar (opțional)" rows={3} className="min-h-0" aria-label="Mesaj suplimentar" />
 
         <Button type="submit" variant="accent" disabled={status === "pending"} className="mt-1">
-          {status === "pending" ? "Se trimite..." : "Trimite comanda"}
+          {status === "pending" ? "Se trimite..." : editSession ? "Salvează comanda" : "Trimite comanda"}
         </Button>
         <p className="text-center text-[11px] text-muted-foreground">
-          Te contactăm telefonic pentru confirmare și stabilirea livrării.
+          {editSession
+            ? "Modificările actualizează comanda existentă din Telegram."
+            : "Te contactăm telefonic pentru confirmare și stabilirea livrării."}
         </p>
       </form>
 

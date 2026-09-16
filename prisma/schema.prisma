@@ -222,12 +222,29 @@ model ContactMessage {
   deliveryZip       String?
   deliveryWeightKg  Float?
   deliveryCodAmount Float?
+  // Fluxul de fulfillment (operator -> depozitar -> curier), doar pentru
+  // comenzile din coș — vezi lib/orderStages.ts. Null pentru celelalte
+  // tipuri de mesaje, care rămân pe fluxul vechi (status/mood).
+  orderStage        String?
+  // Token opac, per comandă — dă acces la linkul "Editează" din Telegram,
+  // fără login separat pentru operatori. Index normal, nu @unique: pe
+  // MongoDB un index unic pe un câmp opțional respinge orice al doilea
+  // document cu valoarea absentă/null (toate mesajele vechi, fără token),
+  // ceea ce bloca sincronizarea schemei. Riscul de coliziune e neglijabil
+  // (192 de biți aleatori per token).
+  editToken         String?
+  // Produsele comenzii cu cantități ([{ productId, quantity }]) — spre
+  // deosebire de productIds (doar id-uri), permite reconstruirea coșului
+  // la editare cu cantitățile corecte.
+  orderItems        Json?
   // Livrare EVS Express — completate când e creată expedierea (automat la
-  // marcarea "Achitat", sau manual din /admin/mesaje). awbStatus e ultimul
-  // status citit de la EVS (GetGroupAWBActions).
+  // predarea către curier, sau manual din /admin/mesaje). awbStatus e
+  // ultimul status citit de la EVS (GetGroupAWBActions).
   awbCode           String?
   awbStatus         String?
   awbCreatedAt      DateTime?
+
+  @@index([editToken])
 }
 
 model PopupEvent {

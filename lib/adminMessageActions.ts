@@ -1,15 +1,19 @@
 "use server";
 
+import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 import { MESSAGE_STATUSES } from "./messageStatuses";
 import { MOODS } from "./moods";
+import { ORDER_STAGES, orderStageLabel, type OrderStage } from "./orderStages";
 import {
   sendTelegramMessage,
   editTelegramMessage,
   buildContactMessageText,
   buildMessageButtons,
+  buildOrderStageButtons,
+  getSiteUrl,
   STATUSES_REQUIRING_CONFIRMATION,
 } from "./telegram";
 import { createShipment } from "./evsExpress";
@@ -18,6 +22,8 @@ export interface ContactFormState {
   error?: string;
   success?: boolean;
 }
+
+const CART_ORDER_SOURCE = "Comandă din coș";
 
 // Resolves the actual product(s) tied to a message — by id (single product
 // requests) or by slug (cart orders, which can list several) — so the
@@ -33,6 +39,27 @@ async function resolveProducts(formData: FormData): Promise<{ id: string; name: 
     const slugs = slugsRaw ? slugsRaw.split(",").map((s) => s.trim()).filter(Boolean) : [];
     if (slugs.length === 0) return [];
     return await prisma.product.findMany({ where: { slug: { in: slugs } }, select: { id: true, name: true, slug: true } });
+  } catch {
+    return [];
+  }
+}
+
+// Cantitățile din formularul de checkout (JSON: [{ slug, quantity }]),
+// rezolvate la productId prin lista deja încărcată de resolveProducts —
+// stocate separat de productIds ca la editare să putem reconstitui coșul
+// cu cantitățile corecte (productIds e doar o listă flată de id-uri).
+function resolveOrderItems(
+  formData: FormData,
+  products: { id: string; slug: string }[]
+): { productId: string; quantity: number }[] {
+  const raw = String(formData.get("orderItems") ?? "").trim();
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as { slug: string; quantity: number }[];
+    const bySlug = new Map(products.map((p) => [p.slug, p.id]));
+    return parsed
+      .map((item) => ({ productId: bySlug.get(item.slug), quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)) }))
+      .filter((item): item is { productId: string; quantity: number } => Boolean(item.productId));
   } catch {
     return [];
   }
@@ -78,6 +105,14 @@ export async function submitContactMessageAction(
 
   const products = await resolveProducts(formData);
   const productIds = products.map((p) => p.id);
+  const orderItems = resolveOrderItems(formData, products);
+
+  // Comenzile din coș intră pe fluxul separat operator -> depozitar ->
+  // curier (lib/orderStages.ts) — au nevoie de un token de editare, folosit
+  // de butonul "Editează" din Telegram ca să deschidă coșul pre-completat
+  // fără login separat pentru operatori.
+  const isCartOrder = source === CART_ORDER_SOURCE;
+  const editToken = isCartOrder ? randomBytes(24).toString("hex") : null;
 
   let created;
   try {
@@ -94,15 +129,23 @@ export async function submitContactMessageAction(
         deliveryZip,
         deliveryWeightKg,
         deliveryCodAmount,
+        ...(isCartOrder ? { orderStage: "noua", editToken, orderItems } : {}),
       },
     });
   } catch {
     return { error: "Nu am putut trimite mesajul. Încearcă din nou." };
   }
 
-  const statusLabel = MESSAGE_STATUSES.find((s) => s.value === created.status)?.label ?? created.status;
-  const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel, products });
-  const telegramMessageId = await sendTelegramMessage(text, buildMessageButtons(created.id));
+  let telegramMessageId: number | null;
+  if (isCartOrder) {
+    const editUrl = `${getSiteUrl()}/editare-comanda?token=${editToken}`;
+    const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel: orderStageLabel("noua"), products });
+    telegramMessageId = await sendTelegramMessage(text, buildOrderStageButtons(created.id, "noua", editUrl));
+  } else {
+    const statusLabel = MESSAGE_STATUSES.find((s) => s.value === created.status)?.label ?? created.status;
+    const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel, products });
+    telegramMessageId = await sendTelegramMessage(text, buildMessageButtons(created.id));
+  }
   if (telegramMessageId) {
     await prisma.contactMessage.update({ where: { id: created.id }, data: { telegramMessageId } });
   }
@@ -210,6 +253,140 @@ export async function maybeCreateEvsShipment(message: {
   } else {
     console.error(`evs auto-shipment eșuat pentru mesajul ${message.id}:`, result.description);
   }
+}
+
+// Re-editează mesajul din Telegram al unei comenzi (buton Editează, sau o
+// tranziție de etapă) — text + butoane potrivite etapei curente.
+async function syncOrderTelegramMessage(updated: {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  message: string | null;
+  source: string;
+  orderStage: string | null;
+  editToken: string | null;
+  telegramMessageId: number | null;
+  productIds: string[];
+  awbCode: string | null;
+}) {
+  if (!updated.telegramMessageId) return;
+  const products = await getProductsByIds(updated.productIds);
+  const stageLabel = orderStageLabel(updated.orderStage);
+  const text = buildContactMessageText({
+    name: updated.name,
+    phone: updated.phone,
+    email: updated.email,
+    message: updated.message,
+    source: updated.source,
+    statusLabel: updated.awbCode ? `${stageLabel} — AWB ${updated.awbCode}` : stageLabel,
+    products,
+  });
+  const editUrl = `${getSiteUrl()}/editare-comanda?token=${updated.editToken ?? ""}`;
+  const buttons =
+    updated.orderStage === "noua" || updated.orderStage === "confirmata"
+      ? buildOrderStageButtons(updated.id, updated.orderStage, editUrl)
+      : [];
+  await editTelegramMessage(updated.telegramMessageId, text, buttons);
+}
+
+// Actualizează o comandă existentă prin link-ul de editare (token, fără
+// login) — singurul control de acces e potrivirea editToken + faptul că
+// mai e în etapa "noua" (o dată confirmată de operator, linkul nu mai
+// funcționează). Folosită de CheckoutPanel când operatorul reia checkout-ul
+// din /editare-comanda.
+export async function updateOrderMessageAction(
+  _prevState: ContactFormState,
+  formData: FormData
+): Promise<ContactFormState> {
+  const messageId = String(formData.get("messageId") ?? "");
+  const editToken = String(formData.get("editToken") ?? "");
+  if (!messageId || !editToken) return { error: "Link invalid." };
+
+  const existing = await prisma.contactMessage.findUnique({ where: { id: messageId } });
+  if (!existing || existing.editToken !== editToken || existing.orderStage !== "noua") {
+    return { error: "Acest link de editare nu mai este valid — comanda a fost deja procesată." };
+  }
+
+  const name = String(formData.get("name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
+  const message = String(formData.get("message") ?? "").trim() || null;
+
+  if (!name || !phone) {
+    return { error: `Lipsește ${!name ? "numele" : "numărul de telefon"}.` };
+  }
+
+  const deliveryLocality = String(formData.get("deliveryLocality") ?? "").trim() || null;
+  const deliveryAddress = String(formData.get("deliveryAddress") ?? "").trim() || null;
+  const deliveryZip = String(formData.get("deliveryZip") ?? "").trim() || null;
+  const deliveryWeightKgRaw = Number(formData.get("deliveryWeightKg"));
+  const deliveryWeightKg = Number.isFinite(deliveryWeightKgRaw) && deliveryWeightKgRaw > 0 ? deliveryWeightKgRaw : null;
+  const deliveryCodAmountRaw = Number(formData.get("deliveryCodAmount"));
+  const deliveryCodAmount = Number.isFinite(deliveryCodAmountRaw) && deliveryCodAmountRaw >= 0 ? deliveryCodAmountRaw : null;
+
+  const products = await resolveProducts(formData);
+  const productIds = products.map((p) => p.id);
+  const orderItems = resolveOrderItems(formData, products);
+
+  let updated;
+  try {
+    updated = await prisma.contactMessage.update({
+      where: { id: messageId },
+      data: {
+        name,
+        phone,
+        email: email || null,
+        message,
+        productIds,
+        orderItems,
+        deliveryLocality,
+        deliveryAddress,
+        deliveryZip,
+        deliveryWeightKg,
+        deliveryCodAmount,
+      },
+    });
+  } catch {
+    return { error: "Nu am putut actualiza comanda. Încearcă din nou." };
+  }
+
+  await syncOrderTelegramMessage(updated);
+  revalidatePath("/admin/mesaje");
+  return { success: true };
+}
+
+// Avansează o comandă la etapa următoare (operator confirmă / depozitar
+// predă la curier) sau o anulează — folosită atât de webhook-ul Telegram
+// cât și de acțiunea din admin, ca cele două suprafețe să rămână în sincron.
+export async function advanceOrderStage(messageId: string, nextStage: OrderStage) {
+  const updated = await prisma.contactMessage.update({ where: { id: messageId }, data: { orderStage: nextStage } });
+
+  if (nextStage === "predata_curier") {
+    if (updated.productIds.length > 0) {
+      await prisma.product.updateMany({ where: { id: { in: updated.productIds } }, data: { salesCount: { increment: 1 } } });
+    }
+    await maybeCreateEvsShipment(updated);
+    // Reia mesajul actualizat — maybeCreateEvsShipment poate fi setat awbCode.
+    const withAwb = await prisma.contactMessage.findUnique({ where: { id: messageId } });
+    if (withAwb) await syncOrderTelegramMessage(withAwb);
+    revalidatePath("/admin/mesaje");
+    revalidatePath("/admin/produse");
+    revalidatePath("/produse");
+    return withAwb ?? updated;
+  }
+
+  await syncOrderTelegramMessage(updated);
+  revalidatePath("/admin/mesaje");
+  return updated;
+}
+
+export async function setOrderStageAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const stage = String(formData.get("stage") ?? "");
+  if (!id || !ORDER_STAGES.some((s) => s.value === stage)) return;
+  await advanceOrderStage(id, stage as OrderStage);
 }
 
 export async function setMessageStatusAction(formData: FormData) {

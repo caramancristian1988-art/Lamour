@@ -9,6 +9,7 @@ import { Button } from "@/app/components/ui/button";
 import { cn } from "@/lib/utils";
 import MessageStatusBadge from "../components/MessageStatusBadge";
 import MoodBadge from "../components/MoodBadge";
+import OrderStageBadge from "../components/OrderStageBadge";
 import LinkedProductText from "../components/LinkedProductText";
 import CopyableId from "../components/CopyableId";
 import EvsShipmentPanel from "../components/EvsShipmentPanel";
@@ -28,6 +29,7 @@ interface Message {
   products: { id: string; name: string; slug: string }[];
   awbCode: string | null;
   awbStatus: string | null;
+  orderStage: string | null;
 }
 
 // Comenzile din coș includ o linie "Livrare: localitate, adresă" în textul
@@ -57,6 +59,13 @@ const STATUS_ACCENT_COLORS: Record<string, string> = {
   in_lucru: "#0ea5e9",
   achitat: "#14b8a6",
   anulat: "#9ca3af",
+};
+
+const ORDER_STAGE_ACCENT_COLORS: Record<string, string> = {
+  noua: "#f59e0b",
+  confirmata: "#6366f1",
+  predata_curier: "#14b8a6",
+  anulata: "#9ca3af",
 };
 
 function formatDate(date: Date) {
@@ -130,10 +139,14 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
         <div className="flex flex-col gap-2">
           {visibleMessages.map((m) => {
             const expanded = expandedId === m.id;
+            const isOrder = categoryOf(m.source) === "comenzi";
+            const accentColor = isOrder
+              ? (ORDER_STAGE_ACCENT_COLORS[m.orderStage ?? "noua"] ?? ORDER_STAGE_ACCENT_COLORS.noua)
+              : (STATUS_ACCENT_COLORS[m.status] ?? STATUS_ACCENT_COLORS.in_asteptare);
             return (
               <div
                 key={m.id}
-                style={{ borderLeftColor: STATUS_ACCENT_COLORS[m.status] ?? STATUS_ACCENT_COLORS.in_asteptare }}
+                style={{ borderLeftColor: accentColor }}
                 className={cn(
                   "bg-card border rounded-xl border-l-4 transition-colors",
                   m.read ? "border-border" : "border-accent/30"
@@ -209,8 +222,14 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                       )}
 
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
-                        <MessageStatusBadge id={m.id} status={m.status} onChange={(status) => patchMessage(m.id, { status })} />
-                        <MoodBadge id={m.id} mood={m.mood} onChange={(mood) => patchMessage(m.id, { mood })} />
+                        {isOrder ? (
+                          <OrderStageBadge id={m.id} stage={m.orderStage} onChange={(orderStage) => patchMessage(m.id, { orderStage })} />
+                        ) : (
+                          <>
+                            <MessageStatusBadge id={m.id} status={m.status} onChange={(status) => patchMessage(m.id, { status })} />
+                            <MoodBadge id={m.id} mood={m.mood} onChange={(mood) => patchMessage(m.id, { mood })} />
+                          </>
+                        )}
                         {!m.read && (
                           <Button variant="outline" size="sm" onClick={() => handleMarkRead(m.id)}>
                             Marchează ca citit
@@ -233,15 +252,21 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                         </p>
                       )}
 
-                      <EvsShipmentPanel
-                        messageId={m.id}
-                        defaultName={m.name}
-                        defaultPhone={m.phone}
-                        defaultEmail={m.email}
-                        defaultAddress={extractDeliveryLine(m.message)}
-                        awbCode={m.awbCode}
-                        awbStatus={m.awbStatus}
-                      />
+                      {/* Pentru comenzi, livrarea EVS se creează automat la "Predată
+                          curierului" — panoul manual apare doar acolo (ca rezervă dacă
+                          expedierea automată eșuează), nu mai devreme în flux, ca să nu
+                          ajungă curierul înaintea depozitarului. */}
+                      {(!isOrder || m.orderStage === "predata_curier") && (
+                        <EvsShipmentPanel
+                          messageId={m.id}
+                          defaultName={m.name}
+                          defaultPhone={m.phone}
+                          defaultEmail={m.email}
+                          defaultAddress={extractDeliveryLine(m.message)}
+                          awbCode={m.awbCode}
+                          awbStatus={m.awbStatus}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

@@ -53,6 +53,9 @@ interface CartContextValue {
   updateQuantity: (slug: string, quantity: number) => void;
   changeVariant: (oldSlug: string, next: Omit<CartItem, "quantity">) => void;
   clearCart: () => void;
+  /** Înlocuiește tot coșul — folosit la /editare-comanda, ca să hidrateze
+   * coșul unui operator cu produsele unei comenzi existente. */
+  replaceCart: (items: CartItem[]) => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -125,6 +128,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     persist([]);
   }
 
+  function replaceCart(next: CartItem[]) {
+    persist(next);
+  }
+
   const lines = useMemo<CartLine[]>(
     () =>
       items.map((item) => {
@@ -161,6 +168,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         changeVariant,
         clearCart,
+        replaceCart,
       }}
     >
       {children}

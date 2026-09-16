@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUSES } from "@/lib/messageStatuses";
-import { applySalesCountForStatusChange, maybeCreateEvsShipment } from "@/lib/adminMessageActions";
+import { applySalesCountForStatusChange, maybeCreateEvsShipment, advanceOrderStage } from "@/lib/adminMessageActions";
 import { MOODS } from "@/lib/moods";
 import {
   editTelegramMessage,
@@ -11,6 +11,9 @@ import {
   buildContactMessageText,
   buildMessageButtons,
   buildConfirmButtons,
+  buildOrderStageButtons,
+  buildOrderCancelConfirmButtons,
+  getSiteUrl,
   STATUSES_REQUIRING_CONFIRMATION,
 } from "@/lib/telegram";
 
@@ -58,6 +61,48 @@ export async function POST(request: NextRequest) {
       await answerCallbackQuery(callbackQuery.id, "Anulat.");
     } catch {
       await answerCallbackQuery(callbackQuery.id, "Mesajul nu mai există.");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // Fluxul separat pentru comenzi din coș (operator -> depozitar -> curier).
+  // advanceOrderStage se ocupă și de editarea mesajului din Telegram, deci
+  // aici doar apelăm tranziția și răspundem la callback.
+  if (prefix === "ord_confirm" || prefix === "ord_ready" || prefix === "ord_cancel_yes") {
+    const nextStage = prefix === "ord_confirm" ? "confirmata" : prefix === "ord_ready" ? "predata_curier" : "anulata";
+    const confirmText = prefix === "ord_confirm" ? "Comandă confirmată." : prefix === "ord_ready" ? "Predată curierului." : "Comandă anulată.";
+    try {
+      await advanceOrderStage(id, nextStage);
+      await answerCallbackQuery(callbackQuery.id, confirmText);
+    } catch {
+      await answerCallbackQuery(callbackQuery.id, "Comanda nu mai există.");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  if (prefix === "ord_cancel") {
+    try {
+      const message = await prisma.contactMessage.findUnique({ where: { id } });
+      if (message?.telegramMessageId) {
+        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderCancelConfirmButtons(id));
+      }
+      await answerCallbackQuery(callbackQuery.id);
+    } catch {
+      await answerCallbackQuery(callbackQuery.id, "Comanda nu mai există.");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  if (prefix === "ord_cancel_no") {
+    try {
+      const message = await prisma.contactMessage.findUnique({ where: { id } });
+      if (message?.telegramMessageId && message.orderStage) {
+        const editUrl = `${getSiteUrl()}/editare-comanda?token=${message.editToken ?? ""}`;
+        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderStageButtons(id, message.orderStage, editUrl));
+      }
+      await answerCallbackQuery(callbackQuery.id, "Renunțat.");
+    } catch {
+      await answerCallbackQuery(callbackQuery.id, "Comanda nu mai există.");
     }
     return NextResponse.json({ ok: true });
   }
