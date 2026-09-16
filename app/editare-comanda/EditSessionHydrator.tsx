@@ -3,19 +3,9 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart, type CartItem } from "@/app/components/CartProvider";
+import { setOrderEditSession, type OrderEditSession } from "@/lib/orderEditSession";
 
-export interface OrderEditSession {
-  messageId: string;
-  editToken: string;
-  name: string;
-  phone: string;
-  email: string;
-  locality: string;
-  address: string;
-  zip: string;
-}
-
-export const ORDER_EDIT_SESSION_KEY = "order-edit-session";
+export type { OrderEditSession };
 
 // Hidratează coșul operatorului cu produsele comenzii deschise din Telegram,
 // salvează datele de livrare ca CheckoutPanel să le pre-completeze, apoi
@@ -27,7 +17,7 @@ export default function EditSessionHydrator({ items, session }: { items: CartIte
 
   useEffect(() => {
     replaceCart(items);
-    window.localStorage.setItem(ORDER_EDIT_SESSION_KEY, JSON.stringify(session));
+    setOrderEditSession(session);
     router.replace("/cos");
     // Rulează o singură dată, la deschiderea linkului — nu la fiecare
     // schimbare de referință a `items`/`session` (obiecte noi la fiecare render server).

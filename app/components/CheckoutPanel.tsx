@@ -7,7 +7,7 @@ import { AlertCircle, ImageOff, ShoppingCart } from "lucide-react";
 import { useCart } from "./CartProvider";
 import { formatPrice } from "@/lib/pricing";
 import { submitContactMessageAction, updateOrderMessageAction } from "@/lib/adminMessageActions";
-import { ORDER_EDIT_SESSION_KEY, type OrderEditSession } from "@/app/editare-comanda/EditSessionHydrator";
+import { useOrderEditSession, clearOrderEditSession } from "@/lib/orderEditSession";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Button } from "@/app/components/ui/button";
@@ -46,24 +46,17 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
   // Prezent doar când operatorul a ajuns aici prin linkul "Editează" din
   // Telegram (vezi app/editare-comanda) — pre-completează formularul și
   // trimite spre updateOrderMessageAction în loc de a crea o comandă nouă.
-  const [editSession, setEditSession] = useState<OrderEditSession | null>(null);
+  const editSession = useOrderEditSession();
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(ORDER_EDIT_SESSION_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as OrderEditSession;
-      setEditSession(parsed);
-      setName(parsed.name);
-      setPhone(parsed.phone);
-      setEmail(parsed.email);
-      setLocality(parsed.locality);
-      setAddress(parsed.address);
-      setZip(parsed.zip);
-    } catch {
-      // ignore
-    }
-  }, []);
+    if (!editSession) return;
+    setName(editSession.name);
+    setPhone(editSession.phone);
+    setEmail(editSession.email);
+    setLocality(editSession.locality);
+    setAddress(editSession.address);
+    setZip(editSession.zip);
+  }, [editSession]);
 
   const deliveryPrice = locality.trim()
     ? isChisinau(locality)
@@ -169,7 +162,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
       return;
     }
 
-    if (editSession) window.localStorage.removeItem(ORDER_EDIT_SESSION_KEY);
+    if (editSession) clearOrderEditSession();
     setStatus("success");
     clearCart();
   }
