@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUSES } from "@/lib/messageStatuses";
-import { applySalesCountForStatusChange } from "@/lib/adminMessageActions";
+import { applySalesCountForStatusChange, maybeCreateEvsShipment } from "@/lib/adminMessageActions";
 import { MOODS } from "@/lib/moods";
 import {
   editTelegramMessage,
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
       const previous = await prisma.contactMessage.findUnique({ where: { id }, select: { status: true, productIds: true } });
       updated = await prisma.contactMessage.update({ where: { id }, data: { status: value, read: true } });
       if (previous) await applySalesCountForStatusChange(previous.status, value, previous.productIds);
+      if (value === "achitat") await maybeCreateEvsShipment(updated);
     } else {
       updated = await prisma.contactMessage.update({ where: { id }, data: { mood: value } });
     }

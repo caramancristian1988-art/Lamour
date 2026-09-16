@@ -52,6 +52,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
     const phone = String(data.get("phone") ?? "").trim();
     const email = String(data.get("email") ?? "").trim();
     const address = String(data.get("address") ?? "").trim();
+    const zip = String(data.get("zip") ?? "").trim();
     const extra = String(data.get("extraMessage") ?? "").trim();
 
     const companyName = String(data.get("companyName") ?? "").trim();
@@ -66,6 +67,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
       !phone && "numărul de telefon",
       !trimmedLocality && "localitatea",
       !address && "adresa",
+      !zip && "codul poștal",
       // Fără denumire și IDNO nu se poate emite factura, deci le cerem aici,
       // nu după ce comanda a plecat.
       needsInvoice && !companyName && "denumirea companiei",
@@ -94,7 +96,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
       deliveryPrice !== null ? `Livrare (${isChisinau(trimmedLocality) ? "Chișinău" : "național"}): ${formatPrice(deliveryPrice)} MDL` : null,
       deliveryPrice !== null ? `Total cu livrare: ${formatPrice(subtotal + deliveryPrice)} MDL` : null,
       "",
-      `Livrare: ${trimmedLocality}, ${address}`,
+      `Livrare: ${trimmedLocality}, ${address}, ${zip}`,
       // Marcat vizibil, ca factura sa nu fie ratata la procesarea comenzii.
       needsInvoice ? "\n🧾 CERE FACTURĂ (companie):" : null,
       needsInvoice ? `Denumire: ${companyName}` : null,
@@ -106,6 +108,11 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
       .filter((l) => l !== null)
       .join("\n");
 
+    // Date structurate de livrare — folosite pentru a crea automat expedierea
+    // EVS Express când comanda e marcată "Achitat" în admin (fără să fie
+    // nevoie ca cineva să retasteze adresa din textul liber al mesajului).
+    const totalQuantity = lines.reduce((sum, l) => sum + l.quantity, 0);
+
     const submitData = new FormData();
     submitData.set("name", name);
     submitData.set("phone", phone);
@@ -113,6 +120,11 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
     submitData.set("message", message);
     submitData.set("source", "Comandă din coș");
     submitData.set("productSlugs", lines.map((l) => l.slug).join(","));
+    submitData.set("deliveryLocality", trimmedLocality);
+    submitData.set("deliveryAddress", address);
+    submitData.set("deliveryZip", zip);
+    submitData.set("deliveryWeightKg", String(Math.max(1, totalQuantity)));
+    submitData.set("deliveryCodAmount", String(subtotal + (deliveryPrice ?? 0)));
 
     setStatus("pending");
     const result = await submitContactMessageAction({}, submitData);
@@ -193,6 +205,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
           placeholder="Adresa (stradă, număr, bloc/apartament)"
           aria-label="Adresa"
         />
+        <Input type="text" name="zip" required placeholder="Cod poștal" aria-label="Cod poștal" />
 
         {/* Facturarea pe companie cere date pe care un client persoană fizică nu le
             are, deci câmpurile apar doar când sunt cerute. */}

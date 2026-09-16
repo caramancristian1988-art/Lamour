@@ -213,8 +213,18 @@ model ContactMessage {
   telegramMessageId Int?
   productIds        String[] @default([]) @db.ObjectId
   createdAt         DateTime @default(now())
-  // Livrare EVS Express — completate când admin generează AWB-ul din
-  // /admin/mesaje. awbStatus e ultimul status citit de la EVS (GetGroupAWBActions).
+  // Adresa de livrare structurată, completată doar la comenzile din coș
+  // (CheckoutPanel) — necesară ca să putem crea automat expedierea EVS
+  // Express fără intervenție manuală (mesajele de tip "Cere consultație"
+  // nu au aceste câmpuri, deci nu sunt expediate automat).
+  deliveryLocality  String?
+  deliveryAddress   String?
+  deliveryZip       String?
+  deliveryWeightKg  Float?
+  deliveryCodAmount Float?
+  // Livrare EVS Express — completate când e creată expedierea (automat la
+  // marcarea "Achitat", sau manual din /admin/mesaje). awbStatus e ultimul
+  // status citit de la EVS (GetGroupAWBActions).
   awbCode           String?
   awbStatus         String?
   awbCreatedAt      DateTime?
