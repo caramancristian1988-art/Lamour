@@ -47,6 +47,7 @@ export interface EvsResult<T = unknown> {
   ok: boolean;
   description: string;
   raw: T | null;
+  code?: string;
 }
 
 async function callEvs<T = unknown>(
@@ -75,7 +76,7 @@ async function callEvs<T = unknown>(
     const first = Array.isArray(data) ? data[0] : data;
     const ok = first?.TrueFalse !== false;
     const description = first?.Description ?? (ok ? "OK" : "Eroare necunoscută de la EVS Express.");
-    return { ok, description, raw: data };
+    return { ok, description, raw: data, code: first?.Code !== undefined ? String(first.Code) : undefined };
   } catch (err) {
     return { ok: false, description: `Cerere eșuată către EVS Express: ${(err as Error).message}`, raw: null };
   }
@@ -179,7 +180,14 @@ export async function createShipment(
     payload
   );
 
-  return { ...result, awb: result.ok ? awb : null };
+  // Ciudățenie a API-ului: pentru type=validate, un răspuns FĂRĂ probleme
+  // vine cu TrueFalse:false și Code:"3000" ("No issue found. Records not
+  // registered. Turn off validator or debugger.") — nu e o eroare reală,
+  // ci exact rezultatul dorit al unei validări. Alte coduri (3001, 3005,
+  // 3017 etc.) rămân erori reale.
+  const ok = options.validateOnly && result.code === "3000" ? true : result.ok;
+
+  return { ...result, ok, awb: ok ? awb : null };
 }
 
 // Verifică statusul unui AWB deja creat. Întoarce ultimul status/acțiune
