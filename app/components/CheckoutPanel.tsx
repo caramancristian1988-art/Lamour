@@ -8,6 +8,9 @@ import { useCart } from "./CartProvider";
 import { formatPrice } from "@/lib/pricing";
 import { submitContactMessageAction, updateOrderMessageAction } from "@/lib/adminMessageActions";
 import { useOrderEditSession, clearOrderEditSession } from "@/lib/orderEditSession";
+import { matchLocality } from "@/lib/localityMatch";
+import { isValidMoldovanPhone, isValidPostalCode } from "@/lib/deliveryValidation";
+import LocalityField from "./LocalityField";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Button } from "@/app/components/ui/button";
@@ -78,23 +81,34 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
     const trimmedName = name.trim();
     const trimmedPhone = phone.trim();
     const trimmedEmail = email.trim();
-    const trimmedLocality = locality.trim();
     const trimmedAddress = address.trim();
     const trimmedZip = zip.trim();
+
+    // Verificare finală a localității la trimitere (nu doar la blur din
+    // LocalityField) — ca un Enter rapid, fără să părăsească niciodată
+    // câmpul, să nu treacă neverificat. Dacă localitatea scrisă corespunde
+    // uneia reale dar cu altă scriere/diacritice, o înlocuim cu forma
+    // canonică (aceeași folosită de EVS), nu doar o validăm.
+    const localityMatch = matchLocality(locality);
+    const resolvedLocality = localityMatch.exact ?? locality.trim();
+    if (localityMatch.exact && localityMatch.exact !== locality) setLocality(localityMatch.exact);
 
     const missing = [
       !trimmedName && "numele",
       !trimmedPhone && "numărul de telefon",
-      !trimmedLocality && "localitatea",
+      trimmedPhone && !isValidMoldovanPhone(trimmedPhone) && "un număr de telefon valid",
+      !resolvedLocality && "localitatea",
+      resolvedLocality && !localityMatch.exact && "o localitate validă din Moldova",
       !trimmedAddress && "adresa",
       !trimmedZip && "codul poștal",
+      trimmedZip && !isValidPostalCode(trimmedZip) && "un cod poștal valid (4 cifre)",
       // Fără denumire și IDNO nu se poate emite factura, deci le cerem aici,
       // nu după ce comanda a plecat.
       needsInvoice && !companyName && "denumirea companiei",
       needsInvoice && !companyIdno && "IDNO-ul companiei",
     ].filter(Boolean);
     if (missing.length > 0) {
-      setErrorMsg(`Lipsește ${missing.join(", ")}.`);
+      setErrorMsg(`Lipsește sau este greșit(ă): ${missing.join(", ")}.`);
       setStatus("error");
       return;
     }
@@ -113,10 +127,10 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
       "",
       `Subtotal: ${formatPrice(subtotal)} MDL`,
       savings > 0 ? `Economisește: ${formatPrice(savings)} MDL` : null,
-      deliveryPrice !== null ? `Livrare (${isChisinau(trimmedLocality) ? "Chișinău" : "național"}): ${formatPrice(deliveryPrice)} MDL` : null,
+      deliveryPrice !== null ? `Livrare (${isChisinau(resolvedLocality) ? "Chișinău" : "național"}): ${formatPrice(deliveryPrice)} MDL` : null,
       deliveryPrice !== null ? `Total cu livrare: ${formatPrice(subtotal + deliveryPrice)} MDL` : null,
       "",
-      `Livrare: ${trimmedLocality}, ${trimmedAddress}, ${trimmedZip}`,
+      `Livrare: ${resolvedLocality}, ${trimmedAddress}, ${trimmedZip}`,
       // Marcat vizibil, ca factura sa nu fie ratata la procesarea comenzii.
       needsInvoice ? "\n🧾 CERE FACTURĂ (companie):" : null,
       needsInvoice ? `Denumire: ${companyName}` : null,
@@ -141,7 +155,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
     submitData.set("source", "Comandă din coș");
     submitData.set("productSlugs", lines.map((l) => l.slug).join(","));
     submitData.set("orderItems", JSON.stringify(lines.map((l) => ({ slug: l.slug, quantity: l.quantity }))));
-    submitData.set("deliveryLocality", trimmedLocality);
+    submitData.set("deliveryLocality", resolvedLocality);
     submitData.set("deliveryAddress", trimmedAddress);
     submitData.set("deliveryZip", trimmedZip);
     submitData.set("deliveryWeightKg", String(Math.max(1, totalQuantity)));
@@ -239,15 +253,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
         />
 
         <h3 className="font-bold text-primary text-sm mt-2">Livrare</h3>
-        <Input
-          type="text"
-          name="locality"
-          required
-          placeholder="Localitate"
-          aria-label="Localitate"
-          value={locality}
-          onChange={(e) => setLocality(e.target.value)}
-        />
+        <LocalityField value={locality} onChange={setLocality} />
         {deliveryPrice !== null && (deliveryPrices.chisinau > 0 || deliveryPrices.national > 0) && (
           <p className="text-xs text-muted-foreground -mt-1.5">
             Cost livrare estimat ({isChisinau(locality) ? "Chișinău" : "restul țării"}): <b className="text-foreground">{formatPrice(deliveryPrice)} MDL</b>
