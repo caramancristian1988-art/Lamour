@@ -41,6 +41,7 @@ async function getSearchableData() {
         specifications: [] as { label: string; value: string }[],
         popupEnabled: false,
         installmentsEnabled: true,
+        warrantyEnabled: null as boolean | null,
         variantGroupId: null as string | null,
         variantLabel: null as string | null,
         salesCount: 0,

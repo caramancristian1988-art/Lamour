@@ -11,6 +11,7 @@ import { useOrderEditSession, clearOrderEditSession } from "@/lib/orderEditSessi
 import { matchLocality } from "@/lib/localityMatch";
 import { isValidMoldovanPhone, isValidPostalCode } from "@/lib/deliveryValidation";
 import LocalityField from "./LocalityField";
+import CatalogNotice from "./CatalogNotice";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Button } from "@/app/components/ui/button";
@@ -36,7 +37,7 @@ function isChisinau(locality: string): boolean {
 }
 
 export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: DeliveryPrices }) {
-  const { lines, clearCart, subtotal, savings } = useCart();
+  const { lines, clearCart, subtotal, savings, syncWithCatalog } = useCart();
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [needsInvoice, setNeedsInvoice] = useState(false);
@@ -109,6 +110,17 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
     ].filter(Boolean);
     if (missing.length > 0) {
       setErrorMsg(`Lipsește sau este greșit(ă): ${missing.join(", ")}.`);
+      setStatus("error");
+      return;
+    }
+
+    // Coșul e în localStorage, deci poate conține prețuri sau produse vechi. Verificăm cu
+    // catalogul chiar înainte de trimitere: dacă ceva s-a schimbat, clientul vede totalul
+    // corect și confirmă din nou, în loc să trimită (și să vadă pe mesaj) date depășite.
+    setStatus("pending");
+    const sync = await syncWithCatalog();
+    if (!sync.failed && sync.changed) {
+      setErrorMsg("Prețurile sau produsele din coș s-au actualizat. Verifică totalul de mai jos și trimite din nou.");
       setStatus("error");
       return;
     }
@@ -204,6 +216,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
   if (lines.length === 0) {
     return (
       <div className="text-center py-16">
+        <CatalogNotice />
         <ShoppingCart className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" strokeWidth={1.5} aria-hidden />
         <p className="text-muted-foreground mb-6">Coșul tău este gol.</p>
         <Button asChild variant="primary">
@@ -214,6 +227,8 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
   }
 
   return (
+    <>
+    <CatalogNotice />
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
       <form onSubmit={handleSubmit} noValidate className="border border-border rounded-2xl p-6 flex flex-col gap-3.5 h-fit bg-card">
         <h2 className="font-extrabold text-primary text-lg mb-1">Datele tale</h2>
@@ -375,5 +390,6 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
         </div>
       </div>
     </div>
+    </>
   );
 }

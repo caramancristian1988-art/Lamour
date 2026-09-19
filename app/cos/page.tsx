@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ImageOff, Minus, Plus, ShoppingCart, X } from "lucide-react";
 import { useCart } from "../components/CartProvider";
+import CatalogNotice from "../components/CatalogNotice";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { formatPrice, nextTier, type PriceTier } from "@/lib/pricing";
@@ -58,6 +59,7 @@ export default function CosPage() {
 
       <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <CatalogNotice />
           {lines.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
               {/* Items */}

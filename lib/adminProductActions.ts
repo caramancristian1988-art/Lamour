@@ -109,6 +109,7 @@ function readProductFields(formData: FormData) {
   const badge = String(formData.get("badge") ?? "").trim() || null;
   const availability = String(formData.get("availability") ?? "").trim() || "În stoc";
   const installmentsEnabled = formData.get("installmentsEnabled") === "on";
+  const warrantyEnabled = formData.get("warrantyEnabled") === "on";
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const specifications = parseSpecifications(formData);
   const variantGroupId = String(formData.get("variantGroupId") ?? "").trim() || null;
@@ -134,6 +135,7 @@ function readProductFields(formData: FormData) {
     badge,
     availability,
     installmentsEnabled,
+    warrantyEnabled,
     categoryId,
     specifications,
     variantGroupId,
@@ -180,6 +182,7 @@ export async function createProductAction(_prevState: ProductFormState, formData
           brand: data.brand,
           availability: data.availability,
           installmentsEnabled: data.installmentsEnabled,
+          warrantyEnabled: data.warrantyEnabled,
           categoryId: data.categoryId,
           specifications: data.specifications,
           variantGroupId: created.id,

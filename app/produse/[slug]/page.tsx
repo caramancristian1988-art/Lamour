@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowRight, MessageCircle, Truck, PackageCheck, ShieldCheck, ChevronDown } from "lucide-react";
+import { ArrowRight, Banknote, MessageCircle, Truck, PackageCheck, ShieldCheck, ChevronDown } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
@@ -492,6 +492,7 @@ interface ProductViewProps {
     badge: string | null;
     availability: string;
     installmentsEnabled?: boolean;
+    warrantyEnabled?: boolean | null;
     specifications?: { label: string; value: string }[];
     salesCount?: number;
     variantLabel?: string | null;
@@ -777,12 +778,20 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
               </div>
               <div className="flex flex-col items-center gap-1.5">
                 <PackageCheck className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
-                <p className="text-[11px] text-muted-foreground leading-snug">Livrare în toată Moldova, 24h</p>
+                <p className="text-[11px] text-muted-foreground leading-snug">Livrare în toată Moldova, 1-7 zile</p>
               </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <ShieldCheck className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
-                <p className="text-[11px] text-muted-foreground leading-snug">Garanție 2 ani</p>
-              </div>
+              {/* Produsele fără garanție (consumabile) primesc alt avantaj în același loc, ca rândul să rămână plin. */}
+              {product.warrantyEnabled !== false ? (
+                <div className="flex flex-col items-center gap-1.5">
+                  <ShieldCheck className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
+                  <p className="text-[11px] text-muted-foreground leading-snug">Garanție 2 ani</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1.5">
+                  <Banknote className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
+                  <p className="text-[11px] text-muted-foreground leading-snug">Plată la primire</p>
+                </div>
+              )}
             </div>
 
             {product.description && (

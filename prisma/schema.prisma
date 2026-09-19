@@ -56,6 +56,10 @@ model Product {
   salesCount  Int     @default(0)
   popupEnabled Boolean @default(false)
   installmentsEnabled Boolean @default(true)
+  // Opțional (nu required cu default) ca produsele existente, fără câmpul în MongoDB,
+  // să se citească fără eroare. null/true = afișează "Garanție 2 ani" pe pagina produsului;
+  // false = produs fără garanție (consumabile: hârtie, chibrituri) — în loc apare alt avantaj.
+  warrantyEnabled Boolean?
   specifications ProductSpec[]
   categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])

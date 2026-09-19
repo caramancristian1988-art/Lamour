@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { lineTotal, normalizeTiers, savingsPercent, unitPriceFor, type PriceTier } from "@/lib/pricing";
+import { getCatalogEntries, type CatalogEntry } from "@/lib/cartCatalog";
 
 export interface CartVariantOption {
   slug: string;
@@ -41,6 +42,17 @@ export interface CartLine extends CartItem {
   tierPercent: number;
 }
 
+export interface CatalogSyncResult {
+  /** Prețuri/praguri/nume schimbate sau produse dispărute față de ce era în coș. */
+  changed: boolean;
+  /** Numele produselor scoase din coș fiindcă nu mai există în catalog. */
+  removed: string[];
+  /** Coșul după reîmprospătare (neschimbat dacă `failed`). */
+  items: CartItem[];
+  /** Serverul nu a putut fi interogat — coșul a rămas cum era. */
+  failed: boolean;
+}
+
 interface CartContextValue {
   items: CartItem[];
   lines: CartLine[];
@@ -48,6 +60,11 @@ interface CartContextValue {
   subtotal: number;
   /** Reducerea totală: preț vechi + praguri de cantitate. */
   savings: number;
+  /** Reîmprospătează prețurile din catalog (coșul din localStorage poate fi vechi). */
+  syncWithCatalog: () => Promise<CatalogSyncResult>;
+  /** Mesaj afișat în coș când reîmprospătarea de la deschidere a schimbat ceva. */
+  catalogNotice: string | null;
+  dismissCatalogNotice: () => void;
   addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
   removeFromCart: (slug: string) => void;
   updateQuantity: (slug: string, quantity: number) => void;
@@ -62,19 +79,121 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 const STORAGE_KEY = "site-cart";
 
+// Ce contează pentru client: dacă asta se schimbă, totalul afișat nu mai e cel real.
+function priceSignature(items: CartItem[]): string {
+  return JSON.stringify(items.map((i) => [i.slug, i.name, i.price, i.oldPrice ?? null, i.tiers ?? []]));
+}
+
+/** Suprapune datele proaspete din catalog peste coș; produsele dispărute sunt scoase. Pură și idempotentă. */
+function mergeCatalog(items: CartItem[], catalog: CatalogEntry[]): { items: CartItem[]; removed: string[] } {
+  const bySlug = new Map(catalog.map((e) => [e.slug, e]));
+  const removed: string[] = [];
+  const next: CartItem[] = [];
+  for (const item of items) {
+    const entry = bySlug.get(item.slug);
+    if (!entry) {
+      removed.push(item.name);
+      continue;
+    }
+    const variantOptions = item.variantOptions?.flatMap((opt) => {
+      const e = bySlug.get(opt.slug);
+      return e ? [{ ...opt, price: e.price, oldPrice: e.oldPrice, priceTiers: e.tiers }] : [];
+    });
+    next.push({
+      ...item,
+      name: entry.name,
+      price: entry.price,
+      oldPrice: entry.oldPrice,
+      image: entry.image,
+      tiers: entry.tiers,
+      ...(variantOptions ? { variantOptions } : {}),
+    });
+  }
+  return { items: next, removed };
+}
+
+/** Coșul cu prețul fiecărei linii deja rezolvat pe baza cantității. */
+export function buildLines(items: CartItem[]): CartLine[] {
+  return items.map((item) => {
+    const tiers = normalizeTiers({ priceTiers: item.tiers });
+    const unitPrice = unitPriceFor(item.price, tiers, item.quantity);
+    return {
+      ...item,
+      tiers,
+      unitPrice,
+      total: lineTotal(item.price, tiers, item.quantity),
+      tierPercent: savingsPercent(item.price, unitPrice),
+    };
+  });
+}
+
+/** Subtotalul și reducerea (preț vechi + praguri) pentru un set de linii. */
+export function cartTotals(lines: CartLine[]): { subtotal: number; savings: number } {
+  const subtotal = lines.reduce((sum, l) => sum + l.total, 0);
+  const savings = lines.reduce((sum, l) => {
+    const reference = l.oldPrice ?? l.price;
+    return sum + Math.max(0, reference - l.unitPrice) * l.quantity;
+  }, 0);
+  return { subtotal, savings };
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [catalogNotice, setCatalogNotice] = useState<string | null>(null);
+  const itemsRef = useRef<CartItem[]>([]);
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
+  const runSync = useCallback(async (current: CartItem[], announce: boolean): Promise<CatalogSyncResult> => {
+    if (current.length === 0) return { changed: false, removed: [], items: current, failed: false };
+    const slugs = current.flatMap((i) => [i.slug, ...(i.variantOptions?.map((o) => o.slug) ?? [])]);
+    try {
+      const catalog = await getCatalogEntries(slugs);
+      const { items: merged, removed } = mergeCatalog(current, catalog);
+      const found = new Set(catalog.map((e) => e.slug));
+      const pricesChanged = priceSignature(merged) !== priceSignature(current.filter((i) => found.has(i.slug)));
+      const changed = removed.length > 0 || pricesChanged;
+
+      // Pe versiunea cea mai recentă a coșului, nu pe instantaneul de la începutul cererii —
+      // utilizatorul poate fi schimbat cantități între timp.
+      setItems((prev) => {
+        const next = mergeCatalog(prev, catalog).items;
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        return next;
+      });
+
+      if (announce && changed) {
+        const parts = [
+          ...removed.map((n) => `„${n}” nu mai este disponibil și a fost scos din coș.`),
+          pricesChanged ? "Prețurile din coș au fost actualizate." : null,
+        ].filter(Boolean);
+        setCatalogNotice(parts.join(" "));
+      }
+      return { changed, removed, items: merged, failed: false };
+    } catch {
+      return { changed: false, removed: [], items: current, failed: true };
+    }
+  }, []);
+
+  const syncWithCatalog = useCallback(() => runSync(itemsRef.current, false), [runSync]);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (!stored) return;
     try {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) setItems(parsed);
+      if (Array.isArray(parsed)) {
+        setItems(parsed);
+        // Coșul din localStorage poate fi vechi (preț vechi scos din admin, produs șters) —
+        // îl aducem la zi imediat, înainte să apuce clientul să comande cu date greșite.
+        void runSync(parsed, true);
+      }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
     }
-  }, []);
+  }, [runSync]);
 
   function persist(next: CartItem[]) {
     setItems(next);
@@ -132,28 +251,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     persist(next);
   }
 
-  const lines = useMemo<CartLine[]>(
-    () =>
-      items.map((item) => {
-        const tiers = normalizeTiers({ priceTiers: item.tiers });
-        const unitPrice = unitPriceFor(item.price, tiers, item.quantity);
-        return {
-          ...item,
-          tiers,
-          unitPrice,
-          total: lineTotal(item.price, tiers, item.quantity),
-          tierPercent: savingsPercent(item.price, unitPrice),
-        };
-      }),
-    [items]
-  );
+  const lines = useMemo<CartLine[]>(() => buildLines(items), [items]);
 
   const cartCount = lines.reduce((sum, l) => sum + l.quantity, 0);
-  const subtotal = lines.reduce((sum, l) => sum + l.total, 0);
-  const savings = lines.reduce((sum, l) => {
-    const reference = l.oldPrice ?? l.price;
-    return sum + Math.max(0, reference - l.unitPrice) * l.quantity;
-  }, 0);
+  const { subtotal, savings } = cartTotals(lines);
 
   return (
     <CartContext.Provider
@@ -163,6 +264,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         cartCount,
         subtotal,
         savings,
+        syncWithCatalog,
+        catalogNotice,
+        dismissCatalogNotice: () => setCatalogNotice(null),
         addToCart,
         removeFromCart,
         updateQuantity,

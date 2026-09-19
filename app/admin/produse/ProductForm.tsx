@@ -68,6 +68,7 @@ interface ProductDefaults {
   badge?: string | null;
   availability?: string;
   installmentsEnabled?: boolean;
+  warrantyEnabled?: boolean | null;
   categoryId?: string;
   specifications?: { label: string; value: string }[];
   variantGroupId?: string | null;
@@ -312,6 +313,23 @@ export default function ProductForm({
         <Label htmlFor="field-installmentsEnabled" className="font-bold">
           Disponibil în rate (afișează butonul &quot;Cumpără în rate&quot;)
         </Label>
+      </div>
+
+      <div className="flex items-start gap-2.5">
+        <Checkbox
+          id="field-warrantyEnabled"
+          name="warrantyEnabled"
+          defaultChecked={defaults?.warrantyEnabled ?? true}
+          className="mt-0.5"
+        />
+        <div>
+          <Label htmlFor="field-warrantyEnabled" className="font-bold">
+            Produsul are garanție (afișează &quot;Garanție 2 ani&quot;)
+          </Label>
+          <p className="text-xs text-muted-foreground mt-1">
+            Debifează pentru consumabile (hârtie, chibrituri etc.) — pe pagina produsului apare &quot;Plată la primire&quot; în locul garanției.
+          </p>
+        </div>
       </div>
 
       <Button type="submit" variant="accent" disabled={pending} className="self-start mt-2">
