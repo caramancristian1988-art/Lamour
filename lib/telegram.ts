@@ -115,8 +115,10 @@ function escapeHtml(value: string): string {
 }
 
 export function getSiteUrl(): string {
-  // TODO: set SITE_URL in production so Telegram notification links point at the real domain.
-  if (process.env.SITE_URL) return process.env.SITE_URL;
+  // Trim: SITE_URL din Vercel a avut un newline la coadă, iar Telegram respinge tot mesajul
+  // (400 "Disallowed character in URL host") dacă URL-ul unui buton nu e valid.
+  const url = process.env.SITE_URL?.trim().replace(/\/+$/, "");
+  if (url) return url;
   return "http://localhost:3000";
 }
 
