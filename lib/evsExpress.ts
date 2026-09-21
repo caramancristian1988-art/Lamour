@@ -74,8 +74,13 @@ async function callEvs<T = unknown>(
     });
     const data = await res.json();
     const first = Array.isArray(data) ? data[0] : data;
-    const ok = first?.TrueFalse !== false;
-    const description = first?.Description ?? (ok ? "OK" : "Eroare necunoscută de la EVS Express.");
+    // Eșecurile reale de infrastructură vin ca HTTP 502 cu { status, error } — fără TrueFalse. Înainte,
+    // lipsa lui TrueFalse:false era luată drept succes, deci se salva un AWB pe care EVS nu l-a creat niciodată.
+    const proxyError = !res.ok || first?.error !== undefined || (typeof first?.status === "number" && first.status >= 400);
+    const ok = !proxyError && first?.TrueFalse !== false;
+    const description = proxyError
+      ? `EVS Express a răspuns cu eroare (HTTP ${res.status}): ${first?.error ?? "necunoscută"}`
+      : (first?.Description ?? (ok ? "OK" : "Eroare necunoscută de la EVS Express."));
     return { ok, description, raw: data, code: first?.Code !== undefined ? String(first.Code) : undefined };
   } catch (err) {
     return { ok: false, description: `Cerere eșuată către EVS Express: ${(err as Error).message}`, raw: null };
@@ -163,10 +168,16 @@ export async function createShipment(
         },
       },
       AWB: awb,
+      // EVS (1C) citește aceste câmpuri la înregistrarea reală și răspunde cu HTTP 502
+      // "Object field not found (InternalID_1)" dacă lipsesc — type=validate NU le verifică,
+      // de-asta validarea trecea, dar type=record eșua. Exemplul din documentație le include pe toate.
+      InternalID_1: "",
+      InternalID_2: "",
       Service: 1,
       COD: input.codAmount > 0 ? { Type: "Fixed", Amount: input.codAmount } : { Type: "None", Amount: 0 },
       DeclaredValue: Math.max(1, Math.round(input.codAmount || 1)),
       PayServiceAtDelivery: { Type: "None", Amount: 0 },
+      ReturnDocsSpecification: "",
       Labels: [{ Code: awb, Weight: input.weight, InternalCode: "" }],
       Weight: input.weight,
       AllowOpenParcel: false,

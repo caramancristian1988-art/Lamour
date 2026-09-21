@@ -46,6 +46,8 @@ export async function createRealShipmentAction(
   const input = readShipmentInput(formData);
   const result = await createShipment(input, { validateOnly: false });
 
+  if (!result.ok) console.error("evs createRealShipmentAction eșuat:", result.description);
+  else console.log("evs shipment înregistrat:", result.awb, JSON.stringify(result.raw));
   if (result.ok && result.awb && messageId) {
     await prisma.contactMessage.update({
       where: { id: messageId },

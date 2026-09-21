@@ -249,6 +249,7 @@ export async function maybeCreateEvsShipment(message: {
   );
 
   if (result.ok && result.awb) {
+    console.log(`evs shipment înregistrat pentru mesajul ${message.id}: ${result.awb}`, JSON.stringify(result.raw));
     await prisma.contactMessage.update({ where: { id: message.id }, data: { awbCode: result.awb, awbCreatedAt: new Date() } });
   } else {
     console.error(`evs auto-shipment eșuat pentru mesajul ${message.id}:`, result.description);
