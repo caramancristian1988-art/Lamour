@@ -37,6 +37,13 @@ export async function GET() {
   });
   const out: Record<string, unknown> = { orders: msgs };
   out.bogusAwbStatus = await getShipmentStatus("LUTZZZZZZZ0926");
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const fmt = (d: Date) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}${pad(d.getUTCHours() + 3)}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}`;
+  const actions = await evsRaw("GetAWBActions", { datestart: fmt(new Date(Date.now() - 2 * 86400e3)), dateend: fmt(new Date()) });
+  let parsed: unknown = null;
+  try { parsed = JSON.parse(String((actions as { body?: string }).body ?? "")); } catch {}
+  out.actionsWindow = { rawStart: String((actions as { body?: string }).body ?? "").slice(0, 400), total: Array.isArray(parsed) ? parsed.length : null };
+  out.actionsMine = JSON.stringify(parsed ?? "").includes("LUTCDK0XCD0926");
   out.getDoc = {} as Record<string, unknown>;
   for (const m of msgs) {
     (out.getDoc as Record<string, unknown>)[m.awbCode as string] = await evsRaw("GetDoc", { type: "AWB", doc_code: m.awbCode as string, format: "JSON", size: "A4" });
