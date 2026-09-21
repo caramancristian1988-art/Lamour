@@ -39,8 +39,9 @@ export async function GET() {
   out.bogusAwbStatus = await getShipmentStatus("LUTZZZZZZZ0926");
   out.getDoc = {} as Record<string, unknown>;
   for (const m of msgs) {
-    (out.getDoc as Record<string, unknown>)[m.awbCode as string] = await evsRaw("GetDoc", { type: "AWB", doc_code: m.awbCode as string, format: "JSON" });
+    (out.getDoc as Record<string, unknown>)[m.awbCode as string] = await evsRaw("GetDoc", { type: "AWB", doc_code: m.awbCode as string, format: "JSON", size: "A4" });
   }
+  (out.getDoc as Record<string, unknown>)["BOGUS"] = await evsRaw("GetDoc", { type: "AWB", doc_code: "LUTZZZZZZZ0926", format: "JSON", size: "A4" });
   // Forma răspunsului la o cerere de ÎNREGISTRARE cu date evident invalide (nu poate crea nimic real).
   out.recordWithInvalidData = await evsRaw(
     "CreateShipment",
