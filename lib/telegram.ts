@@ -58,13 +58,22 @@ export async function sendTelegramMessage(
   }
 }
 
+// "message is not modified" (400) e o eroare Telegram normală — apasă cineva un buton a
+// doua oară, sau webhook-ul livrează același update de două ori — conținutul e deja cel
+// nou, deci nu e nimic de raportat. Orice ALT 400 (ex. "can't parse entities" dintr-un HTML
+// stricat, sau alt motiv necunoscut) chiar înseamnă că butonul apăsat n-a schimbat nimic
+// vizibil pentru operator — fără logare aici, eșecul ăsta era complet invizibil.
+function isBenignEditError(description: unknown): boolean {
+  return typeof description === "string" && description.includes("message is not modified");
+}
+
 export async function editTelegramMessage(messageId: number, text: string, buttons: InlineButton[][]): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) return;
 
   try {
-    await fetch(`${TELEGRAM_API}/bot${token}/editMessageText`, {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/editMessageText`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -75,8 +84,12 @@ export async function editTelegramMessage(messageId: number, text: string, butto
         reply_markup: { inline_keyboard: buttons },
       }),
     });
-  } catch {
-    // ignore
+    const data = await res.json();
+    if (!data?.ok && !isBenignEditError(data?.description)) {
+      console.error("telegram editMessageText a esuat:", res.status, JSON.stringify(data));
+    }
+  } catch (err) {
+    console.error("telegram editMessageText a aruncat:", err);
   }
 }
 
@@ -86,7 +99,7 @@ export async function editTelegramReplyMarkup(messageId: number, buttons: Inline
   if (!token || !chatId) return;
 
   try {
-    await fetch(`${TELEGRAM_API}/bot${token}/editMessageReplyMarkup`, {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/editMessageReplyMarkup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -95,8 +108,12 @@ export async function editTelegramReplyMarkup(messageId: number, buttons: Inline
         reply_markup: { inline_keyboard: buttons },
       }),
     });
-  } catch {
-    // ignore
+    const data = await res.json();
+    if (!data?.ok && !isBenignEditError(data?.description)) {
+      console.error("telegram editMessageReplyMarkup a esuat:", res.status, JSON.stringify(data));
+    }
+  } catch (err) {
+    console.error("telegram editMessageReplyMarkup a aruncat:", err);
   }
 }
 
