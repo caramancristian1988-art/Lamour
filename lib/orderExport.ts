@@ -124,12 +124,9 @@ export function ordersToPDF(orders: OrderExportRow[]): Promise<Buffer> {
     const startX = doc.page.margins.left;
     let y = doc.y;
 
-    const drawRow = (cells: string[], opts: { bold?: boolean; fillHeader?: boolean } = {}) => {
-      const rowHeight = 16;
-      if (y + rowHeight > doc.page.height - doc.page.margins.bottom) {
-        doc.addPage();
-        y = doc.page.margins.top;
-      }
+    const rowHeight = 16;
+
+    const drawRowRaw = (cells: string[], opts: { bold?: boolean; fillHeader?: boolean } = {}) => {
       if (opts.fillHeader) {
         doc.rect(startX, y - 2, widths.reduce((a, b) => a + b, 0), rowHeight).fill("#f3f4f6");
         doc.fillColor("#111");
@@ -141,6 +138,17 @@ export function ordersToPDF(orders: OrderExportRow[]): Promise<Buffer> {
         x += widths[i];
       });
       y += rowHeight;
+    };
+
+    // Reafișează antetul pe fiecare pagină nouă — altfel, o listă suficient de lungă cât să
+    // depășească o pagină A4 devine ilizibilă pe pagina a doua (coloane fără nume deasupra).
+    const drawRow = (cells: string[], opts: { bold?: boolean; fillHeader?: boolean } = {}) => {
+      if (y + rowHeight > doc.page.height - doc.page.margins.bottom) {
+        doc.addPage();
+        y = doc.page.margins.top;
+        if (!opts.fillHeader) drawRowRaw(HEADERS, { bold: true, fillHeader: true });
+      }
+      drawRowRaw(cells, opts);
     };
 
     drawRow(HEADERS, { bold: true, fillHeader: true });

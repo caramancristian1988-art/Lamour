@@ -114,7 +114,9 @@ export async function submitContactMessageAction(
   // fără login separat pentru operatori.
   const isCartOrder = source === CART_ORDER_SOURCE;
   const editToken = isCartOrder ? randomBytes(24).toString("hex") : null;
-  const orderNumber = isCartOrder ? await nextOrderNumber() : null;
+  // Best-effort: un eșec aici (hiccup de bază) nu trebuie să blocheze plasarea
+  // comenzii — comanda rămâne validă și fără număr, alocabil manual din admin.
+  const orderNumber = isCartOrder ? await nextOrderNumber().catch(() => null) : null;
 
   let created;
   try {
