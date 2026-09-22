@@ -15,25 +15,21 @@ import { deleteProductAction } from "@/lib/adminProductActions";
 const PER_PAGE = 10;
 
 const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
-// "Cod produs" shown to customers on the product page is just the last 6 hex
-// characters of the internal id (see app/produse/[slug]/page.tsx) — not a
-// stored field, so it can't be matched with a Prisma `where` filter directly.
-// Pulled out with a word-boundary match (not a full-string match) so pasting
-// the whole displayed line — "Cod produs: 9A8F70" — still works, not just
-// the bare code.
-const PRODUCT_CODE_RE = /\b[0-9a-fA-F]{6}\b/;
+// Codul e acum un câmp real (Product.code), editabil din admin — doar litere/cifre. Extras
+// cu o etichetă opțională în față, ca să meargă și dacă se lipește linia întreagă afișată
+// pe pagina produsului ("Cod produs: LMP204"), nu doar codul gol.
+const CODE_LABEL_RE = /^cod\s*(produs)?\s*:?\s*/i;
+const PRODUCT_CODE_RE = /^[A-Z0-9]+$/;
 
 async function getData(catFilter: string, sort: string, page: number, search: string) {
-  // A "Cod produs" match is an exact, unambiguous identifier — search across
-  // the whole catalog for it, ignoring any active category filter. Otherwise
-  // a leftover ?cat= from earlier browsing silently hides the exact product
-  // the admin is looking for, which reads as "the search doesn't work".
+  // O potrivire de "Cod produs" e un identificator exact, neambiguu — se caută în tot
+  // catalogul, ignorând orice filtru de categorie activ. Altfel, un ?cat= rămas dintr-o
+  // navigare anterioară ascunde în tăcere exact produsul căutat de admin.
   let codeMatchIds: string[] = [];
-  const codeMatch = search.match(PRODUCT_CODE_RE);
-  if (codeMatch) {
-    const allIds = await prisma.product.findMany({ select: { id: true } });
-    const needle = codeMatch[0].toLowerCase();
-    codeMatchIds = allIds.filter((p) => p.id.slice(-6).toLowerCase() === needle).map((p) => p.id);
+  const codeCandidate = search.replace(CODE_LABEL_RE, "").trim().toUpperCase();
+  if (codeCandidate && PRODUCT_CODE_RE.test(codeCandidate)) {
+    const match = await prisma.product.findUnique({ where: { code: codeCandidate }, select: { id: true } });
+    if (match) codeMatchIds = [match.id];
   }
 
   const where: Prisma.ProductWhereInput = codeMatchIds.length
@@ -99,7 +95,12 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
         <p className="font-bold text-sm text-primary line-clamp-2 leading-snug">{product.name}</p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <p className="text-sm text-muted-foreground">{product.category?.name ?? "Fără categorie"}</p>
-          <CopyableId id={product.id} prefix="Cod" label={product.id.slice(-6).toUpperCase()} copyValue={product.id.slice(-6).toUpperCase()} />
+          <CopyableId
+            id={product.id}
+            prefix="Cod"
+            label={product.code ?? product.id.slice(-6).toUpperCase()}
+            copyValue={product.code ?? product.id.slice(-6).toUpperCase()}
+          />
           <CopyableId id={product.id} />
           {product.variantGroup && (
             <Badge variant="secondary" className="normal-case">Variantă a: {product.variantGroup.name}</Badge>

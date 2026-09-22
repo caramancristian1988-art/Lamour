@@ -55,6 +55,7 @@ interface ProductDefaults {
   id?: string;
   name?: string;
   slug?: string;
+  code?: string | null;
   description?: string | null;
   price?: number;
   oldPrice?: number | null;
@@ -134,6 +135,12 @@ export default function ProductForm({
 
       <AdminInput label="Nume produs" name="name" required defaultValue={defaults?.name} placeholder="Daikin Sensira FTXF35E" />
       <AdminInput label="Slug" name="slug" required defaultValue={defaults?.slug} placeholder="daikin-sensira-ftxf35e" />
+      <div>
+        <AdminInput label="Cod produs" name="code" defaultValue={defaults?.code ?? ""} placeholder="lasă gol pentru cod automat" />
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Doar litere și cifre, fără spații sau semne (ex. LMP204). Trebuie să fie unic — dacă lași câmpul gol, se generează unul automat.
+        </p>
+      </div>
       <AdminTextarea label="Descriere" name="description" defaultValue={defaults?.description ?? ""} placeholder="Descrierea produsului..." rows={3} />
 
       <ManagedSelect

@@ -28,7 +28,7 @@ interface Message {
   status: string;
   mood: string | null;
   createdAt: Date;
-  products: { id: string; name: string; slug: string }[];
+  products: { id: string; name: string; slug: string; code: string | null }[];
   awbCode: string | null;
   awbStatus: string | null;
   orderStage: string | null;
@@ -222,7 +222,8 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                               <span className="opacity-30 shrink-0">|</span>
                               <CopyableId
                                 id={p.id}
-                                label={p.id.slice(-6)}
+                                label={p.code ?? p.id.slice(-6)}
+                                copyValue={p.code ?? p.id.slice(-6)}
                                 className="inline-flex items-center gap-1 font-mono opacity-70 normal-case hover:opacity-100 transition-opacity shrink-0"
                               />
                             </div>

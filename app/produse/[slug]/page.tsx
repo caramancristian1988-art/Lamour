@@ -493,6 +493,7 @@ interface ProductViewProps {
     availability: string;
     installmentsEnabled?: boolean;
     warrantyEnabled?: boolean | null;
+    code?: string | null;
     specifications?: { label: string; value: string }[];
     salesCount?: number;
     variantLabel?: string | null;
@@ -543,7 +544,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
   const discountAmount = product.oldPrice ? Math.round(product.oldPrice - product.price) : null;
   const displayBadge = localProductBadges[product.slug] ?? product.badge ?? (discount ? `-${discount}%` : null);
-  const productCode = product.id.slice(-6).toUpperCase();
+  const productCode = product.code ?? product.id.slice(-6).toUpperCase();
   const countdownMinutes = discount ? await getPopupCountdownMinutes() : 0;
 
   const findSpec = (labelMatch: string) =>

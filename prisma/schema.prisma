@@ -31,6 +31,14 @@ model Product {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   slug        String   @unique
+  // "Cod produs" afișat operatorilor și clienților — inițial derivat din id (ultimele 6
+  // caractere hex), acum câmp real, editabil din admin (vezi lib/adminProductActions.ts):
+  // doar litere/cifre, fără semne, unic pe tot catalogul. Opțional în schemă (nu String
+  // simplu) — produsele existente, dinainte de acest câmp, nu-l au deloc în MongoDB, iar
+  // Prisma refuză să le citească dacă tipul e obligatoriu. Aplicația garantează totuși
+  // completarea lui la orice creare/editare (vezi resolveProductCode); null rămâne doar
+  // tranzitoriu, până la backfill (vezi scripts/backfill-product-code.mjs).
+  code        String?  @unique
   description String?
   price       Float
   oldPrice    Float?

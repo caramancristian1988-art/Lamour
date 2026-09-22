@@ -42,6 +42,7 @@ async function getSearchableData() {
         popupEnabled: false,
         installmentsEnabled: true,
         warrantyEnabled: null as boolean | null,
+        code: null as string | null,
         variantGroupId: null as string | null,
         variantLabel: null as string | null,
         salesCount: 0,
@@ -61,7 +62,7 @@ export async function searchProducts(query: string, limit = 6): Promise<SearchRe
     products,
     filters,
     undefined,
-    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.id.slice(-6)}`
+    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.code ?? p.id.slice(-6)}`
   );
 
   return matched.slice(0, limit).map((p) => ({

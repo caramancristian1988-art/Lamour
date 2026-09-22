@@ -93,6 +93,42 @@ async function uniqueSlug(base: string): Promise<string> {
   return slug;
 }
 
+// Doar litere/cifre — fără spații, cratime sau alte semne (cerință explicită: codul nu
+// trebuie să poată conține semne, ca să rămână ușor de dictat/tastat la telefon).
+const PRODUCT_CODE_RE = /^[A-Z0-9]+$/;
+const PRODUCT_CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+function normalizeProductCode(raw: string): string {
+  return raw.trim().toUpperCase();
+}
+
+function randomProductCode(): string {
+  let code = "";
+  for (let i = 0; i < 6; i++) code += PRODUCT_CODE_CHARS[Math.floor(Math.random() * PRODUCT_CODE_CHARS.length)];
+  return code;
+}
+
+// Lăsat gol în formular -> generat automat (un admin nu trebuie să inventeze un cod pentru
+// fiecare produs nou); completat manual -> verificat că nu se repetă pe alt produs.
+async function resolveProductCode(rawCode: string, excludeId?: string): Promise<{ code: string } | { error: string }> {
+  const trimmed = rawCode.trim();
+  if (!trimmed) {
+    let code = randomProductCode();
+    while (await prisma.product.findUnique({ where: { code } })) code = randomProductCode();
+    return { code };
+  }
+
+  const code = normalizeProductCode(trimmed);
+  if (!PRODUCT_CODE_RE.test(code)) {
+    return { error: "Codul produsului poate conține doar litere și cifre, fără spații sau alte semne." };
+  }
+  const existing = await prisma.product.findUnique({ where: { code }, select: { id: true } });
+  if (existing && existing.id !== excludeId) {
+    return { error: `Există deja un produs cu codul "${code}".` };
+  }
+  return { code };
+}
+
 function readProductFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
@@ -159,20 +195,28 @@ export async function createProductAction(_prevState: ProductFormState, formData
   const existing = await prisma.product.findUnique({ where: { slug: data.slug } });
   if (existing) return { error: "Există deja un produs cu acest slug." };
 
-  const created = await prisma.product.create({ data });
+  const codeResult = await resolveProductCode(String(formData.get("code") ?? ""));
+  if ("error" in codeResult) return { error: codeResult.error };
+
+  const created = await prisma.product.create({ data: { ...data, code: codeResult.code } });
 
   // Extra size/quantity variants entered on the same "new product" form —
   // only meaningful when this product isn't itself already a variant of
-  // something else.
+  // something else. Fiecare variantă e propriul Product, deci are nevoie de
+  // propriul cod (generat automat — nu are sens ca admin să tasteze unul
+  // manual pentru fiecare mărime).
   if (!data.variantGroupId) {
     for (const row of parseVariantRows(formData)) {
       const label = [row.qty, row.unit].filter(Boolean).join(" ");
       const variantName = `${data.name} ${label}`.trim();
       const slug = await uniqueSlug(slugify(variantName));
+      const variantCode = await resolveProductCode("");
+      if ("error" in variantCode) continue;
       await prisma.product.create({
         data: {
           name: variantName,
           slug,
+          code: variantCode.code,
           description: data.description,
           price: row.price,
           oldPrice: row.oldPrice,
@@ -254,9 +298,12 @@ export async function updateProductAction(_prevState: ProductFormState, formData
   const existing = await prisma.product.findUnique({ where: { slug: data.slug } });
   if (existing && existing.id !== id) return { error: "Există deja un produs cu acest slug." };
 
+  const codeResult = await resolveProductCode(String(formData.get("code") ?? ""), id);
+  if ("error" in codeResult) return { error: codeResult.error };
+
   const previous = await prisma.product.findUnique({ where: { id }, select: { variantGroupId: true, categoryId: true } });
 
-  await prisma.product.update({ where: { id }, data });
+  await prisma.product.update({ where: { id }, data: { ...data, code: codeResult.code } });
   await revalidateVariantFamily(id);
   if (previous?.variantGroupId && previous.variantGroupId !== data.variantGroupId) {
     await revalidateVariantFamily(previous.variantGroupId);

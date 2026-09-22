@@ -87,6 +87,7 @@ interface ProductRow {
   id: string;
   name: string;
   slug: string;
+  code?: string | null;
   description: string | null;
   price: number;
   oldPrice: number | null;
@@ -432,7 +433,7 @@ export default async function ProdusePage({
     baseProducts,
     effectiveFilters,
     (p) => categoryById.get(p.categoryId) ?? "",
-    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.id.slice(-6)}`
+    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.code ?? p.id.slice(-6)}`
   );
 
   const categoryOptions = categories

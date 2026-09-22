@@ -14,6 +14,7 @@ import {
   buildContactMessageText,
   buildMessageButtons,
   buildOrderStageButtons,
+  notifyOrderStageChange,
   getSiteUrl,
   STATUSES_REQUIRING_CONFIRMATION,
 } from "./telegram";
@@ -376,7 +377,10 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
     await maybeCreateEvsShipment(updated);
     // Reia mesajul actualizat — maybeCreateEvsShipment poate fi setat awbCode.
     const withAwb = await prisma.contactMessage.findUnique({ where: { id: messageId } });
-    if (withAwb) await syncOrderTelegramMessage(withAwb);
+    if (withAwb) {
+      await syncOrderTelegramMessage(withAwb);
+      await notifyOrderStageChange(nextStage, withAwb.orderNumber, withAwb.telegramMessageId);
+    }
     revalidatePath("/admin/mesaje");
     revalidatePath("/admin/produse");
     revalidatePath("/produse");
@@ -384,6 +388,7 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
   }
 
   await syncOrderTelegramMessage(updated);
+  await notifyOrderStageChange(nextStage, updated.orderNumber, updated.telegramMessageId);
   revalidatePath("/admin/mesaje");
   return updated;
 }

@@ -20,7 +20,11 @@ function clampForTelegram(text: string): string {
   return text.slice(0, TELEGRAM_MAX_LEN - notice.length) + notice;
 }
 
-export async function sendTelegramMessage(text: string, buttons: InlineButton[][]): Promise<number | null> {
+export async function sendTelegramMessage(
+  text: string,
+  buttons: InlineButton[][],
+  replyToMessageId?: number
+): Promise<number | null> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) {
@@ -37,6 +41,7 @@ export async function sendTelegramMessage(text: string, buttons: InlineButton[][
         text: clampForTelegram(text),
         parse_mode: "HTML",
         reply_markup: { inline_keyboard: buttons },
+        ...(replyToMessageId ? { reply_to_message_id: replyToMessageId, allow_sending_without_reply: true } : {}),
       }),
     });
     const data = await res.json();
@@ -238,6 +243,29 @@ export function buildOrderStageButtons(messageId: string, stage: string, editUrl
     ];
   }
   return [];
+}
+
+// Textul mesajului principal al comenzii e editat în același loc la fiecare tranziție de
+// etapă (syncOrderTelegramMessage) — dar Telegram NU trimite nicio notificare la o editare
+// (editMessageText e silențios), doar la un mesaj nou. Fără asta, depozitarul/curierul ar afla
+// că e rândul lor doar dacă deschid manual Telegram și dau scroll până la comandă. Un mesaj
+// nou, scurt, ca reply la cel principal, produce o notificare reală, păstrând totuși contextul
+// (thread-ul de reply arată la ce comandă se referă).
+const STAGE_NOTIFICATION_TEXT: Partial<Record<string, (label: string) => string>> = {
+  confirmata: (label) => `✅ ${label} confirmată — gata de pregătit (depozitar).`,
+  predata_curier: (label) => `📦 ${label} predată curierului.`,
+  anulata: (label) => `❌ ${label} anulată.`,
+};
+
+export async function notifyOrderStageChange(
+  stage: string,
+  orderNumber: string | null,
+  replyToMessageId: number | null
+): Promise<void> {
+  const build = STAGE_NOTIFICATION_TEXT[stage];
+  if (!build) return;
+  const label = orderNumber ? `Comanda #${orderNumber}` : "Comanda";
+  await sendTelegramMessage(build(label), [], replyToMessageId ?? undefined);
 }
 
 export function buildOrderCancelConfirmButtons(messageId: string): InlineButton[][] {
