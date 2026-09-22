@@ -230,6 +230,12 @@ model ContactMessage {
   // comenzile din coș — vezi lib/orderStages.ts. Null pentru celelalte
   // tipuri de mesaje, care rămân pe fluxul vechi (status/mood).
   orderStage        String?
+  // Număr de comandă scurt ("42"), atribuit automat secvențial la creare (vezi
+  // lib/orderNumber.ts) — util ca referință telefonică/pe hârtie, spre deosebire
+  // de id-ul intern din bază. Editabil din admin (poate fi suprascris cu orice
+  // text, ex. ca să corespundă cu numărul dintr-un alt sistem), de-asta e String
+  // și nu are @unique — un admin poate seta manual acelși număr pe două comenzi.
+  orderNumber       String?
   // Token opac, per comandă — dă acces la linkul "Editează" din Telegram,
   // fără login separat pentru operatori. Index normal, nu @unique: pe
   // MongoDB un index unic pe un câmp opțional respinge orice al doilea
@@ -249,6 +255,14 @@ model ContactMessage {
   awbCreatedAt      DateTime?
 
   @@index([editToken])
+}
+
+// Contor atomic pentru numerotarea secvențială a comenzilor (vezi lib/orderNumber.ts).
+// Un singur document, name="order" — incrementat cu $inc la fiecare comandă nouă din coș.
+model Counter {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String @unique
+  value Int    @default(0)
 }
 
 model PopupEvent {

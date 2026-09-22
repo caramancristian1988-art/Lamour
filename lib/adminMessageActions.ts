@@ -7,6 +7,7 @@ import { requireAdmin } from "./adminAuth";
 import { MESSAGE_STATUSES } from "./messageStatuses";
 import { MOODS } from "./moods";
 import { ORDER_STAGES, orderStageLabel, type OrderStage } from "./orderStages";
+import { nextOrderNumber } from "./orderNumber";
 import {
   sendTelegramMessage,
   editTelegramMessage,
@@ -113,6 +114,7 @@ export async function submitContactMessageAction(
   // fără login separat pentru operatori.
   const isCartOrder = source === CART_ORDER_SOURCE;
   const editToken = isCartOrder ? randomBytes(24).toString("hex") : null;
+  const orderNumber = isCartOrder ? await nextOrderNumber() : null;
 
   let created;
   try {
@@ -129,7 +131,7 @@ export async function submitContactMessageAction(
         deliveryZip,
         deliveryWeightKg,
         deliveryCodAmount,
-        ...(isCartOrder ? { orderStage: "noua", editToken, orderItems } : {}),
+        ...(isCartOrder ? { orderStage: "noua", editToken, orderItems, orderNumber } : {}),
       },
     });
   } catch {
@@ -139,7 +141,7 @@ export async function submitContactMessageAction(
   let telegramMessageId: number | null;
   if (isCartOrder) {
     const editUrl = `${getSiteUrl()}/editare-comanda?token=${editToken}`;
-    const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel: orderStageLabel("noua"), products });
+    const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel: orderStageLabel("noua"), products, orderNumber });
     telegramMessageId = await sendTelegramMessage(text, buildOrderStageButtons(created.id, "noua", editUrl));
   } else {
     const statusLabel = MESSAGE_STATUSES.find((s) => s.value === created.status)?.label ?? created.status;
@@ -270,6 +272,7 @@ async function syncOrderTelegramMessage(updated: {
   telegramMessageId: number | null;
   productIds: string[];
   awbCode: string | null;
+  orderNumber: string | null;
 }) {
   if (!updated.telegramMessageId) return;
   const products = await getProductsByIds(updated.productIds);
@@ -282,6 +285,7 @@ async function syncOrderTelegramMessage(updated: {
     source: updated.source,
     statusLabel: updated.awbCode ? `${stageLabel} — AWB ${updated.awbCode}` : stageLabel,
     products,
+    orderNumber: updated.orderNumber,
   });
   const editUrl = `${getSiteUrl()}/editare-comanda?token=${updated.editToken ?? ""}`;
   const buttons =
@@ -380,6 +384,19 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
   await syncOrderTelegramMessage(updated);
   revalidatePath("/admin/mesaje");
   return updated;
+}
+
+// Numărul de comandă e doar o referință de afișare (nu o cheie) — un admin
+// îl poate suprascrie liber, inclusiv cu un text care coincide cu alt id
+// (ex. ca să alinieze cu un alt sistem de evidență).
+export async function updateOrderNumberAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const orderNumber = String(formData.get("orderNumber") ?? "").trim();
+  if (!id) return;
+  const updated = await prisma.contactMessage.update({ where: { id }, data: { orderNumber: orderNumber || null } });
+  await syncOrderTelegramMessage(updated);
+  revalidatePath("/admin/mesaje");
 }
 
 export async function setOrderStageAction(formData: FormData) {

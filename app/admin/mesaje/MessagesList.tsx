@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import MessageStatusBadge from "../components/MessageStatusBadge";
 import MoodBadge from "../components/MoodBadge";
 import OrderStageBadge from "../components/OrderStageBadge";
+import OrderNumberEditor from "../components/OrderNumberEditor";
 import LinkedProductText from "../components/LinkedProductText";
 import CopyableId from "../components/CopyableId";
 import EvsShipmentPanel from "../components/EvsShipmentPanel";
@@ -31,6 +32,7 @@ interface Message {
   awbCode: string | null;
   awbStatus: string | null;
   orderStage: string | null;
+  orderNumber: string | null;
 }
 
 // Comenzile din coș includ o linie "Livrare: localitate, adresă" în textul
@@ -160,6 +162,9 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                 <div className="relative flex items-center gap-2 px-3 py-2.5">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
+                      {isOrder && m.orderNumber && (
+                        <span className="shrink-0 text-xs font-bold text-accent">#{m.orderNumber}</span>
+                      )}
                       <p className="font-bold text-xs text-primary truncate">{m.name}</p>
                       {!m.read && <Badge variant="accent">Nou</Badge>}
                     </div>
@@ -227,7 +232,10 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
 
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
                         {isOrder ? (
-                          <OrderStageBadge id={m.id} stage={m.orderStage} onChange={(orderStage) => patchMessage(m.id, { orderStage })} />
+                          <>
+                            <OrderNumberEditor id={m.id} orderNumber={m.orderNumber} onChange={(orderNumber) => patchMessage(m.id, { orderNumber })} />
+                            <OrderStageBadge id={m.id} stage={m.orderStage} onChange={(orderStage) => patchMessage(m.id, { orderStage })} />
+                          </>
                         ) : (
                           <>
                             <MessageStatusBadge id={m.id} status={m.status} onChange={(status) => patchMessage(m.id, { status })} />

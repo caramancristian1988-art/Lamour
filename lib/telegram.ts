@@ -162,13 +162,14 @@ export function buildContactMessageText(message: {
   statusLabel: string;
   moodLabel?: string | null;
   products?: { name: string; slug: string }[];
+  orderNumber?: string | null;
 }): string {
   const products = message.products ?? [];
   const escapedMessage = message.message ? escapeHtml(message.message) : null;
   const escapedSource = escapeHtml(message.source);
 
   const lines = [
-    `📩 <b>Mesaj nou</b>`,
+    message.orderNumber ? `📦 <b>Comandă #${escapeHtml(message.orderNumber)}</b>` : `📩 <b>Mesaj nou</b>`,
     ``,
     `👤 ${escapeHtml(message.name)}`,
     `📞 ${escapeHtml(message.phone)}`,

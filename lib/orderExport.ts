@@ -5,6 +5,7 @@ import { orderStageLabel, type OrderStage } from "./orderStages";
 
 export interface OrderExportRow {
   id: string;
+  orderNumber: string | null;
   createdAt: Date;
   orderStage: OrderStage;
   name: string;
@@ -49,6 +50,7 @@ export async function listPendingOrders(): Promise<OrderExportRow[]> {
       : "";
     return {
       id: m.id,
+      orderNumber: m.orderNumber,
       createdAt: m.createdAt,
       orderStage: (m.orderStage as OrderStage) ?? "noua",
       name: m.name,
@@ -64,7 +66,7 @@ export async function listPendingOrders(): Promise<OrderExportRow[]> {
   });
 }
 
-const HEADERS = ["Data", "Status", "Nume", "Telefon", "Email", "Localitate", "Adresă", "Cod poștal", "Produse", "Total", "AWB"];
+const HEADERS = ["Nr. comandă", "Data", "Status", "Nume", "Telefon", "Email", "Localitate", "Adresă", "Cod poștal", "Produse", "Total", "AWB"];
 
 function fmtDate(d: Date): string {
   return new Intl.DateTimeFormat("ro-MD", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(d);
@@ -72,6 +74,7 @@ function fmtDate(d: Date): string {
 
 function toTableRows(orders: OrderExportRow[]): string[][] {
   return orders.map((o) => [
+    o.orderNumber ?? "",
     fmtDate(o.createdAt),
     orderStageLabel(o.orderStage),
     o.name,
@@ -117,7 +120,7 @@ export function ordersToPDF(orders: OrderExportRow[]): Promise<Buffer> {
     doc.moveDown(0.8);
 
     // Coloane simple, cu lățimi fixe — suficient pentru un tabel citibil, fără o librărie de tabele.
-    const widths = [70, 65, 80, 75, 100, 90, 130, 55, 160, 55, 70];
+    const widths = [55, 70, 65, 80, 75, 100, 90, 130, 55, 150, 55, 70];
     const startX = doc.page.margins.left;
     let y = doc.y;
 
