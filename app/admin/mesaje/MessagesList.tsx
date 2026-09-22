@@ -13,6 +13,7 @@ import OrderStageBadge from "../components/OrderStageBadge";
 import LinkedProductText from "../components/LinkedProductText";
 import CopyableId from "../components/CopyableId";
 import EvsShipmentPanel from "../components/EvsShipmentPanel";
+import OrdersExportButton from "../components/OrdersExportButton";
 import { markMessageReadAction, deleteMessageAction } from "@/lib/adminMessageActions";
 
 interface Message {
@@ -121,15 +122,18 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
 
   return (
     <div>
-      <Tabs value={tab} onValueChange={(v) => setTab(v as Category)} className="mb-4">
-        <TabsList>
-          {tabs.map((t) => (
-            <TabsTrigger key={t.value} value={t.value}>
-              {t.label} <span className="opacity-70">({t.count})</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as Category)}>
+          <TabsList>
+            {tabs.map((t) => (
+              <TabsTrigger key={t.value} value={t.value}>
+                {t.label} <span className="opacity-70">({t.count})</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        {tab === "comenzi" && <OrdersExportButton />}
+      </div>
 
       {visibleMessages.length === 0 ? (
         <div className="bg-card border border-border rounded-2xl p-10 text-center text-muted-foreground">
