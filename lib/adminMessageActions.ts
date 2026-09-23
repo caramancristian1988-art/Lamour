@@ -159,6 +159,13 @@ export async function submitContactMessageAction(
     await prisma.contactMessage.update({ where: { id: created.id }, data: { telegramMessageId } });
   }
 
+  // Comandă cu factură pe companie: contabilul primește datele imediat, fără să aștepte un buton.
+  if (isCartOrder && extractInvoiceBlock(message)) {
+    await sendInvoiceToAccountant(created.id, { mainGroup: false }).catch((err) =>
+      console.error("telegram: trimiterea automată a facturii către contabil a eșuat:", err)
+    );
+  }
+
   revalidatePath("/admin/mesaje");
   return { success: true };
 }
@@ -504,7 +511,10 @@ function parseWarehouseMessages(value: unknown): { chatId: string; messageId: nu
 
 // Butonul "🧾 Trimite factura" din Telegram: datele firmei ajung în grupul principal (reply la
 // comandă) și la contabil(i). Se trimite o singură dată (invoiceSentAt), apoi butonul dispare.
-export async function sendInvoiceToAccountant(messageId: string): Promise<"sent" | "already" | "none"> {
+export async function sendInvoiceToAccountant(
+  messageId: string,
+  options: { mainGroup?: boolean } = {}
+): Promise<"sent" | "already" | "none"> {
   const order = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
   const block = extractInvoiceBlock(order.message);
   if (!block) return "none";
@@ -522,7 +532,8 @@ export async function sendInvoiceToAccountant(messageId: string): Promise<"sent"
   const details = escapeHtml(block.split("\n").slice(1).join("\n"));
   const escaped = `🧾 <b>Factură — ${escapeHtml(label)}</b>\n${details}\n\n👤 ${escapeHtml(order.name)}\n📞 ${escapeHtml(order.phone)}`;
 
-  await sendTelegramMessage(escaped, [], order.telegramMessageId ?? undefined);
+  // La plasarea comenzii mesajul principal conține deja datele firmei — acolo nu mai repetăm.
+  if (options.mainGroup !== false) await sendTelegramMessage(escaped, [], order.telegramMessageId ?? undefined);
   const accountants = await getChatIdsForRole("contabil");
   if (accountants.length === 0) console.error("telegram: niciun contabil nu are Telegram conectat — factura a ajuns doar în grupul principal");
   await Promise.all(accountants.map((chatId) => sendTelegramMessage(escaped, [], undefined, chatId)));
