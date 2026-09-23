@@ -261,6 +261,11 @@ model ContactMessage {
   awbCode           String?
   awbStatus         String?
   awbCreatedAt      DateTime?
+  // Copiile mesajului comenzii trimise depozitarilor ([{ chatId, messageId }]) — editate
+  // când comanda e gata de ridicare sau anulată.
+  warehouseMessages Json?
+  // Setat când operatorul a trimis factura la contabil (butonul "Factură" din Telegram).
+  invoiceSentAt     DateTime?
 
   @@index([editToken])
 }
@@ -313,8 +318,17 @@ model User {
   email     String    @unique
   password  String
   isAdmin   Boolean   @default(false)
+  // "depozitar" | "contabil" | null — decide ce notificări Telegram primește contul
+  // (vezi lib/telegramLink.ts). Adminii se conectează prin TELEGRAM_CHAT_ID (grupul principal).
+  staffRole String?
+  // Chatul Telegram al contului, completat când persoana apasă "Conectează Telegram"
+  // și deschide linkul t.me/<bot>?start=<telegramLinkToken> (token de unică folosință).
+  telegramChatId    String?
+  telegramLinkToken String?
   createdAt DateTime  @default(now())
   sessions  Session[]
+
+  @@index([telegramLinkToken])
 }
 
 model Session {

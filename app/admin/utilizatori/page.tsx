@@ -10,7 +10,7 @@ async function getUsers() {
   try {
     return await prisma.user.findMany({
       orderBy: { createdAt: "asc" },
-      select: { id: true, name: true, email: true, isAdmin: true, createdAt: true },
+      select: { id: true, name: true, email: true, isAdmin: true, staffRole: true, createdAt: true },
     });
   } catch {
     return [];

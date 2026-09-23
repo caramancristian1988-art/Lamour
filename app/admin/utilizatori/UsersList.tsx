@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toggleAdminAction, deleteUserAction } from "@/lib/adminUserActions";
+import { toggleAdminAction, deleteUserAction, setStaffRoleAction } from "@/lib/adminUserActions";
+import { STAFF_ROLES } from "@/lib/staffRoles";
 
 interface UserRow {
   id: string;
   name: string;
   email: string;
   isAdmin: boolean;
+  staffRole: string | null;
   createdAt: Date;
 }
 
@@ -43,6 +45,14 @@ export default function UsersList({ users: initialUsers, currentUserId }: { user
     formData.set("id", user.id);
     formData.set("makeAdmin", String(makeAdmin));
     toggleAdminAction(formData);
+  }
+
+  function handleStaffRole(user: UserRow, staffRole: string) {
+    patchUser(user.id, { staffRole: staffRole || null });
+    const formData = new FormData();
+    formData.set("id", user.id);
+    formData.set("staffRole", staffRole);
+    setStaffRoleAction(formData);
   }
 
   function handleDelete(user: UserRow) {
@@ -86,6 +96,17 @@ export default function UsersList({ users: initialUsers, currentUserId }: { user
                 <p className="text-xs text-muted-foreground truncate">{u.email}</p>
               </div>
               <p className="text-xs text-muted-foreground shrink-0 hidden sm:block">{formatDate(u.createdAt)}</p>
+              <select
+                value={u.staffRole ?? ""}
+                onChange={(e) => handleStaffRole(u, e.target.value)}
+                aria-label={`Rol Telegram pentru ${u.name}`}
+                className="text-xs font-bold px-2 py-1.5 rounded-full border border-border bg-card text-foreground shrink-0"
+              >
+                <option value="">Fără rol</option>
+                {STAFF_ROLES.map((r) => (
+                  <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
               <button
                 type="button"
                 onClick={() => handleToggleAdmin(u)}

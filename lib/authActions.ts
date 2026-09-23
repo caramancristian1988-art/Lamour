@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { createSession, destroySession } from "./auth";
 import { requireAdmin } from "./adminAuth";
+import { isStaffRole } from "./staffRoles";
 
 export interface AuthFormState {
   error?: string;
@@ -18,6 +19,8 @@ export async function registerAction(_prevState: AuthFormState, formData: FormDa
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const isAdmin = formData.get("isAdmin") === "on";
+  const staffRoleRaw = String(formData.get("staffRole") ?? "");
+  const staffRole = isStaffRole(staffRoleRaw) ? staffRoleRaw : null;
 
   if (!name || !email || !password) {
     return { error: "Completează toate câmpurile." };
@@ -35,7 +38,7 @@ export async function registerAction(_prevState: AuthFormState, formData: FormDa
   }
 
   const hashed = await bcrypt.hash(password, 10);
-  await prisma.user.create({ data: { name, email, password: hashed, isAdmin } });
+  await prisma.user.create({ data: { name, email, password: hashed, isAdmin, staffRole } });
 
   // Creating an account for someone else shouldn't switch the admin's own session.
   return { success: true };

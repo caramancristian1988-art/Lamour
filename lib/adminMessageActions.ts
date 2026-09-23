@@ -14,11 +14,15 @@ import {
   buildContactMessageText,
   buildMessageButtons,
   buildOrderStageButtons,
+  buildWarehouseButtons,
+  extractInvoiceBlock,
+  escapeHtml,
   notifyOrderStageChange,
   getSiteUrl,
   STATUSES_REQUIRING_CONFIRMATION,
 } from "./telegram";
-import { createShipment } from "./evsExpress";
+import { createShipment, activatePickup, removeShipment } from "./evsExpress";
+import { getChatIdsForRole } from "./telegramRecipients";
 
 export interface ContactFormState {
   error?: string;
@@ -145,7 +149,7 @@ export async function submitContactMessageAction(
   if (isCartOrder) {
     const editUrl = `${getSiteUrl()}/editare-comanda?token=${editToken}`;
     const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel: orderStageLabel("noua"), products, orderNumber });
-    telegramMessageId = await sendTelegramMessage(text, buildOrderStageButtons(created.id, "noua", editUrl));
+    telegramMessageId = await sendTelegramMessage(text, buildOrderStageButtons(created.id, "noua", editUrl, Boolean(extractInvoiceBlock(message))));
   } else {
     const statusLabel = MESSAGE_STATUSES.find((s) => s.value === created.status)?.label ?? created.status;
     const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel, products });
@@ -233,7 +237,7 @@ export async function maybeCreateEvsShipment(message: {
   deliveryZip: string | null;
   deliveryWeightKg: number | null;
   deliveryCodAmount: number | null;
-}) {
+}, options: { pickup?: boolean } = {}) {
   if (message.awbCode) return;
   if (!message.deliveryAddress || !message.deliveryZip) return;
 
@@ -250,7 +254,7 @@ export async function maybeCreateEvsShipment(message: {
       weight: message.deliveryWeightKg ?? 1,
       codAmount: message.deliveryCodAmount ?? 0,
     },
-    { validateOnly: false }
+    { validateOnly: false, pickup: options.pickup }
   );
 
   if (result.ok && result.awb) {
@@ -276,6 +280,7 @@ async function syncOrderTelegramMessage(updated: {
   productIds: string[];
   awbCode: string | null;
   orderNumber: string | null;
+  invoiceSentAt: Date | null;
 }) {
   if (!updated.telegramMessageId) return;
   const products = await getProductsByIds(updated.productIds);
@@ -293,7 +298,7 @@ async function syncOrderTelegramMessage(updated: {
   const editUrl = `${getSiteUrl()}/editare-comanda?token=${updated.editToken ?? ""}`;
   const buttons =
     updated.orderStage === "noua" || updated.orderStage === "confirmata"
-      ? buildOrderStageButtons(updated.id, updated.orderStage, editUrl)
+      ? buildOrderStageButtons(updated.id, updated.orderStage, editUrl, Boolean(extractInvoiceBlock(updated.message)) && !updated.invoiceSentAt)
       : [];
   await editTelegramMessage(updated.telegramMessageId, text, buttons);
 }
@@ -367,30 +372,145 @@ export async function updateOrderMessageAction(
 // Avansează o comandă la etapa următoare (operator confirmă / depozitar
 // predă la curier) sau o anulează — folosită atât de webhook-ul Telegram
 // cât și de acțiunea din admin, ca cele două suprafețe să rămână în sincron.
+//
+// Confirmare -> AWB creat obișnuit (pickup=0, curierul NU e chemat încă) + mesaj către
+// depozitar cu butonul "Gata de ridicare". Acel buton -> ActivatePickUp pe același AWB.
 export async function advanceOrderStage(messageId: string, nextStage: OrderStage) {
-  const updated = await prisma.contactMessage.update({ where: { id: messageId }, data: { orderStage: nextStage } });
+  const before = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
+  // Buton apăsat de două ori / update Telegram livrat de două ori — nu repetăm efectele
+  // (AWB duplicat, contor de vânzări dublu, notificări duble).
+  if (before.orderStage === nextStage) return before;
+  // Un buton vechi din chatul depozitarului nu poate învia o comandă anulată.
+  if (before.orderStage === "anulata") return before;
 
-  if (nextStage === "predata_curier") {
-    if (updated.productIds.length > 0) {
-      await prisma.product.updateMany({ where: { id: { in: updated.productIds } }, data: { salesCount: { increment: 1 } } });
+  await prisma.contactMessage.update({ where: { id: messageId }, data: { orderStage: nextStage } });
+
+  if (nextStage === "confirmata") {
+    await maybeCreateEvsShipment(before, { pickup: false });
+  } else if (nextStage === "predata_curier") {
+    if (before.productIds.length > 0) {
+      await prisma.product.updateMany({ where: { id: { in: before.productIds } }, data: { salesCount: { increment: 1 } } });
     }
-    await maybeCreateEvsShipment(updated);
-    // Reia mesajul actualizat — maybeCreateEvsShipment poate fi setat awbCode.
-    const withAwb = await prisma.contactMessage.findUnique({ where: { id: messageId } });
-    if (withAwb) {
-      await syncOrderTelegramMessage(withAwb);
-      await notifyOrderStageChange(nextStage, withAwb.orderNumber, withAwb.telegramMessageId);
+    if (before.awbCode) {
+      const result = await activatePickup(before.awbCode);
+      if (!result.ok) console.error(`evs activatePickup eșuat pentru ${before.awbCode}:`, result.description);
+    } else {
+      await maybeCreateEvsShipment(before, { pickup: true });
     }
-    revalidatePath("/admin/mesaje");
-    revalidatePath("/admin/produse");
-    revalidatePath("/produse");
-    return withAwb ?? updated;
+  } else if (nextStage === "anulata" && before.awbCode && before.orderStage === "confirmata") {
+    // Doar cât AWB-ul nu e "gata de ridicare" — după aceea curierul poate fi deja pe drum.
+    const result = await removeShipment(before.awbCode);
+    if (result.ok) {
+      await prisma.contactMessage.update({ where: { id: messageId }, data: { awbCode: null, awbCreatedAt: null } });
+    } else {
+      console.error(`evs removeShipment eșuat pentru ${before.awbCode}:`, result.description);
+    }
   }
 
+  // Reia mesajul — awbCode poate fi setat/șters mai sus.
+  const updated = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
   await syncOrderTelegramMessage(updated);
+  await syncWarehouseMessage(updated);
   await notifyOrderStageChange(nextStage, updated.orderNumber, updated.telegramMessageId);
+
   revalidatePath("/admin/mesaje");
+  if (nextStage === "predata_curier") {
+    revalidatePath("/admin/produse");
+    revalidatePath("/produse");
+  }
   return updated;
+}
+
+// Mesajul din chatul depozitarului: trimis la confirmare (cu butonul "Gata de ridicare"),
+// apoi editat la ridicare/anulare ca să nu rămână un buton activ pe o comandă închisă.
+// Fără TELEGRAM_WAREHOUSE_CHAT_ID nu se trimite nimic (fluxul rămâne funcțional din admin).
+async function syncWarehouseMessage(order: {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  message: string | null;
+  source: string;
+  orderStage: string | null;
+  productIds: string[];
+  awbCode: string | null;
+  orderNumber: string | null;
+  warehouseMessages: unknown;
+}) {
+  const sent = parseWarehouseMessages(order.warehouseMessages);
+  const stageLabel =
+    order.orderStage === "confirmata"
+      ? "De pregătit"
+      : order.orderStage === "predata_curier"
+        ? "Gata de ridicare ✔"
+        : orderStageLabel(order.orderStage);
+  const products = await getProductsByIds(order.productIds);
+  const text = buildContactMessageText({
+    name: order.name,
+    phone: order.phone,
+    email: order.email,
+    message: order.message,
+    source: order.source,
+    statusLabel: order.awbCode ? `${stageLabel} — AWB ${order.awbCode}` : stageLabel,
+    products,
+    orderNumber: order.orderNumber,
+  });
+  const buttons = buildWarehouseButtons(order.id, order.orderStage ?? "");
+
+  if (sent.length > 0) {
+    await Promise.all(sent.map((m) => editTelegramMessage(m.messageId, text, buttons, m.chatId)));
+  } else if (order.orderStage === "confirmata") {
+    const chatIds = await getChatIdsForRole("depozitar");
+    if (chatIds.length === 0) {
+      console.error("telegram: niciun depozitar nu are Telegram conectat — comanda nu a fost trimisă depozitarului");
+      return;
+    }
+    const results = await Promise.all(
+      chatIds.map(async (chatId) => ({ chatId, messageId: await sendTelegramMessage(text, buttons, undefined, chatId) }))
+    );
+    const delivered = results.filter((r): r is { chatId: string; messageId: number } => r.messageId !== null);
+    if (delivered.length > 0) {
+      await prisma.contactMessage.update({ where: { id: order.id }, data: { warehouseMessages: delivered } });
+    }
+  }
+}
+
+function parseWarehouseMessages(value: unknown): { chatId: string; messageId: number }[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (m): m is { chatId: string; messageId: number } =>
+      typeof m?.chatId === "string" && typeof m?.messageId === "number"
+  );
+}
+
+// Butonul "🧾 Trimite factura" din Telegram: datele firmei ajung în grupul principal (reply la
+// comandă) și la contabil(i). Se trimite o singură dată (invoiceSentAt), apoi butonul dispare.
+export async function sendInvoiceToAccountant(messageId: string): Promise<"sent" | "already" | "none"> {
+  const order = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
+  const block = extractInvoiceBlock(order.message);
+  if (!block) return "none";
+  if (order.invoiceSentAt) return "already";
+
+  // Marcăm întâi, ca un al doilea click (sau update livrat dublu) să nu trimită factura de două ori.
+  const claimed = await prisma.contactMessage.updateMany({
+    where: { id: messageId, invoiceSentAt: null },
+    data: { invoiceSentAt: new Date() },
+  });
+  if (claimed.count === 0) return "already";
+
+  const label = order.orderNumber ? `Comanda #${order.orderNumber}` : "Comanda";
+  // Prima linie a blocului e antetul "🧾 CERE FACTURĂ (companie):" — îl înlocuim cu unul propriu.
+  const details = escapeHtml(block.split("\n").slice(1).join("\n"));
+  const escaped = `🧾 <b>Factură — ${escapeHtml(label)}</b>\n${details}\n\n👤 ${escapeHtml(order.name)}\n📞 ${escapeHtml(order.phone)}`;
+
+  await sendTelegramMessage(escaped, [], order.telegramMessageId ?? undefined);
+  const accountants = await getChatIdsForRole("contabil");
+  if (accountants.length === 0) console.error("telegram: niciun contabil nu are Telegram conectat — factura a ajuns doar în grupul principal");
+  await Promise.all(accountants.map((chatId) => sendTelegramMessage(escaped, [], undefined, chatId)));
+
+  const updated = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
+  await syncOrderTelegramMessage(updated);
+  return "sent";
 }
 
 // Numărul de comandă e doar o referință de afișare (nu o cheie) — un admin

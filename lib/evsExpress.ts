@@ -129,7 +129,7 @@ export interface CreateShipmentResult extends EvsResult {
 
 export async function createShipment(
   input: CreateShipmentInput,
-  options: { validateOnly: boolean }
+  options: { validateOnly: boolean; pickup?: boolean }
 ): Promise<CreateShipmentResult> {
   const branch = getShipperBranch();
   if (!branch) {
@@ -187,7 +187,7 @@ export async function createShipment(
 
   const result = await callEvs(
     "CreateShipment",
-    { method: "Standard", pickup: "1", type: options.validateOnly ? "validate" : "record" },
+    { method: "Standard", pickup: options.pickup === false ? "0" : "1", type: options.validateOnly ? "validate" : "record" },
     payload
   );
 
@@ -205,6 +205,18 @@ export async function createShipment(
 // cunoscute de EVS pentru acel AWB (GetGroupAWBActions, targetat pe un
 // singur AWB — spre deosebire de GetAWBActions, care cere un interval de
 // date pe TOATE expedițiile din cont).
+// Marchează un AWB creat cu pickup=0 ca "gata de ridicare" (/ActivatePickUp) — de aici
+// EVS trimite curierul. Documentația nu descrie forma răspunsului; ca în callEvs,
+// la eșec afișăm Description brut.
+export async function activatePickup(awb: string): Promise<EvsResult> {
+  return callEvs("ActivatePickUp", {}, [{ AWB: awb }]);
+}
+
+// Anulează un AWB încă neridicat (/RemoveDoc type=AWB).
+export async function removeShipment(awb: string): Promise<EvsResult> {
+  return callEvs("RemoveDoc", { type: "AWB", doc_code: awb });
+}
+
 export async function getShipmentStatus(awb: string): Promise<EvsResult<{ Status?: string }[]>> {
   return callEvs<{ Status?: string }[]>("GetGroupAWBActions", {}, [{ AWB: awb }]);
 }

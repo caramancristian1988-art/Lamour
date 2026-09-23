@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUSES } from "@/lib/messageStatuses";
-import { applySalesCountForStatusChange, maybeCreateEvsShipment, advanceOrderStage } from "@/lib/adminMessageActions";
+import { applySalesCountForStatusChange, maybeCreateEvsShipment, advanceOrderStage, sendInvoiceToAccountant } from "@/lib/adminMessageActions";
 import { MOODS } from "@/lib/moods";
 import {
   editTelegramMessage,
@@ -14,8 +14,10 @@ import {
   buildOrderStageButtons,
   buildOrderCancelConfirmButtons,
   getSiteUrl,
+  extractInvoiceBlock,
   STATUSES_REQUIRING_CONFIRMATION,
 } from "@/lib/telegram";
+import { linkChatByToken } from "@/lib/telegramRecipients";
 
 export async function POST(request: NextRequest) {
   const secret = request.headers.get("x-telegram-bot-api-secret-token");
@@ -27,6 +29,16 @@ export async function POST(request: NextRequest) {
   const callbackQuery = update?.callback_query;
 
   if (!callbackQuery) {
+    // "/start <token>" din linkul "Conectează Telegram" (depozitar/contabil) — leagă chatul de cont.
+    const text = String(update?.message?.text ?? "");
+    const chatId = update?.message?.chat?.id;
+    if (text.startsWith("/start ") && chatId !== undefined) {
+      try {
+        await linkChatByToken(text.slice("/start ".length).trim(), String(chatId));
+      } catch (err) {
+        console.error("telegram: legarea chatului a eșuat:", err);
+      }
+    }
     return NextResponse.json({ ok: true });
   }
 
@@ -80,6 +92,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  if (prefix === "ord_invoice") {
+    try {
+      const result = await sendInvoiceToAccountant(id);
+      await answerCallbackQuery(
+        callbackQuery.id,
+        result === "sent" ? "Factura a fost trimisă." : result === "already" ? "Factura a fost deja trimisă." : "Comanda nu cere factură."
+      );
+    } catch {
+      await answerCallbackQuery(callbackQuery.id, "Comanda nu mai există.");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   if (prefix === "ord_cancel") {
     try {
       const message = await prisma.contactMessage.findUnique({ where: { id } });
@@ -98,7 +123,7 @@ export async function POST(request: NextRequest) {
       const message = await prisma.contactMessage.findUnique({ where: { id } });
       if (message?.telegramMessageId && message.orderStage) {
         const editUrl = `${getSiteUrl()}/editare-comanda?token=${message.editToken ?? ""}`;
-        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderStageButtons(id, message.orderStage, editUrl));
+        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderStageButtons(id, message.orderStage, editUrl, Boolean(extractInvoiceBlock(message.message)) && !message.invoiceSentAt));
       }
       await answerCallbackQuery(callbackQuery.id, "Renunțat.");
     } catch {

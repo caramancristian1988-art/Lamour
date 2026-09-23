@@ -23,10 +23,11 @@ function clampForTelegram(text: string): string {
 export async function sendTelegramMessage(
   text: string,
   buttons: InlineButton[][],
-  replyToMessageId?: number
+  replyToMessageId?: number,
+  chatIdOverride?: string
 ): Promise<number | null> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const chatId = chatIdOverride ?? process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) {
     console.error("telegram: TELEGRAM_BOT_TOKEN sau TELEGRAM_CHAT_ID lipseste — mesajul nu a fost trimis");
     return null;
@@ -67,9 +68,14 @@ function isBenignEditError(description: unknown): boolean {
   return typeof description === "string" && description.includes("message is not modified");
 }
 
-export async function editTelegramMessage(messageId: number, text: string, buttons: InlineButton[][]): Promise<void> {
+export async function editTelegramMessage(
+  messageId: number,
+  text: string,
+  buttons: InlineButton[][],
+  chatIdOverride?: string
+): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const chatId = chatIdOverride ?? process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) return;
 
   try {
@@ -132,7 +138,7 @@ export async function answerCallbackQuery(callbackQueryId: string, text?: string
   }
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
@@ -245,22 +251,69 @@ export function buildConfirmButtons(messageId: string, value: string): InlineBut
 // vezi lib/orderStages.ts. Nu se amestecă cu STATUS_BUTTON_ROWS/prefixele
 // "status"/"confirm"/"cancel" de mai sus, ca să nu existe ambiguitate în
 // webhook între cele două fluxuri.
-export function buildOrderStageButtons(messageId: string, stage: string, editUrl: string): InlineButton[][] {
+export function buildOrderStageButtons(
+  messageId: string,
+  stage: string,
+  editUrl: string,
+  canSendInvoice = false
+): InlineButton[][] {
+  // Butonul "Factură" apare doar dacă clientul a cerut factură și ea n-a fost trimisă încă.
+  const invoiceRow: InlineButton[][] = canSendInvoice
+    ? [[{ text: "🧾 Trimite factura", callback_data: `ord_invoice:${messageId}` }]]
+    : [];
   if (stage === "noua") {
     return [
       [{ text: "✅ Confirmă", callback_data: `ord_confirm:${messageId}` }],
       [{ text: "✏️ Editează", url: editUrl }],
+      ...invoiceRow,
       [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }],
     ];
   }
   if (stage === "confirmata") {
-    return [
-      [{ text: "📦 Predă curierului", callback_data: `ord_ready:${messageId}` }],
-      [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }],
-    ];
+    // "Gata de ridicare" e apăsat de depozitar în chatul lui (buildWarehouseButtons), nu de operator.
+    return [...invoiceRow, [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }]];
   }
   return [];
 }
+
+// Numele botului, necesar pentru linkul de conectare t.me/<bot>?start=<token>. Din env dacă e setat
+// (TELEGRAM_BOT_USERNAME, fără @), altfel îl cerem o dată de la Telegram (getMe) și îl ținem minte.
+let cachedBotUsername: string | null = null;
+
+export async function getBotUsername(): Promise<string | null> {
+  const fromEnv = process.env.TELEGRAM_BOT_USERNAME?.trim().replace(/^@/, "");
+  if (fromEnv) return fromEnv;
+  if (cachedBotUsername) return cachedBotUsername;
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return null;
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/getMe`);
+    const data = await res.json();
+    cachedBotUsername = data?.result?.username ?? null;
+  } catch (err) {
+    console.error("telegram getMe a aruncat:", err);
+  }
+  return cachedBotUsername;
+}
+
+// Mesajul comenzii unei comenzi din coș conține un bloc "🧾 CERE FACTURĂ (companie):" cu datele
+// firmei (vezi CheckoutPanel) — butonul "Factură" apare doar când blocul există.
+export function extractInvoiceBlock(message: string | null): string | null {
+  if (!message) return null;
+  const start = message.indexOf("🧾 CERE FACTURĂ");
+  if (start === -1) return null;
+  const rest = message.slice(start);
+  const end = rest.indexOf("\n\n");
+  return (end === -1 ? rest : rest.slice(0, end)).trim();
+}
+
+export function buildWarehouseButtons(messageId: string, stage: string): InlineButton[][] {
+  if (stage === "confirmata") {
+    return [[{ text: "📦 Gata de ridicare", callback_data: `ord_ready:${messageId}` }]];
+  }
+  return [];
+}
+
 
 // Textul mesajului principal al comenzii e editat în același loc la fiecare tranziție de
 // etapă (syncOrderTelegramMessage) — dar Telegram NU trimite nicio notificare la o editare
@@ -269,8 +322,8 @@ export function buildOrderStageButtons(messageId: string, stage: string, editUrl
 // nou, scurt, ca reply la cel principal, produce o notificare reală, păstrând totuși contextul
 // (thread-ul de reply arată la ce comandă se referă).
 const STAGE_NOTIFICATION_TEXT: Partial<Record<string, (label: string) => string>> = {
-  confirmata: (label) => `✅ ${label} confirmată — gata de pregătit (depozitar).`,
-  predata_curier: (label) => `📦 ${label} predată curierului.`,
+  confirmata: (label) => `✅ ${label} confirmată — AWB creat, trimisă depozitarului.`,
+  predata_curier: (label) => `📦 ${label} gata de ridicare — curierul o poate prelua.`,
   anulata: (label) => `❌ ${label} anulată.`,
 };
 

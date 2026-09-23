@@ -5,6 +5,8 @@ import { LayoutDashboard } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { logoutAction } from "@/lib/authActions";
 import AccountStats from "../components/AccountStats";
+import TelegramConnect from "../components/TelegramConnect";
+import { staffRoleLabel } from "@/lib/staffRoles";
 import { Avatar, AvatarFallback } from "@/app/components/ui/avatar";
 import { Button } from "@/app/components/ui/button";
 
@@ -53,6 +55,18 @@ export default async function ContPage() {
                 Mergi la pagina de administrator
               </Link>
             </Button>
+          )}
+
+          {user.staffRole && (
+            <div className="border border-border rounded-2xl p-5 mb-8">
+              <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-1">
+                Notificări Telegram — {staffRoleLabel(user.staffRole)}
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                Conectează-ți Telegram ca să primești comenzile și facturile care te privesc. Apeși butonul, apoi Start în Telegram.
+              </p>
+              <TelegramConnect connected={Boolean(user.telegramChatId)} />
+            </div>
           )}
 
           <AccountStats />

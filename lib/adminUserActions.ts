@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
+import { isStaffRole } from "./staffRoles";
 
 export async function toggleAdminAction(formData: FormData) {
   const me = await requireAdmin();
@@ -24,6 +25,18 @@ export async function toggleAdminAction(formData: FormData) {
 
   await prisma.user.update({ where: { id }, data: { isAdmin: makeAdmin } });
   revalidatePath("/admin/utilizatori");
+}
+
+export async function setStaffRoleAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const roleRaw = String(formData.get("staffRole") ?? "");
+  if (!id) return;
+  const staffRole = isStaffRole(roleRaw) ? roleRaw : null;
+  // La schimbarea rolului, chatul conectat până atunci n-ar mai avea sens (ar primi notificările altui rol).
+  await prisma.user.update({ where: { id }, data: { staffRole, telegramChatId: null, telegramLinkToken: null } });
+  revalidatePath("/admin/utilizatori");
+  revalidatePath("/admin/setari");
 }
 
 export async function deleteUserAction(formData: FormData) {

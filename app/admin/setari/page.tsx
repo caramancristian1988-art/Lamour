@@ -7,6 +7,9 @@ import { Switch } from "@/app/components/ui/switch";
 import { Label } from "@/app/components/ui/label";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { updateSettingsAction } from "@/lib/adminSettingsActions";
+import { getSession } from "@/lib/auth";
+import { staffRoleLabel } from "@/lib/staffRoles";
+import TelegramConnect from "@/app/components/TelegramConnect";
 
 const SECTION_TOGGLES = [
   { name: "produseEnabled", label: "Produse", description: "Listele de produse, paginile de categorie și de detaliu." },
@@ -23,12 +26,24 @@ async function getSettings() {
   }
 }
 
+async function getStaff() {
+  try {
+    return await prisma.user.findMany({
+      where: { staffRole: { not: null } },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true, email: true, staffRole: true, telegramChatId: true },
+    });
+  } catch {
+    return [];
+  }
+}
+
 export default async function AdminSetariPage({
   searchParams,
 }: {
   searchParams: Promise<{ salvat?: string }>;
 }) {
-  const settings = await getSettings();
+  const [settings, staff, me] = await Promise.all([getSettings(), getStaff(), getSession()]);
   const { salvat } = await searchParams;
 
   return (
@@ -185,6 +200,45 @@ export default async function AdminSetariPage({
 
         <SaveButton />
       </form>
+
+      <div className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 max-w-2xl mt-6">
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-1">Telegram — depozitar și contabil</p>
+          <p className="text-xs text-muted-foreground">
+            Creează conturile la Utilizatori (alegi rolul). Fiecare intră în Contul meu, apasă „Conectează Telegram” și
+            Start în bot — chat id-ul se completează automat. Depozitarul primește comenzile confirmate, contabilul facturile.
+          </p>
+        </div>
+
+        {staff.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nu există încă conturi de depozitar sau contabil.</p>
+        ) : (
+          <div className="divide-y divide-border border border-border rounded-xl">
+            {staff.map((u) => (
+              <div key={u.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-primary truncate">{u.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{staffRoleLabel(u.staffRole)} · {u.email}</p>
+                </div>
+                <span
+                  className={`text-xs font-bold px-3 py-1 rounded-full shrink-0 ${
+                    u.telegramChatId ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {u.telegramChatId ? "Conectat" : "Neconectat"}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {me?.staffRole && (
+          <div className="border-t border-border pt-4">
+            <p className="text-sm font-bold text-primary mb-2">Contul tău</p>
+            <TelegramConnect connected={Boolean(me.telegramChatId)} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
