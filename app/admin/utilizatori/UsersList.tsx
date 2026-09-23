@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toggleAdminAction, deleteUserAction, setStaffRoleAction } from "@/lib/adminUserActions";
 import { STAFF_ROLES } from "@/lib/staffRoles";
+import TelegramConnect from "@/app/components/TelegramConnect";
 
 interface UserRow {
   id: string;
@@ -12,6 +13,7 @@ interface UserRow {
   email: string;
   isAdmin: boolean;
   staffRole: string | null;
+  telegramConnected: boolean;
   createdAt: Date;
 }
 
@@ -80,7 +82,8 @@ export default function UsersList({ users: initialUsers, currentUserId }: { user
           const isSelf = u.id === currentUserId;
           const isLastAdmin = u.isAdmin && adminCount <= 1;
           return (
-            <div key={u.id} className="flex items-center gap-4 p-4">
+            <div key={u.id} className="p-4">
+            <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
                 {getInitials(u.name)}
               </div>
@@ -137,6 +140,12 @@ export default function UsersList({ users: initialUsers, currentUserId }: { user
               >
                 <Trash2 className="w-4 h-4" aria-hidden />
               </button>
+            </div>
+            {u.staffRole && (
+              <div className="mt-3 sm:pl-14">
+                <TelegramConnect userId={u.id} connected={u.telegramConnected} />
+              </div>
+            )}
             </div>
           );
         })}
