@@ -161,7 +161,7 @@ export async function submitContactMessageAction(
 
   // Comandă cu factură pe companie: contabilul primește datele imediat, fără să aștepte un buton.
   if (isCartOrder && extractInvoiceBlock(message)) {
-    await sendInvoiceToAccountant(created.id, { mainGroup: false }).catch((err) =>
+    await sendInvoiceToAccountant(created.id).catch((err) =>
       console.error("telegram: trimiterea automată a facturii către contabil a eșuat:", err)
     );
   }
