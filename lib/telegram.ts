@@ -334,12 +334,15 @@ const STAGE_NOTIFICATION_TEXT: Partial<Record<string, (label: string) => string>
 export async function notifyOrderStageChange(
   stage: string,
   orderNumber: string | null,
-  replyToMessageId: number | null
+  replyToMessageId: number | null,
+  extraChatIds: string[] = []
 ): Promise<void> {
   const build = STAGE_NOTIFICATION_TEXT[stage];
   if (!build) return;
   const label = orderNumber ? `Comanda #${orderNumber}` : "Comanda";
   await sendTelegramMessage(build(label), [], replyToMessageId ?? undefined);
+  // Conturi de staff conectate (manager / curier) — chat-uri separate, deci fără reply.
+  await Promise.all(extraChatIds.map((chatId) => sendTelegramMessage(build(label), [], undefined, chatId)));
 }
 
 export function buildOrderCancelConfirmButtons(messageId: string): InlineButton[][] {

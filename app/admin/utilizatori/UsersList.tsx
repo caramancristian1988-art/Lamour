@@ -141,11 +141,12 @@ export default function UsersList({ users: initialUsers, currentUserId }: { user
                 <Trash2 className="w-4 h-4" aria-hidden />
               </button>
             </div>
-            {u.staffRole && (
-              <div className="mt-3 sm:pl-14">
-                <TelegramConnect userId={u.id} connected={u.telegramConnected} />
-              </div>
-            )}
+            <div className="mt-3 sm:pl-14">
+              <TelegramConnect userId={u.id} connected={u.telegramConnected} />
+              {!u.staffRole && (
+                <p className="text-xs text-muted-foreground mt-1.5">Alege un rol ca acest cont să primească notificări.</p>
+              )}
+            </div>
             </div>
           );
         })}

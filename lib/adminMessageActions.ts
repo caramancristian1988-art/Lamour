@@ -424,7 +424,12 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
   const updated = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
   await syncOrderTelegramMessage(updated);
   await syncWarehouseMessage(updated);
-  await notifyOrderStageChange(nextStage, updated.orderNumber, updated.telegramMessageId);
+  // Managerul vede orice schimbare de etapă; curierul doar când comanda e gata de ridicare.
+  const extraChatIds = [
+    ...(await getChatIdsForRole("manager")),
+    ...(nextStage === "predata_curier" ? await getChatIdsForRole("curier") : []),
+  ];
+  await notifyOrderStageChange(nextStage, updated.orderNumber, updated.telegramMessageId, [...new Set(extraChatIds)]);
 
   revalidatePath("/admin/mesaje");
   if (nextStage === "predata_curier") {
