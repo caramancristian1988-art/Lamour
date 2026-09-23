@@ -19,6 +19,10 @@ import {
 } from "@/lib/telegram";
 import { linkChatByToken } from "@/lib/telegramRecipients";
 
+// O tranziție de etapă face mai multe apeluri de rețea în serie (EVS + Telegram + bază de date);
+// implicitul de 10s al platformei ar putea tăia cererea la mijloc.
+export const maxDuration = 30;
+
 export async function POST(request: NextRequest) {
   const secret = request.headers.get("x-telegram-bot-api-secret-token");
   if (secret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
@@ -84,8 +88,13 @@ export async function POST(request: NextRequest) {
     const nextStage = prefix === "ord_confirm" ? "confirmata" : prefix === "ord_ready" ? "predata_curier" : "anulata";
     const confirmText = prefix === "ord_confirm" ? "Comandă confirmată." : prefix === "ord_ready" ? "Predată curierului." : "Comandă anulată.";
     try {
-      await advanceOrderStage(id, nextStage);
-      await answerCallbackQuery(callbackQuery.id, confirmText);
+      const after = await advanceOrderStage(id, nextStage);
+      // Dacă tranziția a fost refuzată (ex. EVS a respins ridicarea) mesajul de avertizare e deja în grup —
+      // nu confirmăm aici o acțiune care nu s-a întâmplat.
+      await answerCallbackQuery(
+        callbackQuery.id,
+        after.orderStage === nextStage ? confirmText : "Nu s-a putut aplica — vezi avertizarea din grup."
+      );
     } catch (err) {
       // Orice eroare din tranziție (nu doar "comanda lipsește") ajungea aici mascată.
       console.error(`telegram ${prefix} eșuat pentru ${id}:`, err);

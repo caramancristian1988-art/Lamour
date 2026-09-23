@@ -244,9 +244,11 @@ export async function maybeCreateEvsShipment(message: {
   deliveryZip: string | null;
   deliveryWeightKg: number | null;
   deliveryCodAmount: number | null;
-}, options: { pickup?: boolean } = {}) {
-  if (message.awbCode) return;
-  if (!message.deliveryAddress || !message.deliveryZip) return;
+}, options: { pickup?: boolean } = {}): Promise<{ ok: boolean; description: string } | null> {
+  if (message.awbCode) return null;
+  if (!message.deliveryAddress || !message.deliveryZip) {
+    return { ok: false, description: "comanda nu are adresă/cod poștal de livrare" };
+  }
 
   const line1 = [message.deliveryLocality, message.deliveryAddress].filter(Boolean).join(", ");
   const result = await createShipment(
@@ -267,9 +269,10 @@ export async function maybeCreateEvsShipment(message: {
   if (result.ok && result.awb) {
     console.log(`evs shipment înregistrat pentru mesajul ${message.id}: ${result.awb}`, JSON.stringify(result.raw));
     await prisma.contactMessage.update({ where: { id: message.id }, data: { awbCode: result.awb, awbCreatedAt: new Date() } });
-  } else {
-    console.error(`evs auto-shipment eșuat pentru mesajul ${message.id}:`, result.description);
+    return { ok: true, description: result.description };
   }
+  console.error(`evs auto-shipment eșuat pentru mesajul ${message.id}:`, result.description);
+  return { ok: false, description: result.description };
 }
 
 // Re-editează mesajul din Telegram al unei comenzi (buton Editează, sau o
@@ -417,19 +420,42 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
   // Un buton vechi din chatul depozitarului nu poate învia o comandă anulată.
   if (before.orderStage === "anulata") return before;
 
-  await prisma.contactMessage.update({ where: { id: messageId }, data: { orderStage: nextStage } });
+  // Tranziție atomică: doar cererea care găsește încă etapa veche o aplică — două apăsări simultane
+  // (sau același update Telegram livrat de două ori) nu mai pot chema curierul / crește vânzările de două ori.
+  const claimed = await prisma.contactMessage.updateMany({
+    where: { id: messageId, ...(before.orderStage ? { orderStage: before.orderStage } : { orderStage: { isSet: false } }) },
+    data: { orderStage: nextStage },
+  });
+  if (claimed.count === 0) return before;
+
+  const warn = async (text: string) => {
+    await sendTelegramMessage(`⚠️ ${escapeHtml(orderRef(before.orderNumber))}: ${escapeHtml(text)}`, [], before.telegramMessageId ?? undefined);
+  };
 
   if (nextStage === "confirmata") {
-    await maybeCreateEvsShipment(before, { pickup: false });
+    const shipment = await maybeCreateEvsShipment(before, { pickup: false });
+    // Comanda rămâne confirmată chiar dacă AWB-ul nu s-a creat (se reîncearcă la "gata de ridicare"),
+    // dar operatorul trebuie să știe — altfel eșecul rămânea doar în logurile serverului.
+    if (shipment && !shipment.ok) await warn(`AWB-ul nu a putut fi creat la confirmare (${shipment.description}). Se reîncearcă la „Gata de ridicare”.`);
   } else if (nextStage === "predata_curier") {
-    if (before.productIds.length > 0) {
-      await prisma.product.updateMany({ where: { id: { in: before.productIds } }, data: { salesCount: { increment: 1 } } });
-    }
+    let ready = { ok: true, description: "" };
     if (before.awbCode) {
       const result = await activatePickup(before.awbCode);
-      if (!result.ok) console.error(`evs activatePickup eșuat pentru ${before.awbCode}:`, result.description);
+      console.log(`evs activatePickup ${before.awbCode}:`, JSON.stringify(result.raw));
+      ready = { ok: result.ok, description: result.description };
     } else {
-      await maybeCreateEvsShipment(before, { pickup: true });
+      const shipment = await maybeCreateEvsShipment(before, { pickup: true });
+      if (shipment && !shipment.ok) ready = shipment;
+    }
+    if (!ready.ok) {
+      // Fără asta comanda apărea "gata de ridicare" deși curierul nu fusese chemat. Revenim la etapa
+      // veche (butonul rămâne apăsabil) și spunem clar de ce.
+      await prisma.contactMessage.updateMany({ where: { id: messageId, orderStage: nextStage }, data: { orderStage: before.orderStage } });
+      await warn(`ridicarea nu a putut fi activată la EVS: ${ready.description}. Comanda rămâne la etapa anterioară — încearcă din nou.`);
+      return before;
+    }
+    if (before.productIds.length > 0) {
+      await prisma.product.updateMany({ where: { id: { in: before.productIds } }, data: { salesCount: { increment: 1 } } });
     }
   } else if (nextStage === "anulata" && before.awbCode && before.orderStage === "confirmata") {
     // Doar cât AWB-ul nu e "gata de ridicare" — după aceea curierul poate fi deja pe drum.
@@ -438,6 +464,7 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
       await prisma.contactMessage.update({ where: { id: messageId }, data: { awbCode: null, awbCreatedAt: null } });
     } else {
       console.error(`evs removeShipment eșuat pentru ${before.awbCode}:`, result.description);
+      await warn(`AWB-ul ${before.awbCode} nu a putut fi șters la EVS (${result.description}) — șterge-l manual.`);
     }
   }
 
@@ -465,6 +492,10 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
     revalidatePath("/produse");
   }
   return updated;
+}
+
+function orderRef(orderNumber: string | null): string {
+  return orderNumber ? `Comanda #${orderNumber}` : "Comanda";
 }
 
 // Mesajul din chatul depozitarului: trimis la confirmare (cu butonul "Gata de ridicare"),
