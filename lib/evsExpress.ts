@@ -217,6 +217,20 @@ export async function removeShipment(awb: string): Promise<EvsResult> {
   return callEvs("RemoveDoc", { type: "AWB", doc_code: awb });
 }
 
-export async function getShipmentStatus(awb: string): Promise<EvsResult<{ Status?: string }[]>> {
-  return callEvs<{ Status?: string }[]>("GetGroupAWBActions", {}, [{ AWB: awb }]);
+export async function getShipmentStatus(awb: string): Promise<EvsResult<unknown>> {
+  return callEvs("GetGroupAWBActions", {}, [{ AWB: awb }]);
+}
+
+// Răspunsul real (verificat live) e imbricat: [[{ AWBNumber, Actions: [{ AWBStatus, ActionDate }] }]]
+// — nu o listă plată cu "Status". Acțiunile vin în ordine cronologică, deci ultima e statusul curent.
+export function parseLatestAwbStatus(raw: unknown): string | null {
+  const flat = Array.isArray(raw) ? raw.flat(2) : [];
+  const actions = flat.flatMap((entry) => (Array.isArray(entry?.Actions) ? entry.Actions : []));
+  const last = actions[actions.length - 1];
+  return typeof last?.AWBStatus === "string" && last.AWBStatus ? last.AWBStatus : null;
+}
+
+export async function fetchLatestAwbStatus(awb: string): Promise<string | null> {
+  const result = await getShipmentStatus(awb);
+  return result.ok ? parseLatestAwbStatus(result.raw) : null;
 }

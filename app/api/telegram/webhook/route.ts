@@ -86,7 +86,9 @@ export async function POST(request: NextRequest) {
     try {
       await advanceOrderStage(id, nextStage);
       await answerCallbackQuery(callbackQuery.id, confirmText);
-    } catch {
+    } catch (err) {
+      // Orice eroare din tranziție (nu doar "comanda lipsește") ajungea aici mascată.
+      console.error(`telegram ${prefix} eșuat pentru ${id}:`, err);
       await answerCallbackQuery(callbackQuery.id, "Comanda nu mai există.");
     }
     return NextResponse.json({ ok: true });
@@ -123,7 +125,7 @@ export async function POST(request: NextRequest) {
       const message = await prisma.contactMessage.findUnique({ where: { id } });
       if (message?.telegramMessageId && message.orderStage) {
         const editUrl = `${getSiteUrl()}/editare-comanda?token=${message.editToken ?? ""}`;
-        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderStageButtons(id, message.orderStage, editUrl, Boolean(extractInvoiceBlock(message.message)) && !message.invoiceSentAt));
+        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderStageButtons(id, message.orderStage, editUrl, Boolean(extractInvoiceBlock(message.message)) && !message.invoiceSentAt, !Array.isArray(message.warehouseMessages) || message.warehouseMessages.length === 0));
       }
       await answerCallbackQuery(callbackQuery.id, "Renunțat.");
     } catch {

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
-import { createShipment, getShipmentStatus, type CreateShipmentInput } from "./evsExpress";
+import { createShipment, getShipmentStatus, parseLatestAwbStatus, type CreateShipmentInput } from "./evsExpress";
 
 export interface ShipmentActionState {
   ok?: boolean;
@@ -69,8 +69,7 @@ export async function refreshShipmentStatusAction(
   if (!awb) return { ok: false, description: "Lipsește AWB-ul." };
 
   const result = await getShipmentStatus(awb);
-  const entries = Array.isArray(result.raw) ? result.raw : [];
-  const lastStatus = entries.length > 0 ? (entries[entries.length - 1]?.Status ?? null) : null;
+  const lastStatus = result.ok ? parseLatestAwbStatus(result.raw) : null;
 
   if (result.ok && lastStatus && messageId) {
     await prisma.contactMessage.update({ where: { id: messageId }, data: { awbStatus: lastStatus } });

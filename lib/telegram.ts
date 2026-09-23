@@ -255,7 +255,8 @@ export function buildOrderStageButtons(
   messageId: string,
   stage: string,
   editUrl: string,
-  canSendInvoice = false
+  canSendInvoice = false,
+  showReadyButton = false
 ): InlineButton[][] {
   // Butonul "Factură" apare doar dacă clientul a cerut factură și ea n-a fost trimisă încă.
   const invoiceRow: InlineButton[][] = canSendInvoice
@@ -271,7 +272,10 @@ export function buildOrderStageButtons(
   }
   if (stage === "confirmata") {
     // "Gata de ridicare" e apăsat de depozitar în chatul lui (buildWarehouseButtons), nu de operator.
-    return [...invoiceRow, [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }]];
+    const readyRow: InlineButton[][] = showReadyButton
+      ? [[{ text: "📦 Gata de ridicare", callback_data: `ord_ready:${messageId}` }]]
+      : [];
+    return [...readyRow, ...invoiceRow, [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }]];
   }
   return [];
 }

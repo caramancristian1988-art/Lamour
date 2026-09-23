@@ -21,7 +21,7 @@ import {
   getSiteUrl,
   STATUSES_REQUIRING_CONFIRMATION,
 } from "./telegram";
-import { createShipment, activatePickup, removeShipment } from "./evsExpress";
+import { createShipment, activatePickup, removeShipment, fetchLatestAwbStatus } from "./evsExpress";
 import { getChatIdsForRole } from "./telegramRecipients";
 
 export interface ContactFormState {
@@ -279,6 +279,8 @@ async function syncOrderTelegramMessage(updated: {
   telegramMessageId: number | null;
   productIds: string[];
   awbCode: string | null;
+  awbStatus: string | null;
+  warehouseMessages: unknown;
   orderNumber: string | null;
   invoiceSentAt: Date | null;
 }) {
@@ -291,14 +293,18 @@ async function syncOrderTelegramMessage(updated: {
     email: updated.email,
     message: updated.message,
     source: updated.source,
-    statusLabel: updated.awbCode ? `${stageLabel} — AWB ${updated.awbCode}` : stageLabel,
+    statusLabel: updated.awbCode ? `${stageLabel} — AWB ${updated.awbCode}${updated.awbStatus ? ` (${updated.awbStatus})` : ""}` : stageLabel,
     products,
     orderNumber: updated.orderNumber,
   });
   const editUrl = `${getSiteUrl()}/editare-comanda?token=${updated.editToken ?? ""}`;
   const buttons =
     updated.orderStage === "noua" || updated.orderStage === "confirmata"
-      ? buildOrderStageButtons(updated.id, updated.orderStage, editUrl, Boolean(extractInvoiceBlock(updated.message)) && !updated.invoiceSentAt)
+      ? buildOrderStageButtons(updated.id, updated.orderStage, editUrl,
+          Boolean(extractInvoiceBlock(updated.message)) && !updated.invoiceSentAt,
+          // Niciun depozitar conectat -> altfel comanda n-ar mai putea fi marcată gata de ridicare.
+          !Array.isArray(updated.warehouseMessages) || updated.warehouseMessages.length === 0
+        )
       : [];
   await editTelegramMessage(updated.telegramMessageId, text, buttons);
 }
@@ -407,7 +413,14 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
     }
   }
 
-  // Reia mesajul — awbCode poate fi setat/șters mai sus.
+  // Statusul AWB-ului la EVS (ex. "Received information") — înainte se citea doar manual din admin.
+  const current = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
+  if (current.awbCode) {
+    const awbStatus = await fetchLatestAwbStatus(current.awbCode);
+    if (awbStatus) await prisma.contactMessage.update({ where: { id: messageId }, data: { awbStatus } });
+  }
+
+  // Reia mesajul — awbCode/awbStatus pot fi setate/șterse mai sus.
   const updated = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
   await syncOrderTelegramMessage(updated);
   await syncWarehouseMessage(updated);
@@ -434,6 +447,7 @@ async function syncWarehouseMessage(order: {
   orderStage: string | null;
   productIds: string[];
   awbCode: string | null;
+  awbStatus: string | null;
   orderNumber: string | null;
   warehouseMessages: unknown;
 }) {
@@ -451,7 +465,7 @@ async function syncWarehouseMessage(order: {
     email: order.email,
     message: order.message,
     source: order.source,
-    statusLabel: order.awbCode ? `${stageLabel} — AWB ${order.awbCode}` : stageLabel,
+    statusLabel: order.awbCode ? `${stageLabel} — AWB ${order.awbCode}${order.awbStatus ? ` (${order.awbStatus})` : ""}` : stageLabel,
     products,
     orderNumber: order.orderNumber,
   });
