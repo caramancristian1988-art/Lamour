@@ -543,7 +543,9 @@ export async function sendInvoiceToAccountant(
 
   // Marcăm întâi, ca un al doilea click (sau update livrat dublu) să nu trimită comanda de două ori.
   const claimed = await prisma.contactMessage.updateMany({
-    where: { id: messageId, invoiceSentAt: null },
+    // Pe MongoDB câmpul lipsește complet la comenzile fără factură trimisă (nu e null) — `invoiceSentAt: null`
+    // nu le-ar găsi niciodată, deci trebuie acoperit explicit și cazul "nesetat".
+    where: { id: messageId, OR: [{ invoiceSentAt: null }, { invoiceSentAt: { isSet: false } }] },
     data: { invoiceSentAt: new Date() },
   });
   if (claimed.count === 0) return "already";
