@@ -264,6 +264,9 @@ model ContactMessage {
   // Copiile mesajului comenzii trimise depozitarilor ([{ chatId, messageId }]) — editate
   // când comanda e gata de ridicare sau anulată.
   warehouseMessages Json?
+  // Copia comenzii (același text ca în grupul principal, fără butoane) trimisă contabililor în privat,
+  // când comanda cere factură — [{ chatId, messageId }], editată odată cu mesajul principal.
+  accountantMessages Json?
   // Setat când operatorul a trimis factura la contabil (butonul "Factură" din Telegram).
   invoiceSentAt     DateTime?
 

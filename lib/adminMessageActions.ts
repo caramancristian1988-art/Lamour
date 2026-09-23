@@ -290,20 +290,10 @@ async function syncOrderTelegramMessage(updated: {
   warehouseMessages: unknown;
   orderNumber: string | null;
   invoiceSentAt: Date | null;
+  accountantMessages: unknown;
 }) {
   if (!updated.telegramMessageId) return;
-  const products = await getProductsByIds(updated.productIds);
-  const stageLabel = orderStageLabel(updated.orderStage);
-  const text = buildContactMessageText({
-    name: updated.name,
-    phone: updated.phone,
-    email: updated.email,
-    message: updated.message,
-    source: updated.source,
-    statusLabel: updated.awbCode ? `${stageLabel} — AWB ${updated.awbCode}${updated.awbStatus ? ` (${updated.awbStatus})` : ""}` : stageLabel,
-    products,
-    orderNumber: updated.orderNumber,
-  });
+  const text = await buildOrderText(updated);
   const editUrl = `${getSiteUrl()}/editare-comanda?token=${updated.editToken ?? ""}`;
   const buttons =
     updated.orderStage === "noua" || updated.orderStage === "confirmata"
@@ -314,6 +304,37 @@ async function syncOrderTelegramMessage(updated: {
         )
       : [];
   await editTelegramMessage(updated.telegramMessageId, text, buttons);
+  // Copiile din privat ale contabililor (comenzi cu factură) rămân în pas cu mesajul principal.
+  await Promise.all(
+    parseChatMessages(updated.accountantMessages).map((m) => editTelegramMessage(m.messageId, text, [], m.chatId))
+  );
+}
+
+// Același text ca în grupul principal — folosit și pentru copiile trimise contabililor.
+async function buildOrderText(order: {
+  name: string;
+  phone: string;
+  email: string | null;
+  message: string | null;
+  source: string;
+  orderStage: string | null;
+  productIds: string[];
+  awbCode: string | null;
+  awbStatus: string | null;
+  orderNumber: string | null;
+}): Promise<string> {
+  const products = await getProductsByIds(order.productIds);
+  const stageLabel = orderStageLabel(order.orderStage);
+  return buildContactMessageText({
+    name: order.name,
+    phone: order.phone,
+    email: order.email,
+    message: order.message,
+    source: order.source,
+    statusLabel: order.awbCode ? `${stageLabel} — AWB ${order.awbCode}${order.awbStatus ? ` (${order.awbStatus})` : ""}` : stageLabel,
+    products,
+    orderNumber: order.orderNumber,
+  });
 }
 
 // Actualizează o comandă existentă prin link-ul de editare (token, fără
@@ -463,7 +484,7 @@ async function syncWarehouseMessage(order: {
   orderNumber: string | null;
   warehouseMessages: unknown;
 }) {
-  const sent = parseWarehouseMessages(order.warehouseMessages);
+  const sent = parseChatMessages(order.warehouseMessages);
   const stageLabel =
     order.orderStage === "confirmata"
       ? "De pregătit"
@@ -501,7 +522,7 @@ async function syncWarehouseMessage(order: {
   }
 }
 
-function parseWarehouseMessages(value: unknown): { chatId: string; messageId: number }[] {
+function parseChatMessages(value: unknown): { chatId: string; messageId: number }[] {
   if (!Array.isArray(value)) return [];
   return value.filter(
     (m): m is { chatId: string; messageId: number } =>
@@ -509,34 +530,40 @@ function parseWarehouseMessages(value: unknown): { chatId: string; messageId: nu
   );
 }
 
-// Butonul "🧾 Trimite factura" din Telegram: datele firmei ajung în grupul principal (reply la
-// comandă) și la contabil(i). Se trimite o singură dată (invoiceSentAt), apoi butonul dispare.
+// Comenzile cu factură pe companie: contabilul primește în privat aceeași comandă ca în grupul principal
+// (text complet, editat mai departe odată cu ea). Automat la plasarea comenzii; butonul "🧾 Trimite factura"
+// din Telegram rămâne pentru comenzile mai vechi. Se trimite o singură dată (invoiceSentAt).
 export async function sendInvoiceToAccountant(
   messageId: string,
   options: { mainGroup?: boolean } = {}
 ): Promise<"sent" | "already" | "none"> {
   const order = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
-  const block = extractInvoiceBlock(order.message);
-  if (!block) return "none";
+  if (!extractInvoiceBlock(order.message)) return "none";
   if (order.invoiceSentAt) return "already";
 
-  // Marcăm întâi, ca un al doilea click (sau update livrat dublu) să nu trimită factura de două ori.
+  // Marcăm întâi, ca un al doilea click (sau update livrat dublu) să nu trimită comanda de două ori.
   const claimed = await prisma.contactMessage.updateMany({
     where: { id: messageId, invoiceSentAt: null },
     data: { invoiceSentAt: new Date() },
   });
   if (claimed.count === 0) return "already";
 
-  const label = order.orderNumber ? `Comanda #${order.orderNumber}` : "Comanda";
-  // Prima linie a blocului e antetul "🧾 CERE FACTURĂ (companie):" — îl înlocuim cu unul propriu.
-  const details = escapeHtml(block.split("\n").slice(1).join("\n"));
-  const escaped = `🧾 <b>Factură — ${escapeHtml(label)}</b>\n${details}\n\n👤 ${escapeHtml(order.name)}\n📞 ${escapeHtml(order.phone)}`;
-
-  // La plasarea comenzii mesajul principal conține deja datele firmei — acolo nu mai repetăm.
-  if (options.mainGroup !== false) await sendTelegramMessage(escaped, [], order.telegramMessageId ?? undefined);
   const accountants = await getChatIdsForRole("contabil");
-  if (accountants.length === 0) console.error("telegram: niciun contabil nu are Telegram conectat — factura a ajuns doar în grupul principal");
-  await Promise.all(accountants.map((chatId) => sendTelegramMessage(escaped, [], undefined, chatId)));
+  if (accountants.length === 0) console.error("telegram: niciun contabil nu are Telegram conectat — comanda cu factură nu i-a fost trimisă");
+  const text = await buildOrderText(order);
+  const results = await Promise.all(
+    accountants.map(async (chatId) => ({ chatId, messageId: await sendTelegramMessage(text, [], undefined, chatId) }))
+  );
+  const delivered = results.filter((r): r is { chatId: string; messageId: number } => r.messageId !== null);
+  if (delivered.length > 0) {
+    await prisma.contactMessage.update({ where: { id: messageId }, data: { accountantMessages: delivered } });
+  }
+
+  // Apăsat manual din grup: confirmare vizibilă acolo (la plasare, mesajul principal e deja acolo).
+  if (options.mainGroup !== false) {
+    const label = order.orderNumber ? `Comanda #${order.orderNumber}` : "Comanda";
+    await sendTelegramMessage(`🧾 ${escapeHtml(label)} trimisă contabilului pentru factură.`, [], order.telegramMessageId ?? undefined);
+  }
 
   const updated = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
   await syncOrderTelegramMessage(updated);
