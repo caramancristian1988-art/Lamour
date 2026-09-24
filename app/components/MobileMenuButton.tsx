@@ -82,7 +82,9 @@ export default function MobileMenuButton({
   despreEnabled = true,
   blogEnabled = true,
   contactEnabled = true,
-}: Partial<SectionFlags>) {
+  phone,
+  phoneTel,
+}: Partial<SectionFlags> & { phone?: string; phoneTel?: string }) {
   const flags = { produseEnabled, despreEnabled, blogEnabled, contactEnabled };
   const navLinks = baseNavLinks.filter((l) => flags[l.flag]);
   const [open, setOpen] = useState(false);
@@ -145,14 +147,17 @@ export default function MobileMenuButton({
 
         <div className="px-5 py-4 border-t border-border shrink-0 flex flex-col gap-2">
           <AccessibilityToggle className="justify-center border border-border" />
-          <a
-            href="tel:+00000000000"
-            onClick={closeMenu}
-            className="flex items-center justify-center gap-2 bg-accent hover:bg-brand-red-dark text-white font-bold py-3.5 rounded-xl transition-colors text-sm uppercase tracking-wide"
-          >
-            <Phone className="w-4 h-4" aria-hidden />
-            +000 00 000 000
-          </a>
+          {/* Numărul vine din Setări (ca în bara de sus și footer) — înainte era un număr fals scris în cod (+000 00 000 000). */}
+          {phone && phoneTel && (
+            <a
+              href={`tel:${phoneTel}`}
+              onClick={closeMenu}
+              className="flex items-center justify-center gap-2 bg-accent hover:bg-brand-red-dark text-white font-bold py-3.5 rounded-xl transition-colors text-sm uppercase tracking-wide"
+            >
+              <Phone className="w-4 h-4" aria-hidden />
+              {phone}
+            </a>
+          )}
         </div>
       </SheetContent>
     </Sheet>

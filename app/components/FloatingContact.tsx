@@ -16,7 +16,7 @@ export default function FloatingContact({
   const PHONE_DISPLAY = phone;
   const PHONE_TEL = `tel:${phoneTel}`;
   const WHATSAPP_HREF = `https://wa.me/${phoneDigits}`;
-  const VIBER_HREF = `viber://chat?number=${phoneDigits}`;
+  const VIBER_HREF = `viber://chat?number=%2B${phoneDigits}`;
 
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);

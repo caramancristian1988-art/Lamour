@@ -187,7 +187,7 @@ export default async function ContactPage() {
             <p className="font-bold text-sm text-foreground">Viber</p>
             <p className="text-primary font-bold text-sm">{phone}</p>
             <a
-              href={`viber://chat?number=${phoneDigits}`}
+              href={`viber://chat?number=%2B${phoneDigits}`}
               className="w-full border border-primary text-primary text-xs font-bold py-2.5 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               Scrie pe Viber

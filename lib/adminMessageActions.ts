@@ -9,6 +9,7 @@ import { MOODS } from "./moods";
 import { ORDER_STAGES, CART_ORDER_SOURCE, orderStageLabel, type OrderStage } from "./orderStages";
 import { nextOrderNumber } from "./orderNumber";
 import { allowRequest, getClientIp, TOO_MANY_REQUESTS } from "./rateLimit";
+import { isValidCourierEmail } from "./deliveryValidation";
 import {
   sendTelegramMessage,
   editTelegramMessage,
@@ -253,13 +254,15 @@ export async function maybeCreateEvsShipment(message: {
     return { ok: false, description: "comanda nu are adresă/cod poștal de livrare" };
   }
 
-  const line1 = [message.deliveryLocality, message.deliveryAddress].filter(Boolean).join(", ");
+  // Ordinea din documentația EVS: "street, block, locality, region" (strada întâi, localitatea după).
+  const line1 = [message.deliveryAddress, message.deliveryLocality].filter(Boolean).join(", ");
   const result = await createShipment(
     {
       receiver: {
         name: message.name,
         phone: message.phone,
-        email: message.email ?? undefined,
+        // Emailul e opțional la EVS, dar unul invalid face să fie respins tot AWB-ul — mai bine fără el decât fără AWB.
+        email: message.email && isValidCourierEmail(message.email) ? message.email.trim() : undefined,
         line1,
         zip: message.deliveryZip,
       },
@@ -403,8 +406,98 @@ export async function updateOrderMessageAction(
   }
 
   await syncOrderTelegramMessage(updated);
+  await notifyGroupOfEdit(existing, updated);
+  await notifyAccountantOfEdit(existing, updated);
   revalidatePath("/admin/mesaje");
   return { success: true };
+}
+
+// Ce s-a schimbat într-o comandă editată, pe scurt ("telefon", "adresa de livrare", "total (44 → 72 MDL)"...).
+// Gol = nu s-a schimbat nimic care contează, deci nu trimitem nicio notificare.
+function describeOrderChanges(
+  before: { message: string | null; name: string; phone: string; email: string | null; deliveryLocality: string | null; deliveryAddress: string | null; deliveryZip: string | null; orderItems: unknown },
+  after: typeof before
+): string[] {
+  const changes: string[] = [];
+  if (before.name !== after.name) changes.push("numele clientului");
+  if (before.phone !== after.phone) changes.push("telefonul");
+  if ((before.email ?? "") !== (after.email ?? "")) changes.push("emailul");
+  const address = (o: typeof before) => [o.deliveryLocality, o.deliveryAddress, o.deliveryZip].join("|");
+  if (address(before) !== address(after)) changes.push("adresa de livrare");
+  if (JSON.stringify(before.orderItems ?? null) !== JSON.stringify(after.orderItems ?? null)) changes.push("produsele");
+
+  const line = (message: string | null, re: RegExp) => message?.match(re)?.[1]?.trim() ?? null;
+  const totalRe = /^Total cu livrare:\s*(.+)$/m;
+  const subtotalRe = /^Subtotal:\s*(.+)$/m;
+  const total = (m: string | null) => line(m, totalRe) ?? line(m, subtotalRe);
+  if (total(before.message) !== total(after.message)) changes.push(`totalul (${total(before.message) ?? "—"} → ${total(after.message) ?? "—"})`);
+  if (extractInvoiceBlock(before.message) !== extractInvoiceBlock(after.message)) changes.push("datele pentru factură");
+  const clientNote = (m: string | null) => m?.split("Mesaj client:")[1]?.trim() ?? "";
+  if (clientNote(before.message) !== clientNote(after.message)) changes.push("mesajul clientului");
+  return changes;
+}
+
+// Mesajul comenzii din grup se editează pe loc, dar Telegram nu sună la o editare — fără un mesaj nou,
+// nimeni din grup nu afla că o comandă s-a schimbat înainte de a fi confirmată.
+async function notifyGroupOfEdit(
+  before: Parameters<typeof describeOrderChanges>[0] & { telegramMessageId: number | null },
+  after: Parameters<typeof describeOrderChanges>[0] & { orderNumber: string | null; telegramMessageId: number | null }
+) {
+  try {
+    const changes = describeOrderChanges(before, after);
+    if (changes.length === 0) return;
+    const text = `✏️ <b>${escapeHtml(orderRef(after.orderNumber))} a fost modificată</b>\nSchimbări: ${escapeHtml(changes.join(", "))}.\nMesajul comenzii de mai sus este actualizat — confirm-o din Telegram sau din admin.`;
+    await sendTelegramMessage(text, [], after.telegramMessageId ?? undefined);
+  } catch (err) {
+    console.error("telegram: notificarea din grup la editarea comenzii a eșuat:", err);
+  }
+}
+
+// Același lucru ca butonul "🧾 Trimite factura" din Telegram, pentru admin (comenzi mai vechi sau retrimitere după o eroare).
+export async function sendInvoiceAction(formData: FormData): Promise<{ ok: boolean; message: string }> {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return { ok: false, message: "Comandă invalidă." };
+  const result = await sendInvoiceToAccountant(id);
+  revalidatePath("/admin/mesaje");
+  if (result === "sent") return { ok: true, message: "Factura a fost trimisă contabilului." };
+  if (result === "already") return { ok: true, message: "Factura a fost deja trimisă." };
+  if (result === "none") return { ok: false, message: "Comanda nu cere factură." };
+  return { ok: false, message: "Nu a ajuns la contabil (nu e conectat, sau Telegram a refuzat). Vezi avertizarea din grup." };
+}
+
+// Editarea unei comenzi cu factură. Copia din privat a contabilei se actualizează pe loc (syncOrderTelegramMessage),
+// dar Telegram NU sună la o editare — fără un mesaj nou, contabila n-ar afla că s-a schimbat ceva. Reguli:
+// - factura cerută abia la editare -> comanda pleacă prima dată la contabilă;
+// - factura era deja trimisă și comanda s-a modificat -> mesaj nou (reply la copia ei): "a fost modificată";
+// - clientul a renunțat la factură -> mesaj nou: "factura nu mai e necesară".
+async function notifyAccountantOfEdit(
+  before: { message: string | null; name: string; phone: string; email: string | null; deliveryLocality: string | null; deliveryAddress: string | null; deliveryZip: string | null; deliveryCodAmount: number | null; productIds: string[]; invoiceSentAt: Date | null },
+  after: typeof before & { id: string; orderNumber: string | null; accountantMessages: unknown }
+) {
+  try {
+    const hadInvoice = Boolean(extractInvoiceBlock(before.message));
+    const hasInvoice = Boolean(extractInvoiceBlock(after.message));
+    if (!hadInvoice && !hasInvoice) return;
+
+    if (hasInvoice && !before.invoiceSentAt) {
+      await sendInvoiceToAccountant(after.id);
+      return;
+    }
+
+    const fields = (o: typeof before) => JSON.stringify([o.message, o.name, o.phone, o.email, o.deliveryLocality, o.deliveryAddress, o.deliveryZip, o.deliveryCodAmount, o.productIds]);
+    if (fields(before) === fields(after)) return;
+
+    const copies = parseChatMessages(after.accountantMessages);
+    if (copies.length === 0) return;
+    const label = escapeHtml(orderRef(after.orderNumber));
+    const text = hasInvoice
+      ? `✏️ ${label} a fost modificată — versiunea actualizată este în mesajul de mai sus.`
+      : `ℹ️ ${label}: factura nu mai este necesară (clientul a renunțat la ea). Vezi mesajul de mai sus.`;
+    await Promise.all(copies.map((m) => sendTelegramMessage(text, [], m.messageId, m.chatId)));
+  } catch (err) {
+    console.error("telegram: notificarea contabilului la editarea comenzii a eșuat:", err);
+  }
 }
 
 // Avansează o comandă la etapa următoare (operator confirmă / depozitar
@@ -547,7 +640,7 @@ async function syncWarehouseMessage(order: {
     products,
     orderNumber: order.orderNumber,
   });
-  const buttons = buildWarehouseButtons(order.id, order.orderStage ?? "");
+  const buttons = buildWarehouseButtons(order.id, order.orderStage ?? "", Boolean(order.awbCode));
 
   if (sent.length > 0) {
     await Promise.all(sent.map((m) => editTelegramMessage(m.messageId, text, buttons, m.chatId)));

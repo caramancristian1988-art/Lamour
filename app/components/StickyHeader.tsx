@@ -40,7 +40,9 @@ export default function StickyHeader({
   blogEnabled = true,
   contactEnabled = true,
   categories,
-}: Partial<SectionFlags> & { categories?: HeaderCategory[] }) {
+  phone,
+  phoneTel,
+}: Partial<SectionFlags> & { categories?: HeaderCategory[]; phone?: string; phoneTel?: string }) {
   const productsDropdown = categories && categories.length > 0 ? categories : fallbackProductsDropdown;
   return (
     <div id="site-header" className="bg-card relative z-40">
@@ -85,6 +87,8 @@ export default function StickyHeader({
                 despreEnabled={despreEnabled}
                 blogEnabled={blogEnabled}
                 contactEnabled={contactEnabled}
+                phone={phone}
+                phoneTel={phoneTel}
               />
             </div>
           </div>

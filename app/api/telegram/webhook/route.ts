@@ -8,6 +8,8 @@ import {
   editTelegramMessage,
   editTelegramReplyMarkup,
   answerCallbackQuery,
+  sendTelegramMessage,
+  sendTelegramDocument,
   buildContactMessageText,
   buildMessageButtons,
   buildConfirmButtons,
@@ -18,6 +20,7 @@ import {
   STATUSES_REQUIRING_CONFIRMATION,
 } from "@/lib/telegram";
 import { linkChatByToken } from "@/lib/telegramRecipients";
+import { getAwbLabel } from "@/lib/evsExpress";
 
 // O tranziție de etapă face mai multe apeluri de rețea în serie (EVS + Telegram + bază de date);
 // implicitul de 10s al platformei ar putea tăia cererea la mijloc.
@@ -99,6 +102,33 @@ export async function POST(request: NextRequest) {
       // Orice eroare din tranziție (nu doar "comanda lipsește") ajungea aici mascată.
       console.error(`telegram ${prefix} eșuat pentru ${id}:`, err);
       await answerCallbackQuery(callbackQuery.id, "Comanda nu mai există.");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // Eticheta AWB (PDF cu cod de bare) cerută de depozitar: se trimite în chatul unde a apăsat butonul.
+  if (prefix === "ord_label") {
+    const chatId = String(callbackQuery.message?.chat?.id ?? "");
+    try {
+      const order = await prisma.contactMessage.findUnique({ where: { id }, select: { awbCode: true, orderNumber: true } });
+      if (!order?.awbCode || !chatId) {
+        await answerCallbackQuery(callbackQuery.id, "Comanda nu are încă AWB.");
+        return NextResponse.json({ ok: true });
+      }
+      // Răspundem imediat: descărcarea PDF-ului de la EVS poate dura și butonul ar rămâne "în așteptare".
+      await answerCallbackQuery(callbackQuery.id, "Îți trimit eticheta...");
+      const size = value === "100" ? "100x100" : "A4";
+      const label = await getAwbLabel(order.awbCode, size);
+      if (label.ok) {
+        const ref = order.orderNumber ? `Comanda #${order.orderNumber}` : "Comanda";
+        await sendTelegramDocument(chatId, label.pdf, `AWB-${order.awbCode}-${size}.pdf`, `🏷 ${ref} — AWB ${order.awbCode} (${size})`);
+      } else {
+        console.error(`evs GetDoc eșuat pentru ${order.awbCode}:`, label.description);
+        await sendTelegramMessage(`⚠️ Eticheta AWB ${order.awbCode} nu a putut fi descărcată: ${label.description}`, [], undefined, chatId);
+      }
+    } catch (err) {
+      console.error(`telegram ord_label eșuat pentru ${id}:`, err);
+      await answerCallbackQuery(callbackQuery.id, "Nu am putut trimite eticheta.");
     }
     return NextResponse.json({ ok: true });
   }

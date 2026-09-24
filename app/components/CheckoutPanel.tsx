@@ -9,7 +9,7 @@ import { formatPrice } from "@/lib/pricing";
 import { submitContactMessageAction, updateOrderMessageAction } from "@/lib/adminMessageActions";
 import { useOrderEditSession, clearOrderEditSession } from "@/lib/orderEditSession";
 import { matchLocality } from "@/lib/localityMatch";
-import { isValidMoldovanPhone, isValidPostalCode } from "@/lib/deliveryValidation";
+import { isValidMoldovanPhone, isValidPostalCode, isValidCourierEmail } from "@/lib/deliveryValidation";
 import LocalityField from "./LocalityField";
 import CatalogNotice from "./CatalogNotice";
 import { Input } from "@/app/components/ui/input";
@@ -98,6 +98,7 @@ export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: Deli
       !trimmedName && "numele",
       !trimmedPhone && "numărul de telefon",
       trimmedPhone && !isValidMoldovanPhone(trimmedPhone) && "un număr de telefon valid",
+      trimmedEmail && !isValidCourierEmail(trimmedEmail) && "o adresă de email completă (ex: nume@gmail.com) sau lasă câmpul gol",
       !resolvedLocality && "localitatea",
       resolvedLocality && !localityMatch.exact && "o localitate validă din Moldova",
       !trimmedAddress && "adresa",

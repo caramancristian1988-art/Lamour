@@ -49,13 +49,26 @@ export default function EvsShipmentPanel({
             Status: {statusState.description ?? awbStatus ?? "necunoscut"}
           </p>
         </div>
-        <form action={statusAction} className="ml-auto">
-          <input type="hidden" name="messageId" value={messageId} />
-          <input type="hidden" name="awb" value={awbCode} />
-          <Button type="submit" variant="outline" size="sm" disabled={statusPending}>
-            {statusPending ? "Verific..." : "Verifică status"}
+        <div className="ml-auto flex items-center gap-2 flex-wrap">
+          {/* Eticheta AWB (PDF cu cod de bare) — se lipește pe colet. A4 = fișă completă, 100×100 = imprimantă termică. */}
+          <Button asChild variant="outline" size="sm">
+            <a href={`/api/admin/awb-label?id=${messageId}&size=A4`} target="_blank" rel="noopener noreferrer">
+              Etichetă A4
+            </a>
           </Button>
-        </form>
+          <Button asChild variant="outline" size="sm">
+            <a href={`/api/admin/awb-label?id=${messageId}&size=100x100`} target="_blank" rel="noopener noreferrer">
+              Etichetă 100×100
+            </a>
+          </Button>
+          <form action={statusAction}>
+            <input type="hidden" name="messageId" value={messageId} />
+            <input type="hidden" name="awb" value={awbCode} />
+            <Button type="submit" variant="outline" size="sm" disabled={statusPending}>
+              {statusPending ? "Verific..." : "Verifică status"}
+            </Button>
+          </form>
+        </div>
       </div>
     );
   }

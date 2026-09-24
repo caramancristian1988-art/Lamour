@@ -71,6 +71,8 @@ async function callEvs<T = unknown>(
       method: body ? "POST" : "GET",
       headers: body ? { "Content-Type": "application/json" } : undefined,
       body: body ? JSON.stringify(body) : undefined,
+      // Fără timeout, un EVS care nu răspunde bloca webhook-ul Telegram până la limita platformei (butonul apăsat "se rotea").
+      signal: AbortSignal.timeout(20000),
     });
     const data = await res.json();
     const first = Array.isArray(data) ? data[0] : data;
@@ -233,4 +235,44 @@ export function parseLatestAwbStatus(raw: unknown): string | null {
 export async function fetchLatestAwbStatus(awb: string): Promise<string | null> {
   const result = await getShipmentStatus(awb);
   return result.ok ? parseLatestAwbStatus(result.raw) : null;
+}
+
+// Eticheta AWB (fișa de livrare cu cod de bare) pentru lipit pe colet — /GetDoc type=AWB format=PDF.
+// "100x100" = etichetă pentru imprimantă termică, "A4" = fișă completă cu dovada livrării.
+export type AwbLabelSize = "A4" | "100x100";
+
+export async function getAwbLabel(
+  awb: string,
+  size: AwbLabelSize
+): Promise<{ ok: true; pdf: Buffer } | { ok: false; description: string }> {
+  const creds = getCredentials();
+  if (!creds) return { ok: false, description: "Lipsesc EVS_USERNAME / EVS_PASSWORD din .env." };
+
+  const url = new URL("GetDoc", getApiUrl());
+  url.searchParams.set("username", creds.username);
+  url.searchParams.set("password", creds.password);
+  url.searchParams.set("api", getApiVersion());
+  url.searchParams.set("type", "AWB");
+  url.searchParams.set("doc_code", awb);
+  url.searchParams.set("format", "PDF");
+  url.searchParams.set("size", size);
+
+  try {
+    const res = await fetch(url.toString(), { signal: AbortSignal.timeout(20000) });
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (res.ok && buf.subarray(0, 4).toString("latin1") === "%PDF") return { ok: true, pdf: buf };
+
+    // La eroare EVS răspunde cu JSON { Code, TrueFalse:false, Description } (sau HTTP 502 { error }).
+    let description = `EVS Express a răspuns cu HTTP ${res.status}`;
+    try {
+      const parsed = JSON.parse(buf.toString("utf8"));
+      const first = Array.isArray(parsed) ? parsed[0] : parsed;
+      description = first?.Description ?? first?.error ?? description;
+    } catch {
+      // răspuns non-JSON — rămâne mesajul generic
+    }
+    return { ok: false, description };
+  } catch (err) {
+    return { ok: false, description: `Cerere eșuată către EVS Express: ${(err as Error).message}` };
+  }
 }

@@ -13,6 +13,13 @@ export function isValidMoldovanPhone(raw: string): boolean {
   return false;
 }
 
+// EVS respinge emailurile fără domeniu complet ("nume@gmail", "nume@localhost" — testat direct pe API), dar
+// <input type="email"> din browser le acceptă. Fără asta, o greșeală frecventă de tastare ("...@gmail" fără .com)
+// lăsa comanda să se confirme, iar AWB-ul nu se mai crea.
+export function isValidCourierEmail(raw: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(raw.trim());
+}
+
 // EVS Express cere ZIP în format "XXXX" (4 cifre) — confirmat direct de API
 // ("Invalid chars count: ...ZIP" pentru orice altă lungime).
 export function isValidPostalCode(raw: string): boolean {

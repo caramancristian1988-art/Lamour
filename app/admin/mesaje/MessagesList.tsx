@@ -11,6 +11,7 @@ import MessageStatusBadge from "../components/MessageStatusBadge";
 import MoodBadge from "../components/MoodBadge";
 import OrderStageBadge from "../components/OrderStageBadge";
 import OrderNumberEditor from "../components/OrderNumberEditor";
+import OrderActions from "../components/OrderActions";
 import LinkedProductText from "../components/LinkedProductText";
 import CopyableId from "../components/CopyableId";
 import EvsShipmentPanel from "../components/EvsShipmentPanel";
@@ -33,6 +34,8 @@ interface Message {
   awbStatus: string | null;
   orderStage: string | null;
   orderNumber: string | null;
+  editToken: string | null;
+  invoiceSentAt: Date | string | null;
 }
 
 // Comenzile din coș includ o linie "Livrare: localitate, adresă" în textul
@@ -259,17 +262,28 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                         </Button>
                       </div>
 
+                      {isOrder && (
+                        <OrderActions
+                          id={m.id}
+                          stage={m.orderStage}
+                          message={m.message}
+                          editToken={m.editToken}
+                          invoiceSentAt={m.invoiceSentAt}
+                          onInvoiceSent={() => patchMessage(m.id, { invoiceSentAt: new Date() })}
+                        />
+                      )}
+
                       {m.message && (
                         <p className="text-sm text-muted-foreground mt-3 leading-relaxed whitespace-pre-line">
                           <LinkedProductText text={m.message} products={m.products} />
                         </p>
                       )}
 
-                      {/* Pentru comenzi, livrarea EVS se creează automat la "Predată
-                          curierului" — panoul manual apare doar acolo (ca rezervă dacă
-                          expedierea automată eșuează), nu mai devreme în flux, ca să nu
+                      {/* Pentru comenzi, AWB-ul se creează automat la "Confirmă" (curierul e chemat abia la "Gata de ridicare"). Panoul cu
+                          AWB, status și etichete apare de la confirmare, ca depozitarul din Telegram; formularul manual de creare
+                          (rezervă dacă expedierea automată eșuează) doar la "Gata de ridicare", ca să nu
                           ajungă curierul înaintea depozitarului. */}
-                      {(!isOrder || m.orderStage === "predata_curier") && (
+                      {(!isOrder || m.orderStage === "predata_curier" || (m.orderStage === "confirmata" && m.awbCode)) && (
                         <EvsShipmentPanel
                           messageId={m.id}
                           defaultName={m.name}

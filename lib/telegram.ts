@@ -394,10 +394,20 @@ export function extractInvoiceBlock(message: string | null): string | null {
   return (end === -1 ? rest : rest.slice(0, end)).trim();
 }
 
-export function buildWarehouseButtons(messageId: string, stage: string): InlineButton[][] {
+// Butoanele de etichetă apar doar dacă comanda are deja AWB: eticheta (PDF cu cod de bare) se lipește pe colet.
+export function buildWarehouseButtons(messageId: string, stage: string, hasAwb = false): InlineButton[][] {
+  const labelRow: InlineButton[][] = hasAwb
+    ? [
+        [
+          { text: "🏷 Etichetă A4", callback_data: `ord_label:${messageId}:a4` },
+          { text: "🏷 Etichetă 100×100", callback_data: `ord_label:${messageId}:100` },
+        ],
+      ]
+    : [];
   if (stage === "confirmata") {
-    return [[{ text: "📦 Gata de ridicare", callback_data: `ord_ready:${messageId}` }]];
+    return [...labelRow, [{ text: "📦 Gata de ridicare", callback_data: `ord_ready:${messageId}` }]];
   }
+  if (stage === "predata_curier") return labelRow;
   return [];
 }
 
@@ -435,4 +445,29 @@ export function buildOrderCancelConfirmButtons(messageId: string): InlineButton[
       { text: "↩️ Renunță", callback_data: `ord_cancel_no:${messageId}` },
     ],
   ];
+}
+
+// Trimite un fișier PDF (ex. eticheta AWB) într-un chat, ca document.
+export async function sendTelegramDocument(chatId: string, pdf: Buffer, filename: string, caption?: string): Promise<boolean> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return false;
+  try {
+    const form = new FormData();
+    form.set("chat_id", chatId);
+    if (caption) {
+      form.set("caption", caption);
+      form.set("parse_mode", "HTML");
+    }
+    form.set("document", new Blob([new Uint8Array(pdf)], { type: "application/pdf" }), filename);
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendDocument`, { method: "POST", body: form, signal: AbortSignal.timeout(30000) });
+    const data = await res.json();
+    if (!data?.ok) {
+      console.error("telegram sendDocument a esuat:", res.status, JSON.stringify(data));
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("telegram sendDocument a aruncat:", err);
+    return false;
+  }
 }
