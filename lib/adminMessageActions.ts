@@ -567,7 +567,7 @@ function parseChatMessages(value: unknown): { chatId: string; messageId: number 
 export async function sendInvoiceToAccountant(
   messageId: string,
   options: { mainGroup?: boolean } = {}
-): Promise<"sent" | "already" | "none"> {
+): Promise<"sent" | "already" | "none" | "failed"> {
   const order = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
   if (!extractInvoiceBlock(order.message)) return "none";
   if (order.invoiceSentAt) return "already";
@@ -582,19 +582,32 @@ export async function sendInvoiceToAccountant(
   if (claimed.count === 0) return "already";
 
   const accountants = await getChatIdsForRole("contabil");
-  if (accountants.length === 0) console.error("telegram: niciun contabil nu are Telegram conectat — comanda cu factură nu i-a fost trimisă");
   const text = await buildOrderText(order);
   const results = await Promise.all(
     accountants.map(async (chatId) => ({ chatId, messageId: await sendTelegramMessage(text, [], undefined, chatId) }))
   );
   const delivered = results.filter((r): r is { chatId: string; messageId: number } => r.messageId !== null);
-  if (delivered.length > 0) {
-    await prisma.contactMessage.update({ where: { id: messageId }, data: { accountantMessages: delivered } });
+  const label = order.orderNumber ? `Comanda #${order.orderNumber}` : "Comanda";
+
+  if (delivered.length === 0) {
+    // Nimic nu a ajuns (niciun contabil conectat, sau Telegram a refuzat livrarea — de obicei persoana n-a apăsat
+    // Start în bot). Eliberăm marcajul, ca butonul "Trimite factura" să rămână și retrimiterea să fie posibilă,
+    // și spunem asta în grup — înainte se anunța "trimisă" fără nicio verificare.
+    await prisma.contactMessage.update({ where: { id: messageId }, data: { invoiceSentAt: null } });
+    const reason = accountants.length === 0
+      ? "niciun contabil nu are Telegram conectat"
+      : "Telegram a refuzat livrarea — contabilul trebuie să deschidă botul și să apese Start";
+    console.error(`telegram: comanda cu factură ${messageId} nu a ajuns la contabil: ${reason}`);
+    await sendTelegramMessage(`⚠️ ${escapeHtml(label)}: factura NU a ajuns la contabil (${escapeHtml(reason)}). Apasă din nou „Trimite factura” după ce se rezolvă.`, [], order.telegramMessageId ?? undefined);
+    const restored = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
+    await syncOrderTelegramMessage(restored);
+    return "failed";
   }
+
+  await prisma.contactMessage.update({ where: { id: messageId }, data: { accountantMessages: delivered } });
 
   // Apăsat manual din grup: confirmare vizibilă acolo (la plasare, mesajul principal e deja acolo).
   if (options.mainGroup !== false) {
-    const label = order.orderNumber ? `Comanda #${order.orderNumber}` : "Comanda";
     await sendTelegramMessage(`🧾 ${escapeHtml(label)} trimisă contabilului pentru factură.`, [], order.telegramMessageId ?? undefined);
   }
 

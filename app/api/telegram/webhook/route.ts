@@ -108,7 +108,13 @@ export async function POST(request: NextRequest) {
       const result = await sendInvoiceToAccountant(id);
       await answerCallbackQuery(
         callbackQuery.id,
-        result === "sent" ? "Factura a fost trimisă." : result === "already" ? "Factura a fost deja trimisă." : "Comanda nu cere factură."
+        result === "sent"
+          ? "Factura a fost trimisă."
+          : result === "already"
+            ? "Factura a fost deja trimisă."
+            : result === "failed"
+              ? "Nu a ajuns la contabil — vezi avertizarea din grup."
+              : "Comanda nu cere factură."
       );
     } catch {
       await answerCallbackQuery(callbackQuery.id, "Comanda nu mai există.");
