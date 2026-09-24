@@ -1,3 +1,5 @@
+import { CART_ORDER_SOURCE } from "./orderStages";
+
 const TELEGRAM_API = "https://api.telegram.org";
 
 // Telegram cere exact una dintre cele două — callback_data pentru butoane
@@ -41,6 +43,8 @@ export async function sendTelegramMessage(
         chat_id: chatId,
         text: clampForTelegram(text),
         parse_mode: "HTML",
+        // Linkurile către produse din mesaj generau un card mare de previzualizare care acoperea comanda.
+        link_preview_options: { is_disabled: true },
         reply_markup: { inline_keyboard: buttons },
         ...(replyToMessageId ? { reply_to_message_id: replyToMessageId, allow_sending_without_reply: true } : {}),
       }),
@@ -87,6 +91,7 @@ export async function editTelegramMessage(
         message_id: messageId,
         text,
         parse_mode: "HTML",
+        link_preview_options: { is_disabled: true },
         reply_markup: { inline_keyboard: buttons },
       }),
     });
@@ -181,6 +186,65 @@ function linkifyProducts(text: string, products: { name: string; slug: string }[
   });
 }
 
+// Comenzile din coș: textul stocat (scris de CheckoutPanel, citit și de orderExport/admin — de-asta nu-l
+// schimbăm) e reordonat pe secțiuni pentru Telegram. Dacă structura nu e recunoscută, întoarce null și
+// se folosește formatul vechi, ca nicio comandă să nu se piardă din cauza unei diferențe de format.
+function renderCartOrderBody(raw: string, products: { name: string; slug: string }[]): string | null {
+  const items: { name: string; qty?: string; unit?: string; total?: string; note?: string }[] = [];
+  const totals: { subtotal?: string; savings?: string; delivery?: string; deliveryLabel?: string; total?: string } = {};
+  let address: string | null = null;
+  const invoice: string[] = [];
+  const clientNote: string[] = [];
+  let mode: "items" | "invoice" | "note" | "other" = "other";
+
+  for (const line of raw.split("\n")) {
+    const t = line.trim();
+    let m: RegExpMatchArray | null;
+    if (mode === "note") { clientNote.push(line); continue; }
+    if (!t) { if (mode === "invoice") mode = "other"; continue; }
+    if (t.startsWith("Produse comandate")) { mode = "items"; continue; }
+    if (t.startsWith("🧾 CERE FACTURĂ")) { mode = "invoice"; continue; }
+    if ((m = t.match(/^Mesaj client:\s*(.*)$/))) { mode = "note"; clientNote.push(m[1]); continue; }
+    if ((m = t.match(/^Subtotal:\s*(.+)$/))) { totals.subtotal = m[1]; mode = "other"; continue; }
+    if ((m = t.match(/^Economisește:\s*(.+)$/))) { totals.savings = m[1]; continue; }
+    if ((m = t.match(/^Livrare \((.+?)\):\s*(.+)$/))) { totals.deliveryLabel = m[1]; totals.delivery = m[2]; continue; }
+    if ((m = t.match(/^Total cu livrare:\s*(.+)$/))) { totals.total = m[1]; continue; }
+    if ((m = t.match(/^Livrare:\s*(.+)$/))) { address = m[1]; mode = "other"; continue; }
+    if (mode === "invoice") { invoice.push(t); continue; }
+    if (mode === "items") {
+      if ((m = t.match(/^•\s*(.+)$/))) { items.push({ name: m[1] }); continue; }
+      if ((m = t.match(/^(\d+) buc × (.+?) = (.+?)(?: \((.+)\))?$/)) && items.length > 0) {
+        Object.assign(items[items.length - 1], { qty: m[1], unit: m[2], total: m[3], note: m[4] });
+        continue;
+      }
+    }
+    // Linie necunoscută într-o comandă din coș — renunțăm la randarea structurată (fallback la formatul vechi).
+    return null;
+  }
+  if (items.length === 0) return null;
+
+  const out: string[] = [];
+  out.push("<b>🛒 Produse</b>");
+  items.forEach((it, i) => {
+    out.push(`${i + 1}. ${linkifyProducts(escapeHtml(it.name), products)}`);
+    if (it.qty) out.push(`     ${escapeHtml(it.qty)} × ${escapeHtml(it.unit ?? "")} = <b>${escapeHtml(it.total ?? "")}</b>`);
+    if (it.note) out.push(`     <i>${escapeHtml(it.note)}</i>`);
+  });
+
+  const money: string[] = [];
+  if (totals.subtotal) money.push(`Produse: ${escapeHtml(totals.subtotal)}`);
+  if (totals.savings) money.push(`Economie: ${escapeHtml(totals.savings)}`);
+  if (totals.delivery) money.push(`Livrare${totals.deliveryLabel ? ` (${escapeHtml(totals.deliveryLabel)})` : ""}: ${escapeHtml(totals.delivery)}`);
+  if (totals.total) money.push(`<b>TOTAL: ${escapeHtml(totals.total)}</b>`);
+  if (money.length > 0) out.push("", "<b>💰 Sumar</b>", ...money);
+
+  if (address) out.push("", "<b>🚚 Adresa de livrare</b>", escapeHtml(address));
+  if (invoice.length > 0) out.push("", "<b>🧾 Factură (companie)</b>", ...invoice.map((l) => escapeHtml(l)));
+  const note = clientNote.join("\n").trim();
+  if (note) out.push("", "<b>💬 Mesaj client</b>", escapeHtml(note));
+  return out.join("\n");
+}
+
 export function buildContactMessageText(message: {
   name: string;
   phone: string;
@@ -195,6 +259,24 @@ export function buildContactMessageText(message: {
   const products = message.products ?? [];
   const escapedMessage = message.message ? escapeHtml(message.message) : null;
   const escapedSource = escapeHtml(message.source);
+
+  const cartBody = message.source === CART_ORDER_SOURCE && message.message ? renderCartOrderBody(message.message, products) : null;
+  if (cartBody) {
+    return [
+      message.orderNumber ? `📦 <b>Comandă #${escapeHtml(message.orderNumber)}</b>` : `📦 <b>Comandă nouă</b>`,
+      `📌 <b>${escapeHtml(message.statusLabel)}</b>`,
+      message.moodLabel ? `🙂 Reacție: <b>${escapeHtml(message.moodLabel)}</b>` : null,
+      ``,
+      `<b>👤 Client</b>`,
+      escapeHtml(message.name),
+      `📞 ${escapeHtml(message.phone)}`,
+      message.email ? `✉️ ${escapeHtml(message.email)}` : null,
+      ``,
+      cartBody,
+    ]
+      .filter((l) => l !== null)
+      .join("\n");
+  }
 
   const lines = [
     message.orderNumber ? `📦 <b>Comandă #${escapeHtml(message.orderNumber)}</b>` : `📩 <b>Mesaj nou</b>`,

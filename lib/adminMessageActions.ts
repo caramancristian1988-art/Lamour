@@ -6,7 +6,7 @@ import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 import { MESSAGE_STATUSES } from "./messageStatuses";
 import { MOODS } from "./moods";
-import { ORDER_STAGES, orderStageLabel, type OrderStage } from "./orderStages";
+import { ORDER_STAGES, CART_ORDER_SOURCE, orderStageLabel, type OrderStage } from "./orderStages";
 import { nextOrderNumber } from "./orderNumber";
 import {
   sendTelegramMessage,
@@ -29,7 +29,6 @@ export interface ContactFormState {
   success?: boolean;
 }
 
-const CART_ORDER_SOURCE = "Comandă din coș";
 
 // Resolves the actual product(s) tied to a message — by id (single product
 // requests) or by slug (cart orders, which can list several) — so the

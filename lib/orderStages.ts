@@ -1,3 +1,6 @@
+// Sursa cu care sunt create mesajele din coș — după ea se recunosc comenzile (flux operator -> depozitar -> curier).
+export const CART_ORDER_SOURCE = "Comandă din coș";
+
 // Fluxul de fulfillment pentru comenzile din coș — separat de MESSAGE_STATUSES
 // (folosit doar de cereri de ofertă/mesaje de contact). Operator confirmă ->
 // depozitar pregătește și predă -> curier (EVS Express, automat).

@@ -16,8 +16,8 @@ export default function TelegramConnect({ connected: connectedProp, userId }: { 
   const router = useRouter();
   // Stare proprie: lista de utilizatori își ține datele în state client, deci un router.refresh() singur
   // nu ar actualiza prop-ul după ce persoana a apăsat Start.
-  const [connected, setConnected] = useState(connectedProp);
-  useEffect(() => setConnected(connectedProp), [connectedProp]);
+  const [override, setConnected] = useState<boolean | null>(null);
+  const connected = override ?? connectedProp;
   const [pending, startTransition] = useTransition();
   const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState<string | null>(null);
