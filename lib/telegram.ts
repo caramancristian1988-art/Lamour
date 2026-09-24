@@ -19,7 +19,11 @@ const TELEGRAM_MAX_LEN = 4096;
 function clampForTelegram(text: string): string {
   if (text.length <= TELEGRAM_MAX_LEN) return text;
   const notice = "\n\n… listă prescurtată, vezi comanda completă în admin.";
-  return text.slice(0, TELEGRAM_MAX_LEN - notice.length) + notice;
+  const head = text.slice(0, TELEGRAM_MAX_LEN - notice.length);
+  // Tăiem la ultimul rând întreg: tagurile HTML (<b>, <a>) sunt închise în cadrul aceluiași rând, deci o tăietură
+  // la mijlocul unui rând ar lăsa un tag deschis și Telegram ar respinge tot mesajul ("can't parse entities").
+  const lastBreak = head.lastIndexOf("\n");
+  return (lastBreak > 0 ? head.slice(0, lastBreak) : head) + notice;
 }
 
 export async function sendTelegramMessage(
@@ -89,7 +93,8 @@ export async function editTelegramMessage(
       body: JSON.stringify({
         chat_id: chatId,
         message_id: messageId,
-        text,
+        // La fel ca la trimitere: o comandă lungă nu trebuie să facă editarea (schimbare de etapă) să eșueze tăcut.
+        text: clampForTelegram(text),
         parse_mode: "HTML",
         link_preview_options: { is_disabled: true },
         reply_markup: { inline_keyboard: buttons },
