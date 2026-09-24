@@ -97,7 +97,7 @@ export default function MobileMenuButton({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <button
-          className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted transition-colors"
+          className="flex items-center justify-center w-10 h-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted transition-colors"
           aria-label="Meniu"
         >
           <Menu className="w-6 h-6" aria-hidden />

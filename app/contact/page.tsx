@@ -81,7 +81,7 @@ export default async function ContactPage() {
   const { phone, phoneTel, phoneDigits, email } = await getContactInfo();
 
   return (
-    <div className="bg-background">
+    <main className="bg-background">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Contact", path: "/contact" }])} />
       {/* ── HERO SECTION — MOBILE ── */}
       <section className="sm:hidden relative bg-background">
@@ -266,6 +266,6 @@ export default async function ContactPage() {
 
       {/* Recommended products */}
       <ProductsSection products={products} viewAllHref="/produse" />
-    </div>
+    </main>
   );
 }

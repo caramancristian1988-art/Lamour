@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
+import { allowRequest, getClientIp, TOO_MANY_REQUESTS } from "./rateLimit";
 import { sendMail } from "./mailer";
 import { SITE_NAME, SITE_SHORT_NAME } from "./constants";
 
@@ -20,6 +21,7 @@ export async function subscribeAction(
   if (!email || !email.includes("@") || !email.includes(".")) {
     return { error: "Adresa de email nu este validă." };
   }
+  if (!(await allowRequest(`newsletter:${await getClientIp()}`, 10, 10 * 60 * 1000))) return { error: TOO_MANY_REQUESTS };
 
   try {
     await prisma.newsletterSubscriber.create({ data: { email } });
@@ -81,7 +83,7 @@ export async function sendNewsletterCampaignAction(
       })
     : [];
 
-  const siteUrl = process.env.SITE_URL || "https://lamour-zeta.vercel.app";
+  const siteUrl = (process.env.SITE_URL || "https://lamour-zeta.vercel.app").replace(/\s+/g, "").replace(/\/+$/, "");
 
   const ctaLink =
     products.length === 1

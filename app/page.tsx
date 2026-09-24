@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { fallbackCategories, fallbackOfferProducts } from "@/lib/fallbackData";
+import { fallbackCategories } from "@/lib/fallbackData";
 import { dedupeVariants, buildVariantOptionsMap } from "@/lib/productListing";
 import Hero from "@/app/components/Hero";
 import TrustBar from "@/app/components/TrustBar";
@@ -99,7 +99,8 @@ async function getData() {
     return {
       categories,
       essentialProducts: dedupeVariants(essentialProducts),
-      offerProducts: offerProducts.length > 0 ? dedupeVariants(offerProducts) : fallbackOfferProducts.slice(0, 4),
+      // Fără produse reale la reducere, secțiunea Oferte nu se afișează (înainte apăreau produse demo cu linkuri 404).
+      offerProducts: dedupeVariants(offerProducts),
       newProducts: dedupeVariants(newProducts),
       recommendedProducts: dedupeVariants(recommendedProducts),
       reviews,
@@ -110,7 +111,7 @@ async function getData() {
     return {
       categories: fallbackCategories,
       essentialProducts: [],
-      offerProducts: fallbackOfferProducts.slice(0, 4),
+      offerProducts: [],
       newProducts: [],
       recommendedProducts: [],
       reviews: [],
@@ -146,14 +147,16 @@ export default async function HomePage() {
           variantOptionsMap={variantOptionsMap}
         />
       )}
-      <ProductsSection
-        products={offerProducts}
-        title="Oferte"
-        highlighted="speciale"
-        viewAllHref="/produse?division=uz-casnic&oferte=1"
-        viewAllLabel="Vezi toate ofertele"
-        variantOptionsMap={variantOptionsMap}
-      />
+      {offerProducts.length > 0 && (
+        <ProductsSection
+          products={offerProducts}
+          title="Oferte"
+          highlighted="speciale"
+          viewAllHref="/produse?division=uz-casnic&oferte=1"
+          viewAllLabel="Vezi toate ofertele"
+          variantOptionsMap={variantOptionsMap}
+        />
+      )}
       {newProducts.length > 0 && (
         <ProductsSection
           products={newProducts}

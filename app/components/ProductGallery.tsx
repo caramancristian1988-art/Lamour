@@ -45,7 +45,9 @@ export default function ProductGallery({ images, alt, badge }: Props) {
             fill
             className="object-contain p-3"
             sizes="(max-width: 1024px) 100vw, 50vw"
-            priority
+            // Imaginea principală e elementul LCP al paginii de produs (Next 16: `priority` e depreciat).
+            loading="eager"
+            fetchPriority="high"
           />
         ) : (
           <ImageOff className="w-32 h-32 text-muted-foreground/30" aria-hidden />

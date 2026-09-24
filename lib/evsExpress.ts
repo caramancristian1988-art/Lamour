@@ -1,5 +1,5 @@
 // Client pentru EVS Express (Muvi) Shipments Local API v3.1.
-// Documentație: public/evs express api 3.1.pdf
+// Documentație: docs/evs-express-api-3.1.pdf
 //
 // Notă: forma exactă a unui răspuns de SUCCES la /CreateShipment nu a fost
 // niciodată observată live — am construit integrarea folosind doar

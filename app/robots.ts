@@ -10,7 +10,9 @@ export default function robots(): MetadataRoute.Robots {
         "/admin",
         "/api",
         "/login",
-        "/cont",
+        // "/cont" ca prefix ar bloca și "/contact" — regulile din robots.txt se potrivesc pe prefix. "$" = potrivire exactă.
+        "/cont$",
+        "/cont/",
         "/cos",
         "/favorite",
         "/finalizare-comanda",

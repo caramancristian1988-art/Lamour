@@ -8,6 +8,7 @@ import { MESSAGE_STATUSES } from "./messageStatuses";
 import { MOODS } from "./moods";
 import { ORDER_STAGES, CART_ORDER_SOURCE, orderStageLabel, type OrderStage } from "./orderStages";
 import { nextOrderNumber } from "./orderNumber";
+import { allowRequest, getClientIp, TOO_MANY_REQUESTS } from "./rateLimit";
 import {
   sendTelegramMessage,
   editTelegramMessage,
@@ -93,6 +94,9 @@ export async function submitContactMessageAction(
   if (!name || !phone) {
     return { error: `Lipsește ${!name ? "numele" : ""}${!name && !phone ? " și " : ""}${!phone ? "numărul de telefon" : ""}.` };
   }
+
+  // Formular public: fiecare trimitere creează un rând în bază și un mesaj în grupul de Telegram — fără limită, un bot le poate inunda.
+  if (!(await allowRequest(`msg:${await getClientIp()}`, 15, 10 * 60 * 1000))) return { error: TOO_MANY_REQUESTS };
 
   const message = [subject && `Subiect: ${subject}`, messageText].filter(Boolean).join("\n\n") || null;
   const source = sourcePath === "/contact" ? "Pagina de contact" : sourcePath || "Pagina de contact";

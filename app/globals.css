@@ -45,7 +45,8 @@
   --secondary-foreground: #3a1211;
 
   --muted: var(--logo-white-metal);
-  --muted-foreground: var(--logo-metal);
+  /* #666a6c în loc de --logo-metal (#7b7d7e): raport de contrast 5,5:1 pe alb (era 4,1:1, sub pragul WCAG AA de 4,5:1). */
+  --muted-foreground: #666a6c;
 
   --accent: var(--brand-red);
   --accent-foreground: #ffffff;

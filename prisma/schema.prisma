@@ -325,6 +325,15 @@ model User {
   sessions  Session[]
 }
 
+// Cereri recente pe acțiunile publice (vezi lib/rateLimit.ts) — key = "<acțiune>:<IP sau email>".
+model RateLimitHit {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
 // Persoană care primește notificări de comenzi pe Telegram (depozitar, contabil, curier, manager) —
 // separată de User: nu are nevoie de cont/parolă pe site, deci nici de acces în panoul de administrare.
 // Adminul o adaugă în /admin/telegram și îi trimite linkul t.me/<bot>?start=<linkToken>; la Start,

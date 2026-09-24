@@ -1,7 +1,9 @@
 import { SITE_NAME, SITE_SHORT_NAME, SITE_TAGLINE } from "./constants";
 
+// SITE_URL din Vercel a avut un newline la coadă ("https://lumina.md\n"), iar asta ajungea în sitemap,
+// robots.txt și JSON-LD ca "https://lumina.md\n/produse" (URL-uri invalide pentru Google). Curățăm orice spațiu.
 function stripTrailingSlash(url: string): string {
-  return url.replace(/\/+$/, "");
+  return url.replace(/\s+/g, "").replace(/\/+$/, "");
 }
 
 // Resolution order: explicit public site URL → legacy SITE_URL (already used
@@ -19,7 +21,17 @@ export const SITE_URL = resolveSiteUrl();
 /** Builds an absolute, slash-normalized URL for the given site-relative path. */
 export function absoluteUrl(path = "/"): string {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  return `${SITE_URL}${cleanPath}`.replace(/([^:]\/)\/+/g, "$1");
+  return `${SITE_URL}${encodeUrlPath(cleanPath)}`.replace(/([^:]\/)\/+/g, "$1");
+}
+
+// Unele produse au sluguri cu spații/majuscule (ex. "LT - 141"): neîncodate, ajungeau în sitemap, canonical și
+// JSON-LD ca URL-uri invalide. decode→encode e idempotent, deci nu dublează codificarea unui URL deja codificat.
+function encodeUrlPath(path: string): string {
+  try {
+    return encodeURI(decodeURI(path));
+  } catch {
+    return encodeURI(path);
+  }
 }
 
 export const DEFAULT_LOCALE = "ro_MD";

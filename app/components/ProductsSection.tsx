@@ -43,7 +43,7 @@ export default async function ProductsSection({ products, title = "Produse", hig
       <MotifBackground />
       <div className="relative max-w-7xl mx-auto px-4">
         <div className="flex items-center gap-4 mb-6 flex-wrap">
-          <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight uppercase shrink-0">
+          <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight uppercase max-w-full text-balance">
             {title} <span className="text-accent">{highlighted}</span>
           </h2>
           <div className="flex items-center gap-3 flex-1 min-w-[60px]">

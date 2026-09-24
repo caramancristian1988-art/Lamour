@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { MotifBackground, MotifCorner } from "@/app/components/ui/motif";
 import BannerCarousel, { type BannerSlide } from "@/app/components/BannerCarousel";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/constants";
@@ -27,13 +24,9 @@ export default function Hero({ banners = [] }: { banners?: BannerSlide[] }) {
       <MotifCorner className="absolute bottom-6 right-6 hidden sm:block" flip />
 
       <div className="relative max-w-7xl mx-auto px-5 sm:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <BannerCarousel banners={slides} />
-        </motion.div>
+        {/* Fără animație de intrare pe opacitate: imaginea principală e elementul LCP, iar un fade-in
+            condiționat de încărcarea/hidratarea framer-motion o ținea invizibilă ~2s după ce se descărcase. */}
+        <BannerCarousel banners={slides} />
       </div>
     </section>
   );

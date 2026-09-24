@@ -77,13 +77,14 @@ export default function ProductCard({
     <div className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
       {/* Image area */}
       <div className="relative aspect-[4/3] flex items-center justify-center bg-white overflow-hidden">
-        <Link href={`/produse/${slug}`} className="w-full h-full flex items-center justify-center rounded-lg">
+        {/* aria-label: fără poză, linkul conținea doar o iconiță aria-hidden, deci nu avea niciun nume accesibil. */}
+        <Link href={`/produse/${slug}`} aria-label={name} className="w-full h-full flex items-center justify-center rounded-lg">
           {displayImage ? (
             <Image
               src={displayImage}
               alt={name}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+              sizes="(max-width: 1023px) 50vw, 300px"
               className="object-cover"
             />
           ) : (
@@ -164,7 +165,8 @@ export default function ProductCard({
               className="flex-1 h-10 sm:h-11 bg-accent hover:bg-brand-red-dark text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-muted disabled:text-muted-foreground active:scale-95 hover:shadow-md"
             >
               <ShoppingCart className="w-4 h-4" aria-hidden />
-              <span className="hidden sm:inline">Adaugă în coș</span>
+              {/* sr-only (nu hidden): pe mobil butonul arată doar iconița, dar cititoarele de ecran au nevoie de un nume. */}
+              <span className="sr-only sm:not-sr-only">Adaugă în coș</span>
             </AddToCartButton>
             <Link
               href={`/produse/${slug}`}
