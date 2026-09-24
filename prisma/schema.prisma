@@ -321,17 +321,23 @@ model User {
   email     String    @unique
   password  String
   isAdmin   Boolean   @default(false)
-  // "depozitar" | "contabil" | null — decide ce notificări Telegram primește contul
-  // (vezi lib/telegramLink.ts). Adminii se conectează prin TELEGRAM_CHAT_ID (grupul principal).
-  staffRole String?
-  // Chatul Telegram al contului, completat când persoana apasă "Conectează Telegram"
-  // și deschide linkul t.me/<bot>?start=<telegramLinkToken> (token de unică folosință).
-  telegramChatId    String?
-  telegramLinkToken String?
   createdAt DateTime  @default(now())
   sessions  Session[]
+}
 
-  @@index([telegramLinkToken])
+// Persoană care primește notificări de comenzi pe Telegram (depozitar, contabil, curier, manager) —
+// separată de User: nu are nevoie de cont/parolă pe site, deci nici de acces în panoul de administrare.
+// Adminul o adaugă în /admin/telegram și îi trimite linkul t.me/<bot>?start=<linkToken>; la Start,
+// webhook-ul salvează chatId (token de unică folosință, șters după legare).
+model TelegramRecipient {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  role      String
+  chatId    String?
+  linkToken String?
+  createdAt DateTime @default(now())
+
+  @@index([linkToken])
 }
 
 model Session {

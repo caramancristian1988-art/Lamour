@@ -300,9 +300,7 @@ async function syncOrderTelegramMessage(updated: {
   const buttons =
     updated.orderStage === "noua" || updated.orderStage === "confirmata"
       ? buildOrderStageButtons(updated.id, updated.orderStage, editUrl,
-          Boolean(extractInvoiceBlock(updated.message)) && !updated.invoiceSentAt,
-          // Niciun depozitar conectat -> altfel comanda n-ar mai putea fi marcată gata de ridicare.
-          !Array.isArray(updated.warehouseMessages) || updated.warehouseMessages.length === 0
+          Boolean(extractInvoiceBlock(updated.message)) && !updated.invoiceSentAt
         )
       : [];
   await editTelegramMessage(updated.telegramMessageId, text, buttons);
@@ -412,12 +410,21 @@ export async function updateOrderMessageAction(
 // Confirmare -> AWB creat obișnuit (pickup=0, curierul NU e chemat încă) + mesaj către
 // depozitar cu butonul "Gata de ridicare". Acel buton -> ActivatePickUp pe același AWB.
 export async function advanceOrderStage(messageId: string, nextStage: OrderStage) {
+  return (await applyOrderStage(messageId, nextStage)).row;
+}
+
+// Aceeași tranziție, dar întoarce și motivul refuzului (ex. EVS a respins ridicarea) — ca adminul din site să
+// vadă de ce nu s-a schimbat etapa, nu doar Telegramul. Nu e exportată: fișierul e "use server".
+async function applyOrderStage(
+  messageId: string,
+  nextStage: OrderStage
+): Promise<{ row: Awaited<ReturnType<typeof prisma.contactMessage.findUniqueOrThrow>>; failure: string | null }> {
   const before = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
   // Buton apăsat de două ori / update Telegram livrat de două ori — nu repetăm efectele
   // (AWB duplicat, contor de vânzări dublu, notificări duble).
-  if (before.orderStage === nextStage) return before;
+  if (before.orderStage === nextStage) return { row: before, failure: null };
   // Un buton vechi din chatul depozitarului nu poate învia o comandă anulată.
-  if (before.orderStage === "anulata") return before;
+  if (before.orderStage === "anulata") return { row: before, failure: "Comanda este anulată — nu mai poate fi schimbată." };
 
   // Tranziție atomică: doar cererea care găsește încă etapa veche o aplică — două apăsări simultane
   // (sau același update Telegram livrat de două ori) nu mai pot chema curierul / crește vânzările de două ori.
@@ -425,7 +432,7 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
     where: { id: messageId, ...(before.orderStage ? { orderStage: before.orderStage } : { orderStage: { isSet: false } }) },
     data: { orderStage: nextStage },
   });
-  if (claimed.count === 0) return before;
+  if (claimed.count === 0) return { row: before, failure: null };
 
   const warn = async (text: string) => {
     await sendTelegramMessage(`⚠️ ${escapeHtml(orderRef(before.orderNumber))}: ${escapeHtml(text)}`, [], before.telegramMessageId ?? undefined);
@@ -451,7 +458,7 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
       // veche (butonul rămâne apăsabil) și spunem clar de ce.
       await prisma.contactMessage.updateMany({ where: { id: messageId, orderStage: nextStage }, data: { orderStage: before.orderStage } });
       await warn(`ridicarea nu a putut fi activată la EVS: ${ready.description}. Comanda rămâne la etapa anterioară — încearcă din nou.`);
-      return before;
+      return { row: before, failure: `EVS a refuzat ridicarea: ${ready.description}` };
     }
     if (before.productIds.length > 0) {
       await prisma.product.updateMany({ where: { id: { in: before.productIds } }, data: { salesCount: { increment: 1 } } });
@@ -477,7 +484,11 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
   // Reia mesajul — awbCode/awbStatus pot fi setate/șterse mai sus.
   const updated = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
   await syncOrderTelegramMessage(updated);
-  await syncWarehouseMessage(updated);
+  const warehouse = await syncWarehouseMessage(updated);
+  // "Gata de ridicare" există doar în chatul depozitarului — dacă comanda n-a ajuns la nimeni, operatorul trebuie să afle.
+  if (nextStage === "confirmata" && warehouse === "undelivered") {
+    await warn("comanda NU a ajuns la niciun depozitar (nu e conectat niciunul, sau Telegram a refuzat livrarea). Conectează-l din Admin → Telegram sau marchează comanda gata de ridicare din Admin → Cereri și comenzi.");
+  }
   // Managerul vede orice schimbare de etapă; curierul doar când comanda e gata de ridicare.
   const extraChatIds = [
     ...(await getChatIdsForRole("manager")),
@@ -490,7 +501,7 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
     revalidatePath("/admin/produse");
     revalidatePath("/produse");
   }
-  return updated;
+  return { row: updated, failure: null };
 }
 
 function orderRef(orderNumber: string | null): string {
@@ -499,7 +510,7 @@ function orderRef(orderNumber: string | null): string {
 
 // Mesajul din chatul depozitarului: trimis la confirmare (cu butonul "Gata de ridicare"),
 // apoi editat la ridicare/anulare ca să nu rămână un buton activ pe o comandă închisă.
-// Fără TELEGRAM_WAREHOUSE_CHAT_ID nu se trimite nimic (fluxul rămâne funcțional din admin).
+// Întoarce "undelivered" dacă la confirmare comanda n-a ajuns la niciun depozitar.
 async function syncWarehouseMessage(order: {
   id: string;
   name: string;
@@ -513,7 +524,7 @@ async function syncWarehouseMessage(order: {
   awbStatus: string | null;
   orderNumber: string | null;
   warehouseMessages: unknown;
-}) {
+}): Promise<"ok" | "undelivered"> {
   const sent = parseChatMessages(order.warehouseMessages);
   const stageLabel =
     order.orderStage === "confirmata"
@@ -540,16 +551,16 @@ async function syncWarehouseMessage(order: {
     const chatIds = await getChatIdsForRole("depozitar");
     if (chatIds.length === 0) {
       console.error("telegram: niciun depozitar nu are Telegram conectat — comanda nu a fost trimisă depozitarului");
-      return;
+      return "undelivered";
     }
     const results = await Promise.all(
       chatIds.map(async (chatId) => ({ chatId, messageId: await sendTelegramMessage(text, buttons, undefined, chatId) }))
     );
     const delivered = results.filter((r): r is { chatId: string; messageId: number } => r.messageId !== null);
-    if (delivered.length > 0) {
-      await prisma.contactMessage.update({ where: { id: order.id }, data: { warehouseMessages: delivered } });
-    }
+    if (delivered.length === 0) return "undelivered";
+    await prisma.contactMessage.update({ where: { id: order.id }, data: { warehouseMessages: delivered } });
   }
+  return "ok";
 }
 
 function parseChatMessages(value: unknown): { chatId: string; messageId: number }[] {
@@ -628,12 +639,14 @@ export async function updateOrderNumberAction(formData: FormData) {
   revalidatePath("/admin/mesaje");
 }
 
-export async function setOrderStageAction(formData: FormData) {
+export async function setOrderStageAction(formData: FormData): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const stage = String(formData.get("stage") ?? "");
-  if (!id || !ORDER_STAGES.some((s) => s.value === stage)) return;
-  await advanceOrderStage(id, stage as OrderStage);
+  if (!id || !ORDER_STAGES.some((s) => s.value === stage)) return { ok: false, error: "Etapă invalidă." };
+  const { row, failure } = await applyOrderStage(id, stage as OrderStage);
+  if (failure) return { ok: false, error: failure };
+  return { ok: row.orderStage === stage };
 }
 
 export async function setMessageStatusAction(formData: FormData) {

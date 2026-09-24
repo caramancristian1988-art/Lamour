@@ -28,17 +28,38 @@ export default function OrderStageBadge({
   onChange?: (value: string) => void;
 }) {
   const [pending, setPending] = useState<OrderStage | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const current = ORDER_STAGES.find((s) => s.value === stage) ?? ORDER_STAGES[0];
   const styles = STAGE_STYLES[current.value] ?? STAGE_STYLES.noua;
 
   function advance(next: OrderStage) {
     if (next === "anulata" && !confirm("Sigur anulezi această comandă?")) return;
+    if (
+      next === "predata_curier" &&
+      !confirm("Marchezi comanda gata de ridicare? Curierul EVS va fi anunțat să vină să o ia.")
+    ) {
+      return;
+    }
+    const previous = current.value;
     setPending(next);
+    setError(null);
     onChange?.(next);
     const formData = new FormData();
     formData.set("id", id);
     formData.set("stage", next);
-    setOrderStageAction(formData).finally(() => setPending(null));
+    setOrderStageAction(formData)
+      .then((result) => {
+        // Refuzat (ex. EVS a respins ridicarea): revenim la etapa de dinainte și arătăm motivul.
+        if (!result.ok) {
+          onChange?.(previous);
+          setError(result.error ?? "Etapa nu a putut fi schimbată.");
+        }
+      })
+      .catch(() => {
+        onChange?.(previous);
+        setError("Etapa nu a putut fi schimbată. Încearcă din nou.");
+      })
+      .finally(() => setPending(null));
   }
 
   return (
@@ -58,6 +79,10 @@ export default function OrderStageBadge({
           <Button variant="outline" size="sm" disabled={pending !== null} onClick={() => advance("confirmata")}>
             ✅ Confirmă
           </Button>
+          <Button variant="outline" size="sm" disabled={pending !== null} onClick={() => advance("predata_curier")}>
+            <Truck className="w-3.5 h-3.5" aria-hidden />
+            Gata de ridicare
+          </Button>
           <Button variant="ghost" size="sm" disabled={pending !== null} onClick={() => advance("anulata")}>
             <XCircle className="w-3.5 h-3.5" aria-hidden />
             Anulează
@@ -69,13 +94,19 @@ export default function OrderStageBadge({
         <>
           <Button variant="outline" size="sm" disabled={pending !== null} onClick={() => advance("predata_curier")}>
             <Truck className="w-3.5 h-3.5" aria-hidden />
-            Predă curierului
+            Gata de ridicare
           </Button>
           <Button variant="ghost" size="sm" disabled={pending !== null} onClick={() => advance("anulata")}>
             <XCircle className="w-3.5 h-3.5" aria-hidden />
             Anulează
           </Button>
         </>
+      )}
+
+      {error && (
+        <p className="basis-full text-xs text-destructive" role="alert">
+          {error}
+        </p>
       )}
     </div>
   );

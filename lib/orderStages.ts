@@ -7,7 +7,7 @@ export const CART_ORDER_SOURCE = "Comandă din coș";
 export const ORDER_STAGES = [
   { value: "noua", label: "Comandă nouă" },
   { value: "confirmata", label: "Confirmată — la pregătire" },
-  { value: "predata_curier", label: "Predată curierului" },
+  { value: "predata_curier", label: "Gata de ridicare" },
   { value: "anulata", label: "Anulată" },
 ] as const;
 

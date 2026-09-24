@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
   // aici doar apelăm tranziția și răspundem la callback.
   if (prefix === "ord_confirm" || prefix === "ord_ready" || prefix === "ord_cancel_yes") {
     const nextStage = prefix === "ord_confirm" ? "confirmata" : prefix === "ord_ready" ? "predata_curier" : "anulata";
-    const confirmText = prefix === "ord_confirm" ? "Comandă confirmată." : prefix === "ord_ready" ? "Predată curierului." : "Comandă anulată.";
+    const confirmText = prefix === "ord_confirm" ? "Comandă confirmată." : prefix === "ord_ready" ? "Gata de ridicare." : "Comandă anulată.";
     try {
       const after = await advanceOrderStage(id, nextStage);
       // Dacă tranziția a fost refuzată (ex. EVS a respins ridicarea) mesajul de avertizare e deja în grup —
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
       const message = await prisma.contactMessage.findUnique({ where: { id } });
       if (message?.telegramMessageId && message.orderStage) {
         const editUrl = `${getSiteUrl()}/editare-comanda?token=${message.editToken ?? ""}`;
-        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderStageButtons(id, message.orderStage, editUrl, Boolean(extractInvoiceBlock(message.message)) && !message.invoiceSentAt, !Array.isArray(message.warehouseMessages) || message.warehouseMessages.length === 0));
+        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderStageButtons(id, message.orderStage, editUrl, Boolean(extractInvoiceBlock(message.message)) && !message.invoiceSentAt));
       }
       await answerCallbackQuery(callbackQuery.id, "Renunțat.");
     } catch {

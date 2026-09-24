@@ -8,11 +8,10 @@ import UsersList from "./UsersList";
 
 async function getUsers() {
   try {
-    const rows = await prisma.user.findMany({
+    return await prisma.user.findMany({
       orderBy: { createdAt: "asc" },
-      select: { id: true, name: true, email: true, isAdmin: true, staffRole: true, telegramChatId: true, createdAt: true },
+      select: { id: true, name: true, email: true, isAdmin: true, createdAt: true },
     });
-    return rows.map(({ telegramChatId, ...u }) => ({ ...u, telegramConnected: Boolean(telegramChatId) }));
   } catch {
     return [];
   }

@@ -3,17 +3,13 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toggleAdminAction, deleteUserAction, setStaffRoleAction } from "@/lib/adminUserActions";
-import { STAFF_ROLES } from "@/lib/staffRoles";
-import TelegramConnect from "@/app/components/TelegramConnect";
+import { toggleAdminAction, deleteUserAction } from "@/lib/adminUserActions";
 
 interface UserRow {
   id: string;
   name: string;
   email: string;
   isAdmin: boolean;
-  staffRole: string | null;
-  telegramConnected: boolean;
   createdAt: Date;
 }
 
@@ -49,14 +45,6 @@ export default function UsersList({ users: initialUsers, currentUserId }: { user
     toggleAdminAction(formData);
   }
 
-  function handleStaffRole(user: UserRow, staffRole: string) {
-    patchUser(user.id, { staffRole: staffRole || null });
-    const formData = new FormData();
-    formData.set("id", user.id);
-    formData.set("staffRole", staffRole);
-    setStaffRoleAction(formData);
-  }
-
   function handleDelete(user: UserRow) {
     if (user.id === currentUserId) return;
     if (!confirm(`Sigur vrei să ștergi contul lui ${user.name}?`)) return;
@@ -82,8 +70,7 @@ export default function UsersList({ users: initialUsers, currentUserId }: { user
           const isSelf = u.id === currentUserId;
           const isLastAdmin = u.isAdmin && adminCount <= 1;
           return (
-            <div key={u.id} className="p-4">
-            <div className="flex items-center gap-4">
+            <div key={u.id} className="flex items-center gap-4 p-4">
               <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
                 {getInitials(u.name)}
               </div>
@@ -99,17 +86,6 @@ export default function UsersList({ users: initialUsers, currentUserId }: { user
                 <p className="text-xs text-muted-foreground truncate">{u.email}</p>
               </div>
               <p className="text-xs text-muted-foreground shrink-0 hidden sm:block">{formatDate(u.createdAt)}</p>
-              <select
-                value={u.staffRole ?? ""}
-                onChange={(e) => handleStaffRole(u, e.target.value)}
-                aria-label={`Rol Telegram pentru ${u.name}`}
-                className="text-xs font-bold px-2 py-1.5 rounded-full border border-border bg-card text-foreground shrink-0"
-              >
-                <option value="">Fără rol</option>
-                {STAFF_ROLES.map((r) => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
-                ))}
-              </select>
               <button
                 type="button"
                 onClick={() => handleToggleAdmin(u)}
@@ -140,13 +116,6 @@ export default function UsersList({ users: initialUsers, currentUserId }: { user
               >
                 <Trash2 className="w-4 h-4" aria-hidden />
               </button>
-            </div>
-            <div className="mt-3 sm:pl-14">
-              <TelegramConnect userId={u.id} connected={u.telegramConnected} />
-              {!u.staffRole && (
-                <p className="text-xs text-muted-foreground mt-1.5">Alege un rol ca acest cont să primească notificări.</p>
-              )}
-            </div>
             </div>
           );
         })}
