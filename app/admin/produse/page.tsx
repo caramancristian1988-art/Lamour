@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import Image from "next/image";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -8,12 +9,12 @@ import { Badge } from "@/app/components/ui/badge";
 import AdminPageHeader from "../components/AdminPageHeader";
 import DeleteButton from "../components/DeleteButton";
 import AdminProductFilters from "./AdminProductFilters";
+import { PER_PAGE_COOKIE, resolvePerPage } from "./perPage";
+import ProductsImportExport from "./ProductsImportExport";
 import AdminPagination from "../components/AdminPagination";
 import CopyableId from "../components/CopyableId";
 import WeightEditor from "../components/WeightEditor";
 import { deleteProductAction } from "@/lib/adminProductActions";
-
-const PER_PAGE = 10;
 
 const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
 // Codul e acum un câmp real (Product.code), editabil din admin — litere/cifre, cu cratimă în interior
@@ -22,7 +23,7 @@ const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
 const CODE_LABEL_RE = /^cod\s*(produs)?\s*:?\s*/i;
 const PRODUCT_CODE_RE = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
 
-async function getData(catFilter: string, sort: string, page: number, search: string) {
+async function getData(catFilter: string, sort: string, page: number, search: string, perPage: number) {
   // O potrivire de "Cod produs" e un identificator exact, neambiguu — se caută în tot
   // catalogul, ignorând orice filtru de categorie activ. Altfel, un ?cat= rămas dintr-o
   // navigare anterioară ascunde în tăcere exact produsul căutat de admin.
@@ -63,8 +64,8 @@ async function getData(catFilter: string, sort: string, page: number, search: st
       prisma.product.findMany({
         where,
         orderBy,
-        skip: (page - 1) * PER_PAGE,
-        take: PER_PAGE,
+        skip: (page - 1) * perPage,
+        take: perPage,
         include: {
           category: true,
           variantGroup: { select: { name: true } },
@@ -154,8 +155,10 @@ export default async function AdminProdusePage({
   const search = typeof query.q === "string" ? query.q.trim() : "";
   const page = Math.max(1, Number(query.page) || 1);
 
-  const { products, total, categories } = await getData(catFilter, sort, page, search);
-  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+  const perPage = resolvePerPage(query.per, (await cookies()).get(PER_PAGE_COOKIE)?.value);
+
+  const { products, total, categories } = await getData(catFilter, sort, page, search, perPage);
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
 
   return (
     <div>
@@ -163,7 +166,8 @@ export default async function AdminProdusePage({
         title="Produse"
         description="Catalogul de produse afișat pe site."
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <ProductsImportExport />
             <Button variant="outline" asChild>
               <Link href="/admin/produse/categorii">Categorii (filtre)</Link>
             </Button>
@@ -177,7 +181,7 @@ export default async function AdminProdusePage({
         }
       />
 
-      <AdminProductFilters categories={categories} />
+      <AdminProductFilters categories={categories} perPage={perPage} />
       <p className="text-sm text-muted-foreground mb-4">{total} produse găsite</p>
 
       {products.length === 0 ? (

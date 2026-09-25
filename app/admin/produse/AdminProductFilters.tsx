@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PER_PAGE_OPTIONS, PER_PAGE_COOKIE } from "./perPage";
 
 interface CategoryOption {
   id: string;
@@ -13,7 +14,7 @@ interface CategoryOption {
 const selectClassName =
   "appearance-none text-sm font-semibold text-muted-foreground border-2 border-input rounded-xl pl-3 pr-9 py-2 focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20 bg-card transition-colors";
 
-export default function AdminProductFilters({ categories }: { categories: CategoryOption[] }) {
+export default function AdminProductFilters({ categories, perPage }: { categories: CategoryOption[]; perPage?: number }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -26,6 +27,11 @@ export default function AdminProductFilters({ categories }: { categories: Catego
     else params.delete(key);
     params.delete("page");
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  }
+
+  function onPerPageChange(value: string) {
+    document.cookie = `${PER_PAGE_COOKIE}=${value}; path=/admin; max-age=31536000; samesite=lax`;
+    updateParam("per", value);
   }
 
   function onSearchChange(value: string) {
@@ -94,6 +100,28 @@ export default function AdminProductFilters({ categories }: { categories: Catego
         </select>
         <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden />
       </div>
+
+      {perPage !== undefined && (
+      <div className="relative">
+        <label className="sr-only" htmlFor="product-per-page">
+          Produse pe pagină
+        </label>
+        <select
+          id="product-per-page"
+          key={perPage}
+          defaultValue={String(perPage)}
+          onChange={(e) => onPerPageChange(e.target.value)}
+          className={cn(selectClassName)}
+        >
+          {PER_PAGE_OPTIONS.map((n) => (
+            <option key={n} value={n}>
+              {n} pe pagină
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden />
+      </div>
+      )}
     </div>
   );
 }
