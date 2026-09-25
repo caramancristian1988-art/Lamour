@@ -924,28 +924,56 @@ export async function applyProductsFile(buffer: Buffer, options: { updateExistin
   // faza 1: produsele noi (fără legătura de variantă — produsul principal poate fi mai jos în fișier)
   const created: Plan[] = [];
   const creatable = toCreate.filter(resolveCategoryId);
-  for (let i = 0; i < creatable.length; i += 10) {
-    await Promise.all(
-      creatable.slice(i, i + 10).map(async (pl) => {
-        try {
-          const row = await prisma.product.create({ data: pl.data as never, select: { id: true, code: true } });
-          if (row.code) idByCode.set(row.code, row.id);
-          pl.existingId = row.id;
-          created.push(pl);
-          result.created++;
-        } catch (e) {
-          fail(pl, e);
-        }
-      })
-    );
+  const markCreated = (pl: Plan, id: string) => {
+    if (typeof pl.data.code === "string") idByCode.set(pl.data.code, id);
+    pl.existingId = id;
+    created.push(pl);
+    result.created++;
+  };
+  // Inserări în bloc (câte 100 într-o singură cerere): un import de sute de produse scris unul câte unul ar lua zeci de
+  // secunde și ar depăși limita funcției. Codurile și slug-urile sunt deja verificate ca unice, deci un bloc eșuează rar;
+  // dacă totuși eșuează, ce nu s-a inserat se reia pe rând, ca fiecare rând cu problemă să fie raportat separat.
+  const BLOCK = 100;
+  for (let i = 0; i < creatable.length; i += BLOCK) {
+    const block = creatable.slice(i, i + BLOCK);
+    let inserted = false;
+    try {
+      await prisma.product.createMany({ data: block.map((pl) => pl.data) as never });
+      inserted = true;
+    } catch {
+      inserted = false;
+    }
+    // ce s-a inserat efectiv (după cod): ID-urile trebuie citite înapoi, pentru legăturile de variantă
+    const codes = block.map((pl) => pl.data.code).filter((c): c is string => typeof c === "string");
+    const rows = await prisma.product.findMany({ where: { code: { in: codes } }, select: { id: true, code: true } });
+    const idOf = new Map(rows.map((r) => [r.code, r.id]));
+    const rest: Plan[] = [];
+    for (const pl of block) {
+      const id = typeof pl.data.code === "string" ? idOf.get(pl.data.code) : undefined;
+      if (id) markCreated(pl, id);
+      else rest.push(pl);
+    }
+    if (inserted && rest.length === 0) continue;
+    for (let j = 0; j < rest.length; j += 10) {
+      await Promise.all(
+        rest.slice(j, j + 10).map(async (pl) => {
+          try {
+            const row = await prisma.product.create({ data: pl.data as never, select: { id: true } });
+            markCreated(pl, row.id);
+          } catch (e) {
+            fail(pl, e);
+          }
+        })
+      );
+    }
   }
 
   // faza 2: actualizările produselor existente
   const updatedPlans: Plan[] = [];
   const updatable = toUpdate.filter(resolveCategoryId);
-  for (let i = 0; i < updatable.length; i += 10) {
+  for (let i = 0; i < updatable.length; i += 25) {
     await Promise.all(
-      updatable.slice(i, i + 10).map(async (pl) => {
+      updatable.slice(i, i + 25).map(async (pl) => {
         try {
           if (Object.keys(pl.data).length > 0) await prisma.product.update({ where: { id: pl.existingId! }, data: pl.data as never });
           updatedPlans.push(pl);
