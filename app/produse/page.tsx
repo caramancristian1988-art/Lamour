@@ -271,7 +271,7 @@ export default async function ProdusePage({
                 {listings.length > 0 ? (
                   <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
                     {listings.map((listing) => (
-                      <FurnitureCard key={listing.slug} listing={listing} />
+                      <FurnitureCard key={listing.slug} listing={listing} sizes="(max-width: 1023px) 50vw, 300px" />
                     ))}
                   </div>
                 ) : (
@@ -352,7 +352,7 @@ export default async function ProdusePage({
                 {listings.length > 0 ? (
                   <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
                     {listings.map((listing) => (
-                      <SpaceCard key={listing.slug} listing={listing} />
+                      <SpaceCard key={listing.slug} listing={listing} sizes="(max-width: 1023px) 50vw, 300px" />
                     ))}
                   </div>
                 ) : (
