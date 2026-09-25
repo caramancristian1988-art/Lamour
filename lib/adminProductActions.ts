@@ -93,9 +93,9 @@ async function uniqueSlug(base: string): Promise<string> {
   return slug;
 }
 
-// Doar litere/cifre — fără spații, cratime sau alte semne (cerință explicită: codul nu
-// trebuie să poată conține semne, ca să rămână ușor de dictat/tastat la telefon).
-const PRODUCT_CODE_RE = /^[A-Z0-9]+$/;
+// Litere/cifre, cu cratimă permisă în interior (ex. "LT-141"): fără spații și fără alte semne, ca
+// să rămână ușor de dictat/tastat la telefon. Cratima nu poate fi la început/sfârșit sau dublă.
+const PRODUCT_CODE_RE = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
 const PRODUCT_CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 function normalizeProductCode(raw: string): string {
@@ -120,7 +120,7 @@ async function resolveProductCode(rawCode: string, excludeId?: string): Promise<
 
   const code = normalizeProductCode(trimmed);
   if (!PRODUCT_CODE_RE.test(code)) {
-    return { error: "Codul produsului poate conține doar litere și cifre, fără spații sau alte semne." };
+    return { error: "Codul produsului poate conține doar litere, cifre și cratimă între ele (ex. LT-141), fără spații sau alte semne." };
   }
   const existing = await prisma.product.findUnique({ where: { code }, select: { id: true } });
   if (existing && existing.id !== excludeId) {

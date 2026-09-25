@@ -15,11 +15,11 @@ import { deleteProductAction } from "@/lib/adminProductActions";
 const PER_PAGE = 10;
 
 const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
-// Codul e acum un câmp real (Product.code), editabil din admin — doar litere/cifre. Extras
-// cu o etichetă opțională în față, ca să meargă și dacă se lipește linia întreagă afișată
-// pe pagina produsului ("Cod produs: LMP204"), nu doar codul gol.
+// Codul e acum un câmp real (Product.code), editabil din admin — litere/cifre, cu cratimă în interior
+// (ex. "LT-141"; același format ca în lib/adminProductActions.ts). Extras cu o etichetă opțională în
+// față, ca să meargă și dacă se lipește linia întreagă afișată pe pagina produsului ("Cod produs: LMP204").
 const CODE_LABEL_RE = /^cod\s*(produs)?\s*:?\s*/i;
-const PRODUCT_CODE_RE = /^[A-Z0-9]+$/;
+const PRODUCT_CODE_RE = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
 
 async function getData(catFilter: string, sort: string, page: number, search: string) {
   // O potrivire de "Cod produs" e un identificator exact, neambiguu — se caută în tot

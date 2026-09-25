@@ -136,7 +136,7 @@ export default function ProductForm({
       <AdminInput label="Nume produs" name="name" required defaultValue={defaults?.name} placeholder="Daikin Sensira FTXF35E" />
       <AdminInput label="Slug" name="slug" required defaultValue={defaults?.slug} placeholder="daikin-sensira-ftxf35e" />
       <div>
-        <AdminInput label="Cod produs" name="code" defaultValue={defaults?.code ?? ""} placeholder="lasă gol pentru cod automat" />
+        <AdminInput label="Cod produs" name="code" defaultValue={defaults?.code ?? ""} placeholder="lasă gol pentru cod automat (litere, cifre și cratimă, ex. LT-141)" />
         <p className="text-xs text-muted-foreground mt-1.5">
           Doar litere și cifre, fără spații sau semne (ex. LMP204). Trebuie să fie unic — dacă lași câmpul gol, se generează unul automat.
         </p>
