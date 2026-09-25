@@ -14,6 +14,7 @@ import {
   buildMessageButtons,
   buildConfirmButtons,
   buildOrderStageButtons,
+  buildOrderPrintUrl,
   buildOrderCancelConfirmButtons,
   getSiteUrl,
   extractInvoiceBlock,
@@ -170,7 +171,7 @@ export async function POST(request: NextRequest) {
       const message = await prisma.contactMessage.findUnique({ where: { id } });
       if (message?.telegramMessageId && message.orderStage) {
         const editUrl = `${getSiteUrl()}/editare-comanda?token=${message.editToken ?? ""}`;
-        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderStageButtons(id, message.orderStage, editUrl, Boolean(extractInvoiceBlock(message.message)) && !message.invoiceSentAt));
+        await editTelegramReplyMarkup(message.telegramMessageId, buildOrderStageButtons(id, message.orderStage, editUrl, Boolean(extractInvoiceBlock(message.message)) && !message.invoiceSentAt, buildOrderPrintUrl(id, message.editToken)));
       }
       await answerCallbackQuery(callbackQuery.id, "Renunțat.");
     } catch {

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Receipt, Check } from "lucide-react";
+import { Pencil, Receipt, Check, Printer } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { sendInvoiceAction } from "@/lib/adminMessageActions";
 
-// Acțiunile pe care operatorul le are în Telegram și care lipseau din admin: "✏️ Editează" și "🧾 Trimite factura".
+// Acțiunile pe care operatorul le are în Telegram ("✏️ Editează", "🧾 Trimite factura", "🖨 Printează") și în admin.
 // (Confirmă / Gata de ridicare / Anulează sunt în OrderStageBadge, etichetele AWB în EvsShipmentPanel.)
 export default function OrderActions({
   id,
@@ -31,7 +31,6 @@ export default function OrderActions({
   // Linkul de editare funcționează doar cât comanda e nouă (după confirmare, token-ul nu mai e valid).
   const canEdit = stage === "noua" && Boolean(editToken);
 
-  if (!canEdit && !(needsInvoice && isActive)) return null;
 
   function sendInvoice() {
     setPending(true);
@@ -52,6 +51,14 @@ export default function OrderActions({
 
   return (
     <div className="flex items-center gap-2 flex-wrap mt-2">
+      {/* Fișa de comandă pentru depozitar (cu coduri de produs și casete de bifat) — se deschide într-un tab nou, cu dialogul de imprimare. */}
+      <Button asChild variant="outline" size="sm">
+        <a href={`/comanda-print?id=${id}&auto=1`} target="_blank" rel="noopener noreferrer">
+          <Printer className="w-3.5 h-3.5" aria-hidden />
+          Printează comanda
+        </a>
+      </Button>
+
       {canEdit && (
         <Button asChild variant="outline" size="sm">
           <a href={`/editare-comanda?token=${editToken}`} target="_blank" rel="noopener noreferrer">

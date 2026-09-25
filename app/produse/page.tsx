@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { getSectionFlags } from "@/lib/siteSettings";
 import {
   fallbackCategories,
@@ -13,6 +12,8 @@ import {
 import ProductCard from "../components/ProductCard";
 import LoadMoreButton from "../components/LoadMoreButton";
 import ProductFilterSidebar from "../components/ProductFilterSidebar";
+import { getCatalog } from "@/lib/catalog";
+import { NavChips, ProductsNavProvider, PendingRegion } from "../components/ProductsNav";
 import FurnitureCard from "../components/FurnitureCard";
 import SpaceCard from "../components/SpaceCard";
 import DivisionFilterSidebar from "../components/DivisionFilterSidebar";
@@ -106,10 +107,7 @@ interface ProductRow {
 
 async function getData(): Promise<{ categories: CategoryRow[]; products: ProductRow[] }> {
   try {
-    const [categories, products] = await Promise.all([
-      prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
-      prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
-    ]);
+    const { categories, products } = await getCatalog();
     if (categories.length === 0 || products.length === 0) throw new Error("empty");
     return { categories, products };
   } catch {
@@ -176,21 +174,12 @@ function facetOptions<T>(items: T[], getValue: (item: T) => string, getLabel?: (
 
 function DivisionTabs({ active }: { active: Division }) {
   return (
-    <div className="flex items-center gap-2 sm:gap-3 flex-wrap mb-6">
-      {DIVISION_TABS.map((tab) => (
-        <Link
-          key={tab.value}
-          href={`/produse?division=${tab.value}`}
-          className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-bold transition-colors ${
-            active === tab.value
-              ? "bg-primary text-white shadow-sm"
-              : "bg-card border-2 border-border text-foreground hover:border-accent hover:text-accent"
-          }`}
-        >
-          {tab.label}
-        </Link>
-      ))}
-    </div>
+    <NavChips
+      size="lg"
+      ariaLabel="Secțiune"
+      className="flex items-center gap-2 sm:gap-3 flex-wrap mb-6"
+      items={DIVISION_TABS.map((tab) => ({ key: tab.value, href: `/produse?division=${tab.value}`, label: tab.label, active: active === tab.value }))}
+    />
   );
 }
 
@@ -442,7 +431,11 @@ export default async function ProdusePage({
       id: cat.id,
       slug: cat.slug,
       name: cat.name,
-      count: baseProducts.filter((p) => p.categoryId === cat.id).length,
+      // Un părinte numără și produsele subcategoriilor lui (selectat, le arată pe toate) — altfel
+      // "Prosoape de bucătărie" apărea cu (0) deși toate produsele sunt în subcategorii.
+      count: baseProducts.filter(
+        (p) => p.categoryId === cat.id || categories.some((sub) => sub.parentId === cat.id && sub.id === p.categoryId)
+      ).length,
     }));
 
   const priceBounds = baseProducts.reduce(
@@ -482,41 +475,27 @@ export default async function ProdusePage({
       <Breadcrumb />
 
       {/* ── PRODUCTS GRID ── */}
+      <ProductsNavProvider>
       <section className="bg-background pt-2 pb-10 sm:py-10">
         <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
           <DivisionTabs active={division} />
           <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse de uz casnic</h1>
 
           {showSubcategoryFilters && (
-            <div
+            <NavChips
+              size="sm"
+              ariaLabel="Filtrează după subcategorie"
               className="flex items-center gap-2 flex-wrap mb-6"
-              role="group"
-              aria-label="Filtrează după subcategorie"
-            >
-              <Link
-                href={buildCategoryHref(query, parentCategory!.slug)}
-                className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                  isParentActive
-                    ? "bg-primary text-white"
-                    : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
-                }`}
-              >
-                Toate
-              </Link>
-              {siblingCategories.map((sibling) => (
-                <Link
-                  key={sibling.id}
-                  href={buildCategoryHref(query, sibling.slug)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                    selectedCategory!.id === sibling.id
-                      ? "bg-primary text-white"
-                      : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
-                  }`}
-                >
-                  {sibling.name}
-                </Link>
-              ))}
-            </div>
+              items={[
+                { key: "toate", href: buildCategoryHref(query, parentCategory!.slug), label: "Toate", active: isParentActive },
+                ...siblingCategories.map((sibling) => ({
+                  key: sibling.id,
+                  href: buildCategoryHref(query, sibling.slug),
+                  label: sibling.name,
+                  active: selectedCategory!.id === sibling.id,
+                })),
+              ]}
+            />
           )}
 
           <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -528,7 +507,7 @@ export default async function ProdusePage({
               offersCount={offersCount}
             />
 
-            <div className="flex-1 min-w-0">
+            <PendingRegion className="flex-1 min-w-0">
               {filters.query ? (
                 <p className="text-sm text-muted-foreground mb-3 sm:mb-6">
                   {products.length} rezultate pentru <span className="font-bold text-primary">&ldquo;{filters.query}&rdquo;</span>
@@ -579,10 +558,11 @@ export default async function ProdusePage({
                   ...(filters.priceMax !== null ? { pretMax: String(filters.priceMax) } : {}),
                 }}
               />
-            </div>
+            </PendingRegion>
           </div>
         </div>
       </section>
+      </ProductsNavProvider>
 
     </main>
   );

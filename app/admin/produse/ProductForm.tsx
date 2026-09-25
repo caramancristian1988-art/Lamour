@@ -65,6 +65,7 @@ interface ProductDefaults {
   image?: string | null;
   images?: string[];
   packageQuantity?: string | null;
+  weightKg?: number | null;
   brand?: string | null;
   badge?: string | null;
   availability?: string;
@@ -138,7 +139,7 @@ export default function ProductForm({
       <div>
         <AdminInput label="Cod produs" name="code" defaultValue={defaults?.code ?? ""} placeholder="lasă gol pentru cod automat (litere, cifre și cratimă, ex. LT-141)" />
         <p className="text-xs text-muted-foreground mt-1.5">
-          Doar litere și cifre, fără spații sau semne (ex. LMP204). Trebuie să fie unic — dacă lași câmpul gol, se generează unul automat.
+          Litere și cifre, cu cratimă între ele dacă vrei (ex. LMP204 sau LT-141), fără spații sau alte semne. Trebuie să fie unic — dacă lași câmpul gol, se generează unul automat.
         </p>
       </div>
       <AdminTextarea label="Descriere" name="description" defaultValue={defaults?.description ?? ""} placeholder="Descrierea produsului..." rows={3} />
@@ -199,6 +200,20 @@ export default function ProductForm({
         defaultValue={defaults?.packageQuantity ?? ""}
         placeholder="ex: 32 role, 100 buc, 500 ml"
       />
+
+      <div>
+        <AdminInput
+          label="Greutate (kg / bucată)"
+          name="weightKg"
+          inputMode="decimal"
+          defaultValue={defaults?.weightKg != null ? String(defaults.weightKg).replace(".", ",") : ""}
+          placeholder="ex: 0,35"
+        />
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Greutatea unei bucăți. Greutatea comenzii (pentru AWB) se calculează automat din greutățile produselor × cantități. Dacă lași câmpul
+          gol, produsul se socotește la 1 kg/buc.
+        </p>
+      </div>
 
       <div className="border border-border rounded-xl p-4 flex flex-col gap-3">
         <p className="text-xs font-bold uppercase tracking-wide text-primary">

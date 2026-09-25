@@ -1,4 +1,4 @@
-import { prisma } from "./prisma";
+import { getCatalog } from "./catalog";
 import {
   fallbackCategories,
   fallbackProducts,
@@ -19,10 +19,7 @@ export interface SearchResult {
 
 async function getSearchableData() {
   try {
-    const [categories, products] = await Promise.all([
-      prisma.category.findMany(),
-      prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
-    ]);
+    const { categories, products } = await getCatalog();
     if (categories.length === 0 || products.length === 0) throw new Error("empty");
     return { categories, products };
   } catch {
@@ -46,6 +43,7 @@ async function getSearchableData() {
         variantGroupId: null as string | null,
         variantLabel: null as string | null,
         salesCount: 0,
+        weightKg: null as number | null,
       })),
     };
   }

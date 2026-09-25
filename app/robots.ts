@@ -16,6 +16,7 @@ export default function robots(): MetadataRoute.Robots {
         "/cos",
         "/favorite",
         "/finalizare-comanda",
+        "/comanda-print",
       ],
     },
     sitemap: absoluteUrl("/sitemap.xml"),

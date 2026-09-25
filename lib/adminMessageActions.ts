@@ -10,6 +10,7 @@ import { ORDER_STAGES, CART_ORDER_SOURCE, orderStageLabel, type OrderStage } fro
 import { nextOrderNumber } from "./orderNumber";
 import { allowRequest, getClientIp, TOO_MANY_REQUESTS } from "./rateLimit";
 import { isValidCourierEmail } from "./deliveryValidation";
+import { computeOrderWeightKg } from "./orderWeight";
 import {
   sendTelegramMessage,
   editTelegramMessage,
@@ -17,6 +18,7 @@ import {
   buildMessageButtons,
   buildOrderStageButtons,
   buildWarehouseButtons,
+  buildOrderPrintUrl,
   extractInvoiceBlock,
   escapeHtml,
   notifyOrderStageChange,
@@ -36,19 +38,30 @@ export interface ContactFormState {
 // requests) or by slug (cart orders, which can list several) — so the
 // Telegram link and admin "Vezi produsul" link point at the real product
 // instead of relying on fuzzy name matching.
-async function resolveProducts(formData: FormData): Promise<{ id: string; name: string; slug: string }[]> {
+async function resolveProducts(formData: FormData): Promise<{ id: string; name: string; slug: string; weightKg: number | null }[]> {
   try {
     const productId = String(formData.get("productId") ?? "").trim();
     if (productId) {
-      return await prisma.product.findMany({ where: { id: productId }, select: { id: true, name: true, slug: true } });
+      return await prisma.product.findMany({ where: { id: productId }, select: { id: true, name: true, slug: true, weightKg: true } });
     }
     const slugsRaw = String(formData.get("productSlugs") ?? "").trim();
     const slugs = slugsRaw ? slugsRaw.split(",").map((s) => s.trim()).filter(Boolean) : [];
     if (slugs.length === 0) return [];
-    return await prisma.product.findMany({ where: { slug: { in: slugs } }, select: { id: true, name: true, slug: true } });
+    return await prisma.product.findMany({ where: { slug: { in: slugs } }, select: { id: true, name: true, slug: true, weightKg: true } });
   } catch {
     return [];
   }
+}
+
+// Greutatea comenzii pentru AWB: suma greutăților produselor × cantități (calculată pe server, nu luată din browser).
+// Fără produse/cantități rezolvate (cereri care nu sunt comenzi din coș) rămâne valoarea trimisă de formular.
+function resolveDeliveryWeight(
+  orderItems: { productId: string; quantity: number }[],
+  products: { id: string; weightKg: number | null }[],
+  clientWeightKg: number | null
+): number | null {
+  if (orderItems.length === 0) return clientWeightKg;
+  return computeOrderWeightKg(orderItems, new Map(products.map((p) => [p.id, p.weightKg]))).totalKg;
 }
 
 // Cantitățile din formularul de checkout (JSON: [{ slug, quantity }]),
@@ -108,14 +121,15 @@ export async function submitContactMessageAction(
   const deliveryLocality = String(formData.get("deliveryLocality") ?? "").trim() || null;
   const deliveryAddress = String(formData.get("deliveryAddress") ?? "").trim() || null;
   const deliveryZip = String(formData.get("deliveryZip") ?? "").trim() || null;
-  const deliveryWeightKgRaw = Number(formData.get("deliveryWeightKg"));
-  const deliveryWeightKg = Number.isFinite(deliveryWeightKgRaw) && deliveryWeightKgRaw > 0 ? deliveryWeightKgRaw : null;
+  const clientWeightKgRaw = Number(formData.get("deliveryWeightKg"));
+  const clientWeightKg = Number.isFinite(clientWeightKgRaw) && clientWeightKgRaw > 0 ? clientWeightKgRaw : null;
   const deliveryCodAmountRaw = Number(formData.get("deliveryCodAmount"));
   const deliveryCodAmount = Number.isFinite(deliveryCodAmountRaw) && deliveryCodAmountRaw >= 0 ? deliveryCodAmountRaw : null;
 
   const products = await resolveProducts(formData);
   const productIds = products.map((p) => p.id);
   const orderItems = resolveOrderItems(formData, products);
+  const deliveryWeightKg = resolveDeliveryWeight(orderItems, products, clientWeightKg);
 
   // Comenzile din coș intră pe fluxul separat operator -> depozitar ->
   // curier (lib/orderStages.ts) — au nevoie de un token de editare, folosit
@@ -152,8 +166,8 @@ export async function submitContactMessageAction(
   let telegramMessageId: number | null;
   if (isCartOrder) {
     const editUrl = `${getSiteUrl()}/editare-comanda?token=${editToken}`;
-    const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel: orderStageLabel("noua"), products, orderNumber });
-    telegramMessageId = await sendTelegramMessage(text, buildOrderStageButtons(created.id, "noua", editUrl, Boolean(extractInvoiceBlock(message))));
+    const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel: orderStageLabel("noua"), products, orderNumber, weightKg: deliveryWeightKg });
+    telegramMessageId = await sendTelegramMessage(text, buildOrderStageButtons(created.id, "noua", editUrl, Boolean(extractInvoiceBlock(message)), buildOrderPrintUrl(created.id, editToken)));
   } else {
     const statusLabel = MESSAGE_STATUSES.find((s) => s.value === created.status)?.label ?? created.status;
     const text = buildContactMessageText({ name, phone, email: email || null, message, source, statusLabel, products });
@@ -300,14 +314,19 @@ async function syncOrderTelegramMessage(updated: {
   orderNumber: string | null;
   invoiceSentAt: Date | null;
   accountantMessages: unknown;
+  deliveryWeightKg: number | null;
 }) {
   if (!updated.telegramMessageId) return;
   const text = await buildOrderText(updated);
   const editUrl = `${getSiteUrl()}/editare-comanda?token=${updated.editToken ?? ""}`;
   const buttons =
     updated.orderStage === "noua" || updated.orderStage === "confirmata"
-      ? buildOrderStageButtons(updated.id, updated.orderStage, editUrl,
-          Boolean(extractInvoiceBlock(updated.message)) && !updated.invoiceSentAt
+      ? buildOrderStageButtons(
+          updated.id,
+          updated.orderStage,
+          editUrl,
+          Boolean(extractInvoiceBlock(updated.message)) && !updated.invoiceSentAt,
+          buildOrderPrintUrl(updated.id, updated.editToken)
         )
       : [];
   await editTelegramMessage(updated.telegramMessageId, text, buttons);
@@ -329,6 +348,7 @@ async function buildOrderText(order: {
   awbCode: string | null;
   awbStatus: string | null;
   orderNumber: string | null;
+  deliveryWeightKg: number | null;
 }): Promise<string> {
   const products = await getProductsByIds(order.productIds);
   const stageLabel = orderStageLabel(order.orderStage);
@@ -341,6 +361,7 @@ async function buildOrderText(order: {
     statusLabel: order.awbCode ? `${stageLabel} — AWB ${order.awbCode}${order.awbStatus ? ` (${order.awbStatus})` : ""}` : stageLabel,
     products,
     orderNumber: order.orderNumber,
+    weightKg: order.deliveryWeightKg,
   });
 }
 
@@ -374,14 +395,15 @@ export async function updateOrderMessageAction(
   const deliveryLocality = String(formData.get("deliveryLocality") ?? "").trim() || null;
   const deliveryAddress = String(formData.get("deliveryAddress") ?? "").trim() || null;
   const deliveryZip = String(formData.get("deliveryZip") ?? "").trim() || null;
-  const deliveryWeightKgRaw = Number(formData.get("deliveryWeightKg"));
-  const deliveryWeightKg = Number.isFinite(deliveryWeightKgRaw) && deliveryWeightKgRaw > 0 ? deliveryWeightKgRaw : null;
+  const clientWeightKgRaw = Number(formData.get("deliveryWeightKg"));
+  const clientWeightKg = Number.isFinite(clientWeightKgRaw) && clientWeightKgRaw > 0 ? clientWeightKgRaw : null;
   const deliveryCodAmountRaw = Number(formData.get("deliveryCodAmount"));
   const deliveryCodAmount = Number.isFinite(deliveryCodAmountRaw) && deliveryCodAmountRaw >= 0 ? deliveryCodAmountRaw : null;
 
   const products = await resolveProducts(formData);
   const productIds = products.map((p) => p.id);
   const orderItems = resolveOrderItems(formData, products);
+  const deliveryWeightKg = resolveDeliveryWeight(orderItems, products, clientWeightKg);
 
   let updated;
   try {
@@ -620,6 +642,8 @@ async function syncWarehouseMessage(order: {
   awbCode: string | null;
   awbStatus: string | null;
   orderNumber: string | null;
+  editToken: string | null;
+  deliveryWeightKg: number | null;
   warehouseMessages: unknown;
 }): Promise<"ok" | "undelivered"> {
   const sent = parseChatMessages(order.warehouseMessages);
@@ -639,8 +663,9 @@ async function syncWarehouseMessage(order: {
     statusLabel: order.awbCode ? `${stageLabel} — AWB ${order.awbCode}${order.awbStatus ? ` (${order.awbStatus})` : ""}` : stageLabel,
     products,
     orderNumber: order.orderNumber,
+    weightKg: order.deliveryWeightKg,
   });
-  const buttons = buildWarehouseButtons(order.id, order.orderStage ?? "", Boolean(order.awbCode));
+  const buttons = buildWarehouseButtons(order.id, order.orderStage ?? "", Boolean(order.awbCode), buildOrderPrintUrl(order.id, order.editToken));
 
   if (sent.length > 0) {
     await Promise.all(sent.map((m) => editTelegramMessage(m.messageId, text, buttons, m.chatId)));

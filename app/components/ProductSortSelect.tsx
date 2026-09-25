@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useProductsNavigate } from "./ProductsNav";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/app/components/ui/select";
 
 const options = [
@@ -11,7 +12,7 @@ const options = [
 ];
 
 export default function ProductSortSelect({ defaultValue }: { defaultValue: string }) {
-  const router = useRouter();
+  const navigate = useProductsNavigate();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -20,7 +21,7 @@ export default function ProductSortSelect({ defaultValue }: { defaultValue: stri
     params.set("sort", value);
     params.delete("page");
     const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
+    navigate(qs ? `${pathname}?${qs}` : pathname);
   }
 
   return (

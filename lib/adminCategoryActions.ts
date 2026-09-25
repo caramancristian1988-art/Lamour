@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
+import { CATALOG_TAG } from "./catalog";
 
 function slugify(value: string) {
   return value
@@ -29,6 +30,7 @@ export async function createCategoryInlineAction(
     const category = await prisma.category.create({ data: { name, slug } });
     revalidatePath("/admin/produse/categorii");
     revalidatePath("/produse");
+    updateTag(CATALOG_TAG);
     revalidatePath(`/produse/${slug}`);
     revalidatePath("/");
     return { category: { id: category.id, name: category.name } };
@@ -54,6 +56,7 @@ export async function deleteCategoryInlineAction(id: string): Promise<{ success?
   await prisma.category.delete({ where: { id } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   if (cat?.slug) revalidatePath(`/produse/${cat.slug}`);
   revalidatePath("/");
   return { success: true };
@@ -73,6 +76,7 @@ export async function createCategoryAction(formData: FormData) {
   await prisma.category.create({ data: { name, slug, description, image, parentId } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   revalidatePath(`/produse/${slug}`);
   revalidatePath("/");
 }
@@ -94,6 +98,7 @@ export async function updateCategoryAction(formData: FormData) {
   await prisma.category.update({ where: { id }, data: { name, slug, description, image, parentId } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   revalidatePath(`/produse/${slug}`);
   if (existing?.slug && existing.slug !== slug) revalidatePath(`/produse/${existing.slug}`);
   revalidatePath("/");
@@ -114,6 +119,7 @@ export async function deleteCategoryAction(formData: FormData) {
   await prisma.category.delete({ where: { id } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   if (cat?.slug) revalidatePath(`/produse/${cat.slug}`);
   revalidatePath("/");
 }

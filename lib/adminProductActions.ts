@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
+import { CATALOG_TAG } from "./catalog";
 import { parseDecimalInput } from "./pricing";
 
 export interface ProductFormState {
@@ -51,6 +52,13 @@ interface VariantRowInput {
   unit: string;
   price: number;
   oldPrice: number | null;
+  weightKg: number | null;
+}
+
+// Greutate în kg din câmpul de formular (acceptă virgulă): gol / 0 / negativ = fără greutate (null).
+function parseWeightKg(raw: FormDataEntryValue | string | null | undefined): number | null {
+  const n = parseDecimalInput(raw ?? "");
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 1000) / 1000 : null;
 }
 
 // Lets an admin add extra size/quantity variants straight from the "new
@@ -62,6 +70,7 @@ function parseVariantRows(formData: FormData): VariantRowInput[] {
   const units = formData.getAll("variantRowUnit").map((v) => String(v).trim());
   const prices = formData.getAll("variantRowPrice").map((v) => String(v).trim());
   const oldPrices = formData.getAll("variantRowOldPrice").map((v) => String(v).trim());
+  const weights = formData.getAll("variantRowWeight").map((v) => String(v).trim());
 
   const rows: VariantRowInput[] = [];
   for (let i = 0; i < qtys.length; i++) {
@@ -69,7 +78,7 @@ function parseVariantRows(formData: FormData): VariantRowInput[] {
     if (!qtys[i] && !units[i]) continue;
     if (!price || price <= 0) continue;
     const oldPrice = parseDecimalInput(oldPrices[i]);
-    rows.push({ qty: qtys[i], unit: units[i], price, oldPrice: Number.isFinite(oldPrice) ? oldPrice : null });
+    rows.push({ qty: qtys[i], unit: units[i], price, oldPrice: Number.isFinite(oldPrice) ? oldPrice : null, weightKg: parseWeightKg(weights[i]) });
   }
   return rows;
 }
@@ -141,6 +150,7 @@ function readProductFields(formData: FormData) {
   const images = parseImageLines(formData);
   const priceTiers = parsePriceTiers(formData);
   const packageQuantity = String(formData.get("packageQuantity") ?? "").trim() || null;
+  const weightKg = parseWeightKg(formData.get("weightKg"));
   const brand = String(formData.get("brand") ?? "").trim() || null;
   const badge = String(formData.get("badge") ?? "").trim() || null;
   const availability = String(formData.get("availability") ?? "").trim() || "În stoc";
@@ -167,6 +177,7 @@ function readProductFields(formData: FormData) {
     images,
     priceTiers,
     packageQuantity,
+    weightKg,
     brand,
     badge,
     availability,
@@ -223,6 +234,8 @@ export async function createProductAction(_prevState: ProductFormState, formData
           image: data.image,
           images: data.images,
           packageQuantity: data.packageQuantity,
+          // Varianta are greutatea ei (dacă a fost completată pe rând), altfel o moștenește de la produsul principal.
+          weightKg: row.weightKg ?? data.weightKg,
           brand: data.brand,
           availability: data.availability,
           installmentsEnabled: data.installmentsEnabled,
@@ -240,6 +253,7 @@ export async function createProductAction(_prevState: ProductFormState, formData
   if (data.variantGroupId) await revalidateVariantFamily(data.variantGroupId);
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   revalidatePath(`/produse/${data.slug}`);
   revalidatePath("/");
   redirect("/admin/produse");
@@ -314,6 +328,7 @@ export async function updateProductAction(_prevState: ProductFormState, formData
   }
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   revalidatePath(`/produse/${data.slug}`);
   revalidatePath("/");
   redirect("/admin/produse");
@@ -337,6 +352,7 @@ export async function updateVariantPriceAction(formData: FormData) {
   await revalidateVariantFamily(id);
   const product = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
   if (product?.slug) revalidatePath(`/produse/${product.slug}`);
+  updateTag(CATALOG_TAG);
   revalidatePath("/admin/produse");
   if (returnId) revalidatePath(`/admin/produse/${returnId}`);
 }
@@ -355,6 +371,20 @@ export async function deleteProductAction(formData: FormData) {
   if (product?.categoryId) await revalidateCategoryPaths([product.categoryId]);
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   if (product?.slug) revalidatePath(`/produse/${product.slug}`);
   revalidatePath("/");
+}
+
+// Editorul rapid de greutate din lista de produse (sunt sute de produse de completat — fără să deschizi fiecare formular).
+export async function updateProductWeightAction(formData: FormData): Promise<{ ok: boolean; weightKg: number | null; error?: string }> {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const raw = String(formData.get("weightKg") ?? "").trim();
+  if (!id) return { ok: false, weightKg: null, error: "Produs invalid." };
+  const weightKg = raw ? parseWeightKg(raw) : null;
+  if (raw && weightKg === null) return { ok: false, weightKg: null, error: "Introdu o greutate în kg, mai mare ca 0 (ex. 0,35)." };
+  await prisma.product.update({ where: { id }, data: { weightKg } });
+  revalidatePath("/admin/produse");
+  return { ok: true, weightKg };
 }

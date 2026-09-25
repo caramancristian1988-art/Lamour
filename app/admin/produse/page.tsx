@@ -10,6 +10,7 @@ import DeleteButton from "../components/DeleteButton";
 import AdminProductFilters from "./AdminProductFilters";
 import AdminPagination from "../components/AdminPagination";
 import CopyableId from "../components/CopyableId";
+import WeightEditor from "../components/WeightEditor";
 import { deleteProductAction } from "@/lib/adminProductActions";
 
 const PER_PAGE = 10;
@@ -111,6 +112,7 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
         </div>
         <div className="flex items-center gap-2 mt-2 flex-wrap">
           <span className="text-sm font-bold text-primary">{product.price.toLocaleString("ro-MD")} MDL</span>
+          <WeightEditor id={product.id} weightKg={product.weightKg ?? null} />
           <Badge variant={product.availability === "Stoc epuizat" ? "muted" : "success"}>
             {product.availability}
           </Badge>

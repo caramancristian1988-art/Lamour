@@ -10,9 +10,10 @@ interface VariantRow {
   unit: string;
   price: string;
   oldPrice: string;
+  weight: string;
 }
 
-const EMPTY_ROW: VariantRow = { qty: "", unit: "", price: "", oldPrice: "" };
+const EMPTY_ROW: VariantRow = { qty: "", unit: "", price: "", oldPrice: "", weight: "" };
 
 export default function VariantRowsEditor({ unitOptions }: { unitOptions: string[] }) {
   const [rows, setRows] = useState<VariantRow[]>([]);
@@ -96,6 +97,19 @@ export default function VariantRowsEditor({ unitOptions }: { unitOptions: string
                   placeholder="opțional"
                   aria-label={`Preț vechi variantă ${i + 1}`}
                   className="h-10 w-28"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor={`variant-row-weight-${i}`} className="text-xs">Kg / buc.</Label>
+                <Input
+                  id={`variant-row-weight-${i}`}
+                  name="variantRowWeight"
+                  inputMode="decimal"
+                  value={row.weight}
+                  onChange={(e) => updateRow(i, "weight", e.target.value)}
+                  placeholder="ca produsul"
+                  aria-label={`Greutate variantă ${i + 1}`}
+                  className="h-10 w-24"
                 />
               </div>
               <button

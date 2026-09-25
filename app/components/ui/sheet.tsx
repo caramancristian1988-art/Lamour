@@ -40,17 +40,23 @@ const sheetVariants = cva(
 
 interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {}
+    VariantProps<typeof sheetVariants> {
+  /** Clase pentru butonul X (ex. mai mare / cu fundal), fără a schimba celelalte panouri. */
+  closeClassName?: string;
+}
 
 const SheetContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Content>, SheetContentProps>(
-  ({ side = "right", className, children, ...props }, ref) => (
+  ({ side = "right", className, closeClassName, children, ...props }, ref) => (
     <SheetPortal>
       <SheetOverlay />
       <DialogPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
         {children}
         <DialogPrimitive.Close
           aria-label="Închide meniul"
-          className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground hover:rotate-90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/30"
+          className={cn(
+            "absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground hover:rotate-90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/30",
+            closeClassName
+          )}
         >
           <X className="h-5 w-5" />
         </DialogPrimitive.Close>

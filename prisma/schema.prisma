@@ -53,6 +53,9 @@ model Product {
   image       String?
   images      String[] @default([])
   packageQuantity String?
+  // Greutatea unei bucăți, în kg (ex. 0.35) — greutatea comenzii = suma greutăților × cantități, folosită la AWB (lib/orderWeight.ts).
+  // Lipsă = se socotește 1 kg/buc.
+  weightKg    Float?
   brand       String?
   rating      Float    @default(0)
   reviewCount Int      @default(0)

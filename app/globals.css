@@ -289,3 +289,17 @@ h1, h2, h3 {
   border-image-slice: 1;
   border-image-source: linear-gradient(90deg, transparent, var(--brand-rose) 20%, var(--brand-red) 50%, var(--brand-rose) 80%, transparent);
 }
+
+/* Bara de progres indeterminată afișată în timp ce se încarcă o listă filtrată (vezi ProductsNav). */
+@keyframes nav-progress {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.nav-progress-bar {
+  animation: nav-progress 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress-bar { animation: none; }
+}

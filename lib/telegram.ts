@@ -1,4 +1,6 @@
 import { CART_ORDER_SOURCE } from "./orderStages";
+import { parseCartOrderMessage } from "./orderMessage";
+import { formatKg } from "./orderWeight";
 
 const TELEGRAM_API = "https://api.telegram.org";
 
@@ -194,39 +196,11 @@ function linkifyProducts(text: string, products: { name: string; slug: string }[
 // Comenzile din coș: textul stocat (scris de CheckoutPanel, citit și de orderExport/admin — de-asta nu-l
 // schimbăm) e reordonat pe secțiuni pentru Telegram. Dacă structura nu e recunoscută, întoarce null și
 // se folosește formatul vechi, ca nicio comandă să nu se piardă din cauza unei diferențe de format.
-function renderCartOrderBody(raw: string, products: { name: string; slug: string }[]): string | null {
-  const items: { name: string; qty?: string; unit?: string; total?: string; note?: string }[] = [];
-  const totals: { subtotal?: string; savings?: string; delivery?: string; deliveryLabel?: string; total?: string } = {};
-  let address: string | null = null;
-  const invoice: string[] = [];
-  const clientNote: string[] = [];
-  let mode: "items" | "invoice" | "note" | "other" = "other";
-
-  for (const line of raw.split("\n")) {
-    const t = line.trim();
-    let m: RegExpMatchArray | null;
-    if (mode === "note") { clientNote.push(line); continue; }
-    if (!t) { if (mode === "invoice") mode = "other"; continue; }
-    if (t.startsWith("Produse comandate")) { mode = "items"; continue; }
-    if (t.startsWith("🧾 CERE FACTURĂ")) { mode = "invoice"; continue; }
-    if ((m = t.match(/^Mesaj client:\s*(.*)$/))) { mode = "note"; clientNote.push(m[1]); continue; }
-    if ((m = t.match(/^Subtotal:\s*(.+)$/))) { totals.subtotal = m[1]; mode = "other"; continue; }
-    if ((m = t.match(/^Economisește:\s*(.+)$/))) { totals.savings = m[1]; continue; }
-    if ((m = t.match(/^Livrare \((.+?)\):\s*(.+)$/))) { totals.deliveryLabel = m[1]; totals.delivery = m[2]; continue; }
-    if ((m = t.match(/^Total cu livrare:\s*(.+)$/))) { totals.total = m[1]; continue; }
-    if ((m = t.match(/^Livrare:\s*(.+)$/))) { address = m[1]; mode = "other"; continue; }
-    if (mode === "invoice") { invoice.push(t); continue; }
-    if (mode === "items") {
-      if ((m = t.match(/^•\s*(.+)$/))) { items.push({ name: m[1] }); continue; }
-      if ((m = t.match(/^(\d+) buc × (.+?) = (.+?)(?: \((.+)\))?$/)) && items.length > 0) {
-        Object.assign(items[items.length - 1], { qty: m[1], unit: m[2], total: m[3], note: m[4] });
-        continue;
-      }
-    }
-    // Linie necunoscută într-o comandă din coș — renunțăm la randarea structurată (fallback la formatul vechi).
-    return null;
-  }
-  if (items.length === 0) return null;
+function renderCartOrderBody(raw: string, products: { name: string; slug: string }[], weightKg?: number | null): string | null {
+  const parsed = parseCartOrderMessage(raw);
+  if (!parsed) return null;
+  const { items, totals, address, invoice } = parsed;
+  const clientNote = parsed.clientNote ? [parsed.clientNote] : [];
 
   const out: string[] = [];
   out.push("<b>🛒 Produse</b>");
@@ -244,6 +218,7 @@ function renderCartOrderBody(raw: string, products: { name: string; slug: string
   if (money.length > 0) out.push("", "<b>💰 Sumar</b>", ...money);
 
   if (address) out.push("", "<b>🚚 Adresa de livrare</b>", escapeHtml(address));
+  if (weightKg) out.push(`⚖️ Greutate comandă: <b>${escapeHtml(formatKg(weightKg))}</b>`);
   if (invoice.length > 0) out.push("", "<b>🧾 Factură (companie)</b>", ...invoice.map((l) => escapeHtml(l)));
   const note = clientNote.join("\n").trim();
   if (note) out.push("", "<b>💬 Mesaj client</b>", escapeHtml(note));
@@ -260,12 +235,13 @@ export function buildContactMessageText(message: {
   moodLabel?: string | null;
   products?: { name: string; slug: string }[];
   orderNumber?: string | null;
+  weightKg?: number | null;
 }): string {
   const products = message.products ?? [];
   const escapedMessage = message.message ? escapeHtml(message.message) : null;
   const escapedSource = escapeHtml(message.source);
 
-  const cartBody = message.source === CART_ORDER_SOURCE && message.message ? renderCartOrderBody(message.message, products) : null;
+  const cartBody = message.source === CART_ORDER_SOURCE && message.message ? renderCartOrderBody(message.message, products, message.weightKg) : null;
   if (cartBody) {
     return [
       message.orderNumber ? `📦 <b>Comandă #${escapeHtml(message.orderNumber)}</b>` : `📦 <b>Comandă nouă</b>`,
@@ -342,25 +318,35 @@ export function buildOrderStageButtons(
   messageId: string,
   stage: string,
   editUrl: string,
-  canSendInvoice = false
+  canSendInvoice = false,
+  printUrl?: string
 ): InlineButton[][] {
   // Butonul "Factură" apare doar dacă clientul a cerut factură și ea n-a fost trimisă încă.
   const invoiceRow: InlineButton[][] = canSendInvoice
     ? [[{ text: "🧾 Trimite factura", callback_data: `ord_invoice:${messageId}` }]]
     : [];
+  // Fișa de comandă pentru tipărit (se deschide în browser, cu dialogul de imprimare).
+  const printButton: InlineButton[] = printUrl ? [{ text: "🖨 Printează", url: printUrl }] : [];
   if (stage === "noua") {
     return [
       [{ text: "✅ Confirmă", callback_data: `ord_confirm:${messageId}` }],
-      [{ text: "✏️ Editează", url: editUrl }],
+      [...printButton, { text: "✏️ Editează", url: editUrl }],
       ...invoiceRow,
       [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }],
     ];
   }
   if (stage === "confirmata") {
     // "Gata de ridicare" e apăsat de depozitar în chatul lui (buildWarehouseButtons), nu de operator.
-    return [...invoiceRow, [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }]];
+    return [...(printButton.length ? [printButton] : []), ...invoiceRow, [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }]];
   }
   return [];
+}
+
+// Linkul fișei de tipărit a unei comenzi. Token-ul e cel al comenzii (același ca la "Editează"): depozitarul nu are cont,
+// deci linkul din Telegram e singura cheie de acces (pagina se deschide fără login doar cu token valid).
+export function buildOrderPrintUrl(messageId: string, token: string | null | undefined): string | undefined {
+  if (!token) return undefined;
+  return `${getSiteUrl()}/comanda-print?id=${messageId}&token=${token}&auto=1`;
 }
 
 // Numele botului, necesar pentru linkul de conectare t.me/<bot>?start=<token>. Din env dacă e setat
@@ -395,7 +381,8 @@ export function extractInvoiceBlock(message: string | null): string | null {
 }
 
 // Butoanele de etichetă apar doar dacă comanda are deja AWB: eticheta (PDF cu cod de bare) se lipește pe colet.
-export function buildWarehouseButtons(messageId: string, stage: string, hasAwb = false): InlineButton[][] {
+export function buildWarehouseButtons(messageId: string, stage: string, hasAwb = false, printUrl?: string): InlineButton[][] {
+  const printRow: InlineButton[][] = printUrl ? [[{ text: "🖨 Printează comanda", url: printUrl }]] : [];
   const labelRow: InlineButton[][] = hasAwb
     ? [
         [
@@ -405,9 +392,9 @@ export function buildWarehouseButtons(messageId: string, stage: string, hasAwb =
       ]
     : [];
   if (stage === "confirmata") {
-    return [...labelRow, [{ text: "📦 Gata de ridicare", callback_data: `ord_ready:${messageId}` }]];
+    return [...printRow, ...labelRow, [{ text: "📦 Gata de ridicare", callback_data: `ord_ready:${messageId}` }]];
   }
-  if (stage === "predata_curier") return labelRow;
+  if (stage === "predata_curier") return [...printRow, ...labelRow];
   return [];
 }
 
