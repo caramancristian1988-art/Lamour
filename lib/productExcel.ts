@@ -9,7 +9,7 @@ import { parseDecimalInput } from "./pricing";
 export class ProductsFileError extends Error {}
 
 type FieldKey =
-  | "id" | "code" | "name" | "slug" | "category" | "description" | "price" | "oldPrice" | "bulkMinQty" | "bulkPrice"
+  | "id" | "code" | "name" | "slug" | "category" | "subcategory" | "description" | "price" | "oldPrice" | "bulkMinQty" | "bulkPrice"
   | "priceTiers" | "packageQuantity" | "weightKg" | "brand" | "badge" | "availability" | "installmentsEnabled"
   | "warrantyEnabled" | "salesCount" | "image" | "images" | "specifications" | "variantGroupCode" | "variantLabel"
   | "rating" | "reviewCount" | "popupEnabled" | "createdAt";
@@ -30,6 +30,7 @@ export const PRODUCT_COLUMNS: Column[] = [
   { key: "name", header: "Nume", aliases: ["nume", "denumire", "name", "titlu", "produs"], width: 42 },
   { key: "slug", header: "Slug", aliases: ["slug", "url"], width: 34 },
   { key: "category", header: "Categorie", aliases: ["categorie", "category"], width: 26 },
+  { key: "subcategory", header: "Subcategorie", aliases: ["subcategorie", "subcategory", "subcat"], width: 30 },
   { key: "description", header: "Descriere", aliases: ["descriere", "description"], width: 50 },
   { key: "price", header: "Preț (MDL)", aliases: ["pret mdl", "pret", "price"], width: 12 },
   { key: "oldPrice", header: "Preț vechi (MDL)", aliases: ["pret vechi mdl", "pret vechi", "old price", "oldprice"], width: 14 },
@@ -107,7 +108,8 @@ const round = (n: number): number => Math.round(n * 10000) / 10000;
 
 type Canon = string | number | boolean | null | string[] | { minQty: number; price: number }[] | { label: string; value: string }[];
 
-const EDITABLE_KEYS = PRODUCT_COLUMNS.filter((c) => !c.info).map((c) => c.key);
+// „Subcategorie” nu e un câmp separat: împreună cu „Categorie” alege categoria produsului (vezi resolveCategory).
+const EDITABLE_KEYS = PRODUCT_COLUMNS.filter((c) => !c.info && c.key !== "subcategory").map((c) => c.key);
 
 /** Câmpuri care au mereu o valoare (cod, slug) sau una implicită (disponibilitate, rate, vânzări): goale în fișier = nemodificate. */
 const NOT_CLEARABLE = new Set<FieldKey>(["code", "slug", "availability", "installmentsEnabled", "salesCount"]);
@@ -227,6 +229,7 @@ function canonFromProduct(key: FieldKey, p: Product, ctx: DbContext): Canon {
     case "name": return str(p.name);
     case "slug": return p.slug;
     case "category": return p.categoryId;
+    case "subcategory": return "";
     case "description": return str(p.description);
     case "price": return round(p.price);
     case "oldPrice": return p.oldPrice != null && p.oldPrice > 0 ? round(p.oldPrice) : null;
@@ -255,6 +258,26 @@ function canonFromProduct(key: FieldKey, p: Product, ctx: DbContext): Canon {
 
 const same = (a: Canon, b: Canon): boolean => JSON.stringify(a) === JSON.stringify(b);
 
+// ── categorii / foi ───────────────────────────────────────────────────────────────────────────────────────────────
+
+interface CategoryRow {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+}
+
+const INSTRUCTIONS_SHEET = "Instrucțiuni";
+/** Nume de foi care nu spun nimic despre categorie (ex. fișierele vechi cu o singură foaie „Produse”). */
+const GENERIC_SHEETS = new Set(["produse", "products", "product", "sheet1", "sheet", "foaie1", "foaie", "date", "export", "lista"]);
+const IGNORED_SHEETS = new Set(["instructiuni", "instructions", "help", "ajutor"]);
+
+/** Numele foii Excel pentru o categorie: fără caractere interzise ( \ / ? * [ ] : ) și maximum 31 de caractere. */
+function sheetNameFor(name: string): string {
+  const cleaned = name.replace(/[\\/?*[\]:]/g, "-").replace(/\s+/g, " ").trim().replace(/^'+|'+$/g, "");
+  return (cleaned || "Categorie").slice(0, 31).trim();
+}
+
 // ── EXPORT ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
 function pad(n: number): string {
@@ -267,20 +290,29 @@ function formatDate(d: Date): string {
 
 const yesNo = (v: boolean | null): string => (v === null ? "" : v ? "Da" : "Nu");
 
-/** Toate produsele, cu toate datele, într-un fișier .xlsx (foaia „Produse” + foaia „Instrucțiuni”). */
+/**
+ * Toate produsele, cu toate datele, într-un .xlsx cu câte o foaie pentru fiecare categorie (ex. „Hârtie igienică” cu toate
+ * produsele ei și subcategoria într-o coloană, „Lădițe” cu toate lădițele) + foaia „Instrucțiuni”. O categorie fără produse
+ * primește tot o foaie (doar antetul), ca să poți adăuga produse în ea.
+ */
 export async function buildProductsWorkbook(): Promise<Buffer> {
   const [products, categories] = await Promise.all([
     prisma.product.findMany({ orderBy: { createdAt: "asc" } }),
-    prisma.category.findMany(),
+    prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
   ]);
   const ctx: DbContext = {
     categoryNameById: new Map(categories.map((c) => [c.id, c.name])),
     codeById: new Map(products.map((p) => [p.id, p.code])),
   };
+  const catById = new Map(categories.map((c) => [c.id, c]));
+  const tops = categories.filter((c) => !c.parentId || !catById.has(c.parentId));
+  const productsByCategory = new Map<string, Product[]>();
+  for (const p of products) productsByCategory.set(p.categoryId, [...(productsByCategory.get(p.categoryId) ?? []), p]);
 
-  const cellValue = (col: Column, p: Product): string | number => {
+  const cellValue = (col: Column, p: Product, top: CategoryRow | null, sub: CategoryRow | null): string | number => {
     switch (col.key) {
-      case "category": return ctx.categoryNameById.get(p.categoryId) ?? "";
+      case "category": return top?.name ?? "";
+      case "subcategory": return sub?.name ?? "";
       case "priceTiers": return (p.priceTiers ?? []).map((t) => `${t.minQty}:${String(t.price).replace(".", ",")}`).join("; ");
       case "images": return (p.images ?? []).join("\n");
       case "specifications": return (p.specifications ?? []).map((s) => `${s.label}: ${s.value}`).join("\n");
@@ -296,31 +328,58 @@ export async function buildProductsWorkbook(): Promise<Buffer> {
     }
   };
 
-  const header = PRODUCT_COLUMNS.map((c) => c.header);
-  const body = products.map((p) => PRODUCT_COLUMNS.map((c) => cellValue(c, p)));
-  const ws = XLSX.utils.aoa_to_sheet([header, ...body]);
-  ws["!cols"] = PRODUCT_COLUMNS.map((c) => ({ wch: c.width }));
-  ws["!autofilter"] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: body.length, c: PRODUCT_COLUMNS.length - 1 } }) };
-
-  // Linkul imaginii principale devine clicabil în Excel (deschide poza).
   const imageCol = PRODUCT_COLUMNS.findIndex((c) => c.key === "image");
-  products.forEach((p, i) => {
-    if (!p.image) return;
-    const cell = ws[XLSX.utils.encode_cell({ r: i + 1, c: imageCol })];
-    if (cell) cell.l = { Target: p.image.startsWith("/") ? `https://lumina.md${p.image}` : p.image };
-  });
+  const usedNames = new Set<string>([normHeader(INSTRUCTIONS_SHEET)]);
+  const uniqueSheetName = (wanted: string): string => {
+    let name = wanted;
+    for (let n = 2; usedNames.has(normHeader(name)); n++) name = `${wanted.slice(0, 31 - ` (${n})`.length)} (${n})`;
+    usedNames.add(normHeader(name));
+    return name;
+  };
+
+  const wb = XLSX.utils.book_new();
+  const addSheet = (sheetName: string, entries: { p: Product; top: CategoryRow | null; sub: CategoryRow | null }[]) => {
+    const header = PRODUCT_COLUMNS.map((c) => c.header);
+    const body = entries.map(({ p, top, sub }) => PRODUCT_COLUMNS.map((c) => cellValue(c, p, top, sub)));
+    const ws = XLSX.utils.aoa_to_sheet([header, ...body]);
+    ws["!cols"] = PRODUCT_COLUMNS.map((c) => ({ wch: c.width }));
+    ws["!autofilter"] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: body.length, c: PRODUCT_COLUMNS.length - 1 } }) };
+    // Linkul imaginii principale devine clicabil în Excel (deschide poza).
+    entries.forEach(({ p }, i) => {
+      if (!p.image) return;
+      const cell = ws[XLSX.utils.encode_cell({ r: i + 1, c: imageCol })];
+      if (cell) cell.l = { Target: p.image.startsWith("/") ? `https://lumina.md${p.image}` : p.image };
+    });
+    XLSX.utils.book_append_sheet(wb, ws, uniqueSheetName(sheetName));
+  };
+
+  const placed = new Set<string>();
+  for (const top of tops) {
+    const entries: { p: Product; top: CategoryRow | null; sub: CategoryRow | null }[] = [];
+    for (const p of productsByCategory.get(top.id) ?? []) { entries.push({ p, top, sub: null }); placed.add(p.id); }
+    for (const child of categories.filter((c) => c.parentId === top.id)) {
+      for (const p of productsByCategory.get(child.id) ?? []) { entries.push({ p, top, sub: child }); placed.add(p.id); }
+    }
+    addSheet(sheetNameFor(top.name), entries);
+  }
+  const orphans = products.filter((p) => !placed.has(p.id));
+  if (orphans.length > 0) addSheet("Fără categorie", orphans.map((p) => ({ p, top: null, sub: null })));
 
   const help: string[][] = [
     ["Cum se folosește acest fișier"],
     [""],
-    ["Fiecare rând din foaia „Produse” este un produs. Fișierul se poate edita și reimporta din Admin → Produse → Importă Excel."],
+    ["Fiecare foaie este o categorie (ex. „Hârtie igienică”, „Lădițe”) și conține toate produsele ei; subcategoria fiecărui produs e în coloana „Subcategorie”."],
+    ["Poți adăuga produse noi direct în foaia categoriei (pe rândurile de jos): dacă lași „Categorie” goală, produsul intră în categoria foii."],
+    ["Categorie nouă: copiază o foaie (sau creează una nouă cu aceleași coloane), dă-i numele categoriei noi și completează produsele. La import categoria se creează singură."],
+    ["Subcategorie nouă: scrie numele ei în coloana „Subcategorie”. La import se creează sub categoria din foaie."],
+    ["Se poate edita și reimporta din Admin → Produse → Importă Excel. Se citesc toate foile, în afară de „Instrucțiuni”."],
+    [""],
     ["La import, un rând se potrivește cu un produs existent după ID, apoi după Cod produs, apoi după Slug (iar dacă lipsesc codul și slug-ul, după Nume)."],
     ["Rândurile IDENTICE cu produsul din site se sar (nu se adaugă a doua oară). Rândurile care diferă se actualizează doar dacă bifezi asta la import."],
-    ["Rândurile care nu se potrivesc cu niciun produs se adaugă ca produse noi (obligatoriu: Nume, Preț, Categorie existentă). Codul și slug-ul lipsă se generează."],
+    ["Un produs nou are nevoie de Nume și Preț (și categorie, din coloană sau din numele foii). Codul și slug-ul lipsă se generează."],
     ["Poți importa și un fișier cu mai puține coloane (ex. doar „Cod produs” și „Preț”): coloanele care lipsesc nu se modifică."],
     [""],
     ["Coloane:"],
-    ["Categorie — numele exact al unei categorii existente (sau slug-ul ei)."],
     ["Preț, Preț vechi, Preț la cantitate mare — în MDL, cu virgulă sau punct. Praguri preț — cantitate:preț, separate prin „;” (ex. 10:25; 30:20,5)."],
     ["Rate, Garanție — Da / Nu (Garanție goală = implicit). Disponibilitate — text (ex. În stoc, Stoc epuizat)."],
     ["Imagine principală — link (https://…) către poză. Imagini suplimentare — linkuri, câte unul pe rând în aceeași celulă. Pozele nu se încarcă din Excel: se păstrează linkul."],
@@ -329,11 +388,8 @@ export async function buildProductsWorkbook(): Promise<Buffer> {
     ["ID, Rating, Nr. recenzii, Pop-up ofertă, Data creării — doar informative; se ignoră la import (ID ajută la potrivire)."],
   ];
   const helpSheet = XLSX.utils.aoa_to_sheet(help);
-  helpSheet["!cols"] = [{ wch: 140 }];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Produse");
-  XLSX.utils.book_append_sheet(wb, helpSheet, "Instrucțiuni");
+  helpSheet["!cols"] = [{ wch: 150 }];
+  XLSX.utils.book_append_sheet(wb, helpSheet, INSTRUCTIONS_SHEET);
   return XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
 }
 
@@ -345,6 +401,7 @@ const MAX_IMPORT_ROWS = 3000;
 export type RowStatus = "new" | "identical" | "changed" | "duplicate" | "error";
 
 export interface ImportRowResult {
+  sheet: string;
   line: number;
   status: RowStatus;
   name: string;
@@ -361,15 +418,36 @@ export interface ImportSummary {
   error: number;
 }
 
+export interface NewCategoryInfo {
+  name: string;
+  /** Numele categoriei-părinte, pentru o subcategorie nouă. */
+  parent: string | null;
+}
+
 export interface ImportAnalysis {
   summary: ImportSummary;
   rows: ImportRowResult[];
-  /** Coloane recunoscute din fișier și titluri ignorate. */
-  recognized: string[];
+  /** Categorii / subcategorii care nu există și se vor crea la import. */
+  newCategories: NewCategoryInfo[];
+  /** Foile citite și foile ignorate (fără coloană de identificare). */
+  sheets: string[];
+  skippedSheets: string[];
+  /** Titluri de coloane necunoscute (ignorate). */
   ignored: string[];
 }
 
+interface PlannedCategory {
+  key: string;
+  name: string;
+  slug: string;
+  /** Părintele existent (id) sau planificat (cheie), pentru o subcategorie; ambele null = categorie principală. */
+  parentId: string | null;
+  parentKey: string | null;
+  parentName: string | null;
+}
+
 interface Plan {
+  sheet: string;
   line: number;
   status: RowStatus;
   name: string;
@@ -378,6 +456,8 @@ interface Plan {
   existingId?: string;
   /** Câmpuri gata de scris în baza de date (la „nou”: toate; la „diferit”: doar cele schimbate). */
   data: Record<string, unknown>;
+  /** Cheia unei categorii care trebuie creată întâi (data.categoryId se completează după creare). */
+  newCategoryKey?: string;
   /** Codul produsului principal (undefined = nu se atinge; "" = nu mai e variantă). */
   variantCode?: string;
 }
@@ -401,7 +481,15 @@ function shorten(v: Canon): string {
   return text.length > 22 ? `${text.slice(0, 20)}…` : text;
 }
 
-function readSheet(buffer: Buffer): { keys: (FieldKey | null)[]; headers: string[]; rows: unknown[][] } {
+interface SheetData {
+  name: string;
+  keys: (FieldKey | null)[];
+  headers: string[];
+  present: Set<FieldKey>;
+  rows: unknown[][];
+}
+
+function readSheets(buffer: Buffer): { sheets: SheetData[]; skipped: string[] } {
   if (buffer.length === 0) throw new ProductsFileError("Fișierul e gol.");
   if (buffer.length > MAX_IMPORT_BYTES) throw new ProductsFileError("Fișierul e prea mare (maxim 5 MB).");
   let wb: XLSX.WorkBook;
@@ -410,36 +498,52 @@ function readSheet(buffer: Buffer): { keys: (FieldKey | null)[]; headers: string
   } catch {
     throw new ProductsFileError("Nu am putut citi fișierul. Folosește un fișier Excel (.xlsx) sau CSV.");
   }
-  const sheetName = wb.SheetNames.find((n) => normHeader(n) === "produse") ?? wb.SheetNames[0];
-  const ws = sheetName ? wb.Sheets[sheetName] : undefined;
-  if (!ws) throw new ProductsFileError("Fișierul nu conține nicio foaie.");
-  const matrix = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: "", blankrows: true, raw: true });
-  if (matrix.length === 0) throw new ProductsFileError("Foaia este goală.");
 
-  const headers = (matrix[0] ?? []).map((h) => str(h));
-  const seen = new Set<FieldKey>();
-  const keys = headers.map((h) => {
-    const key = KEY_BY_ALIAS.get(normHeader(h)) ?? null;
-    if (!key || seen.has(key)) return null;
-    seen.add(key);
-    return key;
-  });
-  if (!keys.some((k) => k === "code" || k === "slug" || k === "name" || k === "id")) {
-    throw new ProductsFileError("Nu găsesc nicio coloană de identificare: adaugă cel puțin „Cod produs”, „Slug” sau „Nume” pe primul rând.");
+  const sheets: SheetData[] = [];
+  const skipped: string[] = [];
+  let totalRows = 0;
+  for (const name of wb.SheetNames) {
+    if (IGNORED_SHEETS.has(normHeader(name))) continue;
+    const ws = wb.Sheets[name];
+    if (!ws) continue;
+    const matrix = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: "", blankrows: true, raw: true });
+    if (matrix.length === 0) { skipped.push(name); continue; }
+    const headers = (matrix[0] ?? []).map((h) => str(h));
+    const seen = new Set<FieldKey>();
+    const keys = headers.map((h) => {
+      const key = KEY_BY_ALIAS.get(normHeader(h)) ?? null;
+      if (!key || seen.has(key)) return null;
+      seen.add(key);
+      return key;
+    });
+    if (!keys.some((k) => k === "code" || k === "slug" || k === "name" || k === "id")) { skipped.push(name); continue; }
+    const rows = matrix.slice(1);
+    totalRows += rows.length;
+    if (totalRows > MAX_IMPORT_ROWS) throw new ProductsFileError(`Prea multe rânduri (maxim ${MAX_IMPORT_ROWS}).`);
+    sheets.push({ name, keys, headers, present: new Set(keys.filter((k): k is FieldKey => k !== null)), rows });
   }
-  const rows = matrix.slice(1);
-  if (rows.length > MAX_IMPORT_ROWS) throw new ProductsFileError(`Prea multe rânduri (maxim ${MAX_IMPORT_ROWS}).`);
-  return { keys, headers, rows };
+  if (sheets.length === 0) {
+    throw new ProductsFileError(
+      skipped.length > 0
+        ? "Nu găsesc nicio coloană de identificare: adaugă cel puțin „Cod produs”, „Slug” sau „Nume” pe primul rând al foii."
+        : "Fișierul nu conține nicio foaie cu produse."
+    );
+  }
+  return { sheets, skipped };
 }
 
 interface Analyzed {
   analysis: ImportAnalysis;
   plans: Plan[];
+  planned: PlannedCategory[];
 }
 
+type CategoryResolution =
+  | { ok: true; canon: string; label: string; topId: string | null; newKey?: string }
+  | { ok: false; error: string };
+
 async function analyze(buffer: Buffer): Promise<Analyzed> {
-  const { keys, headers, rows } = readSheet(buffer);
-  const present = new Set(keys.filter((k): k is FieldKey => k !== null));
+  const { sheets, skipped } = readSheets(buffer);
 
   const [products, categories] = await Promise.all([prisma.product.findMany(), prisma.category.findMany()]);
   const ctx: DbContext = {
@@ -454,157 +558,250 @@ async function analyze(buffer: Buffer): Promise<Analyzed> {
     const k = normHeader(p.name);
     byName.set(k, [...(byName.get(k) ?? []), p]);
   }
-  const catByName = new Map<string, { id: string }[]>();
-  const catBySlug = new Map<string, { id: string }>();
-  for (const c of categories) {
-    const k = normHeader(c.name);
-    catByName.set(k, [...(catByName.get(k) ?? []), { id: c.id }]);
-    catBySlug.set(normHeader(c.slug), { id: c.id });
-  }
+
+  // ── categoriile din site (o singură treaptă: categorie principală + subcategorii) ──
+  const catById = new Map<string, CategoryRow>(categories.map((c) => [c.id, c]));
+  const isTop = (c: CategoryRow) => !c.parentId || !catById.has(c.parentId);
+  const topOf = (id: string): string => {
+    const c = catById.get(id);
+    return c && !isTop(c) ? c.parentId! : id;
+  };
+  const categoryLabel = (id: string): string => {
+    const c = catById.get(id);
+    if (!c) return "—";
+    return isTop(c) ? c.name : `${catById.get(c.parentId!)!.name} › ${c.name}`;
+  };
+  const matchesName = (c: CategoryRow, wanted: string) => normHeader(c.name) === wanted || normHeader(c.slug) === wanted;
+  const tops = categories.filter(isTop);
+  const takenCategorySlugs = new Set(categories.map((c) => c.slug));
+
+  const planned = new Map<string, PlannedCategory>();
+  const plannedSlug = (name: string, parentName: string | null): string => {
+    const nameSlug = slugify(name);
+    const parentSlug = parentName ? slugify(parentName) : "";
+    const base = (parentSlug && !nameSlug.startsWith(parentSlug) ? `${parentSlug}-${nameSlug}` : nameSlug) || "categorie";
+    let slug = base;
+    for (let n = 2; takenCategorySlugs.has(slug); n++) slug = `${base}-${n}`;
+    takenCategorySlugs.add(slug);
+    return slug;
+  };
+  const planTop = (name: string): PlannedCategory => {
+    const key = `/${normHeader(name)}`;
+    let p = planned.get(key);
+    if (!p) { p = { key, name, slug: plannedSlug(name, null), parentId: null, parentKey: null, parentName: null }; planned.set(key, p); }
+    return p;
+  };
+  const planSub = (name: string, parent: { id: string | null; key: string | null; name: string }): PlannedCategory => {
+    const key = `${parent.id ?? parent.key}/${normHeader(name)}`;
+    let p = planned.get(key);
+    if (!p) { p = { key, name, slug: plannedSlug(name, parent.name), parentId: parent.id, parentKey: parent.key, parentName: parent.name }; planned.set(key, p); }
+    return p;
+  };
+
+  /**
+   * Categoria unui rând: din celulele „Categorie” / „Subcategorie”, iar pentru un produs NOU (useSheet) și din numele foii
+   * (o foaie „Lădițe” = categoria Lădițe). Ce nu există se planifică pentru creare. null = nespecificat.
+   */
+  const resolveCategory = (catCell: string, subCell: string, sheetName: string, useSheet: boolean): CategoryResolution | null => {
+    let catText = catCell;
+    let fromSheet = false;
+    if (!catText && useSheet && !GENERIC_SHEETS.has(normHeader(sheetName))) { catText = sheetName; fromSheet = true; }
+    if (!catText && !subCell) return null;
+    if (!catText) return { ok: false, error: `Subcategoria „${subCell}” are nevoie de o Categorie` };
+
+    const wanted = normHeader(catText);
+    let topHits = tops.filter((c) => matchesName(c, wanted));
+    if (topHits.length === 0 && fromSheet) topHits = tops.filter((c) => normHeader(sheetNameFor(c.name)) === wanted);
+    if (topHits.length > 1) return { ok: false, error: `Categoria „${catText}” există de mai multe ori — folosește slug-ul ei` };
+    const top = topHits[0];
+
+    if (top) {
+      if (!subCell) return { ok: true, canon: top.id, label: top.name, topId: top.id };
+      const subWanted = normHeader(subCell);
+      const child = categories.find((c) => c.parentId === top.id && matchesName(c, subWanted));
+      if (child) return { ok: true, canon: child.id, label: `${top.name} › ${child.name}`, topId: top.id };
+      const sub = planSub(subCell, { id: top.id, key: null, name: top.name });
+      return { ok: true, canon: `new:${sub.key}`, label: `${top.name} › ${subCell}`, topId: top.id, newKey: sub.key };
+    }
+
+    // fișiere mai vechi: „Categorie” conținea direct numele subcategoriei
+    const asChild = categories.filter((c) => !isTop(c) && matchesName(c, wanted));
+    if (asChild.length === 1) {
+      if (subCell) return { ok: false, error: `„${catText}” e deja o subcategorie și nu poate avea subcategorii` };
+      return { ok: true, canon: asChild[0].id, label: categoryLabel(asChild[0].id), topId: asChild[0].parentId };
+    }
+    if (asChild.length > 1) return { ok: false, error: `Categoria „${catText}” există de mai multe ori — folosește slug-ul ei` };
+
+    // categorie nouă (și subcategoria ei, dacă e scrisă)
+    const newTop = planTop(catText.trim());
+    if (!subCell) return { ok: true, canon: `new:${newTop.key}`, label: `${newTop.name} (categorie nouă)`, topId: null, newKey: newTop.key };
+    const newSub = planSub(subCell, { id: null, key: newTop.key, name: newTop.name });
+    return { ok: true, canon: `new:${newSub.key}`, label: `${newTop.name} › ${subCell} (categorie nouă)`, topId: null, newKey: newSub.key };
+  };
 
   const takenCodes = new Set(products.map((p) => p.code).filter((c): c is string => Boolean(c)));
   const takenSlugs = new Set(products.map((p) => p.slug));
-  const matchedIds = new Map<string, number>(); // produs existent -> rândul care l-a revendicat
-  const newKeys = new Map<string, number>(); // cod / slug / nume folosit de un rând nou -> rândul
+  const matchedIds = new Map<string, string>(); // produs existent -> rândul care l-a revendicat
+  const newKeys = new Map<string, string>(); // cod / slug / nume folosit de un rând nou -> rândul
   const plans: Plan[] = [];
+  const ignored = new Set<string>();
 
-  rows.forEach((cells, index) => {
-    const line = index + 2;
-    if (cells.every((c) => str(c) === "")) return;
+  for (const sheet of sheets) {
+    sheet.headers.forEach((h, i) => { if (h && sheet.keys[i] === null) ignored.add(h); });
+    const { present } = sheet;
 
-    const raw = new Map<FieldKey, unknown>();
-    keys.forEach((k, i) => { if (k) raw.set(k, cells[i]); });
+    sheet.rows.forEach((cells, index) => {
+      const line = index + 2;
+      if (cells.every((c) => str(c) === "")) return;
+      const ref = `foaia „${sheet.name}”, rândul ${line}`;
 
-    // 1) valorile din rând, în formă canonică (erorile de format se strâng, nu opresc analiza)
-    const values = new Map<FieldKey, Canon>();
-    const errors: string[] = [];
-    for (const key of present) {
-      if (COLUMN_BY_KEY.get(key)!.info && key !== "id") continue;
-      try {
-        values.set(key, key === "id" ? str(raw.get("id")) : key === "category" ? str(raw.get("category")) : parseCell(key, raw.get(key)));
-      } catch (e) {
-        errors.push((e as Error).message);
+      const raw = new Map<FieldKey, unknown>();
+      sheet.keys.forEach((k, i) => { if (k) raw.set(k, cells[i]); });
+
+      // 1) valorile din rând, în formă canonică (erorile de format se strâng, nu opresc analiza)
+      const values = new Map<FieldKey, Canon>();
+      const errors: string[] = [];
+      for (const key of present) {
+        if (key === "category" || key === "subcategory") continue;
+        if (COLUMN_BY_KEY.get(key)!.info && key !== "id") continue;
+        try {
+          values.set(key, key === "id" ? str(raw.get("id")) : parseCell(key, raw.get(key)));
+        } catch (e) {
+          errors.push((e as Error).message);
+        }
       }
-    }
-    const name = str(values.get("name") ?? "");
-    const code = str(values.get("code") ?? "");
-    const label = name || code || str(values.get("slug") ?? "") || `rândul ${line}`;
+      const name = str(values.get("name") ?? "");
+      const code = str(values.get("code") ?? "");
+      const label = name || code || str(values.get("slug") ?? "") || `rândul ${line}`;
 
-    const fail = (message: string, status: RowStatus = "error") =>
-      plans.push({ line, status, name: label, code, details: message, data: {} });
+      const fail = (message: string, status: RowStatus = "error") =>
+        plans.push({ sheet: sheet.name, line, status, name: label, code, details: message, data: {} });
 
-    if (errors.length > 0) return fail(errors.join(" · "));
+      if (errors.length > 0) return fail(errors.join(" · "));
 
-    // 2) categoria (doar dacă există coloana)
-    let categoryId: string | null | undefined;
-    if (present.has("category")) {
-      const wanted = str(values.get("category") ?? "");
-      if (wanted) {
-        const byNameHits = catByName.get(normHeader(wanted)) ?? [];
-        if (byNameHits.length > 1) return fail(`Categoria „${wanted}” există de mai multe ori — folosește slug-ul ei`);
-        categoryId = byNameHits[0]?.id ?? catBySlug.get(normHeader(wanted))?.id ?? null;
-        if (!categoryId) return fail(`Categoria „${wanted}” nu există — creeaz-o întâi în Admin → Categorii`);
-        values.set("category", categoryId);
-      } else {
-        categoryId = null;
-        values.set("category", "");
+      const catCell = str(raw.get("category"));
+      const subCell = str(raw.get("subcategory"));
+
+      // 2) ce produs existent este acesta?
+      const id = str(values.get("id") ?? "");
+      const slug = str(values.get("slug") ?? "");
+      const hits = new Map<string, Product>();
+      if (id && byId.has(id)) hits.set(id, byId.get(id)!);
+      if (code && byCode.has(code)) hits.set(byCode.get(code)!.id, byCode.get(code)!);
+      const slugHit = slug ? bySlug.get(slug) ?? bySlug.get(cleanSlug(slug)) : undefined;
+      if (slugHit) hits.set(slugHit.id, slugHit);
+      if (hits.size === 0 && !code && !slug && name) {
+        const named = byName.get(normHeader(name)) ?? [];
+        if (named.length > 1) return fail(`Există ${named.length} produse cu numele „${name}” — adaugă Cod produs ca să știu care e`);
+        if (named.length === 1) hits.set(named[0].id, named[0]);
       }
-    }
+      if (hits.size > 1) return fail("ID / cod / slug aparțin unor produse diferite");
+      const existing = [...hits.values()][0];
 
-    // 3) ce produs existent este acesta?
-    const id = str(values.get("id") ?? "");
-    const slug = str(values.get("slug") ?? "");
-    const hits = new Map<string, Product>();
-    if (id && byId.has(id)) hits.set(id, byId.get(id)!);
-    if (code && byCode.has(code)) hits.set(byCode.get(code)!.id, byCode.get(code)!);
-    const slugHit = slug ? bySlug.get(slug) ?? bySlug.get(cleanSlug(slug)) : undefined;
-    if (slugHit) hits.set(slugHit.id, slugHit);
-    if (hits.size === 0 && !code && !slug && name) {
-      const named = byName.get(normHeader(name)) ?? [];
-      if (named.length > 1) return fail(`Există ${named.length} produse cu numele „${name}” — adaugă Cod produs ca să știu care e`);
-      if (named.length === 1) hits.set(named[0].id, named[0]);
-    }
-    if (hits.size > 1) return fail("ID / cod / slug aparțin unor produse diferite");
-    const existing = [...hits.values()][0];
+      if (existing) {
+        const firstRef = matchedIds.get(existing.id);
+        if (firstRef !== undefined) return fail(`Același produs apare și în ${firstRef} — sărit`, "duplicate");
+        matchedIds.set(existing.id, ref);
 
-    if (existing) {
-      const firstLine = matchedIds.get(existing.id);
-      if (firstLine !== undefined) return fail(`Același produs apare și pe rândul ${firstLine} — sărit`, "duplicate");
-      matchedIds.set(existing.id, line);
+        // categoria: se compară doar dacă rândul o spune explicit (celulă completată)
+        let newCategoryKey: string | undefined;
+        let categoryChange: { canon: string; label: string } | null = null;
+        if ((catCell || subCell) && (present.has("category") || present.has("subcategory"))) {
+          // „Categorie” goală dar „Subcategorie” completată: categoria o dă foaia (ca la un produs nou)
+          const res = resolveCategory(catCell, subCell, sheet.name, Boolean(subCell));
+          if (res && !res.ok) return fail(res.error);
+          if (res && res.ok) {
+            // fără coloana „Subcategorie”, o categorie principală din aceeași familie nu mută produsul dintr-o subcategorie
+            const keepsFamily = !present.has("subcategory") && res.topId !== null && res.topId === topOf(existing.categoryId);
+            if (!keepsFamily && res.canon !== existing.categoryId) {
+              categoryChange = { canon: res.canon, label: res.label };
+              newCategoryKey = res.newKey;
+            }
+          }
+        }
 
-      const data: Record<string, unknown> = {};
-      const changes: string[] = [];
+        const data: Record<string, unknown> = {};
+        const changes: string[] = [];
+        let variantCode: string | undefined;
+        for (const key of EDITABLE_KEYS) {
+          if (key === "category") {
+            if (categoryChange) {
+              changes.push(`Categorie: ${categoryLabel(existing.categoryId)} → ${categoryChange.label}`);
+              data.categoryId = categoryChange.canon;
+            }
+            continue;
+          }
+          if (!present.has(key) || !values.has(key)) continue;
+          // Celulă goală la câmpurile care nu pot fi „golite” (au valoare implicită) = nespecificat, nu „șterge”:
+          // altfel un fișier cu coloana Slug necompletată ar încerca să scoată slug-ul produselor existente.
+          if (NOT_CLEARABLE.has(key) && str(raw.get(key)) === "") continue;
+          const fileVal = values.get(key)!;
+          const dbVal = canonFromProduct(key, existing, ctx);
+          if (same(fileVal, dbVal)) continue;
+          // câmpuri obligatorii: un preț/nume gol în fișier nu șterge produsul existent
+          if ((key === "name" && fileVal === "") || (key === "price" && fileVal === null)) continue;
+          const colLabel = COLUMN_BY_KEY.get(key)!.header;
+          changes.push(["price", "oldPrice", "salesCount", "weightKg", "code", "slug", "name", "availability", "brand"].includes(key)
+            ? `${colLabel}: ${shorten(dbVal)} → ${shorten(fileVal)}`
+            : colLabel);
+          if (key === "variantGroupCode") variantCode = String(fileVal);
+          else data[key] = toDbValue(key, fileVal);
+        }
+        if (changes.length === 0) return plans.push({ sheet: sheet.name, line, status: "identical", name: existing.name, code: existing.code ?? "", details: "Identic cu produsul din site — sărit", existingId: existing.id, data: {} });
+        // cod/slug schimbate trebuie să rămână unice
+        if (typeof data.code === "string" && data.code && takenCodes.has(data.code)) return fail(`Codul „${data.code}” aparține altui produs`);
+        if (typeof data.slug === "string" && data.slug) data.slug = cleanSlug(data.slug);
+        if (typeof data.slug === "string" && data.slug && takenSlugs.has(data.slug)) return fail(`Slug-ul „${data.slug}” aparține altui produs`);
+        if (data.code === "") delete data.code;
+        if (data.slug === "") delete data.slug;
+        return plans.push({ sheet: sheet.name, line, status: "changed", name: existing.name, code: existing.code ?? "", details: changes.join(" · "), existingId: existing.id, data, variantCode, newCategoryKey });
+      }
+
+      // 3) produs nou
+      const priceVal = values.get("price");
+      if (!name) return fail("Lipsește Nume");
+      if (typeof priceVal !== "number" || priceVal <= 0) return fail("Lipsește Preț (sau nu e mai mare ca 0)");
+      const category = resolveCategory(catCell, subCell, sheet.name, true);
+      if (!category) return fail("Lipsește Categoria (scrie-o în coloana „Categorie” sau pune produsul pe foaia categoriei)");
+      if (!category.ok) return fail(category.error);
+      if ((values.get("bulkMinQty") === null) !== (values.get("bulkPrice") === null) && present.has("bulkMinQty") && present.has("bulkPrice")) {
+        return fail("Completează atât „Cantitate mare”, cât și „Preț la cantitate mare” (sau niciuna)");
+      }
+
+      const claims = [code && `c:${code}`, slug && `s:${slug}`, !code && !slug && `n:${normHeader(name)}`].filter((k): k is string => Boolean(k));
+      for (const k of claims) {
+        const other = newKeys.get(k);
+        if (other !== undefined) return fail(`Se repetă ${other} (același ${k[0] === "c" ? "cod" : k[0] === "s" ? "slug" : "nume"}) — sărit`, "duplicate");
+      }
+      if (code && takenCodes.has(code)) return fail(`Codul „${code}” aparține altui produs`);
+      let finalSlug = slug ? cleanSlug(slug) : slugify(name);
+      if (!finalSlug) return fail("Numele nu poate produce un slug valid");
+      if (!slug) {
+        const base = finalSlug;
+        for (let n = 2; takenSlugs.has(finalSlug); n++) finalSlug = `${base}-${n}`;
+      } else if (takenSlugs.has(finalSlug)) {
+        return fail(`Slug-ul „${finalSlug}” aparține altui produs`);
+      }
+      const finalCode = code || randomProductCode(takenCodes);
+      claims.forEach((k) => newKeys.set(k, ref));
+      newKeys.set(`c:${finalCode}`, ref);
+      newKeys.set(`s:${finalSlug}`, ref);
+      takenCodes.add(finalCode);
+      takenSlugs.add(finalSlug);
+
+      const data: Record<string, unknown> = { name, slug: finalSlug, code: finalCode, price: priceVal, categoryId: category.canon };
       let variantCode: string | undefined;
       for (const key of EDITABLE_KEYS) {
+        if (["name", "slug", "code", "price", "category"].includes(key)) continue;
         if (!present.has(key) || !values.has(key)) continue;
-        // Celulă goală la câmpurile care nu pot fi „golite” (au valoare implicită) = nespecificat, nu „șterge”:
-        // altfel un fișier cu coloana Slug necompletată ar încerca să scoată slug-ul produselor existente.
-        if (NOT_CLEARABLE.has(key) && str(raw.get(key)) === "") continue;
-        const fileVal = values.get(key)!;
-        const dbVal = canonFromProduct(key, existing, ctx);
-        if (same(fileVal, dbVal)) continue;
-        // câmpuri obligatorii: un preț/nume gol în fișier nu șterge produsul existent
-        if ((key === "name" && fileVal === "") || (key === "price" && fileVal === null) || (key === "category" && fileVal === "")) continue;
-        const colLabel = COLUMN_BY_KEY.get(key)!.header;
-        changes.push(["price", "oldPrice", "salesCount", "weightKg", "code", "slug", "name", "category", "availability", "brand"].includes(key) && key !== "category"
-          ? `${colLabel}: ${shorten(dbVal)} → ${shorten(fileVal)}`
-          : colLabel);
-        if (key === "variantGroupCode") variantCode = String(fileVal);
-        else data[key === "category" ? "categoryId" : key] = toDbValue(key, fileVal);
+        if (key === "variantGroupCode") { variantCode = String(values.get(key)) || undefined; continue; }
+        data[key] = toDbValue(key, values.get(key)!);
       }
-      if (changes.length === 0) return plans.push({ line, status: "identical", name: existing.name, code: existing.code ?? "", details: "Identic cu produsul din site — sărit", existingId: existing.id, data: {} });
-      // cod/slug schimbate trebuie să rămână unice
-      if (typeof data.code === "string" && data.code && takenCodes.has(data.code)) return fail(`Codul „${data.code}” aparține altui produs`);
-      if (typeof data.slug === "string" && data.slug) data.slug = cleanSlug(data.slug);
-      if (typeof data.slug === "string" && data.slug && takenSlugs.has(data.slug)) return fail(`Slug-ul „${data.slug}” aparține altui produs`);
-      if (data.code === "") delete data.code;
-      if (data.slug === "") delete data.slug;
-      return plans.push({ line, status: "changed", name: existing.name, code: existing.code ?? "", details: changes.join(" · "), existingId: existing.id, data, variantCode });
-    }
+      plans.push({ sheet: sheet.name, line, status: "new", name, code: finalCode, details: `Produs nou · ${category.label}`, data, variantCode, newCategoryKey: category.newKey });
+    });
+  }
 
-    // 4) produs nou
-    const priceVal = values.get("price");
-    if (!name) return fail("Lipsește Nume");
-    if (typeof priceVal !== "number" || priceVal <= 0) return fail("Lipsește Preț (sau nu e mai mare ca 0)");
-    if (!categoryId) return fail("Lipsește Categorie (obligatorie pentru un produs nou)");
-    if ((values.get("bulkMinQty") === null) !== (values.get("bulkPrice") === null) && present.has("bulkMinQty") && present.has("bulkPrice")) {
-      return fail("Completează atât „Cantitate mare”, cât și „Preț la cantitate mare” (sau niciuna)");
-    }
-
-    const claim = (k: string) => newKeys.get(k);
-    const claims = [code && `c:${code}`, slug && `s:${slug}`, !code && !slug && `n:${normHeader(name)}`].filter((k): k is string => Boolean(k));
-    for (const k of claims) {
-      const other = claim(k);
-      if (other !== undefined) return fail(`Se repetă rândul ${other} (același ${k[0] === "c" ? "cod" : k[0] === "s" ? "slug" : "nume"}) — sărit`, "duplicate");
-    }
-    if (code && takenCodes.has(code)) return fail(`Codul „${code}” aparține altui produs`);
-    let finalSlug = slug ? cleanSlug(slug) : slugify(name);
-    if (!finalSlug) return fail("Numele nu poate produce un slug valid");
-    if (!slug) {
-      const base = finalSlug;
-      for (let n = 2; takenSlugs.has(finalSlug); n++) finalSlug = `${base}-${n}`;
-    } else if (takenSlugs.has(finalSlug)) {
-      return fail(`Slug-ul „${finalSlug}” aparține altui produs`);
-    }
-    const finalCode = code || randomProductCode(takenCodes);
-    claims.forEach((k) => newKeys.set(k, line));
-    newKeys.set(`c:${finalCode}`, line);
-    newKeys.set(`s:${finalSlug}`, line);
-    takenCodes.add(finalCode);
-    takenSlugs.add(finalSlug);
-
-    const data: Record<string, unknown> = { name, slug: finalSlug, code: finalCode, price: priceVal, categoryId };
-    let variantCode: string | undefined;
-    for (const key of EDITABLE_KEYS) {
-      if (["name", "slug", "code", "price", "category"].includes(key)) continue;
-      if (!present.has(key) || !values.has(key)) continue;
-      if (key === "variantGroupCode") { variantCode = String(values.get(key)) || undefined; continue; }
-      data[key] = toDbValue(key, values.get(key)!);
-    }
-    plans.push({ line, status: "new", name, code: finalCode, details: `Produs nou · ${ctx.categoryNameById.get(categoryId) ?? ""}`, data, variantCode });
-  });
-
-  // 5) legăturile de variantă: produsul principal trebuie să existe (în site sau în fișier) și să nu fie el însuși variantă
+  // 4) legăturile de variantă: produsul principal trebuie să existe (în site sau în fișier) și să nu fie el însuși variantă
   const isVariant = new Set(products.filter((p) => p.variantGroupId && p.code).map((p) => p.code!));
   for (const pl of plans) {
     if (pl.status === "error" || pl.status === "duplicate" || pl.variantCode === undefined) continue;
@@ -625,22 +822,35 @@ async function analyze(buffer: Buffer): Promise<Analyzed> {
     }
   }
 
+  // 5) categoriile de creat = cele folosite de rândurile care chiar se vor scrie (nu de rânduri cu erori)
+  const used = new Set<string>();
+  for (const pl of plans) {
+    if ((pl.status !== "new" && pl.status !== "changed") || !pl.newCategoryKey) continue;
+    let p: PlannedCategory | undefined = planned.get(pl.newCategoryKey);
+    while (p && !used.has(p.key)) {
+      used.add(p.key);
+      p = p.parentKey ? planned.get(p.parentKey) : undefined;
+    }
+  }
+  const toCreate = [...planned.values()].filter((p) => used.has(p.key));
+
   const summary: ImportSummary = { total: plans.length, new: 0, identical: 0, changed: 0, duplicate: 0, error: 0 };
   for (const pl of plans) summary[pl.status]++;
-  const recognized = keys.filter((k): k is FieldKey => k !== null).map((k) => COLUMN_BY_KEY.get(k)!.header);
-  const ignored = headers.filter((h, i) => h && keys[i] === null);
   return {
     analysis: {
       summary,
-      rows: plans.map(({ line, status, name, code, details }) => ({ line, status, name, code, details })),
-      recognized,
-      ignored,
+      rows: plans.map(({ sheet, line, status, name, code, details }) => ({ sheet, line, status, name, code, details })),
+      newCategories: toCreate.map((p) => ({ name: p.name, parent: p.parentName })),
+      sheets: sheets.map((s) => s.name),
+      skippedSheets: skipped,
+      ignored: [...ignored],
     },
     plans,
+    planned: toCreate,
   };
 }
 
-/** Verifică fișierul fără să scrie nimic: ce e nou, ce e identic (se sare), ce diferă, ce are erori. */
+/** Verifică fișierul fără să scrie nimic: ce e nou, ce e identic (se sare), ce diferă, ce are erori, ce categorii se creează. */
 export async function analyzeProductsFile(buffer: Buffer): Promise<ImportAnalysis> {
   return (await analyze(buffer)).analysis;
 }
@@ -648,24 +858,25 @@ export async function analyzeProductsFile(buffer: Buffer): Promise<ImportAnalysi
 export interface ImportResult {
   created: number;
   updated: number;
+  categoriesCreated: number;
   skippedIdentical: number;
   skippedChanged: number;
   skippedDuplicate: number;
-  errors: { line: number; name: string; message: string }[];
+  errors: { sheet: string; line: number; name: string; message: string }[];
 }
 
-/** Aplică importul: produsele noi se adaugă; cele identice se sar; cele diferite se actualizează doar dacă se cere. */
+/** Aplică importul: categoriile lipsă se creează; produsele noi se adaugă; cele identice se sar; cele diferite se actualizează doar dacă se cere. */
 export async function applyProductsFile(buffer: Buffer, options: { updateExisting: boolean }): Promise<ImportResult> {
-  const { plans } = await analyze(buffer);
-  const result: ImportResult = { created: 0, updated: 0, skippedIdentical: 0, skippedChanged: 0, skippedDuplicate: 0, errors: [] };
+  const { plans, planned } = await analyze(buffer);
+  const result: ImportResult = { created: 0, updated: 0, categoriesCreated: 0, skippedIdentical: 0, skippedChanged: 0, skippedDuplicate: 0, errors: [] };
   const idByCode = new Map<string, string>();
   for (const p of await prisma.product.findMany({ select: { id: true, code: true } })) if (p.code) idByCode.set(p.code, p.id);
 
-  const fail = (pl: Plan, e: unknown) => result.errors.push({ line: pl.line, name: pl.name, message: e instanceof Error ? e.message : "eroare necunoscută" });
+  const fail = (pl: Plan, e: unknown) => result.errors.push({ sheet: pl.sheet, line: pl.line, name: pl.name, message: e instanceof Error ? e.message : "eroare necunoscută" });
   const toCreate: Plan[] = [];
   const toUpdate: Plan[] = [];
   for (const pl of plans) {
-    if (pl.status === "error") result.errors.push({ line: pl.line, name: pl.name, message: pl.details });
+    if (pl.status === "error") result.errors.push({ sheet: pl.sheet, line: pl.line, name: pl.name, message: pl.details });
     else if (pl.status === "duplicate") result.skippedDuplicate++;
     else if (pl.status === "identical") result.skippedIdentical++;
     else if (pl.status === "changed") {
@@ -674,11 +885,48 @@ export async function applyProductsFile(buffer: Buffer, options: { updateExistin
     } else toCreate.push(pl);
   }
 
+  // faza 0: categoriile / subcategoriile noi (cele principale întâi), doar dacă vreun rând de scris le folosește
+  const plannedByKey = new Map(planned.map((p) => [p.key, p]));
+  const neededKeys = new Set<string>();
+  for (const pl of [...toCreate, ...toUpdate]) {
+    let p = pl.newCategoryKey ? plannedByKey.get(pl.newCategoryKey) : undefined;
+    while (p && !neededKeys.has(p.key)) {
+      neededKeys.add(p.key);
+      p = p.parentKey ? plannedByKey.get(p.parentKey) : undefined;
+    }
+  }
+  const categoryIdByKey = new Map<string, string>();
+  // categoriile principale întâi, apoi subcategoriile (una nouă poate fi sub o categorie principală tot nouă)
+  const ordered = planned.filter((p) => neededKeys.has(p.key)).sort((a, b) => Number(a.parentKey !== null || a.parentId !== null) - Number(b.parentKey !== null || b.parentId !== null));
+  for (const cat of ordered) {
+    const parentId = cat.parentId ?? (cat.parentKey ? categoryIdByKey.get(cat.parentKey) ?? null : null);
+    if (cat.parentKey && !parentId) continue;
+    try {
+      const row = await prisma.category.create({ data: { name: cat.name, slug: cat.slug, parentId }, select: { id: true } });
+      categoryIdByKey.set(cat.key, row.id);
+      result.categoriesCreated++;
+    } catch (e) {
+      result.errors.push({ sheet: "—", line: 0, name: cat.name, message: `categoria nu s-a putut crea: ${e instanceof Error ? e.message : "eroare"}` });
+    }
+  }
+
+  // categoria unui rând al cărui `categoryId` e „new:<cheie>” devine id-ul real; dacă n-a putut fi creată, rândul e raportat ca eroare
+  const resolveCategoryId = (pl: Plan): boolean => {
+    const value = pl.data.categoryId;
+    if (typeof value !== "string" || !value.startsWith("new:")) return true;
+    const key = value.slice(4);
+    const id = categoryIdByKey.get(key);
+    if (!id) { fail(pl, new Error("categoria nouă nu a putut fi creată")); return false; }
+    pl.data.categoryId = id;
+    return true;
+  };
+
   // faza 1: produsele noi (fără legătura de variantă — produsul principal poate fi mai jos în fișier)
   const created: Plan[] = [];
-  for (let i = 0; i < toCreate.length; i += 10) {
+  const creatable = toCreate.filter(resolveCategoryId);
+  for (let i = 0; i < creatable.length; i += 10) {
     await Promise.all(
-      toCreate.slice(i, i + 10).map(async (pl) => {
+      creatable.slice(i, i + 10).map(async (pl) => {
         try {
           const row = await prisma.product.create({ data: pl.data as never, select: { id: true, code: true } });
           if (row.code) idByCode.set(row.code, row.id);
@@ -694,9 +942,10 @@ export async function applyProductsFile(buffer: Buffer, options: { updateExistin
 
   // faza 2: actualizările produselor existente
   const updatedPlans: Plan[] = [];
-  for (let i = 0; i < toUpdate.length; i += 10) {
+  const updatable = toUpdate.filter(resolveCategoryId);
+  for (let i = 0; i < updatable.length; i += 10) {
     await Promise.all(
-      toUpdate.slice(i, i + 10).map(async (pl) => {
+      updatable.slice(i, i + 10).map(async (pl) => {
         try {
           if (Object.keys(pl.data).length > 0) await prisma.product.update({ where: { id: pl.existingId! }, data: pl.data as never });
           updatedPlans.push(pl);

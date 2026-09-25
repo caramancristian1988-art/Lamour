@@ -46,7 +46,9 @@ export async function POST(request: NextRequest) {
       const result = await applyProductsFile(buffer, { updateExisting: form.get("updateExisting") === "1" });
       if (result.created > 0 || result.updated > 0) {
         invalidateCatalog();
-        revalidatePath("/produse", "layout");
+        // o categorie nouă apare și în meniul din antet (în layout-ul rădăcină), deci se reîmprospătează tot site-ul
+        if (result.categoriesCreated > 0) revalidatePath("/", "layout");
+        else revalidatePath("/produse", "layout");
         revalidatePath("/");
         revalidatePath("/admin/produse");
       }

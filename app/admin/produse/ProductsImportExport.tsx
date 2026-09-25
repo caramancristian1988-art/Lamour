@@ -125,7 +125,7 @@ export default function ProductsImportExport() {
           <DialogHeader>
             <DialogTitle className="text-xl">Importă produse din Excel</DialogTitle>
             <DialogDescription className="text-sm">
-              Cel mai simplu: exportă produsele, editează fișierul și importă-l înapoi. Produsele identice cu cele din site nu se adaugă a doua oară.
+              Exportul are câte o foaie pentru fiecare categorie. Adaugă produse în foaia categoriei (sau într-o foaie nouă, pentru o categorie nouă), apoi importă fișierul: categoriile lipsă se creează singure, iar produsele identice cu cele din site nu se adaugă a doua oară.
             </DialogDescription>
           </DialogHeader>
 
@@ -190,6 +190,28 @@ export default function ProductsImportExport() {
                 ))}
               </div>
 
+              {analysis.newCategories.length > 0 && (
+                <div className="rounded-xl border border-border bg-muted px-3 py-2 text-sm">
+                  <p className="font-bold text-primary">
+                    Se creează {analysis.newCategories.length === 1 ? "o categorie nouă" : `${analysis.newCategories.length} categorii noi`}:
+                  </p>
+                  <ul className="mt-1 flex flex-wrap gap-1.5">
+                    {analysis.newCategories.map((c) => (
+                      <li key={`${c.parent ?? ""}/${c.name}`} className="rounded-full bg-card px-2.5 py-0.5 text-xs font-semibold text-foreground">
+                        {c.parent ? `${c.parent} › ${c.name}` : c.name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis.sheets.length > 1 && (
+                <p className="text-xs text-muted-foreground">
+                  Foi citite ({analysis.sheets.length}): {analysis.sheets.join(", ")}
+                  {analysis.skippedSheets.length > 0 && `. Ignorate (fără coloană „Cod produs” / „Nume”): ${analysis.skippedSheets.join(", ")}`}
+                </p>
+              )}
+
               {analysis.ignored.length > 0 && (
                 <p className="text-xs text-muted-foreground">Coloane necunoscute (ignorate): {analysis.ignored.join(", ")}</p>
               )}
@@ -198,7 +220,7 @@ export default function ProductsImportExport() {
                 <table className="w-full text-left text-xs">
                   <thead className="sticky top-0 bg-muted text-muted-foreground">
                     <tr>
-                      <th className="px-3 py-2 font-bold">Rând</th>
+                      <th className="px-3 py-2 font-bold">Foaie · rând</th>
                       <th className="px-3 py-2 font-bold">Produs</th>
                       <th className="px-3 py-2 font-bold">Stare</th>
                       <th className="px-3 py-2 font-bold">Detalii</th>
@@ -206,8 +228,11 @@ export default function ProductsImportExport() {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {visibleRows.slice(0, MAX_ROWS_SHOWN).map((r) => (
-                      <tr key={r.line}>
-                        <td className="px-3 py-2 tabular-nums text-muted-foreground">{r.line}</td>
+                      <tr key={`${r.sheet}:${r.line}`}>
+                        <td className="px-3 py-2 tabular-nums text-muted-foreground">
+                          {analysis.sheets.length > 1 && <span className="block max-w-[9rem] truncate">{r.sheet}</span>}
+                          {r.line}
+                        </td>
                         <td className="px-3 py-2 font-semibold text-primary">
                           {r.name}
                           {r.code && <span className="ml-1 font-mono font-normal text-muted-foreground">{r.code}</span>}
@@ -283,6 +308,7 @@ export default function ProductsImportExport() {
                 Import terminat
               </p>
               <ul className="grid gap-1 text-sm">
+                {result.categoriesCreated > 0 && <li><b>{plural(result.categoriesCreated, "categorie creată", "categorii create")}</b></li>}
                 <li><b>{plural(result.created, "produs adăugat", "produse adăugate")}</b></li>
                 <li><b>{plural(result.updated, "produs actualizat", "produse actualizate")}</b></li>
                 <li><b>{plural(result.skippedIdentical, "identic", "identice")}</b> — sărite (nu s-au adăugat din nou)</li>
@@ -293,7 +319,7 @@ export default function ProductsImportExport() {
               {result.errors.length > 0 && (
                 <ul className="max-h-40 overflow-auto rounded-xl border border-border p-3 text-xs text-destructive">
                   {result.errors.map((e, i) => (
-                    <li key={i}>Rândul {e.line} ({e.name}): {e.message}</li>
+                    <li key={i}>{e.line > 0 ? `${e.sheet !== "—" ? `foaia „${e.sheet}”, ` : ""}rândul ${e.line} (${e.name})` : e.name}: {e.message}</li>
                   ))}
                 </ul>
               )}
