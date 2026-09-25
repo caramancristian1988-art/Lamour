@@ -13,7 +13,7 @@ import ProductCard from "../components/ProductCard";
 import LoadMoreButton from "../components/LoadMoreButton";
 import ProductFilterSidebar from "../components/ProductFilterSidebar";
 import { getCatalog } from "@/lib/catalog";
-import { NavChips, ProductsNavProvider, PendingRegion } from "../components/ProductsNav";
+import { NavChips, MultiNavChips, ProductsNavProvider, PendingRegion } from "../components/ProductsNav";
 import FurnitureCard from "../components/FurnitureCard";
 import SpaceCard from "../components/SpaceCard";
 import DivisionFilterSidebar from "../components/DivisionFilterSidebar";
@@ -181,20 +181,6 @@ function DivisionTabs({ active }: { active: Division }) {
       items={DIVISION_TABS.map((tab) => ({ key: tab.value, href: `/produse?division=${tab.value}`, label: tab.label, active: active === tab.value }))}
     />
   );
-}
-
-function buildCategoryHref(
-  query: { [key: string]: string | string[] | undefined },
-  slug: string
-): string {
-  const params = new URLSearchParams();
-  Object.entries(query).forEach(([key, value]) => {
-    if (key === "cat" || key === "page") return;
-    if (Array.isArray(value)) value.forEach((v) => params.append(key, v));
-    else if (value !== undefined) params.set(key, value);
-  });
-  params.set("cat", slug);
-  return `/produse?${params.toString()}`;
 }
 
 function Breadcrumb() {
@@ -394,24 +380,25 @@ export default async function ProdusePage({
   const categoryById = new Map(categories.map((c) => [c.id, c.slug]));
   const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
-  // When exactly one category is selected, treat it as either a parent or a
-  // child in the (one-level) category hierarchy so we can show "în 2/3/4
-  // straturi"-style filter buttons and merge parent + children products by
-  // default, matching the behavior of a category's own /produse/[slug] page.
-  const singleCategorySlug = filters.categorySlugs.length === 1 ? filters.categorySlugs[0] : null;
-  const selectedCategory = singleCategorySlug
-    ? categories.find((c) => c.slug === singleCategorySlug)
-    : undefined;
-  const parentCategory = selectedCategory
-    ? selectedCategory.parentId
-      ? categories.find((c) => c.id === selectedCategory.parentId)
-      : selectedCategory
-    : undefined;
+  // Când toate categoriile selectate aparțin aceleiași familii (un părinte și/sau subcategoriile lui, pe un singur nivel),
+  // arătăm butoanele „în 2/3/4 straturi” — cu selecție multiplă (mai multe subcategorii deodată) — și, cât timp e ales
+  // părintele („Toate”), îmbinăm produsele lui cu ale subcategoriilor, ca pe pagina proprie /produse/[slug].
+  const selectedCategories = filters.categorySlugs
+    .map((slug) => categories.find((c) => c.slug === slug))
+    .filter((c): c is (typeof categories)[number] => Boolean(c));
+  const familyParentIds = new Set(selectedCategories.map((c) => c.parentId ?? c.id));
+  const parentCategory =
+    familyParentIds.size === 1 && selectedCategories.length === filters.categorySlugs.length
+      ? categories.find((c) => c.id === [...familyParentIds][0])
+      : undefined;
   const siblingCategories = parentCategory
     ? categories.filter((c) => c.parentId === parentCategory.id)
     : [];
   const showSubcategoryFilters = Boolean(parentCategory) && siblingCategories.length > 0;
-  const isParentActive = showSubcategoryFilters && selectedCategory!.id === parentCategory!.id;
+  // „Toate” = părintele e ales, sau nicio subcategorie nu e aleasă separat.
+  const isParentActive =
+    showSubcategoryFilters &&
+    (filters.categorySlugs.includes(parentCategory!.slug) || !selectedCategories.some((c) => c.parentId));
 
   const effectiveFilters =
     showSubcategoryFilters && isParentActive
@@ -482,19 +469,12 @@ export default async function ProdusePage({
           <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse de uz casnic</h1>
 
           {showSubcategoryFilters && (
-            <NavChips
-              size="sm"
-              ariaLabel="Filtrează după subcategorie"
+            <MultiNavChips
+              paramKey="cat"
+              allValue={parentCategory!.slug}
+              ariaLabel="Filtrează după subcategorie (poți alege mai multe)"
               className="flex items-center gap-2 flex-wrap mb-6"
-              items={[
-                { key: "toate", href: buildCategoryHref(query, parentCategory!.slug), label: "Toate", active: isParentActive },
-                ...siblingCategories.map((sibling) => ({
-                  key: sibling.id,
-                  href: buildCategoryHref(query, sibling.slug),
-                  label: sibling.name,
-                  active: selectedCategory!.id === sibling.id,
-                })),
-              ]}
+              options={siblingCategories.map((sibling) => ({ value: sibling.slug, label: sibling.name }))}
             />
           )}
 

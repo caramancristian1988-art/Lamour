@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 // Răspuns "optimist" la filtrarea produselor: în loc să aștepte serverul fără nicio reacție vizibilă, o apăsare pe un
@@ -73,6 +73,82 @@ export function PendingRegion({ children, className }: { children: ReactNode; cl
   );
 }
 
+/**
+ * Chip-uri cu selecție MULTIPLĂ (ex. „Hârtie igienică în 3 straturi” + „în 4 straturi” deodată): fiecare chip adaugă sau
+ * scoate valoarea lui din parametrul din URL (`cat=a,b` / `subcat=a,b`); „Toate” le golește. Starea vine din URL — sau din
+ * destinația navigării în curs, ca bifele să se vadă instant și două apăsări rapide să se cumuleze (ca în bara laterală).
+ * Rămân linkuri reale (tab nou cu Ctrl/Cmd+click).
+ */
+export function MultiNavChips({
+  paramKey,
+  allValue,
+  options,
+  ariaLabel,
+  className,
+  allLabel = "Toate",
+}: {
+  paramKey: string;
+  /** Valoarea parametrului pentru „Toate” (ex. slug-ul categoriei părinte); null = fără parametru. */
+  allValue: string | null;
+  options: { value: string; label: string }[];
+  ariaLabel: string;
+  className?: string;
+  allLabel?: string;
+}) {
+  const navigate = useProductsNavigate();
+  const pathname = usePathname();
+  const urlParams = useSearchParams();
+  const pendingHref = usePendingHref();
+  const params = pendingHref ? new URLSearchParams(pendingHref.split("?")[1] ?? "") : urlParams;
+
+  const known = options.map((o) => o.value);
+  const selected = (params.get(paramKey)?.split(",").filter(Boolean) ?? []).filter((v) => known.includes(v));
+  const parentSelected = allValue !== null && (params.get(paramKey)?.split(",").includes(allValue) ?? false);
+  // „Toate” e activ când niciun chip nu e ales (sau părintele e ales explicit): atunci apăsarea unui chip pornește o selecție nouă.
+  const allActive = selected.length === 0 || parentSelected;
+  const style = CHIP_BASE.sm;
+
+  function hrefFor(next: string[]): string {
+    const p = new URLSearchParams(params.toString());
+    if (next.length > 0) p.set(paramKey, next.join(","));
+    else if (allValue !== null) p.set(paramKey, allValue);
+    else p.delete(paramKey);
+    p.delete("page");
+    const qs = p.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }
+
+  const toggled = (value: string): string[] => {
+    if (allActive) return [value];
+    return selected.includes(value) ? selected.filter((v) => v !== value) : [...selected, value];
+  };
+
+  const items = [
+    { key: "__all", label: allLabel, href: hrefFor([]), active: allActive },
+    ...options.map((o) => ({ key: o.value, label: o.label, href: hrefFor(toggled(o.value)), active: !allActive && selected.includes(o.value) })),
+  ];
+
+  return (
+    <div className={className} role="group" aria-label={ariaLabel}>
+      {items.map((item) => (
+        <Link
+          key={item.key}
+          href={item.href}
+          aria-current={item.active ? "true" : undefined}
+          onClick={(e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+            e.preventDefault();
+            navigate(item.href, { scroll: false });
+          }}
+          className={cn(style.base, item.active ? style.active : style.idle)}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 export interface NavChipItem {
   key: string;
   href: string;
@@ -123,12 +199,15 @@ export function NavChips({
         });
       };
   const pendingHref = ctx ? ctx.pendingHref : localPending ? localTarget : null;
+  // Evidențiem imediat doar chip-ul apăsat. Dacă navigarea în curs vine din altă parte (o bifă din bara laterală, sortarea),
+  // destinația nu e niciun chip din grup — atunci chip-urile își păstrează starea curentă, nu rămân toate stinse cât se încarcă.
+  const pendingIsChip = pendingHref !== null && items.some((item) => item.href === pendingHref);
   const style = CHIP_BASE[size];
 
   return (
     <div className={className} role="group" aria-label={ariaLabel}>
       {items.map((item) => {
-        const active = pendingHref !== null ? item.href === pendingHref : item.active;
+        const active = pendingIsChip ? item.href === pendingHref : item.active;
         return (
           <Link
             key={item.key}
