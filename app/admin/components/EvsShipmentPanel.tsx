@@ -19,6 +19,11 @@ interface Props {
   defaultPhone: string;
   defaultEmail: string | null;
   defaultAddress: string;
+  // Datele comenzii din coș (dacă e o comandă): codul poștal, greutatea calculată din produse și rambursul, ca operatorul
+  // să nu le retasteze (și să nu rămână 1 kg / fără ramburs din greșeală când AWB-ul se face manual).
+  defaultZip?: string | null;
+  defaultWeightKg?: number | null;
+  defaultCodAmount?: number | null;
   awbCode: string | null;
   awbStatus: string | null;
 }
@@ -31,6 +36,9 @@ export default function EvsShipmentPanel({
   defaultPhone,
   defaultEmail,
   defaultAddress,
+  defaultZip,
+  defaultWeightKg,
+  defaultCodAmount,
   awbCode,
   awbStatus,
 }: Props) {
@@ -97,10 +105,10 @@ export default function EvsShipmentPanel({
       <input className={inputClass} name="line1" defaultValue={defaultAddress} placeholder="Adresă (stradă, nr., localitate, raion)" required />
       <div className="grid grid-cols-3 gap-2">
         <input className={inputClass} name="line2" placeholder="Bloc / apartament" />
-        <input className={inputClass} name="zip" placeholder="Cod poștal (ZIP)" required />
-        <input className={inputClass} name="weight" type="number" min="0.1" step="0.1" defaultValue="1" placeholder="Greutate (kg)" required />
+        <input className={inputClass} name="zip" defaultValue={defaultZip ?? ""} placeholder="Cod poștal (ZIP)" required />
+        <input className={inputClass} name="weight" type="number" min="0.1" step="0.01" defaultValue={defaultWeightKg ?? 1} placeholder="Greutate (kg)" required />
       </div>
-      <input className={inputClass} name="codAmount" type="number" min="0" step="0.01" defaultValue="0" placeholder="Ramburs la livrare (MDL, 0 = fără)" />
+      <input className={inputClass} name="codAmount" type="number" min="0" step="0.01" defaultValue={defaultCodAmount ?? 0} placeholder="Ramburs la livrare (MDL, 0 = fără)" />
 
       {lastResult.description && (
         <div

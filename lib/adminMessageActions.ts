@@ -11,6 +11,7 @@ import { nextOrderNumber } from "./orderNumber";
 import { allowRequest, getClientIp, TOO_MANY_REQUESTS } from "./rateLimit";
 import { isValidCourierEmail } from "./deliveryValidation";
 import { computeOrderWeightKg } from "./orderWeight";
+import { invalidateCatalog } from "./catalog";
 import {
   sendTelegramMessage,
   editTelegramMessage,
@@ -62,6 +63,28 @@ function resolveDeliveryWeight(
 ): number | null {
   if (orderItems.length === 0) return clientWeightKg;
   return computeOrderWeightKg(orderItems, new Map(products.map((p) => [p.id, p.weightKg]))).totalKg;
+}
+
+// Greutățile produselor se completează adesea DUPĂ ce au intrat comenzile — la confirmare (înainte de AWB) recalculăm
+// greutatea din valorile de acum, ca AWB-ul și mesajul din Telegram să nu rămână cu 1 kg/buc. din momentul plasării.
+// Comenzile fără cantități salvate (mai vechi) își păstrează greutatea stocată.
+async function refreshDeliveryWeight<T extends { id: string; orderItems: unknown; deliveryWeightKg: number | null }>(order: T): Promise<T> {
+  try {
+    const items = Array.isArray(order.orderItems)
+      ? (order.orderItems as { productId?: unknown; quantity?: unknown }[]).filter(
+          (it): it is { productId: string; quantity: number } => typeof it?.productId === "string" && typeof it?.quantity === "number"
+        )
+      : [];
+    if (items.length === 0) return order;
+    const products = await prisma.product.findMany({ where: { id: { in: items.map((it) => it.productId) } }, select: { id: true, weightKg: true } });
+    const weight = resolveDeliveryWeight(items, products, order.deliveryWeightKg);
+    if (weight === order.deliveryWeightKg) return order;
+    await prisma.contactMessage.update({ where: { id: order.id }, data: { deliveryWeightKg: weight } });
+    return { ...order, deliveryWeightKg: weight };
+  } catch (err) {
+    console.error("greutatea comenzii nu a putut fi reactualizată la confirmare:", err);
+    return order;
+  }
 }
 
 // Cantitățile din formularul de checkout (JSON: [{ slug, quantity }]),
@@ -239,8 +262,10 @@ export async function applySalesCountForStatusChange(
   if (productIds.length === 0 || previousStatus === newStatus) return;
   if (newStatus === "achitat") {
     await prisma.product.updateMany({ where: { id: { in: productIds } }, data: { salesCount: { increment: 1 } } });
+    invalidateCatalog();
   } else if (previousStatus === "achitat") {
     await prisma.product.updateMany({ where: { id: { in: productIds }, salesCount: { gt: 0 } }, data: { salesCount: { decrement: 1 } } });
+    invalidateCatalog();
   }
 }
 
@@ -558,7 +583,7 @@ async function applyOrderStage(
   };
 
   if (nextStage === "confirmata") {
-    const shipment = await maybeCreateEvsShipment(before, { pickup: false });
+    const shipment = await maybeCreateEvsShipment(before.awbCode ? before : await refreshDeliveryWeight(before), { pickup: false });
     // Comanda rămâne confirmată chiar dacă AWB-ul nu s-a creat (se reîncearcă la "gata de ridicare"),
     // dar operatorul trebuie să știe — altfel eșecul rămânea doar în logurile serverului.
     if (shipment && !shipment.ok) await warn(`AWB-ul nu a putut fi creat la confirmare (${shipment.description}). Se reîncearcă la „Gata de ridicare”.`);
@@ -569,7 +594,7 @@ async function applyOrderStage(
       console.log(`evs activatePickup ${before.awbCode}:`, JSON.stringify(result.raw));
       ready = { ok: result.ok, description: result.description };
     } else {
-      const shipment = await maybeCreateEvsShipment(before, { pickup: true });
+      const shipment = await maybeCreateEvsShipment(await refreshDeliveryWeight(before), { pickup: true });
       if (shipment && !shipment.ok) ready = shipment;
     }
     if (!ready.ok) {
@@ -581,6 +606,7 @@ async function applyOrderStage(
     }
     if (before.productIds.length > 0) {
       await prisma.product.updateMany({ where: { id: { in: before.productIds } }, data: { salesCount: { increment: 1 } } });
+      invalidateCatalog();
     }
   } else if (nextStage === "anulata" && before.awbCode && before.orderStage === "confirmata") {
     // Doar cât AWB-ul nu e "gata de ridicare" — după aceea curierul poate fi deja pe drum.

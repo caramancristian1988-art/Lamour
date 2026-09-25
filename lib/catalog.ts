@@ -1,4 +1,4 @@
-import { unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
 
 // Catalogul întreg (categorii + produse), folosit de lista /produse și de căutarea din antet. Înainte, FIECARE apăsare
@@ -18,6 +18,12 @@ const loadCatalog = unstable_cache(
   ["catalog-v1"],
   { revalidate: 300, tags: [CATALOG_TAG] }
 );
+
+// Pentru orice altă schimbare care apare pe cardurile din /produse (stele de la recenzii, nr. de vânzări): merge și din
+// Server Actions, și din Route Handlers (webhook Telegram), spre deosebire de updateTag. `expire: 0` = fără date vechi.
+export function invalidateCatalog() {
+  revalidateTag(CATALOG_TAG, { expire: 0 });
+}
 
 export async function getCatalog() {
   const raw = await loadCatalog();

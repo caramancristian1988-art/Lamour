@@ -36,6 +36,9 @@ interface Message {
   orderNumber: string | null;
   editToken: string | null;
   invoiceSentAt: Date | string | null;
+  deliveryZip?: string | null;
+  deliveryWeightKg?: number | null;
+  deliveryCodAmount?: number | null;
 }
 
 // Comenzile din coș includ o linie "Livrare: localitate, adresă" în textul
@@ -290,6 +293,9 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                           defaultPhone={m.phone}
                           defaultEmail={m.email}
                           defaultAddress={extractDeliveryLine(m.message)}
+                          defaultZip={m.deliveryZip}
+                          defaultWeightKg={m.deliveryWeightKg}
+                          defaultCodAmount={m.deliveryCodAmount}
                           awbCode={m.awbCode}
                           awbStatus={m.awbStatus}
                         />
