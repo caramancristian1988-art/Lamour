@@ -434,6 +434,31 @@ export function buildOrderCancelConfirmButtons(messageId: string): InlineButton[
   ];
 }
 
+// Descarcă un fișier trimis botului (document atașat la un mesaj) — folosit pentru "comandă din fișier".
+// Limita Bot API pentru descărcare e 20 MB; MAX_ORDER_FILE_BYTES (5 MB) e verificată separat, înainte de apel.
+export async function downloadTelegramFile(fileId: string): Promise<Buffer | null> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return null;
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/getFile?file_id=${encodeURIComponent(fileId)}`);
+    const data = await res.json();
+    const filePath = data?.result?.file_path;
+    if (!data?.ok || !filePath) {
+      console.error("telegram getFile a esuat:", res.status, JSON.stringify(data));
+      return null;
+    }
+    const fileRes = await fetch(`${TELEGRAM_API}/file/bot${token}/${filePath}`, { signal: AbortSignal.timeout(30000) });
+    if (!fileRes.ok) {
+      console.error("telegram: descărcarea fișierului a eșuat:", fileRes.status);
+      return null;
+    }
+    return Buffer.from(await fileRes.arrayBuffer());
+  } catch (err) {
+    console.error("telegram downloadTelegramFile a aruncat:", err);
+    return null;
+  }
+}
+
 // Trimite un fișier PDF (ex. eticheta AWB) într-un chat, ca document.
 export async function sendTelegramDocument(chatId: string, pdf: Buffer, filename: string, caption?: string): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;

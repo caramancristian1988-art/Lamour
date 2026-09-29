@@ -16,6 +16,7 @@ import LinkedProductText from "../components/LinkedProductText";
 import CopyableId from "../components/CopyableId";
 import EvsShipmentPanel from "../components/EvsShipmentPanel";
 import OrdersExportButton from "../components/OrdersExportButton";
+import OrderFromFileDialog from "./OrderFromFileDialog";
 import { markMessageReadAction, deleteMessageAction } from "@/lib/adminMessageActions";
 
 interface Message {
@@ -140,7 +141,12 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
             ))}
           </TabsList>
         </Tabs>
-        {tab === "comenzi" && <OrdersExportButton />}
+        {tab === "comenzi" && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <OrderFromFileDialog />
+            <OrdersExportButton />
+          </div>
+        )}
       </div>
 
       {visibleMessages.length === 0 ? (

@@ -10,6 +10,7 @@ import {
   answerCallbackQuery,
   sendTelegramMessage,
   sendTelegramDocument,
+  downloadTelegramFile,
   buildContactMessageText,
   buildMessageButtons,
   buildConfirmButtons,
@@ -18,10 +19,12 @@ import {
   buildOrderCancelConfirmButtons,
   getSiteUrl,
   extractInvoiceBlock,
+  escapeHtml,
   STATUSES_REQUIRING_CONFIRMATION,
 } from "@/lib/telegram";
-import { linkChatByToken } from "@/lib/telegramRecipients";
+import { linkChatByToken, isKnownChat } from "@/lib/telegramRecipients";
 import { getAwbLabel } from "@/lib/evsExpress";
+import { parseOrderFile, createCartOrderFromParsedItems, OrderFileError, MAX_ORDER_FILE_BYTES } from "@/lib/orderFileImport";
 
 // O tranziție de etapă face mai multe apeluri de rețea în serie (EVS + Telegram + bază de date);
 // implicitul de 10s al platformei ar putea tăia cererea la mijloc.
@@ -37,15 +40,20 @@ export async function POST(request: NextRequest) {
   const callbackQuery = update?.callback_query;
 
   if (!callbackQuery) {
+    const message = update?.message;
+    const chatId = message?.chat?.id;
     // "/start <token>" din linkul "Conectează Telegram" (depozitar/contabil) — leagă chatul de cont.
-    const text = String(update?.message?.text ?? "");
-    const chatId = update?.message?.chat?.id;
+    const text = String(message?.text ?? "");
     if (text.startsWith("/start ") && chatId !== undefined) {
       try {
         await linkChatByToken(text.slice("/start ".length).trim(), String(chatId));
       } catch (err) {
         console.error("telegram: legarea chatului a eșuat:", err);
       }
+    } else if (message?.document && chatId !== undefined) {
+      // Comandă nouă dintr-un fișier Excel/CSV/PDF trimis botului (client care trimite lista de produse
+      // gata scrisă) — vezi lib/orderFileImport.ts. Nu blocăm răspunsul webhook-ului după ea.
+      await handleOrderFileMessage(message).catch((err) => console.error("telegram: comandă din fișier a eșuat:", err));
     }
     return NextResponse.json({ ok: true });
   }
@@ -229,4 +237,112 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ ok: true });
+}
+
+interface TelegramDocumentMessage {
+  message_id: number;
+  chat: { id: number | string; type: string };
+  caption?: string;
+  document: { file_id: string; file_name?: string; file_size?: number };
+}
+
+const ORDER_FILE_EXTENSIONS = ["xlsx", "xls", "csv", "pdf"];
+
+// Comandă din fișier, prin Telegram: fișierul PDF/Excel are de obicei deja Client/Adresa/Telefon scrise în el
+// (formatul extern folosit de operatori) — le folosim direct, complet automat, fără să mai cerem o descriere
+// (caption). Doar dacă fișierul NU are aceste date, cerem o descriere de forma "Nume Prenume, 069123456[, adresă]"
+// (comportamentul vechi, păstrat ca rezervă). Doar rândurile recunoscute CU CERTITUDINE (cod exact sau nume clar)
+// intră în comandă — restul sunt raportate ca nerecunoscute, de completat din "Editează comanda" (nu există aici
+// un pas de verificare ca în admin, deci preferăm o comandă incompletă, dar corectă, uneia cu produse greșite).
+// Comanda pleacă direct la depozitar (fără pasul de confirmare) — vezi createCartOrderFromParsedItems.
+function validPhone(value: string): boolean {
+  return (value.match(/\d/g) ?? []).length >= 6;
+}
+
+async function handleOrderFileMessage(message: TelegramDocumentMessage): Promise<void> {
+  const chatId = String(message.chat.id);
+  const isPrivate = message.chat.type === "private";
+  const reply = (text: string) => sendTelegramMessage(text, [], message.message_id, chatId);
+
+  if (!(await isKnownChat(chatId))) {
+    if (isPrivate) await reply("Nu ești autorizat să creezi comenzi de aici. Cere administratorului să te conecteze din Admin → Telegram.");
+    return;
+  }
+
+  const doc = message.document;
+  const filename = doc.file_name ?? "comanda";
+  const ext = filename.toLowerCase().split(".").pop() ?? "";
+  if (!ORDER_FILE_EXTENSIONS.includes(ext)) {
+    await reply("Trimite un fișier Excel (.xlsx/.csv) sau PDF cu comanda.");
+    return;
+  }
+  if (typeof doc.file_size === "number" && doc.file_size > MAX_ORDER_FILE_BYTES) {
+    await reply("Fișierul e prea mare (maxim 5 MB).");
+    return;
+  }
+
+  const buffer = await downloadTelegramFile(doc.file_id);
+  if (!buffer) {
+    await reply("Nu am putut descărca fișierul. Încearcă din nou.");
+    return;
+  }
+
+  let parsed;
+  try {
+    parsed = await parseOrderFile(buffer, filename);
+  } catch (err) {
+    await reply(err instanceof OrderFileError ? err.message : "Nu am putut citi fișierul.");
+    return;
+  }
+
+  // Sursa primară: câmpurile din fișier. Rezervă: descrierea (caption) trimisă cu fișierul.
+  const caption = String(message.caption ?? "").trim();
+  const parts = caption.split(",").map((s) => s.trim()).filter(Boolean);
+  const name = parsed.header.clientName || parts[0] || "";
+  const phone = parsed.header.clientPhone && validPhone(parsed.header.clientPhone) ? parsed.header.clientPhone : parts[1] ?? "";
+  if (!name || !validPhone(phone)) {
+    await reply(
+      "Fișierul nu are Client/Telefon completate — trimite-l din nou cu o descriere (caption) de forma:\nIon Popescu, 069123456, Chișinău, Str. Exemplu 1\n\n(adresa e opțională — o poți adăuga oricând din „Editează comanda”)"
+    );
+    return;
+  }
+  const address = parsed.header.clientAddress || parts.slice(2).join(", ") || null;
+
+  const matchedRows = parsed.rows.filter((r) => r.matchedProductId);
+  const unmatchedRows = parsed.rows.filter((r) => !r.matchedProductId);
+  if (matchedRows.length === 0) {
+    await reply(
+      'Nu am recunoscut niciun produs în fișier. Încearcă din Admin → Cereri și comenzi → „Comandă nouă din fișier", unde poți alege produsele manual.'
+    );
+    return;
+  }
+
+  const result = await createCartOrderFromParsedItems({
+    name,
+    phone,
+    deliveryAddress: address,
+    note: `Comandă introdusă din Telegram, din fișierul „${filename}”.`,
+    items: matchedRows.map((r) => ({ productId: r.matchedProductId as string, quantity: r.quantity })),
+    needsInvoice: parsed.header.needsInvoice,
+    companyName: parsed.header.companyName,
+    companyIdno: parsed.header.companyIdno,
+    companyAddress: parsed.header.companyAddress,
+    companyVat: parsed.header.companyVat,
+  });
+
+  if (!result.ok) {
+    await reply(`Nu am putut crea comanda: ${result.error}`);
+    return;
+  }
+
+  const ref = result.orderNumber ? `Comanda #${result.orderNumber}` : "Comanda";
+  const plural = matchedRows.length === 1 ? "produs" : "produse";
+  const skippedNote =
+    unmatchedRows.length > 0
+      ? `\n\n⚠️ ${unmatchedRows.length} rând(uri) nerecunoscute, neincluse:\n${unmatchedRows
+          .slice(0, 5)
+          .map((r) => `• ${escapeHtml(r.raw.slice(0, 60))}`)
+          .join("\n")}${unmatchedRows.length > 5 ? "\n…" : ""}\nAdaugă-le manual din „Editează comanda”.`
+      : "";
+  await reply(`✅ ${ref} a fost creată cu ${matchedRows.length} ${plural} și a plecat direct la depozitar.${skippedNote}`);
 }

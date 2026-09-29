@@ -32,6 +32,10 @@ import { getChatIdsForRole } from "./telegramRecipients";
 export interface ContactFormState {
   error?: string;
   success?: boolean;
+  /** Numărul comenzii proaspăt create (doar comenzi din coș) — util pentru fluxurile care creează o comandă programatic. */
+  orderNumber?: string | null;
+  /** Id-ul mesajului/comenzii proaspăt create — util pentru fluxurile care trebuie s-o modifice imediat după (ex. avansarea automată la „confirmată” pentru comenzile din fișier). */
+  id?: string;
 }
 
 
@@ -208,7 +212,7 @@ export async function submitContactMessageAction(
   }
 
   revalidatePath("/admin/mesaje");
-  return { success: true };
+  return { success: true, orderNumber, id: created.id };
 }
 
 export async function markMessageReadAction(formData: FormData) {

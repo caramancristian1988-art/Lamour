@@ -19,6 +19,19 @@ export async function getChatIdsForRole(role: StaffRole): Promise<string[]> {
   }
 }
 
+// Un chat "cunoscut" (grupul principal sau orice destinatar conectat) — folosit ca să decidem dacă un document
+// trimis botului (comandă din fișier) vine de la cineva din echipă, nu de la un străin care a găsit botul.
+export async function isKnownChat(chatId: string): Promise<boolean> {
+  if (chatId === process.env.TELEGRAM_CHAT_ID) return true;
+  try {
+    const recipient = await prisma.telegramRecipient.findFirst({ where: { chatId }, select: { id: true } });
+    return Boolean(recipient);
+  } catch (err) {
+    console.error("telegram: nu am putut verifica chatul:", err);
+    return false;
+  }
+}
+
 // Apelată din webhook la "/start <token>": leagă chatul de destinatarul care a generat tokenul.
 // Tokenul e de unică folosință (se șterge la legare), deci un link vechi/redistribuit nu mai merge.
 export async function linkChatByToken(token: string, chatId: string): Promise<boolean> {
