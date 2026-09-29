@@ -264,6 +264,9 @@ model ContactMessage {
   awbCode           String?
   awbStatus         String?
   awbCreatedAt      DateTime?
+  // true = livrăm noi (fără curier EVS): la confirmare și la "Gata de ridicare" nu se încearcă AWB/ridicare EVS.
+  // Setat pentru comenzile din fișier (PDF/Excel) care nu cer explicit EVS. Null/false = fluxul EVS obișnuit.
+  ownDelivery       Boolean?
   // Copiile mesajului comenzii trimise depozitarilor ([{ chatId, messageId }]) — editate
   // când comanda e gata de ridicare sau anulată.
   warehouseMessages Json?

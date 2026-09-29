@@ -127,6 +127,9 @@ export default function OrderFromFileDialog() {
   const [needsInvoice, setNeedsInvoice] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [companyIdno, setCompanyIdno] = useState("");
+  // Implicit "livrăm noi" (fără AWB), cât timp fișierul nu cere explicit EVS — la fel ca din Telegram.
+  const [evsDelivery, setEvsDelivery] = useState(false);
+  const [paymentByTransfer, setPaymentByTransfer] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
   function reset() {
@@ -144,6 +147,8 @@ export default function OrderFromFileDialog() {
     setNeedsInvoice(false);
     setCompanyName("");
     setCompanyIdno("");
+    setEvsDelivery(false);
+    setPaymentByTransfer(false);
     setOrderNumber(null);
     if (fileRef.current) fileRef.current.value = "";
   }
@@ -182,6 +187,8 @@ export default function OrderFromFileDialog() {
     if (h.needsInvoice) setNeedsInvoice(true);
     if (h.companyName) setCompanyName(h.companyName);
     if (h.companyIdno) setCompanyIdno(h.companyIdno);
+    setEvsDelivery(h.deliveryMethod === "evs");
+    setPaymentByTransfer(h.paymentByTransfer);
     setStep("review");
   }
 
@@ -207,10 +214,13 @@ export default function OrderFromFileDialog() {
       deliveryZip: zip || undefined,
       note: note || undefined,
       filename: file?.name,
+      externalOrderNumber: parsed?.header.externalOrderNumber ?? undefined,
       items: included.map((r) => ({ productId: r.productId as string, quantity: r.quantity })),
       needsInvoice,
       companyName: needsInvoice ? companyName || undefined : undefined,
       companyIdno: needsInvoice ? companyIdno || undefined : undefined,
+      ownDelivery: !evsDelivery,
+      paymentByTransfer,
     });
     if (!result.ok) {
       setError(result.error ?? "Nu am putut crea comanda.");
@@ -273,7 +283,9 @@ export default function OrderFromFileDialog() {
           )}
 
           {(step === "review" || step === "creating") && parsed && (
-            <div className="flex flex-col gap-3">
+            // min-w-0: DialogContent e grid, iar un element de grid nu se micșorează implicit sub lățimea tabelului
+            // (picker-ul are min-w-[220px]) — pe telefon lărgea tot dialogul și tăia câmpurile din dreapta.
+            <div className="flex min-w-0 flex-col gap-3">
               <p className="text-xs text-muted-foreground">
                 {included.length} din {rows.length} rânduri recunoscute
                 {rows.length > included.length && <span className="text-amber-700"> — restul sunt evidențiate, alege produsul manual sau lasă-le neatribuite (nu vor intra în comandă)</span>}.
@@ -318,7 +330,9 @@ export default function OrderFromFileDialog() {
                 <Input placeholder="Adresă (opțional)" aria-label="Adresă" value={address} onChange={(e) => setAddress(e.target.value)} />
                 <Input placeholder="Cod poștal (opțional)" aria-label="Cod poștal" value={zip} onChange={(e) => setZip(e.target.value)} />
                 <Input
-                  placeholder={`Notă internă (implicit: „Comandă introdusă din fișierul „${file?.name ?? ""}”.”)`}
+                  placeholder={`Notă internă (implicit: „Comandă introdusă din fișierul „${file?.name ?? ""}”${
+                    parsed?.header.externalOrderNumber ? ` (nr. extern ${parsed.header.externalOrderNumber})` : ""
+                  }.”)`}
                   aria-label="Notă internă"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
@@ -330,6 +344,7 @@ export default function OrderFromFileDialog() {
                   type="checkbox"
                   checked={needsInvoice}
                   onChange={(e) => setNeedsInvoice(e.target.checked)}
+                  aria-label="Necesită factură"
                   className="h-4 w-4 rounded border-border accent-primary"
                 />
                 Necesită factură (companie) — se trimite automat contabilului
@@ -340,6 +355,27 @@ export default function OrderFromFileDialog() {
                   <Input placeholder="IDNO / Cod fiscal" aria-label="IDNO / Cod fiscal" value={companyIdno} onChange={(e) => setCompanyIdno(e.target.value)} />
                 </div>
               )}
+
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <input
+                  type="checkbox"
+                  checked={evsDelivery}
+                  onChange={(e) => setEvsDelivery(e.target.checked)}
+                  aria-label="Livrare prin curier EVS"
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                Livrare prin curier EVS (se creează AWB — are nevoie de adresă și cod poștal); nebifat = livrăm noi
+              </label>
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <input
+                  type="checkbox"
+                  checked={paymentByTransfer}
+                  onChange={(e) => setPaymentByTransfer(e.target.checked)}
+                  aria-label="Plată prin transfer bancar"
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                Plată prin transfer bancar (fără ramburs la livrare)
+              </label>
 
               <div className="flex items-center justify-between rounded-xl border border-border bg-muted px-3 py-2 text-sm">
                 <span>

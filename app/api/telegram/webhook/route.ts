@@ -295,18 +295,26 @@ async function handleOrderFileMessage(message: TelegramDocumentMessage): Promise
     return;
   }
 
-  // Sursa primară: câmpurile din fișier. Rezervă: descrierea (caption) trimisă cu fișierul.
+  // Sursa primară: câmpurile din fișier. Rezervă: descrierea (caption) trimisă cu fișierul. Numele și telefonul
+  // vin ÎMPREUNĂ din aceeași sursă — altfel un fișier cu "Client: Test" / telefon invalid plus o descriere cu
+  // alt client ar amesteca numele unuia cu telefonul celuilalt.
   const caption = String(message.caption ?? "").trim();
   const parts = caption.split(",").map((s) => s.trim()).filter(Boolean);
-  const name = parsed.header.clientName || parts[0] || "";
-  const phone = parsed.header.clientPhone && validPhone(parsed.header.clientPhone) ? parsed.header.clientPhone : parts[1] ?? "";
-  if (!name || !validPhone(phone)) {
+  const fromFile = parsed.header.clientName && parsed.header.clientPhone && validPhone(parsed.header.clientPhone)
+    ? { name: parsed.header.clientName, phone: parsed.header.clientPhone, address: parsed.header.clientAddress }
+    : null;
+  const fromCaption = parts[0] && parts[1] && validPhone(parts[1])
+    ? { name: parts[0], phone: parts[1], address: parts.slice(2).join(", ") || null }
+    : null;
+  const client = fromFile ?? fromCaption;
+  if (!client) {
     await reply(
       "Fișierul nu are Client/Telefon completate — trimite-l din nou cu o descriere (caption) de forma:\nIon Popescu, 069123456, Chișinău, Str. Exemplu 1\n\n(adresa e opțională — o poți adăuga oricând din „Editează comanda”)"
     );
     return;
   }
-  const address = parsed.header.clientAddress || parts.slice(2).join(", ") || null;
+  const { name, phone } = client;
+  const address = client.address || null;
 
   const matchedRows = parsed.rows.filter((r) => r.matchedProductId);
   const unmatchedRows = parsed.rows.filter((r) => !r.matchedProductId);
@@ -321,13 +329,17 @@ async function handleOrderFileMessage(message: TelegramDocumentMessage): Promise
     name,
     phone,
     deliveryAddress: address,
-    note: `Comandă introdusă din Telegram, din fișierul „${filename}”.`,
+    note: `Comandă introdusă din Telegram, din fișierul „${filename}”${
+      parsed.header.externalOrderNumber ? ` (nr. extern ${parsed.header.externalOrderNumber})` : ""
+    }.`,
     items: matchedRows.map((r) => ({ productId: r.matchedProductId as string, quantity: r.quantity })),
     needsInvoice: parsed.header.needsInvoice,
     companyName: parsed.header.companyName,
     companyIdno: parsed.header.companyIdno,
     companyAddress: parsed.header.companyAddress,
     companyVat: parsed.header.companyVat,
+    ownDelivery: parsed.header.deliveryMethod !== "evs",
+    paymentByTransfer: parsed.header.paymentByTransfer,
   });
 
   if (!result.ok) {

@@ -39,12 +39,18 @@ export interface CreateOrderFromFileFormInput {
   deliveryZip?: string;
   note?: string;
   filename?: string;
+  /** "Comanda Nr. 72" din fișier — doar referință, ca operatorul să poată regăsi comanda originală. */
+  externalOrderNumber?: string | null;
   items: CreateOrderFromFileItem[];
   needsInvoice?: boolean;
   companyName?: string;
   companyIdno?: string;
   companyAddress?: string;
   companyVat?: string;
+  /** Livrăm noi (fără AWB EVS). */
+  ownDelivery?: boolean;
+  /** Plătită prin transfer — fără ramburs la curier. */
+  paymentByTransfer?: boolean;
 }
 
 // Comenzile din fișier pleacă direct la depozitar (nu au nevoie de confirmarea manuală din Telegram) —
@@ -53,7 +59,8 @@ export async function createOrderFromFileAction(
   input: CreateOrderFromFileFormInput
 ): Promise<{ ok: boolean; error?: string; orderNumber?: string | null }> {
   await requireAdmin();
-  const note = input.note?.trim() || (input.filename ? `Comandă introdusă din fișierul „${input.filename}”.` : null);
+  const ref = input.externalOrderNumber ? ` (nr. extern ${input.externalOrderNumber})` : "";
+  const note = input.note?.trim() || (input.filename ? `Comandă introdusă din fișierul „${input.filename}”${ref}.` : null);
   const result = await createCartOrderFromParsedItems({ ...input, note, autoConfirm: true });
   if (result.ok) revalidatePath("/admin/mesaje");
   return result;

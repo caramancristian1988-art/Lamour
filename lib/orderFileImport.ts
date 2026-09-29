@@ -53,6 +53,8 @@ export interface ParsedOrderHeader {
    * (cerut explicit — o comandă nu trebuie să primească un AWB "din greșeală" doar pentru că are adresă).
    */
   deliveryMethod: "evs" | "noi";
+  /** "Se va achita prin transfer bancar" — comanda e plătită în avans, deci fără ramburs la curier. */
+  paymentByTransfer: boolean;
 }
 
 export interface ParsedOrderFile {
@@ -74,6 +76,7 @@ const EMPTY_HEADER: ParsedOrderHeader = {
   companyAddress: null,
   companyVat: null,
   deliveryMethod: "noi",
+  paymentByTransfer: false,
 };
 
 // ── potrivirea text → produs ───────────────────────────────────────────────────────────────────────────────────
@@ -215,6 +218,10 @@ function extractOrderHeaderFields(lines: string[]): ParsedOrderHeader {
     }
     if (/livr(are|at|[aă]m)/i.test(trimmed) && /\b(noi|proprie|intern[aă])\b/i.test(trimmed)) {
       header.deliveryMethod = "noi";
+      continue;
+    }
+    if (/(achit|pl[aă]t)/i.test(trimmed) && /transfer/i.test(trimmed)) {
+      header.paymentByTransfer = true;
       continue;
     }
 
@@ -400,7 +407,7 @@ function buildPdfProductRows(bodyLines: string[], index: CatalogEntry[], startLi
   return rows.slice(0, MAX_ORDER_FILE_ROWS);
 }
 
-let pdfParseFn: ((buffer: Buffer) => Promise<{ text: string; numpages: number }>) | null = null;
+let pdfParseFn: ((data: Uint8Array) => Promise<{ text: string; numpages: number }>) | null = null;
 async function getPdfParse() {
   if (!pdfParseFn) {
     // Fișierul de intrare al pachetului (index.js) are un mod de depanare care citește un PDF de test la orice
@@ -415,9 +422,14 @@ async function parsePdfRows(buffer: Buffer, index: CatalogEntry[]): Promise<{ ro
   const pdfParse = await getPdfParse();
   let text: string;
   try {
-    const data = await pdfParse(buffer);
+    // Uint8Array, NU Buffer: pdf.js din pdf-parse clonează intrarea cu `new value.constructor(value)` — pentru un
+    // Buffer asta e `new Buffer()` (deprecat), care pune fișierele sub 4 KB în pool-ul comun al Node, la un offset
+    // oarecare, iar pdf.js citește apoi de la începutul pool-ului -> "bad XRef entry" la întâmplare (~1 din 3
+    // încercări pe același PDF mic). Un Uint8Array se copiază mereu într-o zonă proprie, exact cât fișierul.
+    const data = await pdfParse(new Uint8Array(buffer));
     text = data.text;
-  } catch {
+  } catch (err) {
+    console.error("comandă din fișier: pdf-parse a eșuat:", err);
     throw new OrderFileError("Nu am putut citi acest PDF — pare stricat sau nu conține text (ex. e doar o poză scanată).");
   }
   const allLines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -426,10 +438,10 @@ async function parsePdfRows(buffer: Buffer, index: CatalogEntry[]): Promise<{ ro
   // Tabelul de produse: căutăm antetul ("Cod produs ... Denumire ... Cantitate") — dacă îl găsim, parsăm DOAR
   // regiunea dintre el și "Suma totala" cu logica de nume-pe-mai-multe-linii; altfel cădem pe parsarea veche,
   // linie cu linie (fișiere fără acest format exact).
-  const tableStartIdx = allLines.findIndex((l) => {
-    const n = normalizeText(l);
-    return n.includes("cod produs") || (n.includes("denumire") && n.includes("cantitate"));
-  });
+  // Strict, doar "cod produs": un antet mai vag ("Denumire ... Cantitate", posibil într-un fișier vechi,
+  // cu totul alt format) NU trebuie să pornească parsarea nouă (nume-pe-mai-multe-linii) — ar rupe
+  // parsarea veche, linie cu linie, care oricum se descurcă bine cu un singur rând per produs.
+  const tableStartIdx = allLines.findIndex((l) => normalizeText(l).includes("cod produs"));
 
   let rows: ParsedOrderRow[];
   if (tableStartIdx >= 0) {
@@ -517,6 +529,10 @@ export interface CreateOrderFromFileInput {
    * etapa "confirmată" (pleacă direct la depozitar). Implicit true pentru fluxul din fișier.
    */
   autoConfirm?: boolean;
+  /** Livrăm noi (fără curier EVS / AWB) — vezi ContactMessage.ownDelivery. */
+  ownDelivery?: boolean;
+  /** Plătită prin transfer bancar — fără ramburs (COD 0), ca un eventual curier să nu mai încaseze încă o dată. */
+  paymentByTransfer?: boolean;
 }
 
 export interface CreateOrderFromFileResult {
@@ -560,7 +576,10 @@ export async function createCartOrderFromParsedItems(input: CreateOrderFromFileI
 
   const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.qty, 0);
   const address = [input.deliveryLocality, input.deliveryAddress, input.deliveryZip].map((s) => s?.trim()).filter(Boolean).join(", ") || null;
-  const note = input.note?.trim() || null;
+  // Plata intră în notă, NU pe un rând separat: parseCartOrderMessage (lib/orderMessage.ts) respinge tot mesajul la
+  // orice rând necunoscut, iar Telegramul și fișa tipărită ar cădea pe formatul brut.
+  const note =
+    [input.note?.trim(), input.paymentByTransfer ? "Plată: transfer bancar (fără ramburs)." : null].filter(Boolean).join(" ") || null;
 
   const itemsText = lines
     .map((l) => `• ${l.name}\n   ${l.qty} buc × ${formatPrice(l.unitPrice)} MDL = ${formatPrice(l.unitPrice * l.qty)} MDL`)
@@ -569,13 +588,20 @@ export async function createCartOrderFromParsedItems(input: CreateOrderFromFileI
   // din lib/telegram.ts îl recunoaște după "🧾 CERE FACTURĂ", ca trimiterea automată la contabil (deja
   // existentă în submitContactMessageAction) să funcționeze neschimbată și pentru comenzile din fișier.
   const needsInvoice = Boolean(input.needsInvoice);
+  const ownDelivery = Boolean(input.ownDelivery);
+  const paymentByTransfer = Boolean(input.paymentByTransfer);
+  const deliveryLine = ownDelivery
+    ? `Livrare: livrăm noi (fără curier EVS)${address ? ` — ${address}` : ""}`
+    : address
+      ? `Livrare: ${address}`
+      : null;
   const message = [
     "Produse comandate:",
     itemsText,
     "",
     `Subtotal: ${formatPrice(subtotal)} MDL`,
-    address ? "" : null,
-    address ? `Livrare: ${address}` : null,
+    deliveryLine ? "" : null,
+    deliveryLine,
     needsInvoice ? "\n🧾 CERE FACTURĂ (companie):" : null,
     needsInvoice ? `Denumire: ${input.companyName?.trim() || "(de completat)"}` : null,
     needsInvoice ? `IDNO / Cod fiscal: ${input.companyIdno?.trim() || "(de completat)"}` : null,
@@ -599,10 +625,16 @@ export async function createCartOrderFromParsedItems(input: CreateOrderFromFileI
   if (input.deliveryAddress?.trim()) formData.set("deliveryAddress", input.deliveryAddress.trim());
   if (input.deliveryZip?.trim()) formData.set("deliveryZip", input.deliveryZip.trim());
   formData.set("deliveryWeightKg", String(lines.reduce((s, l) => s + l.qty, 0)));
-  formData.set("deliveryCodAmount", String(subtotal));
+  formData.set("deliveryCodAmount", String(paymentByTransfer ? 0 : subtotal));
 
   const result = await submitContactMessageAction({}, formData);
   if (result.error) return { ok: false, error: result.error };
+
+  // Marcajul se pune aici, pe server (nu prin formularul public submitContactMessageAction, pe care îl poate
+  // apela oricine) și ÎNAINTE de confirmare, ca etapele să nu încerce AWB pentru o livrare proprie.
+  if (ownDelivery && result.id) {
+    await prisma.contactMessage.update({ where: { id: result.id }, data: { ownDelivery: true } });
+  }
 
   if (input.autoConfirm !== false && result.id) {
     try {

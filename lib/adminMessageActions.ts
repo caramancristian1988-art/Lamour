@@ -586,18 +586,25 @@ async function applyOrderStage(
     await sendTelegramMessage(`⚠️ ${escapeHtml(orderRef(before.orderNumber))}: ${escapeHtml(text)}`, [], before.telegramMessageId ?? undefined);
   };
 
+  // Livrare proprie (fără EVS, ex. comenzile din fișier): nu încercăm AWB/ridicare — altfel, fără cod poștal,
+  // "Gata de ridicare" eșua mereu și readucea comanda la etapa anterioară (comanda rămânea blocată).
+  // Un AWB creat totuși manual din admin are prioritate: atunci comanda chiar merge prin EVS.
+  const skipEvs = before.ownDelivery === true && !before.awbCode;
+
   if (nextStage === "confirmata") {
-    const shipment = await maybeCreateEvsShipment(before.awbCode ? before : await refreshDeliveryWeight(before), { pickup: false });
-    // Comanda rămâne confirmată chiar dacă AWB-ul nu s-a creat (se reîncearcă la "gata de ridicare"),
-    // dar operatorul trebuie să știe — altfel eșecul rămânea doar în logurile serverului.
-    if (shipment && !shipment.ok) await warn(`AWB-ul nu a putut fi creat la confirmare (${shipment.description}). Se reîncearcă la „Gata de ridicare”.`);
+    if (!skipEvs) {
+      const shipment = await maybeCreateEvsShipment(before.awbCode ? before : await refreshDeliveryWeight(before), { pickup: false });
+      // Comanda rămâne confirmată chiar dacă AWB-ul nu s-a creat (se reîncearcă la "gata de ridicare"),
+      // dar operatorul trebuie să știe — altfel eșecul rămânea doar în logurile serverului.
+      if (shipment && !shipment.ok) await warn(`AWB-ul nu a putut fi creat la confirmare (${shipment.description}). Se reîncearcă la „Gata de ridicare”.`);
+    }
   } else if (nextStage === "predata_curier") {
     let ready = { ok: true, description: "" };
     if (before.awbCode) {
       const result = await activatePickup(before.awbCode);
       console.log(`evs activatePickup ${before.awbCode}:`, JSON.stringify(result.raw));
       ready = { ok: result.ok, description: result.description };
-    } else {
+    } else if (!skipEvs) {
       const shipment = await maybeCreateEvsShipment(await refreshDeliveryWeight(before), { pickup: true });
       if (shipment && !shipment.ok) ready = shipment;
     }

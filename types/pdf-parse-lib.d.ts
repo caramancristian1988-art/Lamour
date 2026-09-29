@@ -9,6 +9,7 @@ declare module "pdf-parse/lib/pdf-parse.js" {
     metadata: unknown;
     version: string;
   }
-  function pdfParse(buffer: Buffer, options?: Record<string, unknown>): Promise<PdfParseResult>;
+  // Uint8Array (Buffer e o subclasă): vezi parsePdfRows — un Buffer mic poate fi citit greșit de pdf.js.
+  function pdfParse(data: Uint8Array, options?: Record<string, unknown>): Promise<PdfParseResult>;
   export default pdfParse;
 }
