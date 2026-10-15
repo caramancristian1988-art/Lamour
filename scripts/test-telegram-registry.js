@@ -108,6 +108,8 @@ async function press(data, from, chat) {
 
 async function run() {
   const counterBefore = await prisma.counter.findUnique({ where: { name: "orderExport" } });
+  // Regula reală a grupului principal (dacă există) se salvează și se readuce la final — testul folosește aceeași cheie.
+  const realMainPolicy = await prisma.telegramGroupPermission.findUnique({ where: { chatId: "principal" } });
   const orderIds = [];
   const permIds = ["901", "903", "904"];
 
@@ -256,11 +258,59 @@ async function run() {
     check("/status: numere și grupul configurat", /Extrase:/.test(plain(lastTo(-100123))) && /configurat/.test(plain(lastTo(-100123))));
     await cmd("/ajutor", user(902, "Oricine"), priv(902));
     check("/ajutor e disponibil și fără drepturi", /\/extrage/.test(plain(lastTo(902))));
+
+    console.log("\nH. Grupul principal: drepturi pentru toți membrii, fără ID individual");
+    const MAIN_GROUP = { id: -100000, type: "supergroup" }; // = TELEGRAM_CHAT_ID din test
+    for (let i = 1; i <= 2; i++) {
+      const row = await prisma.contactMessage.create({
+        data: {
+          name: `ZZ-TEST-TG Grup ${i}`, phone: "069000222", source: "Comandă din coș", message: "Test", orderStage: "anulata",
+          orderNumber: `ZG${i}`, deliveryLocality: "Bălți", deliveryAddress: "Strada Grupului 5", deliveryCodAmount: 50 + i,
+          extractionStatus: "neextrasa", orderItemsSnapshot: [{ productId: "x", name: "Produs G", quantity: 1, unitPrice: 50 + i, lineTotal: 50 + i }],
+        },
+      });
+      orderIds.push(row.id);
+    }
+    // Persoana 905 nu are niciun drept individual.
+    await cmd("/noi", user(905, "Membru"), MAIN_GROUP);
+    check("fără regulă pentru grupul principal, un membru nu are drepturi (dar grupul e acceptat)", /Nu aveți dreptul/.test(plain(lastTo(-100000))), plain(lastTo(-100000)));
+
+    await prisma.telegramGroupPermission.deleteMany({ where: { chatId: "principal" } });
+    await prisma.telegramGroupPermission.create({
+      data: { chatId: "principal", name: "Grupul principal (test)", permissions: ["vizualizare", "consultare", "date_personale", "extragere", "confirmare"] },
+    });
+
+    await cmd("/noi", user(905, "Membru"), MAIN_GROUP);
+    check("cu regula grupului, orice membru vede comenzile noi", /Comenzi neextrase/.test(plain(lastTo(-100000))) && /ZG1/.test(plain(lastTo(-100000))), plain(lastTo(-100000)));
+    await cmd("/noi", user(905, "Membru"), REG_CHAT);
+    check("regula grupului principal NU se aplică în alt grup (grupul registrului)", /Nu aveți dreptul/.test(plain(lastTo(-100123))));
+    await cmd("/comanda ZG1", user(905, "Membru"), MAIN_GROUP);
+    check("în grupul principal detaliile includ telefonul direct în grup", /069000222/.test(plain(lastTo(-100000))) && /Strada Grupului/.test(plain(lastTo(-100000))), plain(lastTo(-100000)));
+
+    await cmd("/extrage", user(905, "Membru"), MAIN_GROUP);
+    check("oferta de extragere apare în grupul principal", /Sunt disponibile 2 comenzi neextrase/.test(plain(lastTo(-100000))), plain(lastTo(-100000)));
+    await press("reg_prep:0", user(905, "Membru"), MAIN_GROUP);
+    const gdoc = sent.find((x) => x.kind === "document");
+    check("fișierul Excel e trimis direct în grupul principal", gdoc && gdoc.chatId === "-100000", JSON.stringify(gdoc && gdoc.chatId));
+    const gbtns = lastTo(-100000).buttons.flat().map((b) => b.text);
+    check("butoanele de confirmare sunt tot în grupul principal", gbtns.includes("Confirm extragerea"), JSON.stringify(gbtns));
+    const gexp = (await prisma.contactMessage.findFirst({ where: { name: "ZZ-TEST-TG Grup 1" }, select: { extractionExportId: true } })).extractionExportId;
+
+    // Un alt membru confirmă — „mai multe persoane” pot extrage și confirma, fără ID individual.
+    await press(`reg_ok:${gexp}`, user(906, "Alt membru"), MAIN_GROUP);
+    check("un alt membru al grupului poate confirma", /Extragerea a fost confirmată\. 2 comenzi/.test(plain(lastTo(-100000))), plain(lastTo(-100000)));
+    check("în baza de date: 2 comenzi extrase de „Alt membru”", (await prisma.contactMessage.count({ where: { name: { startsWith: "ZZ-TEST-TG Grup" }, extractionStatus: "extrasa", extractedBy: { contains: "Alt membru" } } })) === 2);
   } finally {
     await prisma.contactMessage.deleteMany({ where: { name: { startsWith: "ZZ-TEST-TG" } } });
     await prisma.telegramUserPermission.deleteMany({ where: { telegramUserId: { in: permIds } } });
-    await prisma.orderExport.deleteMany({ where: { initiatedById: { in: ["900", "901", "903", "904"] } } });
-    await prisma.exportAuditLog.deleteMany({ where: { actorId: { in: ["900", "901", "903", "904"] } } });
+    await prisma.telegramGroupPermission.deleteMany({ where: { chatId: "principal" } });
+    if (realMainPolicy) {
+      await prisma.telegramGroupPermission.create({
+        data: { chatId: realMainPolicy.chatId, name: realMainPolicy.name, permissions: realMainPolicy.permissions },
+      });
+    }
+    await prisma.orderExport.deleteMany({ where: { initiatedById: { in: ["900", "901", "903", "904", "905", "906"] } } });
+    await prisma.exportAuditLog.deleteMany({ where: { actorId: { in: ["900", "901", "903", "904", "905", "906"] } } });
     if (counterBefore) await prisma.counter.update({ where: { name: "orderExport" }, data: { value: counterBefore.value } });
     else await prisma.counter.deleteMany({ where: { name: "orderExport" } });
     fs.rmSync(build, { recursive: true, force: true });

@@ -27,7 +27,7 @@ import {
   type RegistryOrder,
 } from "./orderRegistry";
 import { buildExportWorkbook, exportFilename } from "./orderRegistryExcel";
-import { getUserPermissions, type RegistryPermission } from "./telegramPermissions";
+import { getUserPermissions, getGroupPermissions, mainGroupChatId, type RegistryPermission } from "./telegramPermissions";
 import { registryChatId, retryPendingRegistryNotifications } from "./registryNotify";
 
 const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -62,6 +62,10 @@ interface Ctx {
   name: string;
   chatId: string;
   isPrivate: boolean;
+  /** Grupul principal al operatorilor: datele personale sunt deja vizibile tuturor membrilor, deci fișierul și detaliile se dau direct aici. */
+  isMainGroup: boolean;
+  /** Grupul are o regulă de drepturi pentru toți membrii (TelegramGroupPermission) — deci comenzile registrului sunt acceptate aici. */
+  hasGroupPolicy: boolean;
   perms: Set<RegistryPermission>;
   actor: Actor;
 }
@@ -74,19 +78,32 @@ function displayName(u: TgUser): string {
 async function buildCtx(user: TgUser, chat: TgChat): Promise<Ctx> {
   const userId = String(user.id);
   const name = displayName(user);
+  const chatId = String(chat.id);
+  const isPrivate = chat.type === "private";
+  const groupPerms = isPrivate ? null : await getGroupPermissions(chatId);
   return {
     userId,
     name,
-    chatId: String(chat.id),
-    isPrivate: chat.type === "private",
-    perms: await getUserPermissions(userId),
+    chatId,
+    isPrivate,
+    isMainGroup: !isPrivate && chatId === mainGroupChatId(),
+    hasGroupPolicy: groupPerms !== null,
+    perms: await getUserPermissions(userId, groupPerms),
     actor: { channel: "telegram", id: userId, name },
   };
 }
 
-/** Comenzile registrului se acceptă doar în conversații private cu botul sau în grupul registrului — nu în alte grupuri. */
+/**
+ * Comenzile registrului se acceptă în conversații private cu botul, în grupul registrului, în grupul principal și în
+ * orice grup care are o regulă de drepturi — nu în alte grupuri (nu poluăm grupurile care nu folosesc registrul).
+ */
 function chatAllowed(ctx: Ctx): boolean {
-  return ctx.isPrivate || ctx.chatId === registryChatId();
+  return ctx.isPrivate || ctx.isMainGroup || ctx.hasGroupPolicy || ctx.chatId === registryChatId();
+}
+
+/** Unde se trimit fișierul Excel și datele personale: în conversația curentă dacă e privată sau grupul principal, altfel în privat. */
+function dataChatId(ctx: Ctx): string {
+  return ctx.isPrivate || ctx.isMainGroup ? ctx.chatId : ctx.userId;
 }
 
 async function say(chatId: string, plain: string, buttons: Button[][] = []): Promise<number | null> {
@@ -120,7 +137,7 @@ const HELP_TEXT = [
   "/status — informații generale despre sistem.",
   "/id — ID-ul dumneavoastră Telegram, necesar pentru drepturi.",
   "/ajutor — acest mesaj.",
-  "Telefonul, adresa și fișierul Excel se trimit doar în conversația privată cu botul, persoanelor autorizate.",
+  "Telefonul, adresa și fișierul Excel se trimit doar celor autorizați: direct în grupul principal sau în conversația privată cu botul.",
 ].join("\n");
 
 // ── Liste ──────────────────────────────────────────────────────────────────────────────────────
@@ -200,7 +217,7 @@ async function sendOrderDetails(ctx: Ctx, reference: string): Promise<void> {
 
   let text = publicOrderText(order);
   const canSeePersonal = ctx.perms.has("date_personale");
-  if (canSeePersonal && ctx.isPrivate) {
+  if (canSeePersonal && (ctx.isPrivate || ctx.isMainGroup)) {
     text += `\n\n${personalOrderText(order)}`;
   } else if (canSeePersonal) {
     const sent = await say(ctx.userId, personalOrderText(order));
@@ -232,7 +249,8 @@ function confirmButtons(exp: ExportSummary): Button[][] {
 
 /** Trimite fișierul în privat + butoanele de confirmare; în grup anunță doar că exportul e pregătit. */
 async function presentExport(ctx: Ctx, exp: ExportSummary, resumed: boolean): Promise<void> {
-  const delivered = await deliverExport(exp, ctx.userId);
+  const dataChat = dataChatId(ctx);
+  const delivered = await deliverExport(exp, dataChat);
   if (!delivered) {
     await say(
       ctx.chatId,
@@ -242,8 +260,8 @@ async function presentExport(ctx: Ctx, exp: ExportSummary, resumed: boolean): Pr
   }
   const lead = resumed ? "Ați reluat exportul" : "Exportul a fost pregătit";
   const body = `${lead}, numărul ${exp.number}. Conține ${plural(exp.orderCount, "comandă", "comenzi")}. Fișierul Excel a fost trimis mai sus. Confirmați extragerea abia după ce l-ați primit și l-ați deschis. Până la confirmare, comenzile rămân rezervate și nu apar în alt export.`;
-  await say(ctx.userId, body, confirmButtons(exp));
-  if (!ctx.isPrivate) {
+  await say(dataChat, body, confirmButtons(exp));
+  if (dataChat !== ctx.chatId) {
     await say(ctx.chatId, `Exportul numărul ${exp.number}, pornit de ${ctx.name}, conține ${plural(exp.orderCount, "comandă", "comenzi")}. Fișierul și butoanele de confirmare au fost trimise în conversația privată.`);
   }
 }
@@ -434,9 +452,9 @@ export async function handleRegistryCallback(cb: TgCallback): Promise<void> {
           return;
         }
         await answerCallbackQuery(cb.id, "Retrimit fișierul.");
-        const ok = await deliverExport(exp, ctx.userId);
+        const ok = await deliverExport(exp, dataChatId(ctx));
         await say(
-          ctx.userId,
+          dataChatId(ctx),
           ok
             ? `Am retrimis fișierul exportului ${exp.number}. Dacă tot nu îl primiți, descărcați-l de pe site, din Registrul de comenzi. Comenzile rămân rezervate și nu s-au pierdut.`
             : `Eroare. Fișierul exportului ${exp.number} nu a putut fi retrimis. Descărcați-l de pe site, din Registrul de comenzi. Comenzile rămân rezervate și nu s-au pierdut.`

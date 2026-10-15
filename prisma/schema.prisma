@@ -353,6 +353,18 @@ model TelegramUserPermission {
   createdAt      DateTime @default(now())
 }
 
+// Drepturi acordate TUTUROR celor care scriu într-un grup (ca să nu fie nevoie de ID-ul fiecărei persoane).
+// chatId = ID-ul grupului sau textul "principal" (= grupul principal, TELEGRAM_CHAT_ID). Se adună la drepturile
+// individuale (TelegramUserPermission). În grupul principal, fișierul și datele personale se trimit direct în grup —
+// acolo comenzile cu telefon/adresă sunt oricum vizibile tuturor membrilor.
+model TelegramGroupPermission {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId      String   @unique
+  name        String
+  permissions String[] @default([])
+  createdAt   DateTime @default(now())
+}
+
 // Contor atomic pentru numerotarea secvențială a comenzilor (vezi lib/orderNumber.ts).
 // Un singur document, name="order" — incrementat cu $inc la fiecare comandă nouă din coș.
 model Counter {

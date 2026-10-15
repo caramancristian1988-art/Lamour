@@ -31,18 +31,47 @@ function envAdminIds(): Set<string> {
   );
 }
 
-export async function getUserPermissions(telegramUserId: string): Promise<Set<RegistryPermission>> {
+/** ID-ul grupului principal (cel cu notificările comenzilor pentru operatori). */
+export function mainGroupChatId(): string | null {
+  return process.env.TELEGRAM_CHAT_ID?.trim() || null;
+}
+
+/**
+ * Drepturile date tuturor membrilor unui grup (TelegramGroupPermission), sau null dacă grupul nu are o astfel de regulă.
+ * Rândul cu chatId "principal" se aplică grupului principal.
+ */
+export async function getGroupPermissions(chatId: string): Promise<Set<RegistryPermission> | null> {
+  try {
+    const candidates = [chatId];
+    if (chatId === mainGroupChatId()) candidates.push("principal");
+    const rows = await prisma.telegramGroupPermission.findMany({ where: { chatId: { in: candidates } } });
+    if (rows.length === 0) return null;
+    return new Set<RegistryPermission>(rows.flatMap((r) => r.permissions).filter(isRegistryPermission));
+  } catch (err) {
+    console.error("telegram: nu am putut citi drepturile grupului:", err);
+    return null;
+  }
+}
+
+function expand(perms: Set<RegistryPermission>): Set<RegistryPermission> {
+  // „administrare” le include pe toate.
+  return perms.has("administrare") ? new Set(REGISTRY_PERMISSIONS.map((p) => p.value)) : perms;
+}
+
+/**
+ * Drepturile unui utilizator: cele individuale + (dacă scrie într-un grup cu regulă) cele ale grupului.
+ * Apartenența la un grup fără regulă NU dă niciun drept.
+ */
+export async function getUserPermissions(telegramUserId: string, groupPerms?: Set<RegistryPermission> | null): Promise<Set<RegistryPermission>> {
   if (envAdminIds().has(telegramUserId)) return new Set(REGISTRY_PERMISSIONS.map((p) => p.value));
+  const perms = new Set<RegistryPermission>(groupPerms ?? []);
   try {
     const row = await prisma.telegramUserPermission.findUnique({ where: { telegramUserId } });
-    const perms = new Set<RegistryPermission>((row?.permissions ?? []).filter(isRegistryPermission));
-    // „administrare” le include pe toate.
-    if (perms.has("administrare")) return new Set(REGISTRY_PERMISSIONS.map((p) => p.value));
-    return perms;
+    for (const p of row?.permissions ?? []) if (isRegistryPermission(p)) perms.add(p);
   } catch (err) {
     console.error("telegram: nu am putut citi drepturile utilizatorului:", err);
-    return new Set();
   }
+  return expand(perms);
 }
 
 export function permissionLabel(p: string): string {
