@@ -50,8 +50,8 @@ export default function ProductsCarousel({ children, viewAllHref, viewAllLabel, 
 
   const items = Children.toArray(children);
   // lățimea unui card: (100% − golurile) / număr vizibil; golul se schimbă cu --gap
-  // Pe telefon se văd 2 produse și JUMĂTATE din al treilea ("peek"): marginea tăiată arată că lista continuă și se poate glisa.
-  const basis = "basis-[calc((100%-1.4*var(--gap))/2.4)] sm:basis-[calc((100%-var(--gap))/2)] md:basis-[calc((100%-2*var(--gap))/3)] xl:basis-[calc((100%-3*var(--gap))/4)]";
+  // Pe telefon se vede UN produs întreg și o bucată din al doilea ("peek"): marginea tăiată arată că lista continuă și se poate glisa.
+  const basis = "basis-[calc((100%-0.35*var(--gap))/1.35)] sm:basis-[calc((100%-var(--gap))/2)] md:basis-[calc((100%-2*var(--gap))/3)] xl:basis-[calc((100%-3*var(--gap))/4)]";
 
   // Fiecare card se întinde pe toată înălțimea rândului: toate au aceeași înălțime (cel mai înalt dă măsura),
   // iar conținutul nu se taie — butoanele rămân aliniate jos (mt-auto în card).
