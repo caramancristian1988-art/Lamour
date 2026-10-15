@@ -131,7 +131,7 @@ export default async function DesprePage() {
             poster={TEAM_VIDEO.poster}
             title={TEAM_VIDEO.title}
             orientation="portrait"
-            className="mx-auto lg:mr-0 lg:ml-auto w-full max-w-[300px] sm:max-w-[330px] aspect-[9/16] rounded-md shadow-lg"
+            className="mx-auto w-full max-w-[300px] sm:max-w-[330px] aspect-[9/16] rounded-md shadow-lg"
           />
 
           <div>
@@ -173,7 +173,7 @@ export default async function DesprePage() {
           </div>
 
           {/* Reel vertical, centrat în coloana din dreapta (fără fundal) */}
-          <div className="flex h-full items-center justify-center lg:justify-start px-5 lg:pl-8 lg:pr-5 py-10 lg:py-14">
+          <div className="flex h-full items-center justify-center px-5 py-10 lg:py-14">
             <FacebookVideo
               videoUrl={PRODUCTS_VIDEO.url}
               poster={PRODUCTS_VIDEO.poster}

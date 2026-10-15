@@ -111,8 +111,10 @@ const CONTACT_DEFAULTS: ContactInfo = {
 export const getContactInfo = cache(async (): Promise<ContactInfo> => {
   const settings = await getSettings();
   if (!settings) return CONTACT_DEFAULTS;
-  const phone = settings.phone || CONTACT_DEFAULTS.phone;
-  const phoneTel = phone.replace(/[^\d+]/g, "");
+  const rawPhone = settings.phone || CONTACT_DEFAULTS.phone;
+  const phoneTel = rawPhone.replace(/[^\d+]/g, "");
+  // Afișat fără spații (ex. "+37367226394") oriunde apare numărul: bara de sus, subsol, butonul de contact, pagina de contact.
+  const phone = rawPhone.replace(/\s+/g, "");
   return {
     phone,
     phoneTel,

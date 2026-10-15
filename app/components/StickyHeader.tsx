@@ -10,18 +10,11 @@ import FavoritesBadge from "./FavoritesBadge";
 import AllCategoriesMenu from "./AllCategoriesMenu";
 import AccountMenuLink from "./AccountMenuLink";
 import AccessibilityToggle from "./AccessibilityToggle";
-import NavDropdown from "./NavDropdown";
 
 const fallbackProductsDropdown = [
   { id: "categorie-1", slug: "categorie-1", name: "Categoria unu", image: null },
   { id: "categorie-2", slug: "categorie-2", name: "Categoria doi", image: null },
   { id: "categorie-3", slug: "categorie-3", name: "Categoria trei", image: null },
-];
-
-const despreDropdown = [
-  { href: "/despre#istorie", label: "Istorie" },
-  { href: "/despre#misiune", label: "Misiune" },
-  { href: "/despre#misiune-sociala", label: "Misiune socială" },
 ];
 
 export default function StickyHeader({
@@ -93,14 +86,16 @@ export default function StickyHeader({
         </div>
 
         {/* DESKTOP layout */}
-        <div className="hidden lg:grid grid-cols-[auto_1fr_auto] gap-x-6 max-w-[110rem] mx-auto px-6">
-          <Link href="/" className="flex items-center gap-4 py-4 shrink-0 rounded-lg">
-            <Logo size={152} className="border-2 border-logo-silver shadow-sm" />
+        <div className="hidden lg:grid grid-cols-[auto_minmax(0,1fr)_auto] gap-x-4 xl:gap-x-6 max-w-[110rem] mx-auto px-4 xl:px-6">
+          {/* La 1024–1279 px sigla și titlul sunt mai mici ca antetul să încapă fără să iasă din ecran */}
+          <Link href="/" className="flex items-center gap-3 xl:gap-4 py-3 xl:py-4 shrink-0 rounded-lg">
+            <Logo size={112} className="xl:hidden border-2 border-logo-silver shadow-sm" />
+            <Logo size={152} className="hidden xl:block border-2 border-logo-silver shadow-sm" />
             <span className="block leading-tight">
-              <span className="block pr-2 text-4xl font-serif italic font-bold tracking-tight whitespace-nowrap bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.4px_var(--brand-maroon)]">
+              <span className="block pr-2 text-3xl xl:text-4xl font-serif italic font-bold tracking-tight whitespace-nowrap bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.4px_var(--brand-maroon)]">
                 {SITE_SHORT_NAME}
               </span>
-              <span className="block pr-2 text-2xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.4px_var(--brand-maroon)] -mt-1">
+              <span className="block pr-2 text-xl xl:text-2xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.4px_var(--brand-maroon)] -mt-1">
                 Lamour
               </span>
             </span>
@@ -111,7 +106,7 @@ export default function StickyHeader({
           </div>
 
           <div className="flex items-center gap-1 justify-end py-7">
-            <AccessibilityToggle className="px-2" />
+            <AccessibilityToggle className="px-2" labelClassName="hidden xl:inline" />
             <AccountMenuLink className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-primary transition-colors">
               <User className="w-5 h-5 shrink-0" aria-hidden />
             </AccountMenuLink>
@@ -146,7 +141,11 @@ export default function StickyHeader({
 
         {/* Dreapta: celelalte linkuri (aliniate cu pictogramele de cont/favorite/coș de mai sus) */}
         <nav aria-label="Meniu principal" className="flex items-center gap-10">
-          {despreEnabled && <NavDropdown label="Despre noi" href="/despre" items={despreDropdown} />}
+          {despreEnabled && (
+            <Link href="/despre" className="py-4 text-[15px] font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+              Despre noi
+            </Link>
+          )}
 
           {/* „Catalog” = link simplu; paginile Mobilă / Spații comerciale se aleg din pagina Catalog (secțiunile de sus). */}
           {produseEnabled && (

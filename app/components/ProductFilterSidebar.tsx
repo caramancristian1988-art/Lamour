@@ -1,9 +1,9 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useProductsNavigate, usePendingHref } from "./ProductsNav";
-import { SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { type SortKey } from "@/lib/productListing";
 import ProductSortSelect from "./ProductSortSelect";
 import PriceRangeSlider from "./PriceRangeSlider";
@@ -149,6 +149,69 @@ function FilterOptions({
   );
 }
 
+// Căutare în interiorul catalogului: se combină cu celelalte filtre (categorie, brand, preț...). Se aplică la Enter sau
+// după o scurtă pauză de la ultima tastă.
+function CatalogSearch({ value, onCommit }: { value: string; onCommit: (q: string) => void }) {
+  const [text, setText] = useState(value);
+  const inputId = useId();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Dacă URL-ul se schimbă din altă parte (ex. „Șterge tot”), câmpul îl urmează. Tiparul „ajustează starea în timpul randării”
+  // (nu un efect) — și nu golește ce tastează utilizatorul cât timp valoarea din URL e aceeași cu textul curent.
+  const [seenValue, setSeenValue] = useState(value);
+  if (value !== seenValue) {
+    setSeenValue(value);
+    if (value !== text.trim()) setText(value);
+  }
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  function schedule(next: string) {
+    setText(next);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => onCommit(next.trim()), 550);
+  }
+
+  return (
+    <form
+      role="search"
+      onSubmit={(e) => {
+        e.preventDefault();
+        clearTimeout(timer.current);
+        onCommit(text.trim());
+      }}
+    >
+      <label htmlFor={inputId} className="sr-only">
+        Caută în catalog
+      </label>
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+        <input
+          id={inputId}
+          type="search"
+          value={text}
+          onChange={(e) => schedule(e.target.value)}
+          placeholder="Caută în catalog…"
+          className="h-11 w-full rounded-xl border-2 border-input bg-card pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus-visible:border-accent focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/20 [&::-webkit-search-cancel-button]:hidden"
+        />
+        {text && (
+          <button
+            type="button"
+            onClick={() => {
+              clearTimeout(timer.current);
+              setText("");
+              onCommit("");
+            }}
+            aria-label="Șterge căutarea"
+            className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-accent"
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
+        )}
+      </div>
+    </form>
+  );
+}
+
 export default function ProductFilterSidebar({ sort, categories, brands, priceBounds, offersCount }: Props) {
   const navigate = useProductsNavigate();
   const pathname = usePathname();
@@ -167,6 +230,7 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
   const priceMax = Number(searchParams.get("pretMax")) || PRICE_ABSOLUTE_MAX;
   const priceFilterActive = searchParams.has("pretMin") || searchParams.has("pretMax");
   const offersOnly = searchParams.get("oferte") === "1";
+  const searchQuery = searchParams.get("q") ?? "";
 
   function go(params: URLSearchParams) {
     params.delete("page");
@@ -195,6 +259,12 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
     go(params);
   }
 
+  function setSearchQuery(q: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (q) params.set("q", q); else params.delete("q");
+    go(params);
+  }
+
   function removeListValue(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
     const current = params.get(key)?.split(",").filter(Boolean) ?? [];
@@ -211,7 +281,7 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
 
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString());
-    ["cat", "brand", "pretMin", "pretMax", "oferte"].forEach((k) => params.delete(k));
+    ["cat", "brand", "pretMin", "pretMax", "oferte", "q"].forEach((k) => params.delete(k));
     go(params);
   }
 
@@ -238,11 +308,14 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
     });
   }
   if (offersOnly) activeChips.push({ key: "oferte", label: "Oferte speciale", onRemove: () => removeParam("oferte") });
+  if (searchQuery) activeChips.push({ key: "q", label: `Căutare: ${searchQuery}`, onRemove: () => removeParam("q") });
 
   const hasActive = activeChips.length > 0;
 
   const sidebarContent = (
     <div className="flex flex-col gap-5">
+      <CatalogSearch value={searchQuery} onCommit={setSearchQuery} />
+
       {hasActive && (
         <FilterSection title="Filtre active">
           <div className="mb-3 flex flex-col gap-2">

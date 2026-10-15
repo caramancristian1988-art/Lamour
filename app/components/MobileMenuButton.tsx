@@ -2,70 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, ChevronDown, Phone } from "lucide-react";
+import { Menu, Phone } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/app/components/ui/sheet";
 import type { SectionFlags } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_SHORT_NAME } from "@/lib/constants";
 import AccessibilityToggle from "./AccessibilityToggle";
 
-const despreDropdown = [
-  { href: "/despre#istorie", label: "Istorie" },
-  { href: "/despre#misiune", label: "Misiune" },
-  { href: "/despre#misiune-sociala", label: "Misiune socială" },
-];
-
 const baseNavLinks = [
   { href: "/blog", label: "Blog", flag: "blogEnabled" as const },
   { href: "/contact", label: "Contact", flag: "contactEnabled" as const },
 ];
-
-function MobileDropdownGroup({
-  label,
-  href,
-  items,
-  open,
-  onToggle,
-  ariaLabel,
-}: {
-  label: string;
-  href: string;
-  items: { href: string; label: string }[];
-  open: boolean;
-  onToggle: () => void;
-  ariaLabel: string;
-}) {
-  return (
-    <div>
-      <div className="flex items-center rounded-xl hover:bg-muted transition-colors">
-        <SheetClose asChild>
-          <Link href={href} className="flex-1 px-3 py-3.5 text-primary hover:text-accent transition-colors text-base font-bold">
-            {label}
-          </Link>
-        </SheetClose>
-        <button
-          onClick={onToggle}
-          aria-label={ariaLabel}
-          aria-expanded={open}
-          className="px-3 py-3.5 text-primary hover:text-accent transition-colors"
-        >
-          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} aria-hidden />
-        </button>
-      </div>
-      <div className={`overflow-hidden transition-all duration-200 ${open ? "max-h-96" : "max-h-0"}`}>
-        <div className="flex flex-col pb-1">
-          {items.map((item) => (
-            <SheetClose asChild key={item.href}>
-              <Link href={item.href} className="px-6 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-accent transition-colors">
-                {item.label}
-              </Link>
-            </SheetClose>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function MobileMenuButton({
   produseEnabled = true,
@@ -78,7 +25,6 @@ export default function MobileMenuButton({
   const flags = { produseEnabled, despreEnabled, blogEnabled, contactEnabled };
   const navLinks = baseNavLinks.filter((l) => flags[l.flag]);
   const [open, setOpen] = useState(false);
-  const [despreOpen, setDespreOpen] = useState(false);
 
   function closeMenu() {
     setOpen(false);
@@ -104,14 +50,11 @@ export default function MobileMenuButton({
 
         <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Meniu principal">
           {despreEnabled && (
-            <MobileDropdownGroup
-              label="Despre noi"
-              href="/despre"
-              items={despreDropdown}
-              open={despreOpen}
-              onToggle={() => setDespreOpen((v) => !v)}
-              ariaLabel="Arată secțiunile despre companie"
-            />
+            <SheetClose asChild>
+              <Link href="/despre" className="block px-3 py-3.5 rounded-xl text-primary hover:bg-muted hover:text-accent transition-colors text-base font-bold">
+                Despre noi
+              </Link>
+            </SheetClose>
           )}
 
           {produseEnabled && (

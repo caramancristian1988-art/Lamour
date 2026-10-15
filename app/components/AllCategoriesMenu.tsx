@@ -91,7 +91,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
             (document.activeElement as HTMLElement | null)?.blur?.();
           }
         }}
-        className="w-[calc(100vw-2rem)] sm:w-[min(calc(100vw-3rem),70rem)] max-h-[min(78vh,46rem)] overflow-y-auto scrollbar-brand p-4 sm:p-6 rounded-2xl"
+        className="w-[calc(100vw-2rem)] sm:w-[min(calc(100vw-3rem),104rem)] max-h-[min(86vh,64rem)] overflow-y-auto scrollbar-brand p-4 sm:p-6 rounded-2xl"
       >
         <div className="flex items-center gap-3 mb-4 sm:mb-5">
           <h2 className="text-lg sm:text-xl font-bold text-primary tracking-tight uppercase">Categorii</h2>
@@ -106,7 +106,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
           </Link>
         </div>
 
-        <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+        <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-9 gap-3 sm:gap-4">
           <li>
             <Link
               href="/produse?oferte=1"

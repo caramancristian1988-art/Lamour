@@ -35,6 +35,11 @@ export const metadata: Metadata = {
   },
 };
 
+// Câte produse arată fiecare secțiune (în carusel) și câte se aduc din bază înainte de a scoate variantele (acestea
+// sunt ascunse din liste, deci fără o rezervă ar rămâne mult mai puține decât PER_SECTION).
+const PER_SECTION = 15;
+const POOL = 80;
+
 async function getData() {
   try {
     const [rawCategories, essentialProducts, offerProducts, newProducts, recommendedProducts, banners, variantRows] =
@@ -54,18 +59,27 @@ async function getData() {
         // hârtie igienică — cele mai căutate categorii, cerute explicit
         // să apară primele pe pagina principală.
         prisma.product.findMany({
-          where: onlyVisible({ category: { slug: { in: ["prosoape-de-hartie", "hartie-igienica"] } } }),
+          // Produsele de hârtie stau în SUBCATEGORIILE acestor categorii (în 2/3 straturi etc.), nu direct în ele —
+          // de aceea se caută și după categoria părinte.
+          where: onlyVisible({
+            category: {
+              OR: [
+                { slug: { in: ["prosoape-de-hartie", "hartie-igienica"] } },
+                { parent: { slug: { in: ["prosoape-de-hartie", "hartie-igienica"] } } },
+              ],
+            },
+          }),
           orderBy: { createdAt: "desc" },
-          take: 8,
+          take: POOL,
         }),
         prisma.product.findMany({
           where: onlyVisible({ oldPrice: { not: null } }),
           orderBy: { createdAt: "desc" },
-          take: 4,
+          take: POOL,
         }),
-        prisma.product.findMany({ where: onlyVisible(), orderBy: { createdAt: "desc" }, take: 4 }),
+        prisma.product.findMany({ where: onlyVisible(), orderBy: { createdAt: "desc" }, take: POOL }),
         // Recomandate din TOATE categoriile, după rating
-        prisma.product.findMany({ where: onlyVisible(), orderBy: { rating: "desc" }, take: 8 }),
+        prisma.product.findMany({ where: onlyVisible(), orderBy: { rating: "desc" }, take: POOL }),
         prisma.banner.findMany({ orderBy: { order: "asc" } }),
         // Lightweight full-catalog pull just to build the variant-siblings
         // map — homepage sections only fetch a handful of products each, not
@@ -94,11 +108,11 @@ async function getData() {
 
     return {
       categories,
-      essentialProducts: dedupeVariants(essentialProducts),
+      essentialProducts: dedupeVariants(essentialProducts).slice(0, PER_SECTION),
       // Fără produse reale la reducere, secțiunea Oferte nu se afișează (înainte apăreau produse demo cu linkuri 404).
-      offerProducts: dedupeVariants(offerProducts),
-      newProducts: dedupeVariants(newProducts),
-      recommendedProducts: dedupeVariants(recommendedProducts),
+      offerProducts: dedupeVariants(offerProducts).slice(0, PER_SECTION),
+      newProducts: dedupeVariants(newProducts).slice(0, PER_SECTION),
+      recommendedProducts: dedupeVariants(recommendedProducts).slice(0, PER_SECTION),
       banners,
       variantOptionsMap,
     };

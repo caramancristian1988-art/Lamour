@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ProductCard from "./ProductCard";
+import ProductsCarousel from "./ProductsCarousel";
 import { Button } from "@/app/components/ui/button";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 import { getSectionFlags } from "@/lib/siteSettings";
@@ -55,7 +56,7 @@ export default async function ProductsSection({ products, title = "Produse", hig
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-5">
+        <ProductsCarousel viewAllHref={viewAllHref} viewAllLabel={viewAllLabel} ariaLabel={`${title} ${highlighted}`.trim()}>
           {products.map((product) => (
             <ProductCard
               key={product.id}
@@ -69,7 +70,7 @@ export default async function ProductsSection({ products, title = "Produse", hig
               variantOptions={variantOptionsMap?.get(product.id)}
             />
           ))}
-        </div>
+        </ProductsCarousel>
       </div>
     </section>
   );

@@ -164,11 +164,11 @@ export default function ProductCard({
               variantOptions={variantOptions}
               variantLabel={ownVariantLabel}
               tiers={normalizeTiers({ priceTiers, bulkMinQty, bulkPrice })}
-              className="flex-1 h-10 sm:h-11 bg-accent hover:bg-brand-red-dark text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-muted disabled:text-muted-foreground active:scale-95 hover:shadow-md"
+              className="flex-1 min-w-0 overflow-hidden px-3 h-10 sm:h-11 bg-accent hover:bg-brand-red-dark text-white text-xs font-bold rounded-full transition-all flex items-center justify-center gap-2 uppercase tracking-wide disabled:bg-muted disabled:text-muted-foreground active:scale-95 hover:shadow-md"
             >
-              <ShoppingCart className="w-4 h-4" aria-hidden />
+              <ShoppingCart className="w-4 h-4 shrink-0" aria-hidden />
               {/* sr-only (nu hidden): pe mobil butonul arată doar iconița, dar cititoarele de ecran au nevoie de un nume. */}
-              <span className="sr-only sm:not-sr-only">Adaugă în coș</span>
+              <span className="sr-only sm:not-sr-only sm:truncate">Adaugă în coș</span>
             </AddToCartButton>
             <Link
               href={`/produse/${slug}`}

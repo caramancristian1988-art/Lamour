@@ -4,7 +4,7 @@ import { Accessibility } from "lucide-react";
 import { useAccessibility } from "./AccessibilityProvider";
 import { cn } from "@/lib/utils";
 
-export default function AccessibilityToggle({ className }: { className?: string }) {
+export default function AccessibilityToggle({ className, labelClassName }: { className?: string; labelClassName?: string }) {
   const { enabled, toggle } = useAccessibility();
 
   return (
@@ -20,7 +20,7 @@ export default function AccessibilityToggle({ className }: { className?: string 
       )}
     >
       <Accessibility className="w-5 h-5 shrink-0" aria-hidden />
-      <span className="font-semibold">Accesibilitate</span>
+      <span className={cn("font-semibold", labelClassName)}>Accesibilitate</span>
     </button>
   );
 }

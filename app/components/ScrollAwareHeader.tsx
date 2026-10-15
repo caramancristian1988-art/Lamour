@@ -14,6 +14,8 @@ export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categ
   const headerRef = useRef<HTMLDivElement>(null);
   const lastScrollY = useRef(0);
   const heightRef = useRef(0);
+  // true cât timp un câmp din antet (căutarea) are focus: antetul rămâne vizibil, ca rezultatele să nu dispară sub el
+  const keepVisibleRef = useRef(false);
 
   // Înălțimea antetului (se schimbă când se încarcă fonturile/sigla sau la redimensionare).
   useEffect(() => {
@@ -37,7 +39,9 @@ export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categ
       const y = Math.max(0, window.scrollY);
       setScrolled(y > 0);
 
-      if (y <= heightRef.current) {
+      if (keepVisibleRef.current) {
+        setHidden(false);
+      } else if (y <= heightRef.current) {
         // Aproape de capăt — mereu vizibil (fără clipit la graniță)
         setHidden(false);
       } else if (y > lastScrollY.current + SCROLL_DELTA) {
@@ -57,9 +61,30 @@ export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categ
       }
     };
 
+    const header = headerRef.current;
+    const isField = (t: EventTarget | null) =>
+      t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement;
+    const onFocusIn = (e: FocusEvent) => {
+      if (isField(e.target)) {
+        keepVisibleRef.current = true;
+        setHidden(false);
+      }
+    };
+    const onFocusOut = (e: FocusEvent) => {
+      // rămâne „activ” dacă focusul trece la alt element din antet (ex. un rezultat al căutării)
+      const next = e.relatedTarget as Node | null;
+      if (!next || !header?.contains(next)) keepVisibleRef.current = false;
+    };
+    header?.addEventListener("focusin", onFocusIn);
+    header?.addEventListener("focusout", onFocusOut);
+
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      header?.removeEventListener("focusin", onFocusIn);
+      header?.removeEventListener("focusout", onFocusOut);
+    };
   }, []);
 
   // Elementele lipite de ecran (ex. filtrele din Catalog) trebuie să stea SUB antet când acesta e vizibil și sus când
