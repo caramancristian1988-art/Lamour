@@ -2,15 +2,17 @@
 
 import { createContext, useContext, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-// Răspuns "optimist" la filtrarea produselor: în loc să aștepte serverul fără nicio reacție vizibilă, o apăsare pe un
-// filtru/tab/sortare (1) evidențiază imediat alegerea, (2) estompează lista veche și (3) arată o bară de progres,
-// până sosește pagina nouă. Navigarea rulează într-o tranziție React, deci pagina veche rămâne pe ecran cât se încarcă.
+// Filtrele catalogului rulează ÎN BROWSER: lista de produse e trimisă o singură dată împreună cu pagina, iar o apăsare pe
+// un filtru / sortare / „Încarcă mai multe" doar schimbă adresa (history.pushState — useSearchParams se actualizează
+// singur) și lista se recalculează pe loc, fără nicio cerere la server. Dacă destinația e altă pagină, se navighează normal.
 
 interface NavOptions {
   scroll?: boolean;
+  /** Înlocuiește intrarea curentă din istoric în loc să adauge una (ex. „Încarcă mai multe"). */
+  replace?: boolean;
 }
 
 interface ProductsNavValue {
@@ -22,28 +24,36 @@ interface ProductsNavValue {
 
 const ProductsNavContext = createContext<ProductsNavValue | null>(null);
 
-export function ProductsNavProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [target, setTarget] = useState<string | null>(null);
+// Parametrii din adresă, dați de ProductsCatalog (care îi citește din useSearchParams sau, în HTML-ul static, îi lasă goi).
+// Filtrele îi citesc de aici, nu direct din useSearchParams: așa pagina rămâne statică (useSearchParams ar scoate-o din HTML-ul
+// pregătit dinainte), iar lista implicită se vede imediat, chiar înainte să se încarce JavaScript-ul.
+const UrlParamsContext = createContext<URLSearchParams | null>(null);
+const NO_PARAMS = new URLSearchParams();
 
-  function navigate(href: string, options?: NavOptions) {
-    setTarget(href);
-    startTransition(() => {
+export function useUrlParams(): URLSearchParams {
+  return useContext(UrlParamsContext) ?? NO_PARAMS;
+}
+
+export function ProductsNavProvider({ children, params }: { children: ReactNode; params: URLSearchParams }) {
+  const router = useRouter();
+
+  function navigate(href: string, options?: NavOptions & { replace?: boolean }) {
+    const target = new URL(href, window.location.href);
+    if (target.pathname !== window.location.pathname) {
       router.push(href, options);
-    });
+      return;
+    }
+    const url = target.pathname + target.search;
+    if (options?.replace) window.history.replaceState(null, "", url);
+    else window.history.pushState(null, "", url);
   }
 
   return (
-    <ProductsNavContext.Provider value={{ isPending, pendingHref: isPending ? target : null, navigate }}>
-      {isPending && (
-        <>
-          <div className="nav-progress-bar fixed inset-x-0 top-0 z-[70] h-1 bg-accent" aria-hidden />
-          <span className="sr-only" role="status">Se încarcă produsele…</span>
-        </>
-      )}
-      {children}
-    </ProductsNavContext.Provider>
+    <UrlParamsContext.Provider value={params}>
+      <ProductsNavContext.Provider value={{ isPending: false, pendingHref: null, navigate }}>
+        {children}
+      </ProductsNavContext.Provider>
+    </UrlParamsContext.Provider>
   );
 }
 
@@ -97,7 +107,7 @@ export function MultiNavChips({
 }) {
   const navigate = useProductsNavigate();
   const pathname = usePathname();
-  const urlParams = useSearchParams();
+  const urlParams = useUrlParams();
   const pendingHref = usePendingHref();
   const params = pendingHref ? new URLSearchParams(pendingHref.split("?")[1] ?? "") : urlParams;
 

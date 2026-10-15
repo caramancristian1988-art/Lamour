@@ -148,6 +148,12 @@
   100% { transform: scale(1); }
 }
 
+/* Săgeata din indiciul „Glisează" împinge ușor spre dreapta (oprită la „mișcare redusă", vezi regula de mai jos). */
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
+}
+
 @keyframes marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }

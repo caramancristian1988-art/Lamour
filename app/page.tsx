@@ -77,9 +77,10 @@ async function getData() {
           orderBy: { createdAt: "desc" },
           take: POOL,
         }),
-        prisma.product.findMany({ where: onlyVisible(), orderBy: { createdAt: "desc" }, take: POOL }),
-        // Recomandate din TOATE categoriile, după rating
-        prisma.product.findMany({ where: onlyVisible(), orderBy: { rating: "desc" }, take: POOL }),
+        // „Produse noi" / „Recomandate": exact cele bifate în admin, TOATE (fără limită). Cât timp nu e bifat niciunul,
+        // secțiunea nu rămâne goală — se folosește selecția automată (cele mai noi / cele mai bine cotate).
+        prisma.product.findMany({ where: onlyVisible({ isNewProduct: true }), orderBy: { createdAt: "desc" } }),
+        prisma.product.findMany({ where: onlyVisible({ recommended: true }), orderBy: { createdAt: "desc" } }),
         prisma.banner.findMany({ orderBy: { order: "asc" } }),
         // Lightweight full-catalog pull just to build the variant-siblings
         // map — homepage sections only fetch a handful of products each, not
@@ -90,6 +91,20 @@ async function getData() {
         }),
       ]);
       const variantOptionsMap = buildVariantOptionsMap(variantRows);
+
+    // Nimic bifat în admin -> selecția automată de până acum, ca secțiunea să nu dispară de pe prima pagină.
+    const [newToShow, recommendedToShow] = await Promise.all([
+      dedupeVariants(newProducts).length > 0
+        ? dedupeVariants(newProducts)
+        : prisma.product
+            .findMany({ where: onlyVisible(), orderBy: { createdAt: "desc" }, take: POOL })
+            .then((rows) => dedupeVariants(rows).slice(0, PER_SECTION)),
+      dedupeVariants(recommendedProducts).length > 0
+        ? dedupeVariants(recommendedProducts)
+        : prisma.product
+            .findMany({ where: onlyVisible(), orderBy: { rating: "desc" }, take: POOL })
+            .then((rows) => dedupeVariants(rows).slice(0, PER_SECTION)),
+    ]);
 
     // Preferăm poza setată explicit pe categorie (din admin); dacă nu există
     // una reală, cădem pe prima poză de produs găsită — poza categoriei
@@ -111,8 +126,8 @@ async function getData() {
       essentialProducts: dedupeVariants(essentialProducts).slice(0, PER_SECTION),
       // Fără produse reale la reducere, secțiunea Oferte nu se afișează (înainte apăreau produse demo cu linkuri 404).
       offerProducts: dedupeVariants(offerProducts).slice(0, PER_SECTION),
-      newProducts: dedupeVariants(newProducts).slice(0, PER_SECTION),
-      recommendedProducts: dedupeVariants(recommendedProducts).slice(0, PER_SECTION),
+      newProducts: newToShow,
+      recommendedProducts: recommendedToShow,
       banners,
       variantOptionsMap,
     };

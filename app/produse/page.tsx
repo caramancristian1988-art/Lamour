@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSectionFlags } from "@/lib/siteSettings";
@@ -9,27 +8,11 @@ import {
   fallbackOfferProducts,
   fallbackDiscountProducts,
 } from "@/lib/fallbackData";
-import ProductCard from "../components/ProductCard";
-import LoadMoreButton from "../components/LoadMoreButton";
-import ProductFilterSidebar from "../components/ProductFilterSidebar";
 import { getCatalog } from "@/lib/catalog";
-import { NavChips, MultiNavChips, ProductsNavProvider, PendingRegion } from "../components/ProductsNav";
-import FurnitureCard from "../components/FurnitureCard";
-import SpaceCard from "../components/SpaceCard";
-import DivisionFilterSidebar from "../components/DivisionFilterSidebar";
-import { getFurnitureListings } from "@/lib/mobilaData";
-import { getSpaceListings } from "@/lib/spatiiComercialeData";
-import {
-  sortProducts,
-  paginate,
-  parseSort,
-  parsePage,
-  parseFilters,
-  applyFilters,
-  dedupeVariants,
-  buildVariantOptionsMap,
-} from "@/lib/productListing";
-import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
+import ProductsCatalog from "../components/ProductsCatalog";
+import { DivisionTabs, Breadcrumb } from "../components/CatalogTabs";
+import { sortProducts, paginate, dedupeVariants } from "@/lib/productListing";
+import { toCatalogProduct, variantOptionsRecord } from "@/lib/clientCatalog";
 import JsonLd from "../components/JsonLd";
 import { breadcrumbList, collectionPage } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
@@ -64,9 +47,11 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 3600;
 
-type Division = "uz-casnic" | "mobila" | "chirie";
+// Pagină STATICĂ: nu citește searchParams. Produsele (în formă compactă) sunt trimise o singură dată, iar filtrarea,
+// căutarea, sortarea și „Încarcă mai multe" rulează în browser (ProductsCatalog) — fără cereri la server la fiecare filtru.
+// Se reface la cel mult o oră sau imediat când adminul modifică produse/categorii (updateTag + revalidatePath).
+export const revalidate = 3600;
 
 interface CategoryRow {
   id: string;
@@ -87,6 +72,7 @@ interface ProductRow {
   price: number;
   oldPrice: number | null;
   image: string | null;
+  images?: string[];
   brand: string | null;
   rating: number;
   reviewCount: number;
@@ -123,336 +109,17 @@ async function getData(): Promise<{ categories: CategoryRow[]; products: Product
   }
 }
 
-function firstParam(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function selectedParams(value: string | string[] | undefined): string[] {
-  return (firstParam(value) ?? "").split(",").filter(Boolean);
-}
-
-function materialFamily(material: string): string {
-  if (material.includes("Lemn masiv")) return "Lemn masiv";
-  if (material.includes("PAL")) return "PAL";
-  if (material.includes("MDF")) return "MDF";
-  return material;
-}
-
-type AreaBucket = "sub-70" | "70-150" | "peste-150";
-const AREA_BUCKET_LABELS: Record<AreaBucket, string> = {
-  "sub-70": "Sub 70 m²",
-  "70-150": "70 - 150 m²",
-  "peste-150": "Peste 150 m²",
-};
-function areaBucket(area: number): AreaBucket {
-  if (area < 70) return "sub-70";
-  if (area <= 150) return "70-150";
-  return "peste-150";
-}
-
-function zoneLabel(location: string): string {
-  const parts = location.split(",");
-  return (parts[1] ?? parts[0]).trim();
-}
-
-function facetOptions<T>(items: T[], getValue: (item: T) => string, getLabel?: (value: string) => string): { value: string; label: string; count: number }[] {
-  const counts = new Map<string, number>();
-  items.forEach((item) => {
-    const value = getValue(item);
-    counts.set(value, (counts.get(value) ?? 0) + 1);
-  });
-  return Array.from(counts.entries())
-    .map(([value, count]) => ({ value, label: getLabel ? getLabel(value) : value, count }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-}
-
-// Secțiunile Catalogului — fiecare duce la pagina ei (înainte erau într-un meniu derulant din navbar).
-const CATALOG_SECTIONS: { key: string; label: string; href: string; divisions?: Division[] }[] = [
-  { key: "hartie", label: "Produse din hârtie", href: "/produse", divisions: ["uz-casnic"] },
-  { key: "mobila", label: "Mobilă", href: "/mobila", divisions: ["mobila"] },
-  { key: "spatii", label: "Spații comerciale", href: "/spatii-comerciale", divisions: ["chirie"] },
-];
-
-function DivisionTabs({ active }: { active: Division }) {
-  return (
-    <NavChips
-      size="lg"
-      ariaLabel="Secțiunile catalogului"
-      className="flex items-center gap-2 sm:gap-3 flex-wrap mb-6"
-      items={CATALOG_SECTIONS.map((s) => ({
-        key: s.key,
-        href: s.href,
-        label: s.label,
-        active: Boolean(s.divisions?.includes(active)),
-      }))}
-    />
-  );
-}
-
-function Breadcrumb() {
-  return (
-    <section>
-      <div className="max-w-[110rem] mx-auto px-4 sm:px-6 pt-4 pb-1">
-        <nav className="flex items-center gap-1.5 text-xs text-muted-foreground" aria-label="Fir de ariadnă">
-          <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
-          <span aria-hidden>›</span>
-          <span className="text-foreground">Catalog</span>
-        </nav>
-      </div>
-    </section>
-  );
-}
-
-export default async function ProdusePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+export default async function ProdusePage() {
   const { produseEnabled, ratesEnabled, installmentMonths } = await getSectionFlags();
   if (!produseEnabled) notFound();
 
-  const query = await searchParams;
-  const divisionParam = firstParam(query.division);
-  const division: Division =
-    divisionParam === "mobila" || divisionParam === "chirie" ? divisionParam : "uz-casnic";
-
-  // ── MOBILĂ ──────────────────────────────────────────────────────────
-  if (division === "mobila") {
-    const allListings = await getFurnitureListings();
-
-    const selectedTypes = selectedParams(query.tip);
-    const selectedMaterials = selectedParams(query.material);
-    const typeOptions = facetOptions(allListings, (l) => l.type.slug, (slug) => allListings.find((l) => l.type.slug === slug)?.type.name ?? slug);
-    const materialOptions = facetOptions(allListings, (l) => materialFamily(l.material));
-
-    const prices = allListings.map((l) => l.price).filter((p): p is number => p != null);
-    const priceBounds = prices.reduce(
-      (acc, p) => ({ min: Math.min(acc.min, p), max: Math.max(acc.max, p) }),
-      { min: prices[0] ?? 0, max: prices[0] ?? 0 }
-    );
-    const priceMinParam = firstParam(query.pretMin);
-    const priceMaxParam = firstParam(query.pretMax);
-    const priceMin = Number(priceMinParam) || priceBounds.min;
-    const priceMax = Number(priceMaxParam) || 100_000;
-    const priceFilterActive = priceMinParam !== undefined || priceMaxParam !== undefined;
-
-    const listings = allListings.filter((l) => {
-      if (selectedTypes.length > 0 && !selectedTypes.includes(l.type.slug)) return false;
-      if (selectedMaterials.length > 0 && !selectedMaterials.includes(materialFamily(l.material))) return false;
-      if (priceFilterActive && (l.price == null || l.price < priceMin || l.price > priceMax)) return false;
-      return true;
-    });
-
-    return (
-      <main className="page-motif">
-        <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Catalog", path: "/produse" }])} />
-        <JsonLd
-          data={collectionPage({
-            name: "Mobilă la comandă",
-            description: "Mobilier personalizat produs în fabrica proprie LuminTehnica.",
-            url: "/produse?division=mobila",
-            items: listings.map((l) => ({ name: l.title, url: `/mobila/${l.slug}`, image: l.image })),
-          })}
-        />
-        <Breadcrumb />
-        <section className="pt-2 pb-10 sm:py-10">
-          <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
-            <DivisionTabs active={division} />
-            <h1 className="sr-only">Mobilă la comandă</h1>
-
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
-              <DivisionFilterSidebar
-                groups={[
-                  { title: "Tip", paramKey: "tip", options: typeOptions },
-                  { title: "Material", paramKey: "material", options: materialOptions },
-                ]}
-                priceRange={
-                  priceBounds.max > priceBounds.min
-                    ? { title: "Preț", paramKeyMin: "pretMin", paramKeyMax: "pretMax", min: priceBounds.min, max: priceBounds.max, absoluteMax: 100_000 }
-                    : undefined
-                }
-              />
-
-              <div className="flex-1 min-w-0">
-                {listings.length > 0 ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
-                    {listings.map((listing) => (
-                      <FurnitureCard key={listing.slug} listing={listing} sizes="(max-width: 1023px) 50vw, 300px" />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 bg-card border border-border rounded-2xl">
-                    <p className="text-muted-foreground">Momentan nu există lucrări disponibile în această categorie.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  // ── CHIRIE ──────────────────────────────────────────────────────────
-  if (division === "chirie") {
-    const allListings = await getSpaceListings();
-
-    const selectedTypes = selectedParams(query.tip);
-    const selectedZones = selectedParams(query.zona);
-    const selectedAreas = selectedParams(query.suprafata) as AreaBucket[];
-    const typeOptions = facetOptions(allListings, (l) => l.type.slug, (slug) => allListings.find((l) => l.type.slug === slug)?.type.name ?? slug);
-    const zoneOptions = facetOptions(allListings, (l) => zoneLabel(l.location));
-    const areaOptions = facetOptions(allListings, (l) => areaBucket(l.area), (v) => AREA_BUCKET_LABELS[v as AreaBucket]);
-
-    const prices = allListings.map((l) => l.price).filter((p): p is number => p != null);
-    const priceBounds = prices.reduce(
-      (acc, p) => ({ min: Math.min(acc.min, p), max: Math.max(acc.max, p) }),
-      { min: prices[0] ?? 0, max: prices[0] ?? 0 }
-    );
-    const priceMinParam = firstParam(query.pretMin);
-    const priceMaxParam = firstParam(query.pretMax);
-    const priceMin = Number(priceMinParam) || priceBounds.min;
-    const priceMax = Number(priceMaxParam) || 100_000;
-    const priceFilterActive = priceMinParam !== undefined || priceMaxParam !== undefined;
-
-    const listings = allListings.filter((l) => {
-      if (selectedTypes.length > 0 && !selectedTypes.includes(l.type.slug)) return false;
-      if (selectedZones.length > 0 && !selectedZones.includes(zoneLabel(l.location))) return false;
-      if (selectedAreas.length > 0 && !selectedAreas.includes(areaBucket(l.area))) return false;
-      if (priceFilterActive && (l.price == null || l.price < priceMin || l.price > priceMax)) return false;
-      return true;
-    });
-
-    return (
-      <main className="page-motif">
-        <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Catalog", path: "/produse" }])} />
-        <JsonLd
-          data={collectionPage({
-            name: "Spații disponibile spre închiriere",
-            description: "Apartamente, birouri, spații comerciale și depozite oferite spre închiriere de LuminTehnica.",
-            url: "/produse?division=chirie",
-            items: listings.map((l) => ({ name: l.title, url: `/spatii-comerciale/${l.slug}`, image: l.image })),
-          })}
-        />
-        <Breadcrumb />
-        <section className="pt-2 pb-10 sm:py-10">
-          <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
-            <DivisionTabs active={division} />
-            <h1 className="sr-only">Spații disponibile spre închiriere</h1>
-
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
-              <DivisionFilterSidebar
-                groups={[
-                  { title: "Tip", paramKey: "tip", options: typeOptions },
-                  { title: "Zonă", paramKey: "zona", options: zoneOptions },
-                  { title: "Suprafață", paramKey: "suprafata", options: areaOptions },
-                ]}
-                priceRange={
-                  priceBounds.max > priceBounds.min
-                    ? { title: "Preț", paramKeyMin: "pretMin", paramKeyMax: "pretMax", min: priceBounds.min, max: priceBounds.max, unit: "€", absoluteMax: 5000 }
-                    : undefined
-                }
-              />
-
-              <div className="flex-1 min-w-0">
-                {listings.length > 0 ? (
-                  <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
-                    {listings.map((listing) => (
-                      <SpaceCard key={listing.slug} listing={listing} sizes="(max-width: 1023px) 50vw, 300px" />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 bg-card border border-border rounded-2xl">
-                    <p className="text-muted-foreground">Momentan nu există spații disponibile în această categorie.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  // ── PRODUSE DE UZ CASNIC (implicit) ──────────────────────────────────
-  const sort = parseSort(query.sort);
-  const page = parsePage(query.page);
-  const filters = parseFilters(query);
-
   const { categories, products: allProducts } = await getData();
-  const baseProducts = dedupeVariants(allProducts);
-  const variantOptionsMap = buildVariantOptionsMap(allProducts);
+  const products = dedupeVariants(allProducts).map(toCatalogProduct);
+  const variantOptions = variantOptionsRecord(allProducts);
+  const catalogCategories = categories.map((c) => ({ id: c.id, slug: c.slug, name: c.name, parentId: c.parentId }));
 
-  const categoryById = new Map(categories.map((c) => [c.id, c.slug]));
-  const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
-
-  // Când toate categoriile selectate aparțin aceleiași familii (un părinte și/sau subcategoriile lui, pe un singur nivel),
-  // arătăm butoanele „în 2/3/4 straturi” — cu selecție multiplă (mai multe subcategorii deodată) — și, cât timp e ales
-  // părintele („Toate”), îmbinăm produsele lui cu ale subcategoriilor, ca pe pagina proprie /produse/[slug].
-  const selectedCategories = filters.categorySlugs
-    .map((slug) => categories.find((c) => c.slug === slug))
-    .filter((c): c is (typeof categories)[number] => Boolean(c));
-  const familyParentIds = new Set(selectedCategories.map((c) => c.parentId ?? c.id));
-  const parentCategory =
-    familyParentIds.size === 1 && selectedCategories.length === filters.categorySlugs.length
-      ? categories.find((c) => c.id === [...familyParentIds][0])
-      : undefined;
-  const siblingCategories = parentCategory
-    ? categories.filter((c) => c.parentId === parentCategory.id)
-    : [];
-  const showSubcategoryFilters = Boolean(parentCategory) && siblingCategories.length > 0;
-  // „Toate” = părintele e ales, sau nicio subcategorie nu e aleasă separat.
-  const isParentActive =
-    showSubcategoryFilters &&
-    (filters.categorySlugs.includes(parentCategory!.slug) || !selectedCategories.some((c) => c.parentId));
-
-  const effectiveFilters =
-    showSubcategoryFilters && isParentActive
-      ? { ...filters, categorySlugs: [parentCategory!.slug, ...siblingCategories.map((c) => c.slug)] }
-      : filters;
-
-  const products = applyFilters(
-    baseProducts,
-    effectiveFilters,
-    (p) => categoryById.get(p.categoryId) ?? "",
-    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.code ?? p.id.slice(-6)}`
-  );
-
-  const categoryOptions = categories
-    .filter((cat) => !cat.parentId)
-    .map((cat) => ({
-      id: cat.id,
-      slug: cat.slug,
-      name: cat.name,
-      // Un părinte numără și produsele subcategoriilor lui (selectat, le arată pe toate) — altfel
-      // "Prosoape de bucătărie" apărea cu (0) deși toate produsele sunt în subcategorii.
-      count: baseProducts.filter(
-        (p) => p.categoryId === cat.id || categories.some((sub) => sub.parentId === cat.id && sub.id === p.categoryId)
-      ).length,
-    }));
-
-  const priceBounds = baseProducts.reduce(
-    (acc, p) => ({ min: Math.min(acc.min, p.price), max: Math.max(acc.max, p.price) }),
-    { min: baseProducts[0]?.price ?? 0, max: baseProducts[0]?.price ?? 0 }
-  );
-
-  // Brand counts are "optimistic": computed against every other active filter
-  // except the brand filter itself, so picking one brand doesn't hide the rest.
-  const productsForBrandFacet = applyFilters(
-    baseProducts,
-    { ...effectiveFilters, brands: [] },
-    (p) => categoryById.get(p.categoryId) ?? "",
-    (p) => categoryNameById.get(p.categoryId) ?? ""
-  );
-  const brandOptions = Array.from(new Set(baseProducts.map((p) => p.brand).filter((v): v is string => Boolean(v))))
-    .map((value) => ({ value, count: productsForBrandFacet.filter((p) => p.brand === value).length }))
-    .filter((opt) => opt.count > 0)
-    .sort((a, b) => a.value.localeCompare(b.value));
-
-  const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
-
-  const sorted = sortProducts(products, sort);
-  const { items, page: currentPage, hasMore } = paginate(sorted, page);
+  // Pentru datele structurate: primele produse în ordinea implicită (cele mai noi), ca înainte.
+  const firstItems = paginate(sortProducts(products, "newest"), 1).items;
 
   return (
     <main className="page-motif">
@@ -462,94 +129,26 @@ export default async function ProdusePage({
           name: PRODUSE_TITLE,
           description: PRODUSE_DESCRIPTION,
           url: "/produse",
-          items: items.map((p) => ({ name: p.name, url: `/produse/${p.slug}`, image: p.image })),
+          items: firstItems.map((p) => ({ name: p.name, url: `/produse/${p.slug}`, image: p.image })),
         })}
       />
       <Breadcrumb />
 
-      {/* ── PRODUCTS GRID ── */}
-      <ProductsNavProvider>
       <section className="pt-2 pb-10 sm:py-10">
         <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
-          <DivisionTabs active={division} />
+          <DivisionTabs active="uz-casnic" />
           <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse de uz casnic</h1>
 
-          {showSubcategoryFilters && (
-            <MultiNavChips
-              paramKey="cat"
-              allValue={parentCategory!.slug}
-              ariaLabel="Filtrează după subcategorie (poți alege mai multe)"
-              className="flex items-center gap-2 flex-wrap mb-6"
-              options={siblingCategories.map((sibling) => ({ value: sibling.slug, label: sibling.name }))}
-            />
-          )}
-
-          <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <ProductFilterSidebar
-              sort={sort}
-              categories={categoryOptions}
-              brands={brandOptions}
-              priceBounds={priceBounds}
-              offersCount={offersCount}
-            />
-
-            <PendingRegion className="flex-1 min-w-0">
-              {filters.query ? (
-                <p className="text-sm text-muted-foreground mb-3 sm:mb-6">
-                  {products.length} rezultate pentru <span className="font-bold text-primary">&ldquo;{filters.query}&rdquo;</span>
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground mb-3 sm:mb-6">{products.length} produse găsite</p>
-              )}
-
-              {items.length > 0 ? (
-                <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-5">
-                  {items.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      {...product}
-                      name={localProductNames[product.slug] ?? product.name}
-                      image={localProductImages[product.slug] ?? product.image}
-                      badge={localProductBadges[product.slug] ?? product.badge}
-                      showDiscount={filters.offersOnly}
-                      installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
-                      installmentMonths={installmentMonths}
-                      variantOptions={variantOptionsMap.get(product.id)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16 bg-card border border-border rounded-2xl">
-                  <p className="text-muted-foreground">
-                    {filters.query
-                      ? `Niciun produs nu corespunde căutării "${filters.query}".`
-                      : filters.offersOnly
-                      ? "Momentan nu există oferte speciale active."
-                      : "Niciun produs nu corespunde filtrelor selectate."}
-                  </p>
-                </div>
-              )}
-
-              <LoadMoreButton
-                basePath="/produse"
-                page={currentPage}
-                sort={sort}
-                hasMore={hasMore}
-                extraParams={{
-                  ...(filters.query ? { q: filters.query } : {}),
-                  ...(filters.offersOnly ? { oferte: "1" } : {}),
-                  ...(filters.categorySlugs.length > 0 ? { cat: filters.categorySlugs.join(",") } : {}),
-                  ...(filters.brands.length > 0 ? { brand: filters.brands.join(",") } : {}),
-                  ...(filters.priceMin !== null ? { pretMin: String(filters.priceMin) } : {}),
-                  ...(filters.priceMax !== null ? { pretMax: String(filters.priceMax) } : {}),
-                }}
-              />
-            </PendingRegion>
-          </div>
+          <ProductsCatalog
+            mode="catalog"
+            products={products}
+            variantOptions={variantOptions}
+            categories={catalogCategories}
+            ratesEnabled={ratesEnabled}
+            installmentMonths={installmentMonths}
+          />
         </div>
       </section>
-      </ProductsNavProvider>
-
     </main>
   );
 }

@@ -4,6 +4,7 @@ import ProductsCarousel from "./ProductsCarousel";
 import { Button } from "@/app/components/ui/button";
 import { localProductImages, localProductBadges, localProductNames } from "@/lib/productOverrides";
 import { getSectionFlags } from "@/lib/siteSettings";
+import type { PriceTier } from "@/lib/pricing";
 import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
 
 interface Product {
@@ -17,6 +18,11 @@ interface Product {
   reviewCount: number;
   badge: string | null;
   installmentsEnabled?: boolean;
+  images?: string[];
+  packageQuantity?: string | null;
+  priceTiers?: PriceTier[];
+  bulkMinQty?: number | null;
+  bulkPrice?: number | null;
 }
 
 interface VariantOption {
@@ -60,7 +66,18 @@ export default async function ProductsSection({ products, title = "Produse", hig
           {products.map((product) => (
             <ProductCard
               key={product.id}
-              {...product}
+              // Doar câmpurile de care are nevoie cardul: un obiect Product întreg (descriere, specificații...) ar fi
+              // serializat în HTML pentru fiecare card și ar umfla pagina de start.
+              slug={product.slug}
+              price={product.price}
+              oldPrice={product.oldPrice}
+              rating={product.rating}
+              reviewCount={product.reviewCount}
+              images={product.images?.slice(0, 1)}
+              packageQuantity={product.packageQuantity}
+              priceTiers={product.priceTiers}
+              bulkMinQty={product.bulkMinQty}
+              bulkPrice={product.bulkPrice}
               name={localProductNames[product.slug] ?? product.name}
               image={localProductImages[product.slug] ?? product.image}
               badge={localProductBadges[product.slug] ?? product.badge}

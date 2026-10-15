@@ -93,7 +93,7 @@ interface SortableProduct {
   price: number;
   rating: number;
   reviewCount: number;
-  createdAt: Date;
+  createdAt: Date | number | string;
 }
 
 export function sortProducts<T extends SortableProduct>(products: T[], sort: SortKey): T[] {

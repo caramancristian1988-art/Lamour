@@ -1,7 +1,7 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
-import { useProductsNavigate } from "./ProductsNav";
+import { usePathname } from "next/navigation";
+import { useProductsNavigate, useUrlParams } from "./ProductsNav";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/app/components/ui/select";
 
 const options = [
@@ -14,18 +14,18 @@ const options = [
 export default function ProductSortSelect({ defaultValue }: { defaultValue: string }) {
   const navigate = useProductsNavigate();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useUrlParams();
 
   function handleChange(value: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("sort", value);
     params.delete("page");
     const qs = params.toString();
-    navigate(qs ? `${pathname}?${qs}` : pathname);
+    navigate(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }
 
   return (
-    <Select defaultValue={defaultValue} onValueChange={handleChange}>
+    <Select value={defaultValue} onValueChange={handleChange}>
       <SelectTrigger aria-label="Sortează produsele" className="h-10 text-sm">
         <SelectValue />
       </SelectTrigger>

@@ -32,11 +32,37 @@ const nextConfig: NextConfig = {
       "node_modules/prisma/**",
     ],
   },
+  // /produse?division=mobila|chirie (galeriile din Catalog) se servesc din app/produse-divizii: pagina /produse în sine nu
+  // mai citește searchParams, deci e statică (HTML pregătit dinainte, servit direct din CDN).
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/produse",
+          has: [{ type: "query", key: "division", value: "(mobila|chirie)" }],
+          destination: "/produse-divizii",
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Imaginile / fonturile / video-urile din /public: cache lung în browser și în CDN (o zi proaspete, apoi o lună
+      // „vechi, dar servite instant" cât se reîmprospătează pe fundal). /_next/static are deja „immutable" de la Next.
+      {
+        source: "/:path((?!_next/|api/).*\.(?:svg|jpg|jpeg|png|webp|avif|gif|ico|woff2|mp4))",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=2592000" }],
+      },
+    ];
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    // Imaginile optimizate stau 7 zile în cache-ul Vercel / al browserului (implicit doar 4 ore → re-optimizări dese).
+    // Pozele încărcate din admin au URL unic (sufix aleator), deci o poză schimbată apare imediat.
+    minimumCacheTTL: 604800,
     remotePatterns: [
       { protocol: "https", hostname: "placehold.co" },
       { protocol: "https", hostname: "images.unsplash.com" },

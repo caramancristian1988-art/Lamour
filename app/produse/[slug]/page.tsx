@@ -20,23 +20,18 @@ import ProductOfferModal from "../../components/ProductOfferModal";
 import {
   sortProducts,
   paginate,
-  parseSort,
-  parsePage,
-  parseFilters,
-  applyFilters,
   dedupeVariants,
   buildVariantOptionsMap,
   variantSortValue,
   type VariantOption,
 } from "@/lib/productListing";
 import ProductCard from "../../components/ProductCard";
-import LoadMoreButton from "../../components/LoadMoreButton";
 import ProductBuyBox from "../../components/ProductBuyBox";
 import { normalizeTiers, type PriceTier } from "@/lib/pricing";
 import ProductGallery from "../../components/ProductGallery";
 import FavoriteButton from "../../components/FavoriteButton";
-import ProductFilterSidebar from "../../components/ProductFilterSidebar";
-import { MultiNavChips, ProductsNavProvider, PendingRegion } from "../../components/ProductsNav";
+import ProductsCatalog from "../../components/ProductsCatalog";
+import { toCatalogProduct, variantOptionsRecord, type CatalogProduct } from "@/lib/clientCatalog";
 import { getCatalog } from "@/lib/catalog";
 import { onlyVisible } from "@/lib/productVisibility";
 import ReviewsGrid from "../../components/ReviewsGrid";
@@ -57,7 +52,7 @@ const allFallbackProducts = [
   ...fallbackDiscountProducts,
 ].map((p) => ({ ...p, images: [] as string[], brand: null as string | null, variantGroupId: null as string | null, variantLabel: null as string | null }));
 
-const getCategoryData = cache(async (slug: string, activeChildSlugs?: string) => {
+const getCategoryData = cache(async (slug: string) => {
   try {
     // Din catalogul ținut în cache (același ca în /produse): fără 3 interogări la baza de date la fiecare filtrare, iar
     // pentru o pagină de produs (slug care nu e categorie) răspunsul "nu e categorie" vine fără niciun apel la bază.
@@ -66,18 +61,15 @@ const getCategoryData = cache(async (slug: string, activeChildSlugs?: string) =>
     if (!category) return null;
     const children = categories.filter((c) => c.parentId === category.id);
 
-    // ?subcat=a,b — una sau mai multe subcategorii alese deodată (fără niciuna = categoria + toate subcategoriile ei).
-    const wanted = (activeChildSlugs ?? "").split(",").filter(Boolean);
-    const activeChildren = children.filter((c) => wanted.includes(c.slug));
-    const categoryIds = new Set(activeChildren.length > 0 ? activeChildren.map((c) => c.id) : [category.id, ...children.map((c) => c.id)]);
+    // Categoria + toate subcategoriile ei; alegerea subcategoriilor (?subcat=a,b) se face în browser, în ProductsCatalog.
+    const categoryIds = new Set([category.id, ...children.map((c) => c.id)]);
 
     const products = catalogProducts.filter((p) => categoryIds.has(p.categoryId));
     return {
       category,
-      products: dedupeVariants(products),
-      variantOptionsMap: buildVariantOptionsMap(products),
+      products: dedupeVariants(products).map(toCatalogProduct),
+      variantOptions: variantOptionsRecord(products),
       children,
-      activeChildren,
     };
   } catch {
     const category = fallbackCategories.find((c) => c.slug === slug);
@@ -85,10 +77,9 @@ const getCategoryData = cache(async (slug: string, activeChildSlugs?: string) =>
     const products = allFallbackProducts.filter((p) => p.categoryId === category.id);
     return {
       category,
-      products: dedupeVariants(products),
-      variantOptionsMap: buildVariantOptionsMap(products),
-      children: [] as { id: string; name: string; slug: string }[],
-      activeChildren: [] as { id: string; name: string; slug: string }[],
+      products: dedupeVariants(products).map(toCatalogProduct),
+      variantOptions: variantOptionsRecord(products),
+      children: [] as { id: string; name: string; slug: string; parentId: string | null }[],
     };
   }
 });
@@ -237,32 +228,26 @@ export async function generateMetadata({
   return { title: "Pagina nu a fost găsită", robots: { index: false, follow: true } };
 }
 
-export default async function ProduseSlugPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+// Pagină statică (fără searchParams): filtrele categoriei rulează în browser. Se reface la cel mult o oră sau imediat
+// când adminul modifică produse/categorii (revalidatePath + updateTag).
+export async function generateStaticParams() {
+  try {
+    const { categories, products } = await getCatalog();
+    return [...categories.map((c) => ({ slug: c.slug })), ...products.map((p) => ({ slug: p.slug }))];
+  } catch {
+    return [];
+  }
+}
+
+export default async function ProduseSlugPage({ params }: { params: Promise<{ slug: string }> }) {
   const { produseEnabled, ratesEnabled, installmentMonths } = await getSectionFlags();
   if (!produseEnabled) notFound();
 
   const { slug } = await params;
-  const query = await searchParams;
 
-  const subcat = typeof query.subcat === "string" ? query.subcat : undefined; // una sau mai multe, separate prin virgulă
-  const categoryData = await getCategoryData(slug, subcat);
+  const categoryData = await getCategoryData(slug);
   if (categoryData) {
-    return (
-      <CategoryView
-        {...categoryData}
-        sort={parseSort(query.sort)}
-        page={parsePage(query.page)}
-        filters={parseFilters(query)}
-        ratesEnabled={ratesEnabled}
-        installmentMonths={installmentMonths}
-      />
-    );
+    return <CategoryView {...categoryData} ratesEnabled={ratesEnabled} installmentMonths={installmentMonths} />;
   }
 
   const productData = await getProductData(slug);
@@ -277,46 +262,17 @@ export default async function ProduseSlugPage({
 
 interface CategoryViewProps {
   category: { id: string; name: string; slug: string; description: string | null };
-  children: Array<{ id: string; name: string; slug: string }>;
-  activeChildren: Array<{ id: string; name: string; slug: string }>;
-  products: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    price: number;
-    oldPrice: number | null;
-    image: string | null;
-    brand: string | null;
-    rating: number;
-    reviewCount: number;
-    badge: string | null;
-    installmentsEnabled?: boolean;
-    createdAt: Date;
-  }>;
-  variantOptionsMap: Map<string, VariantOption[]>;
-  sort: ReturnType<typeof parseSort>;
-  page: number;
-  filters: ReturnType<typeof parseFilters>;
+  children: Array<{ id: string; name: string; slug: string; parentId?: string | null }>;
+  products: CatalogProduct[];
+  variantOptions: Record<string, VariantOption[]>;
   ratesEnabled: boolean;
   installmentMonths: number;
 }
 
-function CategoryView({ category, children, activeChildren, products: baseProducts, variantOptionsMap, sort, page, filters, ratesEnabled, installmentMonths }: CategoryViewProps) {
-  const products = applyFilters(baseProducts, filters);
-
-  const priceBounds = baseProducts.reduce(
-    (acc, p) => ({ min: Math.min(acc.min, p.price), max: Math.max(acc.max, p.price) }),
-    { min: baseProducts[0]?.price ?? 0, max: baseProducts[0]?.price ?? 0 }
-  );
-
-  const brandOptions = Array.from(new Set(baseProducts.map((p) => p.brand).filter((v): v is string => Boolean(v))))
-    .sort()
-    .map((value) => ({ value, count: baseProducts.filter((p) => p.brand === value).length }));
-
-  const offersCount = baseProducts.filter((p) => p.oldPrice != null).length;
-
-  const sorted = sortProducts(products, sort);
-  const { items, page: currentPage, hasMore } = paginate(sorted, page);
+function CategoryView({ category, children, products, variantOptions, ratesEnabled, installmentMonths }: CategoryViewProps) {
+  // Pentru datele structurate: primele produse în ordinea implicită (cele mai noi).
+  const items = paginate(sortProducts(products, "newest"), 1).items;
+  const childCategories = children.map((c) => ({ id: c.id, slug: c.slug, name: c.name, parentId: c.parentId ?? category.id }));
 
   return (
     <main className="page-motif">
@@ -389,78 +345,19 @@ function CategoryView({ category, children, activeChildren, products: baseProduc
         </div>
       </section>
 
-      {/* PRODUCTS GRID — chip-uri, filtre și listă în același "ProductsNavProvider": apăsarea unui filtru se vede imediat
-          (chip/bifă activă, listă estompată, bară de progres) în loc să aștepte răspunsul serverului fără nicio reacție. */}
-      <ProductsNavProvider>
+      {/* Chip-uri de subcategorii, filtre și listă: toate rulează în browser (ProductsCatalog). */}
       <section className="py-10">
         <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
-          {children.length > 0 && (
-            <MultiNavChips
-              paramKey="subcat"
-              allValue={null}
-              ariaLabel="Filtrează după subcategorie (poți alege mai multe)"
-              className="flex items-center gap-2 flex-wrap mb-6"
-              options={children.map((child) => ({ value: child.slug, label: child.name }))}
-            />
-          )}
-          <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <ProductFilterSidebar
-              sort={sort}
-              brands={brandOptions}
-              priceBounds={priceBounds}
-              offersCount={offersCount}
-            />
-
-            <PendingRegion className="flex-1 min-w-0">
-              <p className="text-sm text-muted-foreground mb-6">{products.length} produse găsite</p>
-
-              {items.length > 0 ? (
-                <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-5">
-                  {items.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      {...product}
-                      name={localProductNames[product.slug] ?? product.name}
-                      image={localProductImages[product.slug] ?? product.image}
-                      badge={localProductBadges[product.slug] ?? product.badge}
-                      showDiscount={filters.offersOnly}
-                      installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
-                      installmentMonths={installmentMonths}
-                      variantOptions={variantOptionsMap.get(product.id)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16 bg-card border border-border rounded-2xl">
-                  <p className="text-muted-foreground mb-4">Niciun produs nu corespunde filtrelor selectate.</p>
-                  <Link
-                    href="/produse"
-                    className="inline-flex items-center bg-primary hover:bg-brand-maroon-dark text-primary-foreground font-bold px-6 py-3 rounded-lg transition-colors text-sm uppercase tracking-wide"
-                  >
-                    Vezi toate produsele
-                  </Link>
-                </div>
-              )}
-
-              <LoadMoreButton
-                basePath={`/produse/${category.slug}`}
-                page={currentPage}
-                sort={sort}
-                hasMore={hasMore}
-                extraParams={{
-                  // „Încarcă mai multe” trebuie să păstreze subcategoriile alese, altfel pagina 2 arăta toată categoria.
-                  ...(activeChildren.length > 0 ? { subcat: activeChildren.map((c) => c.slug).join(",") } : {}),
-                  ...(filters.offersOnly ? { oferte: "1" } : {}),
-                  ...(filters.brands.length > 0 ? { brand: filters.brands.join(",") } : {}),
-                  ...(filters.priceMin !== null ? { pretMin: String(filters.priceMin) } : {}),
-                  ...(filters.priceMax !== null ? { pretMax: String(filters.priceMax) } : {}),
-                }}
-              />
-            </PendingRegion>
-          </div>
+          <ProductsCatalog
+            mode="category"
+            products={products}
+            variantOptions={variantOptions}
+            categories={childCategories}
+            ratesEnabled={ratesEnabled}
+            installmentMonths={installmentMonths}
+          />
         </div>
       </section>
-      </ProductsNavProvider>
 
     </main>
   );

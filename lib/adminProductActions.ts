@@ -150,6 +150,8 @@ function readProductFields(formData: FormData) {
   const availability = String(formData.get("availability") ?? "").trim() || "În stoc";
   const installmentsEnabled = formData.get("installmentsEnabled") === "on";
   const warrantyEnabled = formData.get("warrantyEnabled") === "on";
+  const recommended = formData.get("recommended") === "on";
+  const isNewProduct = formData.get("isNewProduct") === "on";
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const specifications = parseSpecifications(formData);
   const variantGroupId = String(formData.get("variantGroupId") ?? "").trim() || null;
@@ -177,6 +179,8 @@ function readProductFields(formData: FormData) {
     availability,
     installmentsEnabled,
     warrantyEnabled,
+    recommended,
+    isNewProduct,
     categoryId,
     specifications,
     variantGroupId,

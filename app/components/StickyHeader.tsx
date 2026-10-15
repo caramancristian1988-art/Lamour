@@ -4,6 +4,7 @@ import type { SectionFlags, HeaderCategory } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_SHORT_NAME } from "@/lib/constants";
 import SearchBar from "./SearchBar";
+import MobileSearch from "./MobileSearch";
 import MobileMenuButton from "./MobileMenuButton";
 import CartBadge from "./CartBadge";
 import FavoritesBadge from "./FavoritesBadge";
@@ -33,25 +34,25 @@ export default function StickyHeader({
       <div className="border-b border-border">
         {/* MOBILE layout */}
         <div className="lg:hidden">
-          <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center justify-between px-4 py-2">
             <Link href="/" className="flex items-center gap-2 min-w-0 rounded-lg">
-              <Logo size={56} className="border-2 border-logo-silver shadow-sm" />
-              <span className="block leading-tight">
-                <span className="block pr-1 text-base min-[430px]:text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)]">
+              <Logo size={48} className="border-2 border-logo-silver shadow-sm max-[359px]:!h-10 max-[359px]:!w-10" />
+              <span className="block min-w-0 overflow-hidden leading-tight">
+                <span className="block pr-1 text-[15px] min-[360px]:text-base min-[430px]:text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)]">
                   {SITE_SHORT_NAME}
                 </span>
-                <span className="block pr-1 text-sm min-[430px]:text-base font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)] -mt-0.5">
+                <span className="block pr-1 text-[13px] min-[360px]:text-sm min-[430px]:text-base font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)] -mt-0.5">
                   Lamour
                 </span>
               </span>
             </Link>
-            <div className="flex items-center shrink-0 gap-0.5 min-[430px]:gap-1">
-              <AccountMenuLink className="flex items-center justify-center w-10 h-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-primary transition-colors">
+            <div className="flex items-center shrink-0 min-[430px]:gap-1">
+              <AccountMenuLink className="flex items-center justify-center w-9 h-10 min-[360px]:w-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-primary transition-colors">
                 <User className="w-6 h-6 shrink-0" aria-hidden />
               </AccountMenuLink>
               <Link
                 href="/favorite"
-                className="flex items-center justify-center w-10 h-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
+                className="flex items-center justify-center w-9 h-10 min-[360px]:w-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
                 aria-label="Produsele mele favorite"
               >
                 <Heart className="w-6 h-6" aria-hidden />
@@ -59,7 +60,7 @@ export default function StickyHeader({
               </Link>
               <Link
                 href="/cos"
-                className="flex items-center justify-center w-10 h-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
+                className="flex items-center justify-center w-9 h-10 min-[360px]:w-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
                 aria-label="Coș"
               >
                 <ShoppingCart className="w-6 h-6" aria-hidden />
@@ -75,12 +76,12 @@ export default function StickyHeader({
               />
             </div>
           </div>
-          <div className="px-4 pb-3 flex items-center gap-2">
+          <div className="px-4 pb-2.5 flex items-center gap-2">
             {produseEnabled && (
-              <AllCategoriesMenu label="Categorii" className="shrink-0" categories={productsDropdown} />
+              <AllCategoriesMenu label="Categorii" className="shrink-0 h-11 px-4 max-[359px]:px-3.5 max-[359px]:[&>span]:sr-only max-[359px]:[&>svg:last-child]:hidden" categories={productsDropdown} />
             )}
             <div className="flex-1 min-w-0">
-              <SearchBar />
+              <MobileSearch />
             </div>
           </div>
         </div>

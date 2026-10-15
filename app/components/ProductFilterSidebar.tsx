@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useProductsNavigate, usePendingHref } from "./ProductsNav";
+import { usePathname } from "next/navigation";
+import { useProductsNavigate, usePendingHref, useUrlParams } from "./ProductsNav";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { type SortKey } from "@/lib/productListing";
 import ProductSortSelect from "./ProductSortSelect";
@@ -168,7 +168,7 @@ function CatalogSearch({ value, onCommit }: { value: string; onCommit: (q: strin
   function schedule(next: string) {
     setText(next);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => onCommit(next.trim()), 550);
+    timer.current = setTimeout(() => onCommit(next.trim()), 250);
   }
 
   return (
@@ -215,7 +215,7 @@ function CatalogSearch({ value, onCommit }: { value: string; onCommit: (q: strin
 export default function ProductFilterSidebar({ sort, categories, brands, priceBounds, offersCount }: Props) {
   const navigate = useProductsNavigate();
   const pathname = usePathname();
-  const urlParams = useSearchParams();
+  const urlParams = useUrlParams();
   const pendingHref = usePendingHref();
   const [mobileOpen, setMobileOpen] = useState(false);
 

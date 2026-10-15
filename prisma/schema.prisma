@@ -77,6 +77,10 @@ model Product {
   // true = produs dezactivat din admin (ochișorul din listă): rămâne în admin, dar nu apare pe site
   // (liste, căutare, pagină, coș, sitemap). Opțional, ca produsele existente să se citească fără câmpul.
   hidden      Boolean?
+  // Bifate în admin: produsul apare în secțiunea „Produse recomandate" / „Produse noi" de pe prima pagină (câte sunt bifate,
+  // fără limită). Opționale, ca produsele existente să se citească fără câmpurile.
+  recommended Boolean?
+  isNewProduct Boolean?
   specifications ProductSpec[]
   categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])

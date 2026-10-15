@@ -3,6 +3,8 @@ import { searchProducts } from "@/lib/searchProducts";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q") ?? "";
-  const results = await searchProducts(query);
+  // `limit` (opțional, max. 12): panoul de căutare de pe telefon cere mai multe rezultate decât lista din antet.
+  const limit = Math.min(Math.max(Number(request.nextUrl.searchParams.get("limit")) || 6, 1), 12);
+  const results = await searchProducts(query, limit);
   return NextResponse.json({ results });
 }

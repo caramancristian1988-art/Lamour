@@ -74,6 +74,8 @@ interface ProductDefaults {
   availability?: string;
   installmentsEnabled?: boolean;
   warrantyEnabled?: boolean | null;
+  recommended?: boolean | null;
+  isNewProduct?: boolean | null;
   categoryId?: string;
   specifications?: { label: string; value: string }[];
   variantGroupId?: string | null;
@@ -384,6 +386,26 @@ export default function ProductForm({
           Crește automat cu 1 când marchezi o comandă legată de acest produs ca &quot;Achitat&quot; în Mesaje.
           Poți și corecta manual aici. Rămâne ascuns pe site sub 10 bucăți vândute.
         </p>
+      </div>
+
+      <div className="flex items-start gap-2.5">
+        <Checkbox id="field-recommended" name="recommended" defaultChecked={defaults?.recommended === true} className="mt-0.5" />
+        <div>
+          <Label htmlFor="field-recommended" className="font-bold">
+            Produs recomandat (apare pe prima pagină, în „Produse recomandate")
+          </Label>
+          <p className="text-xs text-muted-foreground mt-1">Se afișează toate produsele bifate, fără limită.</p>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-2.5">
+        <Checkbox id="field-isNewProduct" name="isNewProduct" defaultChecked={defaults?.isNewProduct === true} className="mt-0.5" />
+        <div>
+          <Label htmlFor="field-isNewProduct" className="font-bold">
+            Produs nou (apare pe prima pagină, în „Produse noi")
+          </Label>
+          <p className="text-xs text-muted-foreground mt-1">Se afișează toate produsele bifate, fără limită.</p>
+        </div>
       </div>
 
       <div className="flex items-center gap-2.5">

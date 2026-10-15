@@ -35,6 +35,8 @@ interface ProductCardProps {
   priceTiers?: PriceTier[];
   bulkMinQty?: number | null;
   bulkPrice?: number | null;
+  /** Primele carduri din pagină (vizibile fără derulare): poza se cere imediat, cu prioritate (LCP). */
+  priority?: boolean;
 }
 
 export default function ProductCard({
@@ -54,6 +56,7 @@ export default function ProductCard({
   priceTiers,
   bulkMinQty,
   bulkPrice,
+  priority = false,
 }: ProductCardProps) {
   // A leftover placehold.co seed image doesn't count as a "real" main image —
   // prefer an actual uploaded gallery photo over it when one exists.
@@ -87,6 +90,8 @@ export default function ProductCard({
               alt={name}
               fill
               sizes="(max-width: 1023px) 50vw, 300px"
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
               className="object-contain p-3 sm:p-4 transition-transform duration-300 group-hover:scale-[1.04]"
             />
           ) : (
@@ -111,9 +116,9 @@ export default function ProductCard({
       </div>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 p-5">
+      <div className="flex flex-col flex-1 p-3 sm:p-5">
         <Link href={`/produse/${slug}`} className="rounded">
-          <h3 className="text-[15px] lg:text-[17px] font-bold text-foreground leading-snug line-clamp-3 mb-2 hover:text-accent transition-colors">
+          <h3 className="text-sm sm:text-[15px] lg:text-[17px] font-bold text-foreground leading-snug line-clamp-4 sm:line-clamp-3 mb-2 hover:text-accent transition-colors">
             {displayTitle}
           </h3>
         </Link>
