@@ -10,6 +10,7 @@ import CategoryGrid from "@/app/components/CategoryGrid";
 import ProductsSection from "@/app/components/ProductsSection";
 import ReviewsSection from "@/app/components/ReviewsSection";
 import AboutTeaser from "@/app/components/AboutTeaser";
+import LocationMap from "@/app/components/LocationMap";
 import JsonLd from "@/app/components/JsonLd";
 import { homepageGraph } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
@@ -202,6 +203,7 @@ export default async function HomePage() {
       )}
       <AboutTeaser />
       <ReviewsSection />
+      <LocationMap />
     </main>
   );
 }
