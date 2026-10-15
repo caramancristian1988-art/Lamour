@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ImageOff, ChevronDown, ChevronUp } from "lucide-react";
+import { ImageOff, ChevronDown } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { categoryIcons } from "./CategoryIcons";
 import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
@@ -77,17 +77,21 @@ export default function CategoryGrid({ categories }: Props) {
         </div>
 
         {hasMore && (
-          <div className="flex justify-end mt-3">
-            <button
+          <div className="mt-6 flex justify-center">
+            <Button
               type="button"
+              variant="outline"
+              size="lg"
               onClick={() => setExpanded((v) => !v)}
               aria-expanded={expanded}
-              aria-label={expanded ? "Vezi mai puține categorii" : "Vezi mai multe categorii"}
-              title={expanded ? "Vezi mai puține categorii" : "Vezi mai multe categorii"}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground/60 hover:text-accent hover:bg-muted transition-colors"
+              className="group min-w-[16rem] border-accent bg-card text-accent shadow-md hover:bg-accent hover:text-accent-foreground hover:shadow-lg"
             >
-              {expanded ? <ChevronUp className="w-4 h-4" aria-hidden /> : <ChevronDown className="w-4 h-4" aria-hidden />}
-            </button>
+              {expanded ? "Vezi mai puține categorii" : `Vezi toate categoriile (${categories.length})`}
+              <ChevronDown
+                className={`h-5 w-5 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+                aria-hidden
+              />
+            </Button>
           </div>
         )}
       </div>
