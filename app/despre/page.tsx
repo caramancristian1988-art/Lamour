@@ -2,36 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowRight, Target, Eye, HeartHandshake, Users, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowRight } from "lucide-react";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { SITE_NAME } from "@/lib/constants";
 import { Button } from "@/app/components/ui/button";
-import { MotifDivider } from "@/app/components/ui/motif";
-import SocialImpact from "@/app/components/SocialImpact";
+import { HeadingFlourish } from "@/app/components/ui/motif";
 import JsonLd from "@/app/components/JsonLd";
 import { breadcrumbList } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
-const milestones = [
-  { year: "2014", text: `Înființarea ${SITE_NAME}, cu prima linie de producție de hârtie igienică.` },
-  { year: "2017", text: "Extinderea gamei de produse cu șervețele și prosoape de hârtie." },
-  { year: "2019", text: "Începe colaborarea cu Asociația Nevăzătorilor din Moldova." },
-  { year: "2022", text: "Deschiderea diviziei de mobilier la comandă." },
-  { year: "2026", text: "Extinderea către fabricație la comandă, ambalaje și spații comerciale." },
-];
-
-const values = [
-  { icon: Target, title: "Calitate", text: "Fiecare produs trece prin control riguros, de la materie primă la ambalaj." },
-  { icon: HeartHandshake, title: "Incluziune", text: "Locuri de muncă demne pentru persoane cu dizabilități." },
-  { icon: Sparkles, title: "Responsabilitate", text: "Grijă pentru oameni și pentru natură în tot ce producem." },
-  { icon: Users, title: "Comunitate", text: "Parteneriate locale și susținere pentru economia din Moldova." },
-];
-
 export const revalidate = 3600;
 
-const DESPRE_TITLE = "Impact social și incluziune profesională | LuminTehnica";
+const DESPRE_TITLE = "Despre noi — povestea LuminTehnica | LuminTehnica";
 const DESPRE_DESCRIPTION =
-  "LuminTehnica colaborează cu Asociația Nevăzătorilor din Moldova și susține integrarea profesională a persoanelor cu dizabilități vizuale.";
+  "LuminTehnica – Lamour este un proiect social al Asociației Nevăzătorilor din Republica Moldova: produse cu grijă, făcute de oameni cu suflet, care creează locuri de muncă pentru persoane cu dizabilități de vedere.";
 
 export const metadata: Metadata = {
   title: { absolute: DESPRE_TITLE },
@@ -48,6 +32,33 @@ export const metadata: Metadata = {
   },
 };
 
+// Textul din coloanele din stânga începe aliniat cu restul site-ului (max-w-7xl), dar fotografiile din dreapta/stânga
+// merg până la marginea ecranului — de aceea secțiunile cu poză „bleed” nu stau într-un container cu lățime maximă.
+const COLUMN_INSET = "px-5 sm:px-8 lg:pl-[max(4rem,calc((100vw-80rem)/2+1.5rem))] lg:pr-12";
+const COLUMN_INSET_RIGHT = "px-5 sm:px-8 lg:pr-[max(4rem,calc((100vw-80rem)/2+1.5rem))] lg:pl-14";
+
+/** Etichetă de secțiune: text în majuscule + linie cu floare mică (ca în machetă). */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="flex items-center gap-3 text-[13px] sm:text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+      {children}
+      <span aria-hidden className="flex items-center gap-1.5 text-accent">
+        <span className="h-px w-8 sm:w-12 bg-accent/60" />
+        <HeadingFlourish className="w-4 h-4" />
+        <span className="h-px w-8 sm:w-12 bg-accent/60" />
+      </span>
+    </p>
+  );
+}
+
+function Rule() {
+  return <div aria-hidden className="my-6 h-px w-14 bg-accent/70" />;
+}
+
+const body = "text-base lg:text-[17px] leading-relaxed text-foreground/80";
+const h2 = "mt-4 mb-6 font-serif font-normal text-primary text-3xl sm:text-4xl lg:text-[2.7rem] leading-[1.12] tracking-tight";
+const quote = "font-serif italic text-lg sm:text-xl leading-snug text-primary";
+
 export default async function DesprePage() {
   const { despreEnabled } = await getSectionFlags();
   if (!despreEnabled) notFound();
@@ -55,197 +66,158 @@ export default async function DesprePage() {
   return (
     <main className="bg-background">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Despre noi", path: "/despre" }])} />
-      {/* ── HERO SECTION ── */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[300px] lg:min-h-[400px] items-center gap-8 py-4 lg:py-0">
-            {/* LEFT */}
-            <div className="relative z-10 py-3 lg:py-10">
-              <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-5">
-                <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
-                <span aria-hidden>›</span>
-                <span className="text-foreground font-medium">Despre noi</span>
-              </nav>
 
-              <p className="text-accent text-xs font-bold tracking-widest uppercase mb-4">
-                Despre {SITE_NAME}
+      {/* ── POVESTEA NOASTRĂ (hero) ── */}
+      <section id="istorie" className="relative scroll-mt-24 overflow-hidden bg-background">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] lg:min-h-[560px]">
+          <div className={`${COLUMN_INSET} py-8 lg:py-14 flex flex-col justify-center`}>
+            <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-8 lg:mb-10">
+              <Link href="/" className="font-semibold text-primary hover:text-accent transition-colors rounded">
+                Acasă
+              </Link>
+              <span aria-hidden>›</span>
+              <span>Despre noi</span>
+            </nav>
+
+            <SectionLabel>Despre noi</SectionLabel>
+
+            <h1 className="mt-6 font-serif font-normal text-primary text-4xl sm:text-5xl lg:text-[3.6rem] leading-[1.05] tracking-tight">
+              Povestea noastră
+            </h1>
+            <p className="mt-4 font-serif italic text-2xl sm:text-3xl text-primary leading-snug">
+              Produse cu grijă. Oameni cu suflet.
+            </p>
+
+            <div className={`mt-8 space-y-4 max-w-xl ${body}`}>
+              <p>
+                {SITE_NAME} – Lamour este un proiect social al Asociației Nevăzătorilor din Republica Moldova, născut din dorința de a
+                crea oportunități reale de muncă și incluziune pentru persoane cu dizabilități de vedere.
               </p>
-
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary">
-                Calitate cu <span className="text-accent">suflet</span>, în fiecare produs.
-              </h1>
-
-              <p className="text-sm sm:text-base text-foreground/80 leading-relaxed mb-8 max-w-md">
-                Producem hârtie igienică, șervețele și alte produse de uz casnic din 100% celuloză,
-                cu grijă pentru oameni și pentru natură. Ne implicăm activ în susținerea incluziunii
-                sociale, oferind locuri de muncă persoanelor cu dizabilități.
+              <p>
+                Fiecare produs pe care îl realizăm poartă în el mai mult decât utilitate – poartă o poveste despre oameni, muncă,
+                dăruire și încredere.
               </p>
-
-              <div className="flex flex-wrap gap-3">
-                <Button asChild variant="accent" size="lg">
-                  <Link href="/produse">Vezi produsele</Link>
-                </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link href="/contact">Contactează-ne</Link>
-                </Button>
-              </div>
             </div>
 
-            {/* RIGHT: Image */}
-            <div className="relative w-full rounded-2xl overflow-hidden shadow-xl aspect-[4/3] lg:aspect-auto lg:h-[380px]">
-              <Image
-                src="/fabrica-lamour.png"
-                alt={`Fabrica ${SITE_NAME}`}
-                fill
-                className="object-cover object-center"
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
+            <div className="mt-8">
+              <Button asChild variant="primary" size="lg">
+                <a href="#cine-suntem">
+                  Descoperă mai multe
+                  <ArrowDown className="w-4 h-4" aria-hidden />
+                </a>
+              </Button>
             </div>
+          </div>
+
+          {/* Banda verticală cu motiv popular, între text și fotografie */}
+          <div
+            aria-hidden
+            className="hidden lg:block w-12 bg-repeat-y"
+            style={{ backgroundImage: "url(/despre/motiv-vertical.jpg)", backgroundSize: "100% auto" }}
+          />
+
+          <div className="relative h-72 sm:h-96 lg:h-auto">
+            <Image
+              src="/despre/hero.jpg"
+              alt="Mâini care aranjează role de hârtie igienică cu model popular, într-un atelier luminos"
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
           </div>
         </div>
       </section>
 
-      {/* ── POVESTEA NOASTRĂ ── */}
-      <section className="py-12 lg:py-16 border-t border-border">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center">
-            <div className="order-1 lg:order-2">
-              <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">
-                Povestea noastră
-              </p>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary leading-tight tracking-tight mb-6">
-                Experiență, încredere și dedicare
-              </h2>
-              <div className="space-y-4 text-sm sm:text-base text-muted-foreground leading-relaxed">
-                <p>
-                  {SITE_NAME} a apărut din dorința de a oferi familiilor din Moldova produse de
-                  hârtie și igienă de calitate, fabricate local, din 100% celuloză.
-                </p>
-                <p>
-                  De peste 10 ani, am crescut alături de comunitate și am dezvoltat parteneriate
-                  solide, susținând totodată incluziunea socială prin colaborarea cu Asociația
-                  Nevăzătorilor din Moldova, care ne oferă o parte din echipă.
-                </p>
-                <p>
-                  Fiecare produs care iese din fabrica noastră poartă grija pentru oameni și pentru
-                  natură, de la materia primă până la ambalaj.
-                </p>
-              </div>
-            </div>
+      {/* ── CINE SUNTEM ── */}
+      <section id="cine-suntem" className="scroll-mt-24 py-14 lg:py-20">
+        <span id="misiune-sociala" className="block scroll-mt-24" />
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <div className="relative aspect-[462/298] w-full rounded-md overflow-hidden shadow-sm">
+            <Image
+              src="/despre/cine-suntem.jpg"
+              alt="Mâini care țin o rolă de hârtie cu model popular, într-un șorț cu sigla LuminTehnica"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+          </div>
 
-            <div className="relative order-2 lg:order-1">
-              <div className="relative aspect-[1717/916] rounded-2xl overflow-hidden shadow-xl bg-white">
-                <Image
-                  src="/produsele-lamour.png"
-                  alt={`Produsele ${SITE_NAME}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              </div>
+          <div>
+            <SectionLabel>Cine suntem</SectionLabel>
+            <h2 className={h2}>O echipă de oameni dedicați</h2>
+            <div className={`space-y-4 ${body}`}>
+              <p>
+                Suntem parte a Asociației Nevăzătorilor din Republica Moldova și ne propunem să oferim locuri de muncă stabile,
+                condiții corecte și un mediu în care fiecare om își poate valorifica talentul, indiferent de limitările de vedere.
+              </p>
+              <p>Credem în oameni, în puterea lor de a crea și în valoarea muncii sincere.</p>
             </div>
+            <Rule />
+            <p className={quote}>Împreună construim o societate mai incluzivă și mai deschisă.</p>
           </div>
         </div>
       </section>
 
-      {/* ── ISTORIE ── */}
-      <section id="istorie" className="py-12 lg:py-16 border-t border-border scroll-mt-24">
-        <div className="max-w-3xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="text-center mb-10">
-            <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Istorie</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">Un parcurs în etape</h2>
+      {/* ── CE FACEM ── */}
+      <section className="overflow-hidden pb-14 lg:pb-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-center">
+          <div className={`${COLUMN_INSET} py-6 lg:py-16`}>
+            <SectionLabel>Ce facem</SectionLabel>
+            <h2 className={`${h2} max-w-md`}>Produse utile pentru fiecare casă</h2>
+            <div className={`space-y-4 max-w-xl ${body}`}>
+              <p>
+                Realizăm produse de uz casnic, precum hârtie igienică, prosoape de hârtie și alte articole atent selectate,
+                fabricate cu grijă și responsabilitate în Moldova.
+              </p>
+              <p>
+                Ne concentrăm pe calitate, siguranță și utilitate, astfel încât fiecare client să se bucure de produse de încredere,
+                realizate de oameni dedicați.
+              </p>
+            </div>
+            <Rule />
+            <p className={`${quote} max-w-xl`}>
+              Fiecare achiziție contribuie direct la susținerea locurilor de muncă și la dezvoltarea proiectului nostru social.
+            </p>
           </div>
-          <div className="flex flex-col gap-6">
-            {milestones.map((m) => (
-              <div key={m.year} className="flex gap-5 items-start">
-                <div className="shrink-0 w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-                  {m.year}
-                </div>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-4">{m.text}</p>
-              </div>
-            ))}
+
+          <div className="relative aspect-[474/305] w-full lg:aspect-auto lg:h-full lg:min-h-[420px]">
+            <Image
+              src="/despre/ce-facem.jpg"
+              alt="Atelier cu rafturi, flori și role de hârtie cu model popular, în fundal o angajată la lucru"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
           </div>
         </div>
       </section>
 
-      <MotifDivider className="max-w-7xl mx-auto" />
-
-      {/* ── MISIUNE ── */}
-      <section id="misiune" className="py-12 lg:py-16 border-t border-border scroll-mt-24">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-12">
-          <div className="grid lg:grid-cols-2 gap-8 mb-12">
-            <div className="bg-card border border-border rounded-2xl p-8">
-              <Target className="w-8 h-8 text-primary mb-4" aria-hidden />
-              <h2 className="text-xl font-bold text-primary tracking-tight mb-3">Misiunea noastră</h2>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Facem produse de hârtie și de uz casnic pe care familiile din Moldova să se poată baza
-                — fabricate aici, din 100% celuloză, la prețuri corecte.
-              </p>
-            </div>
-            <div className="bg-card border border-border rounded-2xl p-8">
-              <Eye className="w-8 h-8 text-primary mb-4" aria-hidden />
-              <h2 className="text-xl font-bold text-primary tracking-tight mb-3">Viziunea noastră</h2>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                Vrem ca numele {SITE_NAME} să însemne, pentru orice moldovean, produse de încredere —
-                și un loc de muncă demn pentru oricine, indiferent de dizabilitate.
-              </p>
-            </div>
+      {/* ── MISIUNEA NOASTRĂ ── */}
+      <section id="misiune" className="scroll-mt-24 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch">
+          <div className="relative aspect-[500/256] w-full lg:aspect-auto lg:min-h-[400px]">
+            <Image
+              src="/despre/misiune.jpg"
+              alt="Detaliu al ambalajului Lamour Cu Dragoste, cu model în relief și flori de câmp"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {values.map((v) => (
-              <div
-                key={v.title}
-                className="bg-card border border-border rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 p-6 text-center flex flex-col items-center"
-              >
-                <v.icon className="w-7 h-7 text-primary mb-3" aria-hidden />
-                <h3 className="font-bold text-foreground text-sm mb-2">{v.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{v.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── MISIUNE SOCIALĂ ── */}
-      <div id="misiune-sociala" className="scroll-mt-24">
-        <SocialImpact />
-      </div>
-
-      {/* ── ECHIPA NOASTRĂ ── */}
-      <section className="py-12 lg:py-16">
-        <div className="max-w-3xl mx-auto px-5 sm:px-6 lg:px-12 text-center">
-          <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">
-            Echipa noastră
-          </p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-primary leading-tight tracking-tight mb-4">
-            Oamenii din spatele fiecărui produs
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            O parte din echipa noastră de producție este formată din angajați ai Asociației
-            Nevăzătorilor din Moldova. Pentru noi, incluziunea nu e un slogan — e felul în care
-            lucrăm, zi de zi.
-          </p>
-        </div>
-      </section>
-
-      {/* ── CTA SECTION ── */}
-      <section className="px-5 sm:px-6 lg:px-12 pb-12">
-        <div className="max-w-7xl mx-auto bg-primary rounded-2xl py-10 lg:py-12 px-6 sm:px-8 lg:px-12">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white leading-tight tracking-tight mb-2">
-                Ai întrebări? Suntem aici pentru tine!
-              </h2>
-              <p className="text-white/70 text-sm max-w-md">
-                Echipa noastră îți stă la dispoziție pentru orice informații sau recomandări personalizate.
-              </p>
-            </div>
-            <div className="shrink-0">
-              <Button asChild variant="accent" size="lg">
-                <Link href="/contact">
-                  Contactează-ne
+          <div className={`${COLUMN_INSET_RIGHT} bg-brand-rose-light/25 py-12 lg:py-16 flex flex-col justify-center`}>
+            <SectionLabel>Misiunea noastră</SectionLabel>
+            <h2 className={h2}>Mai mult decât produse</h2>
+            <p className={`max-w-xl ${body}`}>
+              Misiunea noastră este să aducem mai multă lumină în viața oamenilor – prin produse de calitate, prin incluziune
+              socială și prin o comunitate mai puternică. Credem că fiecare gest contează, iar sprijinul vostru ne ajută să
+              continuăm această poveste.
+            </p>
+            <div className="mt-8">
+              <Button asChild variant="primary" size="lg">
+                <Link href="/produse">
+                  Află cum poți susține
                   <ArrowRight className="w-4 h-4" aria-hidden />
                 </Link>
               </Button>
