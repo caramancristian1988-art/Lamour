@@ -135,7 +135,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
                   onClick={() => setOpen(false)}
                   className="group flex flex-col items-center text-center gap-2.5 rounded-2xl"
                 >
-                  <span className="relative w-full aspect-square rounded-2xl overflow-hidden bg-secondary/25 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+                  <span className="relative w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
                     {item.image ? (
                       <Image
                         src={item.image}
