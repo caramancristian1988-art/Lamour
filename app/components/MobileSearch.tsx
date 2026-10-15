@@ -8,12 +8,11 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronRight, Clock, Loader2, Search, TrendingUp, X } from "lucide-react";
 import type { SearchResult } from "@/lib/searchProducts";
 
-// Căutarea pentru telefon: în antet e doar un „buton-câmp" (mic, nu mută nimic din pagină); la atingere se deschide un
+// Căutarea pentru telefon: în antet e doar un buton cu lupă (nu ocupă loc); la atingere se deschide un
 // panou pe tot ecranul, cu câmpul sus (tastatura se ridică imediat, textul are 16 px ca iOS să nu mărească pagina),
 // sugestii și căutări recente când e gol, rezultate mari (poză + preț) pe măsură ce scrii și un buton lung „Vezi toate"
 // jos, la îndemâna degetului. Pe calculator rămâne câmpul din SearchBar.
 
-const HINTS = ["Caută produse...", "ex. hârtie igienică", "ex. prosoape de bucătărie", "ex. șervețele", "ex. chibrituri"];
 const POPULAR = ["Hârtie igienică", "Prosoape de bucătărie", "Șervețele", "Șervețele umede", "Chibrituri", "Detergenți"];
 const RECENT_KEY = "lumin-recent-searches";
 const MAX_RECENT = 5;
@@ -43,19 +42,10 @@ export default function MobileSearch() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [recent, setRecent] = useState<string[]>([]);
-  const [hintIndex, setHintIndex] = useState(0);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const requestId = useRef(0);
   const titleId = useId();
-
-  // Sugestiile din butonul închis se schimbă (fade) ca să se vadă ce se poate căuta.
-  useEffect(() => {
-    if (open) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const t = setInterval(() => setHintIndex((i) => (i + 1) % HINTS.length), 3200);
-    return () => clearInterval(t);
-  }, [open]);
 
   // Cât e deschis: pagina de dedesubt nu se derulează, Escape închide.
   useEffect(() => {
@@ -334,20 +324,10 @@ export default function MobileSearch() {
         aria-haspopup="dialog"
         data-search-trigger
         aria-expanded={open}
-        className="group flex h-11 w-full items-center gap-2 rounded-full border-2 border-input bg-muted pl-4 pr-1 text-left transition-all active:scale-[0.99] active:border-accent"
+        aria-label="Caută produse"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-white shadow-md transition-all hover:bg-brand-red-dark active:scale-90"
       >
-        <span className="sr-only">Caută produse</span>
-        <span aria-hidden className="relative h-full min-w-0 flex-1">
-          <span
-            key={hintIndex}
-            className="absolute inset-y-0 left-0 flex max-w-full items-center truncate text-base text-muted-foreground animate-fade-in"
-          >
-            {HINTS[hintIndex]}
-          </span>
-        </span>
-        <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-white shadow-sm">
-          <Search className="h-[18px] w-[18px]" />
-        </span>
+        <Search className="h-5 w-5" aria-hidden />
       </button>
 
       {/* Portal în body: antetul are transform (animația de ascundere), iar un element „fixed" din el nu ar acoperi ecranul. */}

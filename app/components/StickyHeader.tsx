@@ -78,11 +78,9 @@ export default function StickyHeader({
           </div>
           <div className="px-4 pb-2.5 flex items-center gap-2">
             {produseEnabled && (
-              <AllCategoriesMenu label="Categorii" className="shrink-0 h-11 px-4 max-[359px]:px-3.5 max-[359px]:[&>span]:sr-only max-[359px]:[&>svg:last-child]:hidden" categories={productsDropdown} />
+              <AllCategoriesMenu label="Categorii" className="min-w-0 flex-1 justify-center h-11 px-4" categories={productsDropdown} />
             )}
-            <div className="flex-1 min-w-0">
-              <MobileSearch />
-            </div>
+            <MobileSearch />
           </div>
         </div>
 
