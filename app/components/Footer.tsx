@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, Heart } from "lucide-react";
 import type { SocialLinks, ContactInfo } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_NAME, SITE_SHORT_NAME, SITE_TAGLINE } from "@/lib/constants";
@@ -203,8 +203,11 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
           <span>
             © {new Date().getFullYear()} {SITE_NAME}. Toate drepturile rezervate.
           </span>
-          <span>
-            Website realizat de{" "}
+          <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5">
+            Website realizat cu
+            <Heart aria-hidden className="w-4 h-4 text-brand-rose-light fill-brand-rose-light motion-safe:animate-pulse" />
+            <span className="sr-only">dragoste</span>
+            de
             <a
               href="https://racustefan.com"
               target="_blank"

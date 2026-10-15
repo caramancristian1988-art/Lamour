@@ -19,6 +19,11 @@ const INTRO_VIDEO_URL =
   "https://www.facebook.com/lumintehnica/videos/la-lumintehnica-persoanele-nev%C4%83z%C4%83toare-muncesc-zilnic-pentru-a-crea-produse-de-c/2008314553086274/";
 const INTRO_VIDEO_TITLE = "La LuminTehnica, persoanele nevăzătoare muncesc zilnic pentru a crea produse de calitate";
 
+// Al doilea videoclip (vertical, 9:16), în secțiunea „Cine suntem”.
+const TEAM_VIDEO_URL =
+  "https://www.facebook.com/lumintehnica/videos/lumintehnica-locul-unde-imposibilul-devine-posibil-moldova1lumintehnica-moldova/1266136635565105/";
+const TEAM_VIDEO_TITLE = "LuminTehnica – locul unde imposibilul devine posibil";
+
 const DESPRE_TITLE = "Despre noi — povestea LuminTehnica | LuminTehnica";
 const DESPRE_DESCRIPTION =
   "LuminTehnica – Lamour este un proiect social al Asociației Nevăzătorilor din Republica Moldova: produse cu grijă, făcute de oameni cu suflet, care creează locuri de muncă pentru persoane cu dizabilități de vedere.";
@@ -136,15 +141,13 @@ export default async function DesprePage() {
       <section id="cine-suntem" className="scroll-mt-24 py-14 lg:py-20">
         <span id="misiune-sociala" className="block scroll-mt-24" />
         <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          <div className="relative aspect-[462/298] w-full rounded-md overflow-hidden shadow-sm">
-            <Image
-              src="/despre/cine-suntem.jpg"
-              alt="Mâini care țin o rolă de hârtie cu model popular, într-un șorț cu sigla LuminTehnica"
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-          </div>
+          <FacebookVideo
+            videoUrl={TEAM_VIDEO_URL}
+            poster="/despre/video-poster-2.jpg"
+            title={TEAM_VIDEO_TITLE}
+            orientation="portrait"
+            className="mx-auto w-full max-w-[300px] sm:max-w-[330px] aspect-[9/16] rounded-md shadow-lg"
+          />
 
           <div>
             <SectionLabel>Cine suntem</SectionLabel>
