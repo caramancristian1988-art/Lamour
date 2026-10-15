@@ -13,6 +13,25 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactCompiler: true,
   poweredByHeader: false,
+  // Dimensiunea funcțiilor Vercel: fără aceste excluderi, fiecare rută dinamică (peste 70) trăgea după ea ~89 MB de
+  // fișiere Prisma de care nu are nevoie (compilatoare WASM pentru Postgres/MySQL/SQLite/SQL Server/CockroachDB,
+  // motorul binar, runtime pentru edge/browser/react-native) — baza noastră e MongoDB, cu motorul "library". Fără ele,
+  // o funcție are ~30 MB, deci stocarea funcțiilor per deploy scade cu ~2/3. Păstrăm: runtime/library.*, runtime/client.*,
+  // motorul .node din node_modules/.prisma/client și schema.prisma.
+  outputFileTracingExcludes: {
+    "/*": [
+      "node_modules/@prisma/client/runtime/*.wasm*",
+      "node_modules/@prisma/client/runtime/query_compiler_bg.*",
+      "node_modules/@prisma/client/runtime/query_engine_bg.*",
+      "node_modules/@prisma/client/runtime/binary.*",
+      "node_modules/@prisma/client/runtime/edge*",
+      "node_modules/@prisma/client/runtime/index-browser.*",
+      "node_modules/@prisma/client/runtime/react-native.*",
+      "node_modules/@prisma/client/runtime/wasm-*",
+      "node_modules/@prisma/engines/**",
+      "node_modules/prisma/**",
+    ],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
