@@ -25,15 +25,6 @@ const despreDropdown = [
   { href: "/productie", label: "Producție" },
 ];
 
-const produseDropdown = [
-  { href: "/produse", label: "Produse din hârtie" },
-  { href: "/mobila", label: "Mobilă" },
-  { href: "/productie-la-comanda", label: "Fabricație la comandă" },
-  { href: "/spatii-comerciale", label: "Spații comerciale" },
-  { href: "/productie", label: "Servicii de producție" },
-  { href: "/produse?oferte=1", label: "Oferte speciale", divider: true, highlighted: true },
-];
-
 export default function StickyHeader({
   produseEnabled = true,
   despreEnabled = true,
@@ -158,7 +149,13 @@ export default function StickyHeader({
         <nav aria-label="Meniu principal" className="flex items-center gap-10">
           {despreEnabled && <NavDropdown label="Despre noi" href="/despre" items={despreDropdown} />}
 
-          {produseEnabled && <NavDropdown label="Catalog" href="/produse" items={produseDropdown} />}
+          {/* „Catalog” = link simplu; paginile Mobilă / Fabricație la comandă / Spații comerciale / Servicii de producție
+              se aleg din pagina Catalog (secțiunile de sus), nu dintr-un meniu derulant. */}
+          {produseEnabled && (
+            <Link href="/produse" className="py-4 text-[15px] font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+              Catalog
+            </Link>
+          )}
 
           {blogEnabled && (
             <Link href="/blog" className="py-4 text-[15px] font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">

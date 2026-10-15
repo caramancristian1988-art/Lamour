@@ -9,15 +9,6 @@ import { Logo } from "@/app/components/Logo";
 import { SITE_SHORT_NAME } from "@/lib/constants";
 import AccessibilityToggle from "./AccessibilityToggle";
 
-const produseDropdown = [
-  { href: "/produse", label: "Produse din hârtie" },
-  { href: "/mobila", label: "Mobilă" },
-  { href: "/productie-la-comanda", label: "Fabricație la comandă" },
-  { href: "/spatii-comerciale", label: "Spații comerciale" },
-  { href: "/productie", label: "Servicii de producție" },
-  { href: "/produse?oferte=1", label: "Oferte speciale" },
-];
-
 const despreDropdown = [
   { href: "/despre#istorie", label: "Istorie" },
   { href: "/despre#misiune", label: "Misiune" },
@@ -89,7 +80,6 @@ export default function MobileMenuButton({
   const navLinks = baseNavLinks.filter((l) => flags[l.flag]);
   const [open, setOpen] = useState(false);
   const [despreOpen, setDespreOpen] = useState(false);
-  const [produseOpen, setProduseOpen] = useState(false);
 
   function closeMenu() {
     setOpen(false);
@@ -126,14 +116,11 @@ export default function MobileMenuButton({
           )}
 
           {produseEnabled && (
-            <MobileDropdownGroup
-              label="Catalog"
-              href="/produse"
-              items={produseDropdown}
-              open={produseOpen}
-              onToggle={() => setProduseOpen((v) => !v)}
-              ariaLabel="Arată categoriile de produse"
-            />
+            <SheetClose asChild>
+              <Link href="/produse" className="block px-3 py-3.5 rounded-xl text-primary hover:bg-muted hover:text-accent transition-colors text-base font-bold">
+                Catalog
+              </Link>
+            </SheetClose>
           )}
 
           {navLinks.map((link) => (

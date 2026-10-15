@@ -68,12 +68,6 @@ export const revalidate = 3600;
 
 type Division = "uz-casnic" | "mobila" | "chirie";
 
-const DIVISION_TABS: { label: string; value: Division }[] = [
-  { label: "Produse de uz casnic", value: "uz-casnic" },
-  { label: "Mobilă", value: "mobila" },
-  { label: "Chirie", value: "chirie" },
-];
-
 interface CategoryRow {
   id: string;
   name: string;
@@ -172,13 +166,27 @@ function facetOptions<T>(items: T[], getValue: (item: T) => string, getLabel?: (
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
+// Secțiunile Catalogului — fiecare duce la pagina ei (înainte erau într-un meniu derulant din navbar).
+const CATALOG_SECTIONS: { key: string; label: string; href: string; divisions?: Division[] }[] = [
+  { key: "hartie", label: "Produse din hârtie", href: "/produse", divisions: ["uz-casnic"] },
+  { key: "mobila", label: "Mobilă", href: "/mobila", divisions: ["mobila"] },
+  { key: "fabricatie", label: "Fabricație la comandă", href: "/productie-la-comanda" },
+  { key: "spatii", label: "Spații comerciale", href: "/spatii-comerciale", divisions: ["chirie"] },
+  { key: "servicii", label: "Servicii de producție", href: "/productie" },
+];
+
 function DivisionTabs({ active }: { active: Division }) {
   return (
     <NavChips
       size="lg"
-      ariaLabel="Secțiune"
+      ariaLabel="Secțiunile catalogului"
       className="flex items-center gap-2 sm:gap-3 flex-wrap mb-6"
-      items={DIVISION_TABS.map((tab) => ({ key: tab.value, href: `/produse?division=${tab.value}`, label: tab.label, active: active === tab.value }))}
+      items={CATALOG_SECTIONS.map((s) => ({
+        key: s.key,
+        href: s.href,
+        label: s.label,
+        active: Boolean(s.divisions?.includes(active)),
+      }))}
     />
   );
 }

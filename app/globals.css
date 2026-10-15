@@ -371,3 +371,35 @@ h1, h2, h3 {
   background-repeat: repeat;
   background-size: 64px 64px;
 }
+/* ---------------------------------------------------------------------
+   Bara de derulare a PAGINII, în stilul site-ului (ca .scrollbar-brand): șină roz foarte deschis, buton rotunjit roz
+   pudrat, vișiniu la hover. Chrome/Edge/Safari prin ::-webkit-scrollbar; Firefox prin scrollbar-color.
+--------------------------------------------------------------------- */
+html {
+  scrollbar-color: var(--brand-rose) var(--brand-cream);
+}
+@supports selector(::-webkit-scrollbar) {
+  html {
+    /* altfel, în Chrome 121+, proprietățile standard ar înlocui stilul de mai jos */
+    scrollbar-color: auto;
+  }
+  html::-webkit-scrollbar {
+    width: 14px;
+  }
+  html::-webkit-scrollbar-track {
+    background: var(--brand-cream);
+    border-left: 1px solid rgba(216, 178, 177, 0.5);
+  }
+  html::-webkit-scrollbar-thumb {
+    background: var(--brand-rose);
+    border-radius: 9999px;
+    border: 3px solid var(--brand-cream);
+    min-height: 48px;
+  }
+  html::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-red);
+  }
+  html::-webkit-scrollbar-thumb:active {
+    background: var(--brand-maroon);
+  }
+}
