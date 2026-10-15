@@ -9,6 +9,7 @@ interface CategoryDefaults {
   description?: string | null;
   image?: string | null;
   parentId?: string | null;
+  displayOrder?: number | null;
 }
 
 interface ParentOption {
@@ -47,6 +48,21 @@ export default function CategoryForm({
       <p className="text-xs text-muted-foreground -mt-2">
         Dacă alegi o categorie părinte, aceasta va apărea ca filtru (buton) pe pagina categoriei părinte, iar produsele ei se văd și acolo.
       </p>
+
+      <div>
+        <AdminInput
+          label="Ordine de afișare (opțional)"
+          name="displayOrder"
+          type="number"
+          step={1}
+          defaultValue={defaults?.displayOrder ?? ""}
+          placeholder="ex: 1, 2, 3 … sau 100 ca să fie ultima"
+        />
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Număr mai mic = mai sus în meniu și pe prima pagină. Lasă gol pentru ordinea implicită (după data adăugării).
+          Pune un număr mare (ex. 100) ca să fie ultima.
+        </p>
+      </div>
 
       <Button type="submit" variant="accent" className="self-start mt-2">
         {submitLabel}

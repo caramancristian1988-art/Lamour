@@ -1,6 +1,8 @@
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
+import { sortCategories } from "./categoryOrder";
+import { CATALOG_TAG } from "./catalog";
 
 export interface SectionFlags {
   produseEnabled: boolean;
@@ -130,17 +132,17 @@ export interface HeaderCategory {
 const getHeaderCategoriesRaw = unstable_cache(
   async (): Promise<HeaderCategory[]> => {
     try {
-      return await prisma.category.findMany({
+      const rows = await prisma.category.findMany({
         where: { parentId: null },
-        orderBy: { createdAt: "asc" },
-        select: { id: true, slug: true, name: true, image: true },
+        select: { id: true, slug: true, name: true, image: true, displayOrder: true, createdAt: true },
       });
+      return sortCategories(rows).map(({ id, slug, name, image }) => ({ id, slug, name, image }));
     } catch {
       return [];
     }
   },
-  ["header-categories"],
-  { revalidate: 300 }
+  ["header-categories-v2"],
+  { revalidate: 300, tags: [CATALOG_TAG] }
 );
 
 export const getHeaderCategories = cache(getHeaderCategoriesRaw);

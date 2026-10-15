@@ -15,6 +15,14 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+// Număr întreg (poate fi negativ); gol / invalid = fără ordine explicită (null → se comportă ca 0).
+function parseDisplayOrder(raw: FormDataEntryValue | null): number | null {
+  const text = String(raw ?? "").trim();
+  if (!text) return null;
+  const n = Math.trunc(Number(text.replace(",", ".")));
+  return Number.isFinite(n) ? n : null;
+}
+
 export async function createCategoryInlineAction(
   formData: FormData
 ): Promise<{ category?: { id: string; name: string }; error?: string }> {
@@ -70,10 +78,11 @@ export async function createCategoryAction(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim() || null;
   const image = String(formData.get("image") ?? "").trim() || null;
   const parentId = String(formData.get("parentId") ?? "").trim() || null;
+  const displayOrder = parseDisplayOrder(formData.get("displayOrder"));
 
   if (!name || !slug) return;
 
-  await prisma.category.create({ data: { name, slug, description, image, parentId } });
+  await prisma.category.create({ data: { name, slug, description, image, parentId, displayOrder } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
   updateTag(CATALOG_TAG);
@@ -90,12 +99,13 @@ export async function updateCategoryAction(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim() || null;
   const image = String(formData.get("image") ?? "").trim() || null;
   const parentId = String(formData.get("parentId") ?? "").trim() || null;
+  const displayOrder = parseDisplayOrder(formData.get("displayOrder"));
 
   if (!id || !name || !slug) return;
   if (parentId === id) return; // can't be its own parent
 
   const existing = await prisma.category.findUnique({ where: { id }, select: { slug: true } });
-  await prisma.category.update({ where: { id }, data: { name, slug, description, image, parentId } });
+  await prisma.category.update({ where: { id }, data: { name, slug, description, image, parentId, displayOrder } });
   revalidatePath("/admin/produse/categorii");
   revalidatePath("/produse");
   updateTag(CATALOG_TAG);
@@ -103,6 +113,18 @@ export async function updateCategoryAction(formData: FormData) {
   if (existing?.slug && existing.slug !== slug) revalidatePath(`/produse/${existing.slug}`);
   revalidatePath("/");
   redirect("/admin/produse/categorii");
+}
+
+// Editorul rapid din lista de categorii: schimbă doar ordinea de afișare.
+export async function updateCategoryOrderAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await prisma.category.update({ where: { id }, data: { displayOrder: parseDisplayOrder(formData.get("displayOrder")) } });
+  revalidatePath("/admin/produse/categorii");
+  revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
+  revalidatePath("/");
 }
 
 export async function deleteCategoryAction(formData: FormData) {

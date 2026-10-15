@@ -5,14 +5,15 @@ import { Button } from "@/app/components/ui/button";
 import AdminPageHeader from "../../components/AdminPageHeader";
 import DeleteButton from "../../components/DeleteButton";
 import CategoryForm from "./CategoryForm";
-import { createCategoryAction, deleteCategoryAction } from "@/lib/adminCategoryActions";
+import { createCategoryAction, deleteCategoryAction, updateCategoryOrderAction } from "@/lib/adminCategoryActions";
+import { sortCategories } from "@/lib/categoryOrder";
 
 async function getCategories() {
   try {
-    return await prisma.category.findMany({
-      orderBy: { createdAt: "asc" },
+    const rows = await prisma.category.findMany({
       include: { _count: { select: { products: true, children: true } } },
     });
+    return sortCategories(rows);
   } catch {
     return [];
   }
@@ -31,6 +32,26 @@ function CategoryRow({ c, indented }: { c: CategoryRow; indented?: boolean }) {
           {c._count.children > 0 && ` · ${c._count.children} subcategorii`}
         </p>
       </div>
+      {/* Editor rapid pentru ordinea de afișare: număr mai mic = mai sus; 100 = la final; gol = ordinea implicită */}
+      <form action={updateCategoryOrderAction} className="flex items-center gap-1.5 shrink-0">
+        <input type="hidden" name="id" value={c.id} />
+        <label htmlFor={`ord-${c.id}`} className="sr-only">
+          Ordine de afișare pentru {c.name}
+        </label>
+        <input
+          id={`ord-${c.id}`}
+          name="displayOrder"
+          type="number"
+          step={1}
+          defaultValue={c.displayOrder ?? ""}
+          placeholder="ordine"
+          title="Ordine de afișare (număr mai mic = mai sus; gol = implicit)"
+          className="h-9 w-20 rounded-lg border-2 border-input bg-card px-2 text-center text-sm"
+        />
+        <Button type="submit" variant="secondary" size="sm" className="h-9 px-3">
+          Salvează
+        </Button>
+      </form>
       <div className="flex items-center gap-0.5 shrink-0">
         <Button variant="ghost" size="icon" asChild>
           <Link href={`/admin/produse/categorii/${c.id}`} aria-label={`Editează categoria ${c.name}`}>

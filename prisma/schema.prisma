@@ -25,6 +25,9 @@ model Category {
   children    Category[] @relation("CategoryHierarchy")
   products    Product[]
   createdAt   DateTime  @default(now())
+  // Ordinea de afișare pe site (meniu, prima pagină, filtre): număr mai mic = mai sus. Lipsă = 0, deci categoriile
+  // vechi păstrează ordinea după data creării, iar una cu un număr mare (ex. 100) ajunge la final.
+  displayOrder Int?
 }
 
 model Product {

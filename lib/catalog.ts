@@ -1,6 +1,7 @@
 import { revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
 import { isVisibleProduct } from "./productVisibility";
+import { sortCategories } from "./categoryOrder";
 
 // Catalogul întreg (categorii + produse), folosit de lista /produse și de căutarea din antet. Înainte, FIECARE apăsare
 // pe un filtru și fiecare căutare aducea din baza de date toate cele ~300 de produse (~300 KiB, 130–900 ms) — de-aici
@@ -14,9 +15,9 @@ const loadCatalog = unstable_cache(
       prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
       prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
     ]);
-    return { categories, products };
+    return { categories: sortCategories(categories), products };
   },
-  ["catalog-v1"],
+  ["catalog-v2"],
   { revalidate: 300, tags: [CATALOG_TAG] }
 );
 

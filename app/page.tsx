@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { onlyVisible } from "@/lib/productVisibility";
+import { sortCategories } from "@/lib/categoryOrder";
 import { fallbackCategories } from "@/lib/fallbackData";
 import { dedupeVariants, buildVariantOptionsMap } from "@/lib/productListing";
 import Hero from "@/app/components/Hero";
@@ -40,8 +41,6 @@ async function getData() {
       await Promise.all([
         prisma.category.findMany({
           where: { parentId: null },
-          orderBy: { createdAt: "asc" },
-          take: 18,
           include: {
             products: {
               where: onlyVisible(),
@@ -82,7 +81,7 @@ async function getData() {
     // una reală, cădem pe prima poză de produs găsită — poza categoriei
     // din seed e doar un placeholder.
     const isPlaceholder = (url: string | null | undefined) => !url || url.includes("placehold.co");
-    const categories = rawCategories.map(({ products, ...cat }) => {
+    const categories = sortCategories(rawCategories).slice(0, 18).map(({ products, ...cat }) => {
       const categoryImage = isPlaceholder(cat.image) ? null : cat.image;
       const productImage = products
         .flatMap((p) => [p.image, ...p.images])
