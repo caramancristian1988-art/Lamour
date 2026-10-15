@@ -23,6 +23,12 @@ export const facebookTestimonials: FacebookTestimonial[] = [
     image: { src: "/comentarii/catalina-croitoru.png", width: 1033, height: 172 },
   },
   {
+    id: "fb-alexandr-plan",
+    author: "Alexandr Plan",
+    text: "El nu vede și oricum se bucură de viață, zâmbește, noi avem totul dar nu prețuim, bravo. (Răspuns, Natalia Ciuperco: Adevarat! Acesti oameni sint minunati! Ii respect enorm! Cred ca Dumnezeu i-a trimis sa ne invate bunatatea, empatia...)",
+    image: { src: "/comentarii/alexandr-plan.png", width: 1003, height: 270 },
+  },
+  {
     id: "fb-veronica-viorica",
     author: "Veronica Viorica",
     text: "Ceia ce am observat la acel rulou are imprimant inima pe el, asa ca dragi barbați vine ziua indragostițiilor faceți cadou femeilor ca este util si plus un ajutor acestor persoane.",

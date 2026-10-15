@@ -4,7 +4,8 @@ import { Phone, Mail, MapPin, Heart } from "lucide-react";
 import type { SocialLinks, ContactInfo } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_NAME, SITE_SHORT_NAME, SITE_TAGLINE } from "@/lib/constants";
-import { MotifCorner, MotifDivider, MotifRosette, HeadingFlourish } from "@/app/components/ui/motif";
+import { MotifDivider, MotifRosette, HeadingFlourish } from "@/app/components/ui/motif";
+import { CornerFlower } from "@/app/components/ui/corner-flower";
 import NewsletterForm from "@/app/components/NewsletterForm";
 
 const usefulLinks = [
@@ -54,9 +55,11 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/25" />
       <MotifRosette className="pointer-events-none absolute -bottom-32 -right-28 w-[30rem] h-[30rem] opacity-[0.12]" />
       <MotifRosette className="pointer-events-none absolute -top-40 -left-40 hidden lg:block w-[26rem] h-[26rem] opacity-[0.07]" />
-      <MotifCorner className="absolute top-12 left-5 hidden md:block w-28 h-28 text-brand-rose opacity-40" />
-      <MotifCorner flip className="absolute top-12 right-5 hidden md:block w-28 h-28 text-brand-rose opacity-40" />
-      <MotifCorner className="absolute bottom-20 left-5 hidden md:block w-28 h-28 -scale-y-100 text-brand-rose opacity-40" />
+      {/* Floricele din cele 4 colțuri — același ornament, oglindit */}
+      <CornerFlower className="pointer-events-none absolute top-[30px] left-2 hidden md:block w-24 h-24 xl:w-28 xl:h-28 opacity-60" />
+      <CornerFlower className="pointer-events-none absolute top-[30px] right-2 hidden md:block w-24 h-24 xl:w-28 xl:h-28 -scale-x-100 opacity-60" />
+      <CornerFlower className="pointer-events-none absolute bottom-[84px] left-2 hidden md:block w-24 h-24 xl:w-28 xl:h-28 -scale-y-100 opacity-60" />
+      <CornerFlower className="pointer-events-none absolute bottom-[84px] right-2 hidden md:block w-24 h-24 xl:w-28 xl:h-28 -scale-100 opacity-60" />
 
       <div className="relative max-w-7xl mx-auto px-5 sm:px-8 pt-16 pb-12 sm:pt-20">
         {/* ── Rând 1: marca (logo mare, ca în navbar) + abonare ── */}
@@ -100,7 +103,7 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
 
           {/* Abonare: card translucid, cu colț ornamental */}
           <div className="relative rounded-3xl border border-white/20 bg-white/[0.07] backdrop-blur-[2px] p-6 sm:p-8 shadow-xl shadow-black/10">
-            <MotifCorner className="absolute -top-3 -left-3 w-14 h-14 text-brand-rose-light opacity-80" />
+            <CornerFlower className="pointer-events-none absolute -top-5 -left-5 w-16 h-16 opacity-90" />
             <h3 className="font-serif text-2xl font-bold text-white">Abonează-te</h3>
             <p className="mt-2 mb-5 text-[15px] text-white/80 leading-relaxed">
               Primește noutăți și oferte speciale direct pe email.

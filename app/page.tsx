@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 
 async function getData() {
   try {
-    const [rawCategories, essentialProducts, offerProducts, newProducts, recommendedProducts, reviews, banners, variantRows] =
+    const [rawCategories, essentialProducts, offerProducts, newProducts, recommendedProducts, banners, variantRows] =
       await Promise.all([
         prisma.category.findMany({
           where: { parentId: null },
@@ -67,12 +67,6 @@ async function getData() {
         prisma.product.findMany({ where: onlyVisible(), orderBy: { createdAt: "desc" }, take: 4 }),
         // Recomandate din TOATE categoriile, după rating
         prisma.product.findMany({ where: onlyVisible(), orderBy: { rating: "desc" }, take: 8 }),
-        prisma.review.findMany({
-          where: { approved: true },
-          orderBy: { createdAt: "desc" },
-          take: 8,
-          select: { id: true, name: true, rating: true, text: true, product: true },
-        }),
         prisma.banner.findMany({ orderBy: { order: "asc" } }),
         // Lightweight full-catalog pull just to build the variant-siblings
         // map — homepage sections only fetch a handful of products each, not
@@ -106,7 +100,6 @@ async function getData() {
       offerProducts: dedupeVariants(offerProducts),
       newProducts: dedupeVariants(newProducts),
       recommendedProducts: dedupeVariants(recommendedProducts),
-      reviews,
       banners,
       variantOptionsMap,
     };
@@ -117,7 +110,6 @@ async function getData() {
       offerProducts: [],
       newProducts: [],
       recommendedProducts: [],
-      reviews: [],
       banners: [],
       variantOptionsMap: new Map(),
     };
@@ -125,7 +117,7 @@ async function getData() {
 }
 
 export default async function HomePage() {
-  const { categories, essentialProducts, offerProducts, newProducts, recommendedProducts, reviews, banners, variantOptionsMap } =
+  const { categories, essentialProducts, offerProducts, newProducts, recommendedProducts, banners, variantOptionsMap } =
     await getData();
 
   return (
@@ -181,7 +173,7 @@ export default async function HomePage() {
         />
       )}
       <AboutTeaser />
-      <ReviewsSection reviews={reviews} />
+      <ReviewsSection />
     </main>
   );
 }

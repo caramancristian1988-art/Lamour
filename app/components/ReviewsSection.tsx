@@ -1,40 +1,14 @@
 import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
-import ReviewsMarquee, { type MarqueeItem } from "@/app/components/ReviewsMarquee";
+import ReviewsCarousel, { type CarouselItem } from "@/app/components/ReviewsCarousel";
 import { facebookTestimonials } from "@/lib/testimonials";
 
-interface Review {
-  id: string;
-  name: string;
-  rating: number;
-  text: string;
-  product: string | null;
-}
-
-interface Props {
-  reviews: Review[];
-}
-
-export default function ReviewsSection({ reviews }: Props) {
-  const reviewItems: MarqueeItem[] = reviews.map((r) => ({
-    kind: "review",
-    id: r.id,
-    name: r.name,
-    rating: r.rating,
-    text: r.text,
-    product: r.product,
-  }));
-  const facebookItems: MarqueeItem[] = facebookTestimonials.map((t) => ({ kind: "facebook", id: t.id, name: t.author, text: t.text, image: t.image }));
-
-  // Mărturiile de pe Facebook se intercalează printre recenzii (nu toate la un loc), apoi mesajul final al magazinului.
-  const items: MarqueeItem[] = [];
-  const every = Math.max(2, Math.floor(reviewItems.length / (facebookItems.length + 1)) || 2);
-  let fb = 0;
-  reviewItems.forEach((item, i) => {
-    items.push(item);
-    if ((i + 1) % every === 0 && fb < facebookItems.length) items.push(facebookItems[fb++]);
-  });
-  while (fb < facebookItems.length) items.push(facebookItems[fb++]);
-  items.push({ kind: "cta", id: "cta" });
+// Pe prima pagină apar DOAR capturile de ecran ale comentariilor reale de pe Facebook (inspiră mai multă încredere
+// decât un text rescris). Mărturiile fără captură rămân în lib/testimonials.ts și apar aici imediat ce li se adaugă `image`.
+export default function ReviewsSection() {
+  const items: CarouselItem[] = facebookTestimonials.flatMap((t) =>
+    t.image ? [{ id: t.id, name: t.author, text: t.text, image: t.image }] : []
+  );
+  if (items.length === 0) return null;
 
   return (
     <section className="relative overflow-hidden py-8 sm:py-10 bg-background">
@@ -45,10 +19,10 @@ export default function ReviewsSection({ reviews }: Props) {
             Ce spun clienții noștri
             <HeadingFlourish />
           </h2>
-          <p className="text-muted-foreground mt-2">Recenzii de la familii care ne-au ales din toată Moldova</p>
+          <p className="text-muted-foreground mt-2">Comentarii reale de la oameni care ne-au ales, direct de pe Facebook</p>
         </div>
 
-        <ReviewsMarquee items={items} />
+        <ReviewsCarousel items={items} />
       </div>
     </section>
   );

@@ -146,25 +146,31 @@ export default function StickyHeader({
       </div>
 
       {/* ══ ROW 2: Navbar — desktop only ══ */}
-      <div className="hidden lg:flex items-center justify-center gap-10 max-w-[110rem] mx-auto px-6 border-b border-border">
-        {produseEnabled && (
-          <AllCategoriesMenu categories={productsDropdown} buttonClassName="flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white text-sm font-bold px-5 h-10 rounded-xl transition-colors uppercase tracking-wide shrink-0" />
-        )}
+      <div className="hidden lg:flex items-center justify-between gap-10 max-w-[110rem] mx-auto px-6 border-b border-border">
+        {/* Stânga: „Toate categoriile” (aliniat cu sigla de mai sus) */}
+        <div className="flex items-center">
+          {produseEnabled && (
+            <AllCategoriesMenu categories={productsDropdown} buttonClassName="flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white text-sm font-bold px-5 h-10 rounded-xl transition-colors uppercase tracking-wide shrink-0" />
+          )}
+        </div>
 
-        {despreEnabled && <NavDropdown label="Despre noi" href="/despre" items={despreDropdown} />}
+        {/* Dreapta: celelalte linkuri (aliniate cu pictogramele de cont/favorite/coș de mai sus) */}
+        <nav aria-label="Meniu principal" className="flex items-center gap-10">
+          {despreEnabled && <NavDropdown label="Despre noi" href="/despre" items={despreDropdown} />}
 
-        {produseEnabled && <NavDropdown label="Produse" href="/produse" items={produseDropdown} />}
+          {produseEnabled && <NavDropdown label="Produse" href="/produse" items={produseDropdown} />}
 
-        {blogEnabled && (
-          <Link href="/blog" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
-            Blog
-          </Link>
-        )}
-        {contactEnabled && (
-          <Link href="/contact" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
-            Contact
-          </Link>
-        )}
+          {blogEnabled && (
+            <Link href="/blog" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+              Blog
+            </Link>
+          )}
+          {contactEnabled && (
+            <Link href="/contact" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+              Contact
+            </Link>
+          )}
+        </nav>
       </div>
     </div>
   );

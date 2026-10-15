@@ -187,7 +187,7 @@ export default async function DesprePage() {
       {/* ── MISIUNEA NOASTRĂ ── */}
       <section id="misiune" className="scroll-mt-24 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch">
-          <div className="relative aspect-[4/3] sm:aspect-[16/9] w-full lg:aspect-auto lg:min-h-[400px]">
+          <div className="relative order-2 lg:order-1 aspect-[4/3] sm:aspect-[16/9] w-full lg:aspect-auto lg:min-h-[400px]">
             <Image
               src="/despre/misiune.jpg"
               alt="Detaliu al ambalajului Lamour Cu Dragoste, cu model în relief și flori de câmp"
@@ -197,7 +197,7 @@ export default async function DesprePage() {
             />
           </div>
 
-          <div className={`${COLUMN_INSET_RIGHT} bg-brand-rose-light/25 py-12 lg:py-16 flex flex-col justify-center`}>
+          <div className={`${COLUMN_INSET_RIGHT} order-1 lg:order-2 bg-brand-rose-light/25 py-12 lg:py-16 flex flex-col justify-center`}>
             <SectionLabel>Misiunea noastră</SectionLabel>
             <h2 className={h2}>Mai mult decât produse</h2>
             <p className={`max-w-xl ${body}`}>
