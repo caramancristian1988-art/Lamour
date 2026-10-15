@@ -13,7 +13,6 @@ const despreDropdown = [
   { href: "/despre#istorie", label: "Istorie" },
   { href: "/despre#misiune", label: "Misiune" },
   { href: "/despre#misiune-sociala", label: "Misiune socială" },
-  { href: "/productie", label: "Producție" },
 ];
 
 const baseNavLinks = [

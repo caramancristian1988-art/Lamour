@@ -170,9 +170,7 @@ function facetOptions<T>(items: T[], getValue: (item: T) => string, getLabel?: (
 const CATALOG_SECTIONS: { key: string; label: string; href: string; divisions?: Division[] }[] = [
   { key: "hartie", label: "Produse din hârtie", href: "/produse", divisions: ["uz-casnic"] },
   { key: "mobila", label: "Mobilă", href: "/mobila", divisions: ["mobila"] },
-  { key: "fabricatie", label: "Fabricație la comandă", href: "/productie-la-comanda" },
   { key: "spatii", label: "Spații comerciale", href: "/spatii-comerciale", divisions: ["chirie"] },
-  { key: "servicii", label: "Servicii de producție", href: "/productie" },
 ];
 
 function DivisionTabs({ active }: { active: Division }) {

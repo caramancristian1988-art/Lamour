@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Sofa, Package, Building2 } from "lucide-react";
+import { ArrowRight, Sofa, Building2 } from "lucide-react";
 import { categoryIcons } from "./CategoryIcons";
 import { MotifBackground } from "@/app/components/ui/motif";
 
@@ -19,13 +19,6 @@ const divisions = [
     title: "Mobilă",
     description: "Fabricație de mobilier la comandă — pentru birou și pentru casă.",
     Icon: Sofa,
-  },
-  {
-    slug: "ambalaje",
-    href: "/productie-la-comanda",
-    title: "Ambalaje și fabricație la comandă",
-    description: "Producție sub marcă proprie (private label) și servicii de ambalare.",
-    Icon: Package,
   },
   {
     slug: "spatii",
@@ -48,7 +41,7 @@ export default function BusinessDivisions() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {divisions.map((d) => (
             <Link
               key={d.slug}

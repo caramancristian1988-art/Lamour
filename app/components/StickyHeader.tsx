@@ -22,7 +22,6 @@ const despreDropdown = [
   { href: "/despre#istorie", label: "Istorie" },
   { href: "/despre#misiune", label: "Misiune" },
   { href: "/despre#misiune-sociala", label: "Misiune socială" },
-  { href: "/productie", label: "Producție" },
 ];
 
 export default function StickyHeader({
@@ -149,8 +148,7 @@ export default function StickyHeader({
         <nav aria-label="Meniu principal" className="flex items-center gap-10">
           {despreEnabled && <NavDropdown label="Despre noi" href="/despre" items={despreDropdown} />}
 
-          {/* „Catalog” = link simplu; paginile Mobilă / Fabricație la comandă / Spații comerciale / Servicii de producție
-              se aleg din pagina Catalog (secțiunile de sus), nu dintr-un meniu derulant. */}
+          {/* „Catalog” = link simplu; paginile Mobilă / Spații comerciale se aleg din pagina Catalog (secțiunile de sus). */}
           {produseEnabled && (
             <Link href="/produse" className="py-4 text-[15px] font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
               Catalog
