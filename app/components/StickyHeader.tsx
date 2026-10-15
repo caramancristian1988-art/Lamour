@@ -158,7 +158,7 @@ export default function StickyHeader({
         <nav aria-label="Meniu principal" className="flex items-center gap-10">
           {despreEnabled && <NavDropdown label="Despre noi" href="/despre" items={despreDropdown} />}
 
-          {produseEnabled && <NavDropdown label="Produse" href="/produse" items={produseDropdown} />}
+          {produseEnabled && <NavDropdown label="Catalog" href="/produse" items={produseDropdown} />}
 
           {blogEnabled && (
             <Link href="/blog" className="py-4 text-[15px] font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">

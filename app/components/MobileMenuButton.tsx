@@ -127,7 +127,7 @@ export default function MobileMenuButton({
 
           {produseEnabled && (
             <MobileDropdownGroup
-              label="Produse"
+              label="Catalog"
               href="/produse"
               items={produseDropdown}
               open={produseOpen}

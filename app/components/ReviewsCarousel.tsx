@@ -24,7 +24,7 @@ const RESUME_AFTER_MS = 2500; // după o interacțiune, derularea automată reia
 // Bucla: seria de carduri apare de 3 ori; poziția e mutată discret cu o serie înainte/înapoi, fără salt vizibil.
 export default function ReviewsCarousel({ items }: { items: CarouselItem[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const state = useRef({ pos: 0, setWidth: 0, hovered: false, dragging: false, interactUntil: 0, startX: 0, startScroll: 0 });
+  const state = useRef({ pos: 0, setWidth: 0, hovered: false, dragging: false, moved: false, interactUntil: 0, startX: 0, startScroll: 0 });
 
   // Pe ecrane late o serie trebuie să acopere lățimea ca bucla să nu aibă goluri.
   const set: CarouselItem[] = [];
@@ -116,6 +116,7 @@ export default function ReviewsCarousel({ items }: { items: CarouselItem[] }) {
     if (!el) return;
     const s = state.current;
     s.dragging = true;
+    s.moved = false;
     s.startX = e.clientX;
     s.startScroll = el.scrollLeft;
     el.setPointerCapture(e.pointerId);
@@ -124,6 +125,7 @@ export default function ReviewsCarousel({ items }: { items: CarouselItem[] }) {
     const s = state.current;
     const el = scrollerRef.current;
     if (!s.dragging || !el) return;
+    if (Math.abs(e.clientX - s.startX) > 5) s.moved = true;
     el.scrollLeft = s.startScroll - (e.clientX - s.startX);
   };
   const endDrag = () => {
@@ -135,23 +137,6 @@ export default function ReviewsCarousel({ items }: { items: CarouselItem[] }) {
 
   return (
     <div className="relative" role="region" aria-roledescription="carusel" aria-label="Comentarii ale clienților">
-      <button
-        type="button"
-        onClick={() => go(-1)}
-        aria-label="Comentariul anterior"
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-card border border-border shadow-md flex items-center justify-center text-primary hover:bg-muted transition-colors"
-      >
-        <ChevronLeft className="w-6 h-6" aria-hidden />
-      </button>
-      <button
-        type="button"
-        onClick={() => go(1)}
-        aria-label="Comentariul următor"
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-card border border-border shadow-md flex items-center justify-center text-primary hover:bg-muted transition-colors"
-      >
-        <ChevronRight className="w-6 h-6" aria-hidden />
-      </button>
-
       <div
         ref={scrollerRef}
         tabIndex={0}
@@ -182,10 +167,25 @@ export default function ReviewsCarousel({ items }: { items: CarouselItem[] }) {
             aria-label={copy === 1 ? "Comentarii și mărturii ale clienților" : undefined}
             aria-hidden={copy === 1 ? undefined : true}
             inert={copy === 1 ? undefined : true}
-            className="flex shrink-0 gap-5 pr-5 items-center"
+            className="flex shrink-0 gap-3 pr-3 sm:gap-5 sm:pr-5 items-center"
           >
             {set.map((item, i) => (
-              <li key={`${copy}-${item.id}-${i}`} data-card className="w-[300px] sm:w-[560px] lg:w-[620px] shrink-0">
+              <li key={`${copy}-${item.id}-${i}`} data-card className="w-[90vw] max-w-[460px] sm:max-w-none sm:w-[560px] lg:w-[620px] shrink-0">
+                <a
+                  href={item.image.src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  draggable={false}
+                  onClick={(e) => {
+                    // după o tragere cu mouse-ul nu deschidem captura
+                    if (state.current.moved) {
+                      e.preventDefault();
+                      state.current.moved = false;
+                    }
+                  }}
+                  aria-label={`Deschide mărită captura comentariului de la ${item.name}`}
+                  className="block rounded-2xl"
+                >
                 <figure className="overflow-hidden rounded-2xl border border-border shadow-sm bg-card">
                   <Image
                     src={item.image.src}
@@ -194,13 +194,35 @@ export default function ReviewsCarousel({ items }: { items: CarouselItem[] }) {
                     height={item.image.height}
                     draggable={false}
                     className="w-full h-auto"
-                    sizes="(max-width: 640px) 300px, 620px"
+                    sizes="(max-width: 640px) 90vw, 620px"
                   />
                 </figure>
+                </a>
               </li>
             ))}
           </ul>
         ))}
+      </div>
+
+      {/* Săgeți: pe telefon sub carusel (nu acoperă textul capturilor), pe ecrane mai mari peste margini */}
+      <p className="mt-3 px-4 text-center text-sm text-muted-foreground sm:hidden">Atinge un comentariu ca să-l vezi mărit.</p>
+      <div className="mt-3 flex justify-center gap-4 sm:mt-0">
+        <button
+          type="button"
+          onClick={() => go(-1)}
+          aria-label="Comentariul anterior"
+          className="sm:absolute sm:left-4 sm:top-1/2 sm:-translate-y-1/2 z-10 w-12 h-12 rounded-full bg-card border border-border shadow-md flex items-center justify-center text-primary hover:bg-muted transition-colors"
+        >
+          <ChevronLeft className="w-6 h-6" aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={() => go(1)}
+          aria-label="Comentariul următor"
+          className="sm:absolute sm:right-4 sm:top-1/2 sm:-translate-y-1/2 z-10 w-12 h-12 rounded-full bg-card border border-border shadow-md flex items-center justify-center text-primary hover:bg-muted transition-colors"
+        >
+          <ChevronRight className="w-6 h-6" aria-hidden />
+        </button>
       </div>
     </div>
   );

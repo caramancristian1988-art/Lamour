@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -37,6 +37,9 @@ interface Props {
 export default function AllCategoriesMenu({ className, buttonClassName, label = "Toate categoriile", categories }: Props) {
   const productsDropdown = categories && categories.length > 0 ? categories : fallbackCategories;
   const [open, setOpen] = useState(false);
+  // true când meniul s-a închis prin click/atingere în afara lui: atunci NU mai readucem focusul pe buton, ca butonul
+  // să nu rămână „selectat” (cu inel de focus) după ce ai apăsat în altă parte a ecranului.
+  const closedByPointer = useRef(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -56,17 +59,20 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
-          className={
+          type="button"
+          className={cn(
+            "group",
             buttonClassName ??
-            cn(
-              "flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white text-sm font-bold px-5 h-12 rounded-xl transition-colors uppercase tracking-wide",
-              className
-            )
-          }
+              cn(
+                "flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white text-sm font-bold px-5 h-12 rounded-xl transition-colors uppercase tracking-wide",
+                className
+              )
+          )}
         >
           <Menu className="w-4 h-4" aria-hidden />
           <span className="truncate">{label}</span>
-          <ChevronDown className="w-3.5 h-3.5" aria-hidden />
+          {/* Săgeata se întoarce în sus cât meniul e deschis (data-state vine de la Radix) */}
+          <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180" aria-hidden />
         </button>
       </DropdownMenuTrigger>
       {/* Panou lat (mega-meniu): categoriile se așază pe mai multe coloane, pe lățimea paginii, ca să încapă toate
@@ -74,6 +80,17 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
       <DropdownMenuContent
         align="start"
         collisionPadding={16}
+        onPointerDownOutside={() => {
+          closedByPointer.current = true;
+        }}
+        onCloseAutoFocus={(e) => {
+          if (closedByPointer.current) {
+            e.preventDefault();
+            closedByPointer.current = false;
+            // scoatem focusul de pe buton (altfel apare ca selectat)
+            (document.activeElement as HTMLElement | null)?.blur?.();
+          }
+        }}
         className="w-[calc(100vw-2rem)] sm:w-[min(calc(100vw-3rem),70rem)] max-h-[min(78vh,46rem)] overflow-y-auto scrollbar-brand p-4 sm:p-6 rounded-2xl"
       >
         <div className="flex items-center gap-3 mb-4 sm:mb-5">

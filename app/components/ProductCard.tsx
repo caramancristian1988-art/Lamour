@@ -76,7 +76,9 @@ export default function ProductCard({
   return (
     <div className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
       {/* Image area */}
-      <div className="relative aspect-[4/3] flex items-center justify-center bg-white overflow-hidden">
+      {/* Zonă pătrată + object-contain: majoritatea pozelor sunt pătrate, unele înalte sau late — toate se văd ÎNTREGI,
+          centrate pe alb, fără să fie tăiate (înainte, zona 4:3 cu object-cover tăia sus/jos sau lateralele). */}
+      <div className="relative aspect-square flex items-center justify-center bg-white overflow-hidden">
         {/* aria-label: fără poză, linkul conținea doar o iconiță aria-hidden, deci nu avea niciun nume accesibil. */}
         <Link href={`/produse/${slug}`} aria-label={name} className="w-full h-full flex items-center justify-center rounded-lg">
           {displayImage ? (
@@ -85,7 +87,7 @@ export default function ProductCard({
               alt={name}
               fill
               sizes="(max-width: 1023px) 50vw, 300px"
-              className="object-cover"
+              className="object-contain p-3 sm:p-4 transition-transform duration-300 group-hover:scale-[1.04]"
             />
           ) : (
             <ImageOff className="w-16 h-16 text-muted-foreground/40" aria-hidden />

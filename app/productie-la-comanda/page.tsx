@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function ProductieLaComandaPage() {
   return (
-    <main className="bg-background">
+    <main className="page-motif">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Fabricație la comandă", path: "/productie-la-comanda" }])} />
       <DivisionHero
         breadcrumbLabel="Fabricație la comandă"

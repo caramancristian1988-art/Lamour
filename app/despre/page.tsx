@@ -68,11 +68,11 @@ export default async function DesprePage() {
   if (!despreEnabled) notFound();
 
   return (
-    <main className="bg-background">
+    <main className="page-motif relative overflow-hidden">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Despre noi", path: "/despre" }])} />
 
       {/* ── POVESTEA NOASTRĂ (hero) ── */}
-      <section id="istorie" className="relative scroll-mt-24 overflow-hidden bg-background">
+      <section id="istorie" className="relative scroll-mt-24 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] lg:min-h-[560px]">
           <div className={`${COLUMN_INSET} py-8 lg:py-14 flex flex-col justify-center`}>
             <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-8 lg:mb-10">
@@ -123,7 +123,7 @@ export default async function DesprePage() {
       </section>
 
       {/* ── CINE SUNTEM ── */}
-      <section id="cine-suntem" className="scroll-mt-24 py-14 lg:py-20">
+      <section id="cine-suntem" className="relative scroll-mt-24 py-14 lg:py-20">
         <span id="misiune-sociala" className="block scroll-mt-24" />
         <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-10 items-center">
           <FacebookVideo
@@ -151,7 +151,7 @@ export default async function DesprePage() {
       </section>
 
       {/* ── CE FACEM ── */}
-      <section className="overflow-hidden pb-6 lg:pb-0">
+      <section className="relative overflow-hidden pb-6 lg:pb-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center">
           <div className={`${COLUMN_INSET} py-6 lg:py-16`}>
             <SectionLabel>Ce facem</SectionLabel>
@@ -186,7 +186,7 @@ export default async function DesprePage() {
       </section>
 
       {/* ── MISIUNEA NOASTRĂ ── */}
-      <section id="misiune" className="scroll-mt-24 overflow-hidden">
+      <section id="misiune" className="relative scroll-mt-24 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch">
           <div className="relative order-2 lg:order-1 aspect-[4/3] sm:aspect-[16/9] w-full lg:aspect-auto lg:min-h-[400px]">
             <Image

@@ -104,7 +104,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
         ])}
       />
 
-      <main>
+      <main className="page-motif">
         {/* ── HERO ── */}
         <section className="relative h-[320px] sm:h-[420px] lg:h-[500px] overflow-hidden">
           <Image

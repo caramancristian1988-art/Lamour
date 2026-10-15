@@ -38,7 +38,7 @@ export default async function SpatiiComercialePage({
   const listings = activeType === "toate" ? allListings : allListings.filter((l) => l.type.slug === activeType);
 
   return (
-    <main className="bg-background">
+    <main className="page-motif">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Spații comerciale", path: "/spatii-comerciale" }])} />
       <JsonLd
         data={collectionPage({

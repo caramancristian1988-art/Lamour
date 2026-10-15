@@ -319,11 +319,11 @@ function CategoryView({ category, children, activeChildren, products: baseProduc
   const { items, page: currentPage, hasMore } = paginate(sorted, page);
 
   return (
-    <main className="bg-background">
+    <main className="page-motif">
       <JsonLd
         data={breadcrumbList([
           { name: "Acasă", path: "/" },
-          { name: "Produse", path: "/produse" },
+          { name: "Catalog", path: "/produse" },
           { name: category.name, path: `/produse/${category.slug}` },
         ])}
       />
@@ -352,7 +352,7 @@ function CategoryView({ category, children, activeChildren, products: baseProduc
           <nav className="flex items-center gap-1 text-[10px] text-muted-foreground mb-3" aria-label="Fir de ariadnă">
             <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
             <span aria-hidden>›</span>
-            <Link href="/produse" className="hover:text-accent transition-colors">Produse</Link>
+            <Link href="/produse" className="hover:text-accent transition-colors">Catalog</Link>
             <span aria-hidden>›</span>
             <span className="text-foreground">{category.name}</span>
           </nav>
@@ -376,7 +376,7 @@ function CategoryView({ category, children, activeChildren, products: baseProduc
           <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4" aria-label="Fir de ariadnă">
             <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
             <span aria-hidden>›</span>
-            <Link href="/produse" className="hover:text-accent transition-colors">Produse</Link>
+            <Link href="/produse" className="hover:text-accent transition-colors">Catalog</Link>
             <span aria-hidden>›</span>
             <span className="text-foreground">{category.name}</span>
           </nav>
@@ -566,11 +566,11 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
   );
 
   return (
-    <main className="bg-background">
+    <main className="page-motif">
       <JsonLd
         data={breadcrumbList([
           { name: "Acasă", path: "/" },
-          { name: "Produse", path: "/produse" },
+          { name: "Catalog", path: "/produse" },
           ...(category ? [{ name: category.name, path: `/produse/${category.slug}` }] : []),
           { name: displayName, path: `/produse/${product.slug}` },
         ])}
@@ -598,7 +598,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap" aria-label="Fir de ariadnă">
           <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
           <span aria-hidden>›</span>
-          <Link href="/produse" className="hover:text-accent transition-colors">Produse</Link>
+          <Link href="/produse" className="hover:text-accent transition-colors">Catalog</Link>
           {category && (
             <>
               <span aria-hidden>›</span>

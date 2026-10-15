@@ -10,7 +10,7 @@ import NewsletterForm from "@/app/components/NewsletterForm";
 
 const usefulLinks = [
   { label: "Despre noi", href: "/despre" },
-  { label: "Produse", href: "/produse" },
+  { label: "Catalog", href: "/produse" },
   { label: "Oferte", href: "/produse?oferte=1" },
   { label: "Noutăți", href: "/blog" },
   { label: "Contact", href: "/contact" },

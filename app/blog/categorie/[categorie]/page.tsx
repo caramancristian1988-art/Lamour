@@ -63,7 +63,7 @@ export default async function CategoriePage({ params }: { params: Promise<{ cate
   });
 
   return (
-    <main className="bg-background">
+    <main className="page-motif">
       <JsonLd
         data={breadcrumbList([
           { name: "Acasă", path: "/" },

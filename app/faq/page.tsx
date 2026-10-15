@@ -50,7 +50,7 @@ export default async function FaqPage() {
   const faqs = await getFaqs();
 
   return (
-    <main className="bg-background min-h-screen">
+    <main className="page-motif min-h-screen">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Întrebări frecvente", path: "/faq" }])} />
       <JsonLd data={faqPageSchema(faqs)} />
       <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14">

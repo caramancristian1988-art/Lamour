@@ -190,7 +190,7 @@ function Breadcrumb() {
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground" aria-label="Fir de ariadnă">
           <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
           <span aria-hidden>›</span>
-          <span className="text-foreground">Produse</span>
+          <span className="text-foreground">Catalog</span>
         </nav>
       </div>
     </section>
@@ -238,8 +238,8 @@ export default async function ProdusePage({
     });
 
     return (
-      <main className="bg-background">
-        <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Produse", path: "/produse" }])} />
+      <main className="page-motif">
+        <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Catalog", path: "/produse" }])} />
         <JsonLd
           data={collectionPage({
             name: "Mobilă la comandă",
@@ -318,8 +318,8 @@ export default async function ProdusePage({
     });
 
     return (
-      <main className="bg-background">
-        <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Produse", path: "/produse" }])} />
+      <main className="page-motif">
+        <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Catalog", path: "/produse" }])} />
         <JsonLd
           data={collectionPage({
             name: "Spații disponibile spre închiriere",
@@ -449,8 +449,8 @@ export default async function ProdusePage({
   const { items, page: currentPage, hasMore } = paginate(sorted, page);
 
   return (
-    <main className="bg-background">
-      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Produse", path: "/produse" }])} />
+    <main className="page-motif">
+      <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Catalog", path: "/produse" }])} />
       <JsonLd
         data={collectionPage({
           name: PRODUSE_TITLE,

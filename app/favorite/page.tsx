@@ -10,7 +10,7 @@ export default function FavoritePage() {
   const { favorites } = useFavorites();
 
   return (
-    <main className="bg-background min-h-[60vh]">
+    <main className="page-motif min-h-[60vh]">
       <section className="border-b border-border bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8">
           <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4" aria-label="Fir de ariadnă">

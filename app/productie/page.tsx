@@ -36,7 +36,7 @@ const certifications = [
 
 export default function ProductiePage() {
   return (
-    <main className="bg-background">
+    <main className="page-motif">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Producție", path: "/productie" }])} />
       <DivisionHero
         breadcrumbLabel="Producție"

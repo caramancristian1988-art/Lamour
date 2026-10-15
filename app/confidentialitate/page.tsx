@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function ConfidentialitatePage() {
   return (
-    <main className="bg-background min-h-screen">
+    <main className="page-motif min-h-screen">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Politica de confidențialitate", path: "/confidentialitate" }])} />
       <div className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
         <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-6">

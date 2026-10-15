@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useProductsNavigate, usePendingHref } from "./ProductsNav";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, Plus, Minus } from "lucide-react";
 import { type SortKey } from "@/lib/productListing";
 import ProductSortSelect from "./ProductSortSelect";
 import PriceRangeSlider from "./PriceRangeSlider";
@@ -37,39 +37,87 @@ interface Props {
   offersCount: number;
 }
 
-function FilterGroup({
+// Grup de filtre pliabil (ca pe pet-house.md): titlu simplu + „−” (restrânge) / „+” (extinde) în dreapta.
+// Când e restrâns, opțiunile dispar, dar bifele rămân active — de aceea titlul arată câte filtre sunt bifate.
+function FilterSection({
   title,
+  activeCount = 0,
+  defaultOpen = true,
+  children,
+}: {
+  title: string;
+  activeCount?: number;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const panelId = useId();
+  return (
+    <section>
+      <h3>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-controls={panelId}
+          className="group flex w-full items-center justify-between gap-3 rounded-md py-1.5 text-left"
+        >
+          <span className="flex items-center gap-2 font-sans text-[15px] font-semibold text-foreground">
+            {title}
+            {!open && activeCount > 0 && (
+              <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold leading-none text-white">{activeCount}</span>
+            )}
+          </span>
+          <span
+            aria-hidden
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors group-hover:bg-muted group-hover:text-accent"
+          >
+            {open ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          </span>
+          <span className="sr-only">{open ? "Restrânge" : "Extinde"}</span>
+        </button>
+      </h3>
+      <div id={panelId} hidden={!open} className="pt-2">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+// Listele lungi (categorii, branduri) rămân într-o zonă cu înălțime limitată și derulare proprie, în stilul site-ului,
+// ca întreaga coloană de filtre să încapă pe un ecran.
+function FilterOptions({
   options,
   selected,
   paramKey,
   formatLabel,
   onToggle,
 }: {
-  title: string;
   options: { value: string; count: number }[];
   selected: string[];
   paramKey: string;
   formatLabel?: (value: string) => string;
   onToggle: (key: string, value: string) => void;
 }) {
-  if (options.length === 0) return null;
   return (
-    <div>
-      <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">{title}</p>
-      <div className="flex flex-col gap-3">
-        {options.map((opt) => {
-          const id = `${paramKey}-${opt.value}`;
-          return (
-            <label key={opt.value} htmlFor={id} className="flex items-center justify-between gap-2 text-sm text-foreground cursor-pointer hover:text-accent">
-              <span className="flex items-center gap-2.5">
-                <Checkbox id={id} checked={selected.includes(opt.value)} onCheckedChange={() => onToggle(paramKey, opt.value)} />
-                {formatLabel ? formatLabel(opt.value) : opt.value}
-              </span>
-              <span className="text-xs text-muted-foreground">({opt.count})</span>
-            </label>
-          );
-        })}
-      </div>
+    <div className="scrollbar-brand scroll-hint flex max-h-56 flex-col gap-2.5 overflow-y-auto py-1 pr-3">
+      {options.map((opt) => {
+        const id = `${paramKey}-${opt.value}`;
+        return (
+          <label key={opt.value} htmlFor={id} className="flex cursor-pointer items-center justify-between gap-2 text-sm text-foreground hover:text-accent">
+            <span className="flex items-center gap-2.5">
+              <Checkbox
+                className="h-5 w-5 rounded-[5px] border-[1.5px]"
+                id={id}
+                checked={selected.includes(opt.value)}
+                onCheckedChange={() => onToggle(paramKey, opt.value)}
+              />
+              {formatLabel ? formatLabel(opt.value) : opt.value}
+            </span>
+            <span className="text-xs text-muted-foreground">({opt.count})</span>
+          </label>
+        );
+      })}
     </div>
   );
 }
@@ -167,41 +215,15 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
   const hasActive = activeChips.length > 0;
 
   const sidebarContent = (
-    <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">Sortează după</p>
-        <ProductSortSelect defaultValue={sort} />
-      </div>
-
-      {priceBounds.max > priceBounds.min && (
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">Preț</p>
-          <PriceRangeSlider min={priceBounds.min} max={priceBounds.max} selectedMin={priceMin} selectedMax={priceMax} onCommit={setPriceRange} />
-        </div>
-      )}
-
-      {offersCount > 0 && (
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">Oferte</p>
-          <label htmlFor="filter-oferte" className="flex items-center justify-between gap-2 text-sm text-foreground cursor-pointer hover:text-accent">
-            <span className="flex items-center gap-2.5">
-              <Checkbox id="filter-oferte" checked={offersOnly} onCheckedChange={() => toggleBoolParam("oferte")} />
-              Oferte speciale
-            </span>
-            <span className="text-xs text-muted-foreground">({offersCount})</span>
-          </label>
-        </div>
-      )}
-
+    <div className="flex flex-col gap-5">
       {hasActive && (
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-primary mb-3">Filtre active</p>
-          <div className="flex flex-col gap-2 mb-3">
+        <FilterSection title="Filtre active">
+          <div className="mb-3 flex flex-col gap-2">
             {activeChips.map((chip) => (
               <Badge key={chip.key} variant="outline" className="w-full justify-between normal-case font-semibold text-primary">
                 {chip.label}
-                <button onClick={chip.onRemove} aria-label={`Elimină filtrul ${chip.label}`} className="text-muted-foreground hover:text-accent transition-colors shrink-0">
-                  <X className="w-3.5 h-3.5" aria-hidden />
+                <button onClick={chip.onRemove} aria-label={`Elimină filtrul ${chip.label}`} className="shrink-0 text-muted-foreground transition-colors hover:text-accent">
+                  <X className="h-3.5 w-3.5" aria-hidden />
                 </button>
               </Badge>
             ))}
@@ -209,20 +231,48 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
           <Button onClick={clearAll} variant="primary" size="sm" className="w-full">
             Șterge tot
           </Button>
-        </div>
+        </FilterSection>
+      )}
+
+      <FilterSection title="Sortează după">
+        <ProductSortSelect defaultValue={sort} />
+      </FilterSection>
+
+      {priceBounds.max > priceBounds.min && (
+        <FilterSection title="Preț" activeCount={priceFilterActive ? 1 : 0}>
+          <PriceRangeSlider min={priceBounds.min} max={priceBounds.max} selectedMin={priceMin} selectedMax={priceMax} onCommit={setPriceRange} />
+        </FilterSection>
+      )}
+
+      {offersCount > 0 && (
+        <FilterSection title="Oferte" activeCount={offersOnly ? 1 : 0}>
+          <label htmlFor="filter-oferte" className="flex cursor-pointer items-center justify-between gap-2 text-sm text-foreground hover:text-accent">
+            <span className="flex items-center gap-2.5">
+              <Checkbox className="h-5 w-5 rounded-[5px] border-[1.5px]" id="filter-oferte" checked={offersOnly} onCheckedChange={() => toggleBoolParam("oferte")} />
+              Oferte speciale
+            </span>
+            <span className="text-xs text-muted-foreground">({offersCount})</span>
+          </label>
+        </FilterSection>
       )}
 
       {categories && categories.length > 0 && (
-        <FilterGroup
-          title="Categorie"
-          options={categories.map((c) => ({ value: c.slug, count: c.count }))}
-          selected={selectedCats}
-          paramKey="cat"
-          formatLabel={(slug) => categories.find((c) => c.slug === slug)?.name ?? slug}
-          onToggle={toggleListParam}
-        />
+        <FilterSection title="Categorie" activeCount={selectedCats.length}>
+          <FilterOptions
+            options={categories.map((c) => ({ value: c.slug, count: c.count }))}
+            selected={selectedCats}
+            paramKey="cat"
+            formatLabel={(slug) => categories.find((c) => c.slug === slug)?.name ?? slug}
+            onToggle={toggleListParam}
+          />
+        </FilterSection>
       )}
-      <FilterGroup title="Brand" options={brands} selected={selectedBrands} paramKey="brand" onToggle={toggleListParam} />
+
+      {brands.length > 0 && (
+        <FilterSection title="Brand" activeCount={selectedBrands.length}>
+          <FilterOptions options={brands} selected={selectedBrands} paramKey="brand" onToggle={toggleListParam} />
+        </FilterSection>
+      )}
     </div>
   );
 
@@ -235,7 +285,14 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
         </Button>
       </div>
 
-      <aside className="hidden lg:block w-64 shrink-0">{sidebarContent}</aside>
+      {/* Coloana de filtre „merge după noi” la derulare (sticky) și are înălțimea limitată la ecran; dacă tot nu încape,
+          se derulează în interior, cu bara de derulare în stilul site-ului. */}
+      <aside
+        aria-label="Filtre produse"
+        className="scrollbar-brand sticky top-4 hidden max-h-[calc(100vh-2rem)] w-64 shrink-0 self-start overflow-y-auto pr-3 lg:block"
+      >
+        {sidebarContent}
+      </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         {/* Antet fix + zonă derulabilă separată: butonul X rămâne mereu vizibil (înainte era în zona care se derula și dispărea),
@@ -248,7 +305,7 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
           <SheetHeader className="shrink-0 border-b border-border bg-card px-6 py-4 pr-20">
             <SheetTitle>Filtre</SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-y-auto px-6 py-5">{sidebarContent}</div>
+          <div className="scrollbar-brand flex-1 overflow-y-auto px-6 py-5">{sidebarContent}</div>
           <div className="shrink-0 border-t border-border bg-card p-4">
             <SheetClose asChild>
               <Button variant="accent" size="lg" className="w-full">

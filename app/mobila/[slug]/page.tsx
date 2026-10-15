@@ -47,7 +47,7 @@ export default async function FurnitureDetailPage({ params }: { params: Promise<
   const related = allListings.filter((l) => l.typeId === listing.typeId && l.slug !== listing.slug).slice(0, 3);
 
   return (
-    <main className="bg-background">
+    <main className="page-motif">
       <JsonLd
         data={breadcrumbList([
           { name: "Acasă", path: "/" },

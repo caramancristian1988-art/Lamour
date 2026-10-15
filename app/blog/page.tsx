@@ -79,7 +79,7 @@ export default async function BlogPage() {
   if (!blogEnabled) notFound();
 
   return (
-    <main className="bg-background">
+    <main className="page-motif">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Blog", path: "/blog" }])} />
       <JsonLd
         data={collectionPage({

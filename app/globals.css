@@ -323,23 +323,51 @@ h1, h2, h3 {
 /* ---------------------------------------------------------------------
    Bară de derulare în stilul site-ului: subțire, roz pudrat, cu capete rotunjite (meniul de categorii etc.)
 --------------------------------------------------------------------- */
+/* Bara e MEREU vizibilă (are „șină” roz foarte deschis), ca să se înțeleagă că zona se derulează — pe Windows/Chrome/Edge/
+   Safari prin ::-webkit-scrollbar, pe Firefox prin scrollbar-color. */
 .scrollbar-brand {
   scrollbar-width: thin;
-  scrollbar-color: var(--brand-rose) transparent;
+  scrollbar-color: var(--brand-rose) rgba(216, 178, 177, 0.28);
 }
 .scrollbar-brand::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 .scrollbar-brand::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 10px 0;
+  background: rgba(216, 178, 177, 0.28);
+  border-radius: 9999px;
 }
 .scrollbar-brand::-webkit-scrollbar-thumb {
   background: var(--brand-rose);
   border-radius: 9999px;
-  border: 2px solid var(--card);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  min-height: 36px;
 }
 .scrollbar-brand::-webkit-scrollbar-thumb:hover {
   background: var(--brand-red);
+  background-clip: padding-box;
+}
+
+/* Indiciu de continuare: o estompare discretă sus/jos care apare doar cât mai este conținut de derulat (tehnica
+   „scroll shadows”: gradientele „local” acoperă umbra când ai ajuns la capăt). */
+.scroll-hint {
+  background:
+    linear-gradient(var(--background) 30%, transparent) center top,
+    linear-gradient(transparent, var(--background) 70%) center bottom,
+    radial-gradient(farthest-side at 50% 0, rgba(113, 8, 8, 0.16), transparent) center top,
+    radial-gradient(farthest-side at 50% 100%, rgba(113, 8, 8, 0.16), transparent) center bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 28px, 100% 28px, 100% 10px, 100% 10px;
+  background-attachment: local, local, scroll, scroll;
+}
+/* ---------------------------------------------------------------------
+   Fundalul paginilor publice: același motiv floral discret ca pe prima pagină (MotifBackground, 5% pe alb),
+   aici cu culoarea deja amestecată, ca să poată sta direct pe <main> fără strat suplimentar.
+--------------------------------------------------------------------- */
+.page-motif {
+  background-color: var(--background);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23F8F3F3' stroke-width='1'%3E%3Cg transform='translate(32,14)'%3E%3Cellipse cx='0' cy='-4' rx='2' ry='4'/%3E%3Cellipse cx='0' cy='4' rx='2' ry='4'/%3E%3Cellipse cx='-4' cy='0' rx='4' ry='2'/%3E%3Cellipse cx='4' cy='0' rx='4' ry='2'/%3E%3Ccircle r='1.4' fill='%23F8F3F3'/%3E%3C/g%3E%3Cpath d='M4 50 C8 44 16 44 20 50 C16 52 8 52 4 50 Z'/%3E%3Cpath d='M2 54 Q8 50 14 54'/%3E%3Cpath d='M44 50 C48 44 56 44 60 50 C56 52 48 52 44 50 Z'/%3E%3Cpath d='M46 54 Q52 50 58 54'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 64px 64px;
 }
