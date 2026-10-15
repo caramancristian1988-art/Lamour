@@ -53,7 +53,7 @@ export default function NavDropdown({
       <Link
         href={href}
         onFocus={openNow}
-        className="flex items-center gap-1 py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
+        className="flex items-center gap-1 py-4 text-[15px] font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded"
       >
         {label}
         <ChevronDown className="w-3.5 h-3.5" aria-hidden />

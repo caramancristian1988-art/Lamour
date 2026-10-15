@@ -146,11 +146,11 @@ export default function StickyHeader({
       </div>
 
       {/* ══ ROW 2: Navbar — desktop only ══ */}
-      <div className="hidden lg:flex items-center justify-between gap-10 max-w-[110rem] mx-auto px-6 border-b border-border">
+      <div className="hidden lg:flex items-center justify-between gap-10 max-w-[110rem] mx-auto px-6 py-2 border-b border-border">
         {/* Stânga: „Toate categoriile” (aliniat cu sigla de mai sus) */}
         <div className="flex items-center">
           {produseEnabled && (
-            <AllCategoriesMenu categories={productsDropdown} buttonClassName="flex items-center gap-2 bg-accent hover:bg-brand-red-dark text-white text-sm font-bold px-5 h-10 rounded-xl transition-colors uppercase tracking-wide shrink-0" />
+            <AllCategoriesMenu categories={productsDropdown} buttonClassName="flex items-center gap-3 bg-accent hover:bg-brand-red-dark text-white text-base font-bold pl-6 pr-5 h-14 rounded-2xl shadow-md hover:shadow-lg transition-all uppercase tracking-wide shrink-0 [&>svg:first-child]:w-6 [&>svg:first-child]:h-6 [&>svg:last-child]:w-5 [&>svg:last-child]:h-5" />
           )}
         </div>
 
@@ -161,12 +161,12 @@ export default function StickyHeader({
           {produseEnabled && <NavDropdown label="Produse" href="/produse" items={produseDropdown} />}
 
           {blogEnabled && (
-            <Link href="/blog" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+            <Link href="/blog" className="py-4 text-[15px] font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
               Blog
             </Link>
           )}
           {contactEnabled && (
-            <Link href="/contact" className="py-4 text-sm font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
+            <Link href="/contact" className="py-4 text-[15px] font-bold text-primary hover:text-accent transition-colors uppercase tracking-wide rounded">
               Contact
             </Link>
           )}

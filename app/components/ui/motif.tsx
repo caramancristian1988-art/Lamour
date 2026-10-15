@@ -93,24 +93,59 @@ export function MotifBackground({ className }: { className?: string }) {
 }
 
 /**
- * Rozetă mare, din petale concentrice — ornament de fundal pentru zone întunecate (footer). Se colorează prin
- * `currentColor`; se folosește la opacitate foarte mică, parțial ieșită din cadru.
+ * Rozetă mare tip „mandala” din broderia populară — straturi concentrice: inel punctat, petale ascuțite, romburi mici,
+ * petale rotunjite cu nervură, frunzulițe și o floare în centru. Ornament de fundal pentru zone întunecate (footer):
+ * se colorează prin `currentColor` și se folosește la opacitate mică, parțial ieșită din cadru.
  */
 export function MotifRosette({ className }: { className?: string }) {
-  const petals = Array.from({ length: 12 }, (_, i) => i * 30);
+  const rot = (count: number, offset = 0) => Array.from({ length: count }, (_, i) => offset + (i * 360) / count);
   return (
-    <svg viewBox="0 0 200 200" fill="none" aria-hidden className={cn("text-brand-rose-light", className)}>
-      <g stroke="currentColor" strokeWidth="1.2" transform="translate(100,100)">
-        {petals.map((deg) => (
-          <ellipse key={`o-${deg}`} cx="0" cy="-64" rx="9" ry="26" transform={`rotate(${deg})`} />
+    <svg viewBox="0 0 240 240" fill="none" aria-hidden className={cn("text-brand-rose-light", className)}>
+      <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" transform="translate(120,120)">
+        {/* Inele exterioare */}
+        <circle r="116" strokeWidth="1.2" />
+        <circle r="110" strokeWidth="0.8" strokeDasharray="1 6" />
+        <circle r="88" strokeWidth="0.9" strokeDasharray="0.1 7" />
+
+        {/* 16 petale ascuțite (stratul exterior) */}
+        {rot(16).map((deg) => (
+          <path
+            key={`p-${deg}`}
+            d="M0 -64 C 10 -78, 10 -96, 0 -108 C -10 -96, -10 -78, 0 -64 Z"
+            strokeWidth="1.1"
+            fill="currentColor"
+            fillOpacity="0.08"
+            transform={`rotate(${deg})`}
+          />
         ))}
-        {petals.map((deg) => (
-          <ellipse key={`i-${deg}`} cx="0" cy="-34" rx="5" ry="14" transform={`rotate(${deg + 15})`} />
+        {/* Romburi mici între petale */}
+        {rot(16, 11.25).map((deg) => (
+          <path key={`d-${deg}`} d="M0 -96 l3.6 5 l-3.6 5 l-3.6 -5 z" strokeWidth="1" fill="currentColor" fillOpacity="0.2" transform={`rotate(${deg})`} />
         ))}
-        <circle r="14" />
-        <circle r="6" fill="currentColor" />
-        <circle r="92" strokeDasharray="2 5" />
-        <circle r="98" />
+
+        {/* 8 petale rotunjite cu nervură */}
+        {rot(8).map((deg) => (
+          <g key={`o-${deg}`} transform={`rotate(${deg})`}>
+            <ellipse cx="0" cy="-46" rx="12" ry="25" strokeWidth="1.2" fill="currentColor" fillOpacity="0.1" />
+            <path d="M0 -68 L0 -28" strokeWidth="0.9" />
+            <circle cx="0" cy="-70" r="2" fill="currentColor" stroke="none" />
+          </g>
+        ))}
+        {/* 8 frunzulițe între petalele rotunjite */}
+        {rot(8, 22.5).map((deg) => (
+          <path key={`l-${deg}`} d="M0 -34 C 6 -44, 6 -56, 0 -64 C -6 -56, -6 -44, 0 -34 Z" strokeWidth="1" fill="currentColor" fillOpacity="0.16" transform={`rotate(${deg})`} />
+        ))}
+
+        {/* Floarea din centru */}
+        <circle r="30" strokeWidth="1" />
+        {rot(12).map((deg) => (
+          <circle key={`b-${deg}`} cx="0" cy="-30" r="1.8" fill="currentColor" stroke="none" transform={`rotate(${deg})`} />
+        ))}
+        {rot(6).map((deg) => (
+          <ellipse key={`c-${deg}`} cx="0" cy="-13" rx="5.5" ry="10" strokeWidth="1.1" fill="currentColor" fillOpacity="0.14" transform={`rotate(${deg})`} />
+        ))}
+        <circle r="6" strokeWidth="1.2" />
+        <circle r="2.6" fill="currentColor" stroke="none" />
       </g>
     </svg>
   );
