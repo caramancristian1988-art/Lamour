@@ -80,7 +80,7 @@ export default function StickyHeader({
             {produseEnabled && (
               <AllCategoriesMenu label="Categorii" className="min-w-0 flex-1 justify-center h-11 px-4" categories={productsDropdown} />
             )}
-            <MobileSearch />
+            <MobileSearch categories={productsDropdown} />
           </div>
         </div>
 
