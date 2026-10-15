@@ -17,6 +17,8 @@ import { Checkbox } from "@/app/components/ui/checkbox";
 import { Label } from "@/app/components/ui/label";
 import { Button } from "@/app/components/ui/button";
 import { Switch } from "@/app/components/ui/switch";
+import { Input } from "@/app/components/ui/input";
+import { Pencil, RotateCcw } from "lucide-react";
 
 interface CategoryOption {
   id: string;
@@ -101,19 +103,21 @@ export default function ProductForm({
   const [state, formAction, pending] = useActionState(action, initialState);
   const [isVariant, setIsVariant] = useState(Boolean(defaults?.variantGroupId));
 
-  // La produs nou, slug-ul urmărește numele până când adminul îl modifică manual. La editare nu se
-  // atinge singur (schimbarea lui strică linkurile deja distribuite), dar tot se curăță de diacritice.
+  // Slug-ul e blocat și se completează singur din nume (fără diacritice). Devine editabil doar dacă adminul
+  // apasă creionul de lângă el; butonul "Automat" îl readuce la valoarea derivată din nume.
   const isEditing = Boolean(defaults?.id);
+  const [name, setName] = useState(defaults?.name ?? "");
   const [slug, setSlug] = useState(defaults?.slug ?? "");
-  const [slugTouched, setSlugTouched] = useState(isEditing || Boolean(defaults?.slug));
+  const [slugEditable, setSlugEditable] = useState(false);
 
   function onNameChange(value: string) {
-    if (!slugTouched) setSlug(slugify(value));
+    setName(value);
+    if (!slugEditable) setSlug(slugify(value));
   }
 
-  function onSlugChange(value: string) {
-    setSlugTouched(true);
-    setSlug(slugify(value, { trimEdges: false }));
+  function lockSlugToName() {
+    setSlug(slugify(name));
+    setSlugEditable(false);
   }
 
   const defaultBadges = ["Nou", "Reducere", "Cel mai vândut", "Eco"];
@@ -158,20 +162,38 @@ export default function ProductForm({
         placeholder="Daikin Sensira FTXF35E"
         onChange={onNameChange}
       />
-      <div>
-        <AdminInput
-          label="Slug"
-          name="slug"
-          required
-          value={slug}
-          onChange={onSlugChange}
-          onBlur={() => setSlug((current) => slugify(current))}
-          placeholder="daikin-sensira-ftxf35e"
-        />
-        <p className="text-xs text-muted-foreground mt-1.5">
-          {isEditing
-            ? "Adresa produsului pe site. Se curăță automat (fără diacritice sau spații). Dacă îl schimbi, vechiul link nu va mai funcționa."
-            : "Se generează automat din nume, fără diacritice (ă → a, î → i, ș → s, ț → t). Îl poți ajusta manual."}
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="field-slug" className="min-h-[2.5rem] flex items-end">
+          Slug <span className="text-accent">*</span>
+        </Label>
+        <div className="flex items-center gap-2">
+          <Input
+            id="field-slug"
+            name="slug"
+            required
+            readOnly={!slugEditable}
+            value={slug}
+            onChange={(e) => setSlug(slugify(e.target.value, { trimEdges: false }))}
+            onBlur={() => setSlug((current) => slugify(current))}
+            placeholder="se completează automat din nume"
+            className={slugEditable ? undefined : "bg-muted text-muted-foreground cursor-default"}
+          />
+          {slugEditable ? (
+            <Button type="button" variant="outline" size="icon" onClick={lockSlugToName} aria-label="Slug automat din nume" title="Revino la slug automat din nume">
+              <RotateCcw className="w-4 h-4" aria-hidden />
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" size="icon" onClick={() => setSlugEditable(true)} aria-label="Editează slug-ul" title="Editează slug-ul manual">
+              <Pencil className="w-4 h-4" aria-hidden />
+            </Button>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {slugEditable
+            ? "Editezi manual. Se curăță automat (fără diacritice sau spații). Apasă ↺ ca să revii la varianta din nume."
+            : isEditing
+              ? "Se completează automat din nume, fără diacritice. Dacă schimbi numele, se schimbă și slug-ul (iar vechiul link nu va mai funcționa)."
+              : "Se completează automat din nume, fără diacritice (ă → a, î → i, ș → s, ț → t)."}
         </p>
       </div>
       <div>
