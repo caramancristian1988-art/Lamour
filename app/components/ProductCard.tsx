@@ -77,7 +77,7 @@ export default function ProductCard({
   const displayTitle = hasVariants ? stripVariantSuffix(name, ownVariantLabel) : name;
 
   return (
-    <div className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl focus-within:shadow-xl hover:-translate-y-1">
+    <div className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md focus-within:shadow-md hover:-translate-y-0.5">
       {/* Image area */}
       {/* Zonă pătrată + object-contain: majoritatea pozelor sunt pătrate, unele înalte sau late — toate se văd ÎNTREGI,
           centrate pe alb, fără să fie tăiate (înainte, zona 4:3 cu object-cover tăia sus/jos sau lateralele). */}
