@@ -193,9 +193,20 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
 
       {/* ── Bara de jos ── */}
       <div className="relative border-t border-white/15 bg-black/15">
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-white/80">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 py-5 flex flex-col lg:flex-row items-center justify-between gap-2 lg:gap-6 text-sm text-white/80 text-center">
           <span>
             © {new Date().getFullYear()} {SITE_NAME}. Toate drepturile rezervate.
+          </span>
+          <span>
+            Website realizat de{" "}
+            <a
+              href="https://racustefan.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-white underline underline-offset-4 decoration-brand-rose/60 hover:decoration-white transition-colors rounded"
+            >
+              racustefan.com
+            </a>
           </span>
           <span className="flex items-center gap-2 text-brand-rose-light">
             <HeadingFlourish className="w-4 h-4" />
