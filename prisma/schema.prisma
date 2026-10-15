@@ -279,7 +279,78 @@ model ContactMessage {
   // Setat când operatorul a trimis factura la contabil (butonul "Factură" din Telegram).
   invoiceSentAt     DateTime?
 
+  // ── Registrul de comenzi (vezi lib/orderRegistry.ts) ──
+  // Statusul extragerii e INDEPENDENT de orderStage (etapa operațională): neextrasa | rezervata | extrasa.
+  // Lipsa câmpului (comenzi create înainte de registru / de un cod vechi) se tratează ca "neextrasa";
+  // comenzile vechi sunt marcate "extrasa" printr-o migrare unică (scripts/migrate-order-registry.js).
+  extractionStatus   String?
+  // Exportul activ/final care a rezervat sau a extras comanda (OrderExport.id).
+  extractionExportId String?   @db.ObjectId
+  extractedAt        DateTime?
+  // Cine a confirmat extragerea ("Nume (site|telegram)").
+  extractedBy        String?
+  // Arhivat = ascuns din lista implicită a registrului, dar NU șters: rămâne în registru și în exporturi.
+  archivedAt         DateTime?
+  // Când a plecat notificarea accesibilă (grupul registrului); null = încă de trimis / de reîncercat.
+  registryNotifiedAt DateTime?
+  // Produsele comenzii cu numele și prețul unitar de la plasare ([{ productId, name, quantity, unitPrice, lineTotal }]).
+  // Separat de orderItems, ca editarea comenzii și detectarea schimbărilor să nu fie afectate.
+  orderItemsSnapshot Json?
+
   @@index([editToken])
+  @@index([extractionStatus])
+  @@index([extractionExportId])
+}
+
+// Un export (extragere) de comenzi: rezervă un set fix de comenzi neextrase, apoi e confirmat sau anulat.
+// Același obiect e folosit de site și de Telegram — nu există două registre.
+model OrderExport {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  // Număr scurt, secvențial (Counter "orderExport") — ușor de citit/dictat.
+  number          Int
+  // pregatit | confirmat | anulat | expirat
+  status          String    @default("pregatit")
+  // Copie a listei de comenzi (sursa de adevăr rămâne ContactMessage.extractionExportId).
+  orderIds        String[]  @default([]) @db.ObjectId
+  orderCount      Int       @default(0)
+  // site | telegram
+  channel         String
+  initiatedById   String
+  initiatedByName String
+  createdAt       DateTime  @default(now())
+  reservedUntil   DateTime
+  confirmedAt     DateTime?
+  confirmedByName String?
+  closedAt        DateTime?
+  closedReason    String?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Jurnal de audit: cine a pornit/reluat/confirmat/anulat un export, erori, expirări.
+model ExportAuditLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  exportId   String?  @db.ObjectId
+  action     String
+  actorType  String
+  actorId    String
+  actorName  String
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([exportId])
+  @@index([createdAt])
+}
+
+// Drepturile unui utilizator Telegram asupra registrului — după ID-ul Telegram (from.id), nu după numele afișat.
+// permissions: vizualizare | consultare | date_personale | extragere | confirmare | administrare
+model TelegramUserPermission {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  telegramUserId String   @unique
+  name           String
+  permissions    String[] @default([])
+  createdAt      DateTime @default(now())
 }
 
 // Contor atomic pentru numerotarea secvențială a comenzilor (vezi lib/orderNumber.ts).

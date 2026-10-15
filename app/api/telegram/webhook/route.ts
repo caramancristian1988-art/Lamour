@@ -23,6 +23,7 @@ import {
   STATUSES_REQUIRING_CONFIRMATION,
 } from "@/lib/telegram";
 import { linkChatByToken, isKnownChat } from "@/lib/telegramRecipients";
+import { handleRegistryMessage, handleRegistryCallback, isRegistryCallback } from "@/lib/telegramRegistry";
 import { getAwbLabel } from "@/lib/evsExpress";
 import { parseOrderFile, createCartOrderFromParsedItems, OrderFileError, MAX_ORDER_FILE_BYTES } from "@/lib/orderFileImport";
 
@@ -50,6 +51,10 @@ export async function POST(request: NextRequest) {
       } catch (err) {
         console.error("telegram: legarea chatului a eșuat:", err);
       }
+    } else if (text.startsWith("/") && message?.from && chatId !== undefined) {
+      // Comenzile registrului de comenzi (/noi, /registru, /extrage ...) — vezi lib/telegramRegistry.ts.
+      // Drepturile se verifică acolo, după ID-ul Telegram al utilizatorului.
+      await handleRegistryMessage(message).catch((err) => console.error("telegram: comanda registrului a eșuat:", err));
     } else if (message?.document && chatId !== undefined) {
       // Comandă nouă dintr-un fișier Excel/CSV/PDF trimis botului (client care trimite lista de produse
       // gata scrisă) — vezi lib/orderFileImport.ts. Nu blocăm răspunsul webhook-ului după ea.
@@ -59,6 +64,13 @@ export async function POST(request: NextRequest) {
   }
 
   const data = String(callbackQuery.data ?? "");
+
+  // Butoanele registrului de comenzi (paginare, extragere, confirmare) au prefixul "reg_".
+  if (isRegistryCallback(data)) {
+    await handleRegistryCallback(callbackQuery).catch((err) => console.error("telegram: butonul registrului a eșuat:", err));
+    return NextResponse.json({ ok: true });
+  }
+
   const [prefix, id, value] = data.split(":");
 
   if (!id) {

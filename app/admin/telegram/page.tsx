@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import AdminPageHeader from "../components/AdminPageHeader";
 import RecipientsManager from "./RecipientsManager";
+import RegistryPermissions from "./RegistryPermissions";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,8 @@ export default async function AdminTelegramPage() {
       </div>
 
       <RecipientsManager recipients={recipients} />
+
+      <RegistryPermissions />
     </div>
   );
 }

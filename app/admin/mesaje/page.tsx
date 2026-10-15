@@ -4,7 +4,11 @@ import MessagesList from "./MessagesList";
 
 async function getMessages() {
   try {
-    return await prisma.contactMessage.findMany({ orderBy: { createdAt: "desc" } });
+    return await prisma.contactMessage.findMany({
+      // Comenzile arhivate (în loc de șterse) rămân în registru (/admin/comenzi), dar ies din această listă.
+      where: { OR: [{ archivedAt: { isSet: false } }, { archivedAt: null }] },
+      orderBy: { createdAt: "desc" },
+    });
   } catch (e) {
     console.error("mesaje: failed to load messages", e);
     return [];

@@ -28,6 +28,8 @@ import {
 } from "./telegram";
 import { createShipment, activatePickup, removeShipment, fetchLatestAwbStatus } from "./evsExpress";
 import { getChatIdsForRole } from "./telegramRecipients";
+import { saveOrderItemsSnapshot } from "./orderRegistry";
+import { notifyRegistryOfNewOrder } from "./registryNotify";
 
 export interface ContactFormState {
   error?: string;
@@ -183,7 +185,7 @@ export async function submitContactMessageAction(
         deliveryZip,
         deliveryWeightKg,
         deliveryCodAmount,
-        ...(isCartOrder ? { orderStage: "noua", editToken, orderItems, orderNumber } : {}),
+        ...(isCartOrder ? { orderStage: "noua", editToken, orderItems, orderNumber, extractionStatus: "neextrasa" } : {}),
       },
     });
   } catch {
@@ -202,6 +204,13 @@ export async function submitContactMessageAction(
   }
   if (telegramMessageId) {
     await prisma.contactMessage.update({ where: { id: created.id }, data: { telegramMessageId } });
+  }
+
+  // Registrul: prețul fiecărui produs se păstrează așa cum era la plasare, iar grupul registrului primește
+  // anunțul accesibil. Ambele sunt best-effort — nu pot opri o comandă deja salvată.
+  if (isCartOrder) {
+    await saveOrderItemsSnapshot(created.id, orderItems);
+    await notifyRegistryOfNewOrder(created.id);
   }
 
   // Comandă cu factură pe companie: contabilul primește datele imediat, fără să aștepte un buton.
@@ -456,6 +465,7 @@ export async function updateOrderMessageAction(
     return { error: "Nu am putut actualiza comanda. Încearcă din nou." };
   }
 
+  await saveOrderItemsSnapshot(updated.id, orderItems);
   await syncOrderTelegramMessage(updated);
   await notifyGroupOfEdit(existing, updated);
   await notifyAccountantOfEdit(existing, updated);
@@ -840,6 +850,14 @@ export async function deleteMessageAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
+  // Comenzile din coș fac parte din registrul permanent — nu se șterg, doar se arhivează (/admin/comenzi).
+  const target = await prisma.contactMessage.findUnique({ where: { id }, select: { source: true } });
+  if (target?.source === CART_ORDER_SOURCE) {
+    await prisma.contactMessage.update({ where: { id }, data: { archivedAt: new Date() } });
+    revalidatePath("/admin/mesaje");
+    revalidatePath("/admin/comenzi");
+    return;
+  }
   await prisma.contactMessage.delete({ where: { id } });
   revalidatePath("/admin/mesaje");
   revalidatePath("/admin/notificari");

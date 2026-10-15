@@ -103,7 +103,7 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
   }
 
   function handleDelete(id: string, name: string) {
-    if (!confirm(`Sigur vrei să ștergi mesajul de la ${name}?`)) return;
+    if (!confirm(`Sigur vrei să elimini din listă mesajul de la ${name}? Comenzile din coș nu se șterg: se arhivează și rămân în Registrul de comenzi.`)) return;
     removeMessage(id);
     const formData = new FormData();
     formData.set("id", id);

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ClipboardList,
   LayoutDashboard,
   Bell,
   Package,
@@ -41,6 +42,7 @@ const navItems = [
   { href: "/admin/bannere", label: "Bannere", icon: GalleryHorizontal },
   { href: "/admin/blog", label: "Blog", icon: FileText },
   { href: "/admin/mesaje", label: "Cereri și comenzi", icon: MessageSquare },
+  { href: "/admin/comenzi", label: "Registru comenzi", icon: ClipboardList },
   { href: "/admin/recenzii", label: "Recenzii", icon: Star },
   { href: "/admin/popup", label: "Pop-up ofertă", icon: Megaphone },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },

@@ -459,8 +459,14 @@ export async function downloadTelegramFile(fileId: string): Promise<Buffer | nul
   }
 }
 
-// Trimite un fișier PDF (ex. eticheta AWB) într-un chat, ca document.
-export async function sendTelegramDocument(chatId: string, pdf: Buffer, filename: string, caption?: string): Promise<boolean> {
+// Trimite un fișier (implicit PDF — ex. eticheta AWB; pentru Excel se dă mimeType-ul .xlsx) într-un chat, ca document.
+export async function sendTelegramDocument(
+  chatId: string,
+  pdf: Buffer,
+  filename: string,
+  caption?: string,
+  mimeType = "application/pdf"
+): Promise<boolean> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return false;
   try {
@@ -470,7 +476,7 @@ export async function sendTelegramDocument(chatId: string, pdf: Buffer, filename
       form.set("caption", caption);
       form.set("parse_mode", "HTML");
     }
-    form.set("document", new Blob([new Uint8Array(pdf)], { type: "application/pdf" }), filename);
+    form.set("document", new Blob([new Uint8Array(pdf)], { type: mimeType }), filename);
     const res = await fetch(`${TELEGRAM_API}/bot${token}/sendDocument`, { method: "POST", body: form, signal: AbortSignal.timeout(30000) });
     const data = await res.json();
     if (!data?.ok) {
