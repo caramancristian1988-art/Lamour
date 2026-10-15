@@ -113,14 +113,14 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
               onClick={() => setOpen(false)}
               className="group flex flex-col items-center text-center gap-2.5 rounded-2xl"
             >
-              <span className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-secondary/50 to-accent/25 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-                {/* Eticheta 3D roșie cu „%” și panglică aurie */}
+              <span className="relative w-full aspect-square flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
+                {/* Eticheta 3D roșie cu „%” și panglică aurie — fără fundal în spate (imaginea are transparență) */}
                 <Image
                   src="/oferte-speciale.webp"
                   alt=""
                   fill
                   sizes="(max-width: 640px) 45vw, (max-width: 1280px) 20vw, 180px"
-                  className="object-contain p-2 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+                  className="object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
                 />
               </span>
               <span className="text-sm sm:text-[15px] font-bold text-accent leading-snug">Oferte speciale</span>
