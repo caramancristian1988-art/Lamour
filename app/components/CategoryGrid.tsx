@@ -53,17 +53,17 @@ export default function CategoryGrid({ categories }: Props) {
                 href={`/produse?cat=${cat.slug}`}
                 className="group flex flex-col items-center text-center gap-3"
               >
-                <div className="relative w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
+                <div className="relative w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center">
                   {cat.image ? (
                     <Image
                       src={cat.image}
                       alt={cat.name}
                       fill
                       sizes="(max-width: 640px) 45vw, 200px"
-                      className="object-cover"
+                      className="object-cover transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:scale-[0.88] group-focus-visible:scale-[0.88]"
                     />
                   ) : Icon ? (
-                    <Icon className="w-1/2 h-1/2 text-primary" />
+                    <Icon className="w-1/2 h-1/2 text-primary transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:scale-[0.88] group-focus-visible:scale-[0.88]" />
                   ) : (
                     <ImageOff className="w-8 h-8 text-muted-foreground" aria-hidden />
                   )}

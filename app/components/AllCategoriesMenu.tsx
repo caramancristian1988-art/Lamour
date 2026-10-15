@@ -113,14 +113,14 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
               onClick={() => setOpen(false)}
               className="group flex flex-col items-center text-center gap-2.5 rounded-2xl"
             >
-              <span className="relative w-full aspect-square flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
+              <span className="relative w-full aspect-square flex items-center justify-center">
                 {/* Eticheta 3D roșie cu „%” și panglică aurie — fără fundal în spate (imaginea are transparență) */}
                 <Image
                   src="/oferte-speciale.webp"
                   alt=""
                   fill
                   sizes="(max-width: 640px) 45vw, (max-width: 1280px) 20vw, 180px"
-                  className="object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+                  className="object-contain drop-shadow-md transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:scale-[0.88] group-focus-visible:scale-[0.88]"
                 />
               </span>
               <span className="text-sm sm:text-[15px] font-bold text-accent leading-snug">Oferte speciale</span>
@@ -135,17 +135,17 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
                   onClick={() => setOpen(false)}
                   className="group flex flex-col items-center text-center gap-2.5 rounded-2xl"
                 >
-                  <span className="relative w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
+                  <span className="relative w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center">
                     {item.image ? (
                       <Image
                         src={item.image}
                         alt=""
                         fill
                         sizes="(max-width: 640px) 45vw, (max-width: 1280px) 20vw, 180px"
-                        className="object-cover"
+                        className="object-cover transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:scale-[0.88] group-focus-visible:scale-[0.88]"
                       />
                     ) : Icon ? (
-                      <Icon className="w-1/2 h-1/2 text-primary" />
+                      <Icon className="w-1/2 h-1/2 text-primary transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:scale-[0.88] group-focus-visible:scale-[0.88]" />
                     ) : (
                       <ImageOff className="w-7 h-7 text-muted-foreground" aria-hidden />
                     )}
