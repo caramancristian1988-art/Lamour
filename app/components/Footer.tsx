@@ -172,19 +172,25 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
             </ul>
           </div>
 
-          <div className="sm:col-span-2 lg:col-span-1">
-            <div className="relative rounded-3xl border border-white/20 bg-white/[0.07] p-5 flex items-center gap-4">
-              <div className="relative w-[112px] h-[112px] shrink-0">
+          <div className="sm:col-span-2 lg:col-span-1 flex justify-center lg:justify-end">
+            {/* Sigla asociației conține deja numele în ea — nu îl mai repetăm ca text; textul alternativ îl spune cititoarelor de ecran. */}
+            <div className="relative w-full max-w-[320px] lg:max-w-none rounded-3xl border border-white/20 bg-white/[0.07] px-6 py-7 flex flex-col items-center text-center gap-5">
+              <div className="flex flex-col items-center gap-2">
+                <p className="whitespace-nowrap text-xs font-semibold uppercase tracking-[0.2em] text-brand-rose-light">Suntem alături de</p>
+                <span aria-hidden className="flex items-center gap-1.5 text-brand-rose">
+                  <span className="h-px w-8 bg-brand-rose/60" />
+                  <HeadingFlourish className="w-3.5 h-3.5" />
+                  <span className="h-px w-8 bg-brand-rose/60" />
+                </span>
+              </div>
+              <div className="relative w-full max-w-[250px] aspect-[1180/671]">
                 <Image
-                  src="/logo-asociatia-nevazatorilor-lamour-transparent.png"
+                  src="/logo-asociatia-nevazatorilor-footer.png"
                   alt="Asociația Nevăzătorilor din Moldova"
                   fill
-                  className="object-contain"
+                  sizes="250px"
+                  className="object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.25)]"
                 />
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-brand-rose-light leading-tight">Suntem alături de</p>
-                <p className="font-serif text-lg font-bold text-white leading-snug mt-1.5">Asociația Nevăzătorilor din Moldova</p>
               </div>
             </div>
           </div>
