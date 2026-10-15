@@ -321,7 +321,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
         )}
 
         {/* ── NEWSLETTER ── */}
-        <section className="bg-background border-t border-border py-12">
+        <section className="border-t border-border py-12">
           <div className="max-w-xl mx-auto px-4 text-center">
             <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Mail className="w-6 h-6 text-accent" aria-hidden />

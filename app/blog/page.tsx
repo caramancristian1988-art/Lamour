@@ -181,7 +181,7 @@ export default async function BlogPage() {
         </section>
 
         {/* ── ARTICLES GRID ── */}
-        <section className="bg-background py-10">
+        <section className="py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {articles.map((article) => (

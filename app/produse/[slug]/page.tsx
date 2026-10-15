@@ -392,7 +392,7 @@ function CategoryView({ category, children, activeChildren, products: baseProduc
       {/* PRODUCTS GRID — chip-uri, filtre și listă în același "ProductsNavProvider": apăsarea unui filtru se vede imediat
           (chip/bifă activă, listă estompată, bară de progres) în loc să aștepte răspunsul serverului fără nicio reacție. */}
       <ProductsNavProvider>
-      <section className="bg-background py-10">
+      <section className="py-10">
         <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
           {children.length > 0 && (
             <MultiNavChips
@@ -847,7 +847,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
 
       {/* Product FAQ — optional, only shown if an admin added questions */}
       {faqs.length > 0 && (
-        <section className="bg-background py-12">
+        <section className="py-12">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-12">
             <h2 className="text-2xl font-extrabold text-primary mb-8">Întrebări frecvente</h2>
             <FaqAccordion faqs={faqs.map((f) => ({ question: f.question, answer: f.answer }))} />
@@ -857,7 +857,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
 
       {/* Related products */}
       {related.length > 0 && (
-        <section className="bg-background py-14">
+        <section className="py-14">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
             <h2 className="text-2xl font-extrabold text-foreground uppercase tracking-wide mb-8">
               Produse <span className="text-accent">similare</span>
@@ -881,7 +881,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
       )}
 
       {/* CTA */}
-      <section className="bg-background px-4 sm:px-6 lg:px-12 pb-10">
+      <section className="px-4 sm:px-6 lg:px-12 pb-10">
         <div className="max-w-7xl mx-auto bg-primary rounded-2xl py-10 lg:py-12 px-8 lg:px-12">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
             <div>

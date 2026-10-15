@@ -79,7 +79,7 @@ export default async function CategoriePage({ params }: { params: Promise<{ cate
         })}
       />
       {/* Hero */}
-      <section className="bg-background border-b border-border py-8">
+      <section className="border-b border-border py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4" aria-label="Fir de ariadnă">
             <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
@@ -115,7 +115,7 @@ export default async function CategoriePage({ params }: { params: Promise<{ cate
       </section>
 
       {/* Articles */}
-      <section className="bg-background py-10">
+      <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {posts.length === 0 ? (
             <div className="text-center py-20">

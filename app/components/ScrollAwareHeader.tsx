@@ -40,6 +40,19 @@ export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categ
     return () => window.removeEventListener("scroll", onScroll);
   }, [headerHeight]);
 
+  // Elementele lipite de ecran (ex. filtrele din Catalog) trebuie să stea SUB antet când acesta e vizibil și sus când
+  // e ascuns — altfel antetul care reapare la derularea în sus se așază peste ele. Valoarea o citesc din CSS: var(--sticky-top).
+  useEffect(() => {
+    const root = document.documentElement;
+    const visible = scrolled && !hidden;
+    root.style.setProperty("--sticky-top", visible ? `${headerHeight + 16}px` : "1rem");
+  }, [scrolled, hidden, headerHeight]);
+  useEffect(() => {
+    return () => {
+      document.documentElement.style.removeProperty("--sticky-top");
+    };
+  }, []);
+
   return (
     <>
       {/* Static above hero at scroll 0, fixed at top when scrolled — slides

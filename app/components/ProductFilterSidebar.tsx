@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useProductsNavigate, usePendingHref } from "./ProductsNav";
-import { SlidersHorizontal, X, Plus, Minus } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { type SortKey } from "@/lib/productListing";
 import ProductSortSelect from "./ProductSortSelect";
 import PriceRangeSlider from "./PriceRangeSlider";
@@ -70,15 +70,40 @@ function FilterSection({
           </span>
           <span
             aria-hidden
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors group-hover:bg-muted group-hover:text-accent"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors group-hover:bg-muted group-hover:text-accent"
           >
-            {open ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            <svg
+              viewBox="0 0 16 16"
+              className={`h-4 w-4 transition-transform duration-300 ease-out ${open ? "rotate-180" : "rotate-0"}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <line x1="3" y1="8" x2="13" y2="8" />
+              <line
+                x1="8"
+                y1="3"
+                x2="8"
+                y2="13"
+                className={`origin-center transition-all duration-300 ease-out ${open ? "scale-y-0 opacity-0" : "scale-y-100 opacity-100"}`}
+                style={{ transformBox: "fill-box" }}
+              />
+            </svg>
           </span>
           <span className="sr-only">{open ? "Restrânge" : "Extinde"}</span>
         </button>
       </h3>
-      <div id={panelId} hidden={!open} className="pt-2">
-        {children}
+      <div
+        id={panelId}
+        inert={!open}
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="pt-2">{children}</div>
+        </div>
       </div>
     </section>
   );
@@ -92,7 +117,9 @@ function FilterOptions({
   paramKey,
   formatLabel,
   onToggle,
+  heightClass = "max-h-56",
 }: {
+  heightClass?: string;
   options: { value: string; count: number }[];
   selected: string[];
   paramKey: string;
@@ -100,7 +127,7 @@ function FilterOptions({
   onToggle: (key: string, value: string) => void;
 }) {
   return (
-    <div className="scrollbar-brand scroll-hint flex max-h-56 flex-col gap-2.5 overflow-y-auto py-1 pr-3">
+    <div className={`scrollbar-brand scroll-hint flex ${heightClass} flex-col gap-2.5 overflow-y-auto py-1 pr-3`}>
       {options.map((opt) => {
         const id = `${paramKey}-${opt.value}`;
         return (
@@ -264,13 +291,15 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
             paramKey="cat"
             formatLabel={(slug) => categories.find((c) => c.slug === slug)?.name ?? slug}
             onToggle={toggleListParam}
+            // pe ecrane înalte se văd mai multe categorii deodată (28% din înălțimea ecranului, între 11 și 30 rem)
+            heightClass="max-h-[clamp(11rem,28vh,30rem)]"
           />
         </FilterSection>
       )}
 
       {brands.length > 0 && (
         <FilterSection title="Brand" activeCount={selectedBrands.length}>
-          <FilterOptions options={brands} selected={selectedBrands} paramKey="brand" onToggle={toggleListParam} />
+          <FilterOptions options={brands} selected={selectedBrands} paramKey="brand" onToggle={toggleListParam} heightClass="max-h-[clamp(7rem,16vh,16rem)]" />
         </FilterSection>
       )}
     </div>
@@ -289,7 +318,7 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
           se derulează în interior, cu bara de derulare în stilul site-ului. */}
       <aside
         aria-label="Filtre produse"
-        className="scrollbar-brand sticky top-4 hidden max-h-[calc(100vh-2rem)] w-64 shrink-0 self-start overflow-y-auto pr-3 lg:block"
+        className="scrollbar-brand sticky top-[var(--sticky-top,1rem)] hidden max-h-[calc(100vh-var(--sticky-top,1rem)-1rem)] w-64 shrink-0 self-start overflow-y-auto pr-3 transition-[top,max-height] duration-300 lg:block"
       >
         {sidebarContent}
       </aside>

@@ -185,7 +185,7 @@ function DivisionTabs({ active }: { active: Division }) {
 
 function Breadcrumb() {
   return (
-    <section className="bg-background">
+    <section>
       <div className="max-w-[110rem] mx-auto px-4 sm:px-6 pt-4 pb-1">
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground" aria-label="Fir de ariadnă">
           <Link href="/" className="hover:text-accent transition-colors">Acasă</Link>
@@ -249,7 +249,7 @@ export default async function ProdusePage({
           })}
         />
         <Breadcrumb />
-        <section className="bg-background pt-2 pb-10 sm:py-10">
+        <section className="pt-2 pb-10 sm:py-10">
           <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
             <DivisionTabs active={division} />
             <h1 className="sr-only">Mobilă la comandă</h1>
@@ -329,7 +329,7 @@ export default async function ProdusePage({
           })}
         />
         <Breadcrumb />
-        <section className="bg-background pt-2 pb-10 sm:py-10">
+        <section className="pt-2 pb-10 sm:py-10">
           <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
             <DivisionTabs active={division} />
             <h1 className="sr-only">Spații disponibile spre închiriere</h1>
@@ -463,7 +463,7 @@ export default async function ProdusePage({
 
       {/* ── PRODUCTS GRID ── */}
       <ProductsNavProvider>
-      <section className="bg-background pt-2 pb-10 sm:py-10">
+      <section className="pt-2 pb-10 sm:py-10">
         <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
           <DivisionTabs active={division} />
           <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse de uz casnic</h1>
