@@ -20,6 +20,7 @@ export const facebookTestimonials: FacebookTestimonial[] = [
     id: "fb-catalina-croitoru",
     author: "Cătălina Croitoru",
     text: "Personal am procurat dela ei produse și Sint calitate superbă recomand . și mă adresez la toți prietenii mei din profil ca să distribuim la toți prietenii noștri pentru ai ajuta să afle de ei",
+    image: { src: "/comentarii/catalina-croitoru.png", width: 1033, height: 172 },
   },
   {
     id: "fb-veronica-viorica",
