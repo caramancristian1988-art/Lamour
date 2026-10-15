@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import Image from "next/image";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { Image as ImageIcon, ExternalLink, Pencil, Plus } from "lucide-react";
+import { Image as ImageIcon, ExternalLink, Eye, EyeOff, Pencil, Plus } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import AdminPageHeader from "../components/AdminPageHeader";
@@ -14,7 +14,7 @@ import ProductsImportExport from "./ProductsImportExport";
 import AdminPagination from "../components/AdminPagination";
 import CopyableId from "../components/CopyableId";
 import WeightEditor from "../components/WeightEditor";
-import { deleteProductAction } from "@/lib/adminProductActions";
+import { deleteProductAction, toggleProductVisibilityAction } from "@/lib/adminProductActions";
 
 const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
 // Codul e acum un câmp real (Product.code), editabil din admin — litere/cifre, cu cratimă în interior
@@ -83,8 +83,8 @@ async function getData(catFilter: string, sort: string, page: number, search: st
 
 function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typeof getData>>["products"][number]; deleteAction: typeof deleteProductAction }) {
   return (
-    <div className="flex items-start gap-3 p-4">
-      <div className="relative w-12 h-12 rounded-xl bg-muted overflow-hidden shrink-0 mt-0.5">
+    <div className={`flex items-start gap-3 p-4 ${product.hidden ? "bg-muted/40" : ""}`}>
+      <div className={`relative w-12 h-12 rounded-xl bg-muted overflow-hidden shrink-0 mt-0.5 ${product.hidden ? "opacity-50" : ""}`}>
         {product.image ? (
           <Image src={product.image} alt={product.name} fill className="object-contain" />
         ) : (
@@ -114,10 +114,26 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
         <div className="flex items-center gap-2 mt-2 flex-wrap">
           <span className="text-sm font-bold text-primary">{product.price.toLocaleString("ro-MD")} MDL</span>
           <WeightEditor id={product.id} weightKg={product.weightKg ?? null} />
+          {product.hidden && (
+            <Badge variant="muted" className="normal-case">Dezactivat pe site</Badge>
+          )}
           <Badge variant={product.availability === "Stoc epuizat" ? "muted" : "success"}>
             {product.availability}
           </Badge>
           <div className="ml-auto flex items-center gap-0.5">
+            <form action={toggleProductVisibilityAction}>
+              <input type="hidden" name="id" value={product.id} />
+              <input type="hidden" name="hidden" value={product.hidden ? "false" : "true"} />
+              <Button
+                type="submit"
+                variant="ghost"
+                size="icon"
+                aria-label={product.hidden ? `Activează produsul ${product.name} pe site` : `Dezactivează produsul ${product.name} de pe site`}
+                title={product.hidden ? "Dezactivat pe site — apasă ca să-l afișezi" : "Vizibil pe site — apasă ca să-l ascunzi"}
+              >
+                {product.hidden ? <EyeOff className="w-4 h-4 text-muted-foreground" aria-hidden /> : <Eye className="w-4 h-4" aria-hidden />}
+              </Button>
+            </form>
             <Button variant="ghost" size="icon" asChild>
               <Link
                 href={`/produse/${product.slug}`}

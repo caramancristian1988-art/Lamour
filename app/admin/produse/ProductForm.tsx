@@ -10,6 +10,7 @@ import PriceTiersEditor from "../components/PriceTiersEditor";
 import VariantRowsEditor from "../components/VariantRowsEditor";
 import type { ProductFormState } from "@/lib/adminProductActions";
 import { normalizeTiers, type PriceTier } from "@/lib/pricing";
+import { slugify } from "@/lib/slugify";
 import { createCategoryInlineAction, deleteCategoryInlineAction } from "@/lib/adminCategoryActions";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { Checkbox } from "@/app/components/ui/checkbox";
@@ -100,6 +101,21 @@ export default function ProductForm({
   const [state, formAction, pending] = useActionState(action, initialState);
   const [isVariant, setIsVariant] = useState(Boolean(defaults?.variantGroupId));
 
+  // La produs nou, slug-ul urmărește numele până când adminul îl modifică manual. La editare nu se
+  // atinge singur (schimbarea lui strică linkurile deja distribuite), dar tot se curăță de diacritice.
+  const isEditing = Boolean(defaults?.id);
+  const [slug, setSlug] = useState(defaults?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(isEditing || Boolean(defaults?.slug));
+
+  function onNameChange(value: string) {
+    if (!slugTouched) setSlug(slugify(value));
+  }
+
+  function onSlugChange(value: string) {
+    setSlugTouched(true);
+    setSlug(slugify(value, { trimEdges: false }));
+  }
+
   const defaultBadges = ["Nou", "Reducere", "Cel mai vândut", "Eco"];
   const badgeOptions =
     defaults?.badge && !defaultBadges.includes(defaults.badge)
@@ -134,8 +150,30 @@ export default function ProductForm({
         </Alert>
       )}
 
-      <AdminInput label="Nume produs" name="name" required defaultValue={defaults?.name} placeholder="Daikin Sensira FTXF35E" />
-      <AdminInput label="Slug" name="slug" required defaultValue={defaults?.slug} placeholder="daikin-sensira-ftxf35e" />
+      <AdminInput
+        label="Nume produs"
+        name="name"
+        required
+        defaultValue={defaults?.name}
+        placeholder="Daikin Sensira FTXF35E"
+        onChange={onNameChange}
+      />
+      <div>
+        <AdminInput
+          label="Slug"
+          name="slug"
+          required
+          value={slug}
+          onChange={onSlugChange}
+          onBlur={() => setSlug((current) => slugify(current))}
+          placeholder="daikin-sensira-ftxf35e"
+        />
+        <p className="text-xs text-muted-foreground mt-1.5">
+          {isEditing
+            ? "Adresa produsului pe site. Se curăță automat (fără diacritice sau spații). Dacă îl schimbi, vechiul link nu va mai funcționa."
+            : "Se generează automat din nume, fără diacritice (ă → a, î → i, ș → s, ț → t). Îl poți ajusta manual."}
+        </p>
+      </div>
       <div>
         <AdminInput label="Cod produs" name="code" defaultValue={defaults?.code ?? ""} placeholder="lasă gol pentru cod automat (litere, cifre și cratimă, ex. LT-141)" />
         <p className="text-xs text-muted-foreground mt-1.5">

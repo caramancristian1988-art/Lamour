@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
+import { onlyVisible } from "./productVisibility";
 import { requireAdmin } from "./adminAuth";
 import type { PopupProduct } from "@/app/components/DiscountPopup";
 
@@ -28,9 +29,9 @@ async function findBestReview(productName: string) {
 // (popupEnabled); falls back to anything discounted. With no real discounted product there is no popup (null).
 export async function getPopupProduct(): Promise<PopupProduct | null> {
   try {
-    let candidates = await prisma.product.findMany({ where: { popupEnabled: true, oldPrice: { not: null } } });
+    let candidates = await prisma.product.findMany({ where: onlyVisible({ popupEnabled: true, oldPrice: { not: null } }) });
     if (candidates.length === 0) {
-      candidates = await prisma.product.findMany({ where: { oldPrice: { not: null } } });
+      candidates = await prisma.product.findMany({ where: onlyVisible({ oldPrice: { not: null } }) });
     }
     if (candidates.length === 0) return null;
 
@@ -58,9 +59,9 @@ export async function getPopupProduct(): Promise<PopupProduct | null> {
 // without replacement instead of a single pick.
 export async function getPopupProducts(count: number): Promise<PopupProduct[]> {
   try {
-    let candidates = await prisma.product.findMany({ where: { popupEnabled: true, oldPrice: { not: null } } });
+    let candidates = await prisma.product.findMany({ where: onlyVisible({ popupEnabled: true, oldPrice: { not: null } }) });
     if (candidates.length === 0) {
-      candidates = await prisma.product.findMany({ where: { oldPrice: { not: null } } });
+      candidates = await prisma.product.findMany({ where: onlyVisible({ oldPrice: { not: null } }) });
     }
     // Fără produse reale la reducere, popup-ul nu se afișează (înainte apăreau produse demo cu linkuri 404).
     if (candidates.length === 0) return [];

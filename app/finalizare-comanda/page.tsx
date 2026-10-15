@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { onlyVisible } from "@/lib/productVisibility";
 import { fallbackPopularProducts } from "@/lib/fallbackData";
 import CheckoutPanel from "@/app/components/CheckoutPanel";
 import ProductsSection from "@/app/components/ProductsSection";
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 async function getPopularProducts() {
   try {
-    const products = await prisma.product.findMany({ take: 4, orderBy: { reviewCount: "desc" } });
+    const products = await prisma.product.findMany({ where: onlyVisible(), take: 4, orderBy: { reviewCount: "desc" } });
     if (products.length === 0) throw new Error("empty");
     return products;
   } catch {

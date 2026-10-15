@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { onlyVisible } from "@/lib/productVisibility";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { absoluteUrl } from "@/lib/seo";
 
@@ -64,7 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     try {
       const [categories, products] = await Promise.all([
         prisma.category.findMany({ select: { slug: true, createdAt: true } }),
-        prisma.product.findMany({ select: { slug: true, createdAt: true } }),
+        prisma.product.findMany({ where: onlyVisible(), select: { slug: true, createdAt: true } }),
       ]);
       dynamicRoutes.push(
         ...categories.map((c) => ({

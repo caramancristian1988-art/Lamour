@@ -6,6 +6,7 @@ import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
 import { CATALOG_TAG } from "./catalog";
 import { parseDecimalInput } from "./pricing";
+import { slugify } from "./slugify";
 
 export interface ProductFormState {
   error?: string;
@@ -83,15 +84,6 @@ function parseVariantRows(formData: FormData): VariantRowInput[] {
   return rows;
 }
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 async function uniqueSlug(base: string): Promise<string> {
   let slug = base;
   let n = 2;
@@ -140,7 +132,9 @@ async function resolveProductCode(rawCode: string, excludeId?: string): Promise<
 
 function readProductFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
-  const slug = String(formData.get("slug") ?? "").trim();
+  // Slug-ul se normalizează mereu aici (fără diacritice/spații/majuscule), indiferent ce a tastat adminul —
+  // altfel pagina produsului nu s-ar mai găsi după URL. Gol -> se generează din nume.
+  const slug = slugify(String(formData.get("slug") ?? "")) || slugify(name);
   const description = String(formData.get("description") ?? "").trim();
   const price = parseDecimalInput(formData.get("price")) || 0;
   const oldPrice = parseDecimalInput(formData.get("oldPrice"));
@@ -374,6 +368,23 @@ export async function deleteProductAction(formData: FormData) {
   updateTag(CATALOG_TAG);
   if (product?.slug) revalidatePath(`/produse/${product.slug}`);
   revalidatePath("/");
+}
+
+// Ochișorul din lista de produse: dezactivează / reactivează produsul pe site. Produsul rămâne în baza de date
+// și în admin; doar dispare din liste, căutare, pagina proprie (404), coș și sitemap.
+export async function toggleProductVisibilityAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  const hidden = formData.get("hidden") === "true";
+
+  const product = await prisma.product.update({ where: { id }, data: { hidden }, select: { slug: true } });
+  await revalidateVariantFamily(id);
+  revalidatePath("/admin/produse");
+  revalidatePath("/produse");
+  revalidatePath(`/produse/${product.slug}`);
+  revalidatePath("/");
+  updateTag(CATALOG_TAG);
 }
 
 // Editorul rapid de greutate din lista de produse (sunt sute de produse de completat — fără să deschizi fiecare formular).

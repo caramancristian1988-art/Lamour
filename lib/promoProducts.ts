@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { onlyVisible } from "./productVisibility";
 
 export async function getPromoProducts(categorySlug?: string, take = 4) {
   try {
@@ -8,14 +9,14 @@ export async function getPromoProducts(categorySlug?: string, take = 4) {
     const where = category ? { categoryId: category.id } : {};
 
     let products = await prisma.product.findMany({
-      where: { ...where, oldPrice: { not: null } },
+      where: onlyVisible({ ...where, oldPrice: { not: null } }),
       orderBy: { reviewCount: "desc" },
       take,
     });
 
     if (products.length < take) {
       products = await prisma.product.findMany({
-        where,
+        where: onlyVisible(where),
         orderBy: { reviewCount: "desc" },
         take,
       });

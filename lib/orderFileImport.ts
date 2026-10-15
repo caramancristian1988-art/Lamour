@@ -467,7 +467,7 @@ export async function parseOrderFile(buffer: Buffer, filename: string): Promise<
   if (buffer.length === 0) throw new OrderFileError("Fișierul e gol.");
   if (buffer.length > MAX_ORDER_FILE_BYTES) throw new OrderFileError("Fișierul e prea mare (maxim 5 MB).");
 
-  const { products: catalogProducts } = await getCatalog();
+  const { products: catalogProducts } = await getCatalog({ includeHidden: true });
   const index = buildCatalogIndex(catalogProducts.map((p) => ({ id: p.id, name: p.name, code: p.code, slug: p.slug })));
   const products: OrderFileProduct[] = catalogProducts.map((p) => ({
     id: p.id,

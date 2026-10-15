@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "./prisma";
+import { onlyVisible } from "./productVisibility";
 import { normalizeTiers, type PriceTier } from "./pricing";
 
 export interface CatalogEntry {
@@ -22,7 +23,7 @@ export async function getCatalogEntries(slugs: string[]): Promise<CatalogEntry[]
   const unique = [...new Set(slugs.filter((s) => typeof s === "string" && s))].slice(0, MAX_SLUGS);
   if (unique.length === 0) return [];
 
-  const products = await prisma.product.findMany({ where: { slug: { in: unique } } });
+  const products = await prisma.product.findMany({ where: onlyVisible({ slug: { in: unique } }) });
   return products.map((p) => ({
     slug: p.slug,
     name: p.name,

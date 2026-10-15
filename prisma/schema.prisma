@@ -71,6 +71,9 @@ model Product {
   // să se citească fără eroare. null/true = afișează "Garanție 2 ani" pe pagina produsului;
   // false = produs fără garanție (consumabile: hârtie, chibrituri) — în loc apare alt avantaj.
   warrantyEnabled Boolean?
+  // true = produs dezactivat din admin (ochișorul din listă): rămâne în admin, dar nu apare pe site
+  // (liste, căutare, pagină, coș, sitemap). Opțional, ca produsele existente să se citească fără câmpul.
+  hidden      Boolean?
   specifications ProductSpec[]
   categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])

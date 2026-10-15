@@ -38,6 +38,7 @@ import FavoriteButton from "../../components/FavoriteButton";
 import ProductFilterSidebar from "../../components/ProductFilterSidebar";
 import { MultiNavChips, ProductsNavProvider, PendingRegion } from "../../components/ProductsNav";
 import { getCatalog } from "@/lib/catalog";
+import { onlyVisible } from "@/lib/productVisibility";
 import ReviewsGrid from "../../components/ReviewsGrid";
 import FaqAccordion from "../../components/FaqAccordion";
 import ProductOfferBanner from "../../components/ProductOfferBanner";
@@ -95,14 +96,15 @@ const getCategoryData = cache(async (slug: string, activeChildSlugs?: string) =>
 const getProductData = cache(async (slug: string) => {
   try {
     const product = await prisma.product.findUnique({ where: { slug }, include: { category: true } });
-    if (!product) return null;
+    // Produs dezactivat din admin: pe site se comportă ca și cum nu ar exista (404).
+    if (!product || product.hidden === true) return null;
     const familyId = product.variantGroupId ?? product.id;
     const [relatedRaw, reviews] = await Promise.all([
       prisma.product.findMany({
-        where: {
+        where: onlyVisible({
           categoryId: product.categoryId,
           NOT: [{ id: product.id }, { variantGroupId: familyId }, { id: familyId }],
-        },
+        }),
         take: 4,
       }),
       prisma.review.findMany({ where: { product: product.name, approved: true } }),
@@ -131,7 +133,7 @@ const getProductData = cache(async (slug: string) => {
     try {
       const primaryId = product.variantGroupId ?? product.id;
       variants = await prisma.product.findMany({
-        where: { OR: [{ id: primaryId }, { variantGroupId: primaryId }] },
+        where: onlyVisible({ OR: [{ id: primaryId }, { variantGroupId: primaryId }] }),
         // priceTiers: fiecare variantă are pragurile ei, iar popup-ul de adăugare
         // în coș trebuie să le poată arăta pentru varianta aleasă.
         select: { id: true, slug: true, variantLabel: true, price: true, oldPrice: true, priceTiers: true },

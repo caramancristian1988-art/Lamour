@@ -17,12 +17,19 @@ export function AdminInput({
   placeholder,
   step,
   inputMode,
+  value,
+  onChange,
+  onBlur,
 }: FieldProps & {
   type?: string;
   defaultValue?: string | number;
   placeholder?: string;
   step?: string | number;
   inputMode?: "text" | "decimal" | "numeric";
+  // Pentru câmpuri controlate (ex. slug-ul care se completează din nume); fără ele rămâne necontrolat.
+  value?: string;
+  onChange?: (value: string) => void;
+  onBlur?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -34,7 +41,9 @@ export function AdminInput({
         type={type}
         name={name}
         required={required}
-        defaultValue={defaultValue}
+        {...(value !== undefined ? { value } : { defaultValue })}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+        onBlur={onBlur}
         placeholder={placeholder}
         step={step}
         inputMode={inputMode}

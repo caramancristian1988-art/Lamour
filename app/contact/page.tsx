@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Phone, MessageCircle, Mail, Clock, HeadphonesIcon } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { onlyVisible } from "@/lib/productVisibility";
 import { fallbackProducts } from "@/lib/fallbackData";
 import { getSectionFlags, getContactInfo } from "@/lib/siteSettings";
 import { SITE_NAME } from "@/lib/constants";
@@ -52,6 +53,7 @@ const FALLBACK_FAQS: FaqItem[] = [
 async function getRecommendedProducts() {
   try {
     const products = await prisma.product.findMany({
+      where: onlyVisible(),
       orderBy: { rating: "desc" },
       take: 4,
     });

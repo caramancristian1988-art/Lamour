@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
+import { onlyVisible } from "./productVisibility";
 import { requireAdmin } from "./adminAuth";
 import { allowRequest, getClientIp, TOO_MANY_REQUESTS } from "./rateLimit";
 import { sendMail } from "./mailer";
@@ -78,7 +79,7 @@ export async function sendNewsletterCampaignAction(
 
   const products = productIds.length
     ? await prisma.product.findMany({
-        where: { id: { in: productIds } },
+        where: onlyVisible({ id: { in: productIds } }),
         select: { id: true, name: true, slug: true, price: true, oldPrice: true, image: true },
       })
     : [];

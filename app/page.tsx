@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { onlyVisible } from "@/lib/productVisibility";
 import { fallbackCategories } from "@/lib/fallbackData";
 import { dedupeVariants, buildVariantOptionsMap } from "@/lib/productListing";
 import Hero from "@/app/components/Hero";
@@ -43,6 +44,7 @@ async function getData() {
           take: 18,
           include: {
             products: {
+              where: onlyVisible(),
               select: { image: true, images: true },
               take: 5,
               orderBy: { createdAt: "desc" },
@@ -53,18 +55,18 @@ async function getData() {
         // hârtie igienică — cele mai căutate categorii, cerute explicit
         // să apară primele pe pagina principală.
         prisma.product.findMany({
-          where: { category: { slug: { in: ["prosoape-de-hartie", "hartie-igienica"] } } },
+          where: onlyVisible({ category: { slug: { in: ["prosoape-de-hartie", "hartie-igienica"] } } }),
           orderBy: { createdAt: "desc" },
           take: 8,
         }),
         prisma.product.findMany({
-          where: { oldPrice: { not: null } },
+          where: onlyVisible({ oldPrice: { not: null } }),
           orderBy: { createdAt: "desc" },
           take: 4,
         }),
-        prisma.product.findMany({ orderBy: { createdAt: "desc" }, take: 4 }),
+        prisma.product.findMany({ where: onlyVisible(), orderBy: { createdAt: "desc" }, take: 4 }),
         // Recomandate din TOATE categoriile, după rating
-        prisma.product.findMany({ orderBy: { rating: "desc" }, take: 8 }),
+        prisma.product.findMany({ where: onlyVisible(), orderBy: { rating: "desc" }, take: 8 }),
         prisma.review.findMany({
           where: { approved: true },
           orderBy: { createdAt: "desc" },
@@ -76,6 +78,7 @@ async function getData() {
         // map — homepage sections only fetch a handful of products each, not
         // enough to know a shown product's other sizes.
         prisma.product.findMany({
+          where: onlyVisible(),
           select: { id: true, slug: true, variantGroupId: true, variantLabel: true, price: true, oldPrice: true },
         }),
       ]);

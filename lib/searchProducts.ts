@@ -39,6 +39,7 @@ async function getSearchableData() {
         popupEnabled: false,
         installmentsEnabled: true,
         warrantyEnabled: null as boolean | null,
+        hidden: null as boolean | null,
         code: null as string | null,
         variantGroupId: null as string | null,
         variantLabel: null as string | null,

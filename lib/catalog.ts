@@ -1,5 +1,6 @@
 import { revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
+import { isVisibleProduct } from "./productVisibility";
 
 // Catalogul întreg (categorii + produse), folosit de lista /produse și de căutarea din antet. Înainte, FIECARE apăsare
 // pe un filtru și fiecare căutare aducea din baza de date toate cele ~300 de produse (~300 KiB, 130–900 ms) — de-aici
@@ -25,11 +26,13 @@ export function invalidateCatalog() {
   revalidateTag(CATALOG_TAG, { expire: 0 });
 }
 
-export async function getCatalog() {
+// `includeHidden`: doar pentru admin (ex. potrivirea produselor la importul unei comenzi) — pe site, produsele
+// dezactivate din admin nu trebuie să apară nicăieri.
+export async function getCatalog({ includeHidden = false }: { includeHidden?: boolean } = {}) {
   const raw = await loadCatalog();
   // Cache-ul serializează în JSON, deci datele calendaristice revin ca text — le readucem la Date.
   return {
     categories: raw.categories.map((c) => ({ ...c, createdAt: new Date(c.createdAt) })),
-    products: raw.products.map((p) => ({ ...p, createdAt: new Date(p.createdAt) })),
+    products: raw.products.filter((p) => includeHidden || isVisibleProduct(p)).map((p) => ({ ...p, createdAt: new Date(p.createdAt) })),
   };
 }
