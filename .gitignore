@@ -44,3 +44,9 @@ next-env.d.ts
 
 .vercel
 .env*
+
+.vercel
+.env*
+
+# fisiere de proba Excel (export/import) generate local pentru verificari
+/exemple-excel/

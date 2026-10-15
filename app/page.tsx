@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { fallbackCategories, fallbackOfferProducts } from "@/lib/fallbackData";
+import { fallbackCategories } from "@/lib/fallbackData";
 import { dedupeVariants, buildVariantOptionsMap } from "@/lib/productListing";
 import Hero from "@/app/components/Hero";
 import TrustBar from "@/app/components/TrustBar";
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 
 async function getData() {
   try {
-    const [rawCategories, offerProducts, newProducts, recommendedProducts, reviews, banners, variantRows] =
+    const [rawCategories, essentialProducts, offerProducts, newProducts, recommendedProducts, reviews, banners, variantRows] =
       await Promise.all([
         prisma.category.findMany({
           where: { parentId: null },
@@ -48,6 +48,14 @@ async function getData() {
               orderBy: { createdAt: "desc" },
             },
           },
+        }),
+        // Primele produse afișate pe homepage: prosoape de bucătărie și
+        // hârtie igienică — cele mai căutate categorii, cerute explicit
+        // să apară primele pe pagina principală.
+        prisma.product.findMany({
+          where: { category: { slug: { in: ["prosoape-de-hartie", "hartie-igienica"] } } },
+          orderBy: { createdAt: "desc" },
+          take: 8,
         }),
         prisma.product.findMany({
           where: { oldPrice: { not: null } },
@@ -90,7 +98,9 @@ async function getData() {
 
     return {
       categories,
-      offerProducts: offerProducts.length > 0 ? dedupeVariants(offerProducts) : fallbackOfferProducts.slice(0, 4),
+      essentialProducts: dedupeVariants(essentialProducts),
+      // Fără produse reale la reducere, secțiunea Oferte nu se afișează (înainte apăreau produse demo cu linkuri 404).
+      offerProducts: dedupeVariants(offerProducts),
       newProducts: dedupeVariants(newProducts),
       recommendedProducts: dedupeVariants(recommendedProducts),
       reviews,
@@ -100,7 +110,8 @@ async function getData() {
   } catch {
     return {
       categories: fallbackCategories,
-      offerProducts: fallbackOfferProducts.slice(0, 4),
+      essentialProducts: [],
+      offerProducts: [],
       newProducts: [],
       recommendedProducts: [],
       reviews: [],
@@ -111,7 +122,7 @@ async function getData() {
 }
 
 export default async function HomePage() {
-  const { categories, offerProducts, newProducts, recommendedProducts, reviews, banners, variantOptionsMap } =
+  const { categories, essentialProducts, offerProducts, newProducts, recommendedProducts, reviews, banners, variantOptionsMap } =
     await getData();
 
   return (
@@ -126,14 +137,26 @@ export default async function HomePage() {
       <Hero banners={banners} />
       <TrustBar />
       <CategoryGrid categories={categories} />
-      <ProductsSection
-        products={offerProducts}
-        title="Oferte"
-        highlighted="speciale"
-        viewAllHref="/produse?division=uz-casnic&oferte=1"
-        viewAllLabel="Vezi toate ofertele"
-        variantOptionsMap={variantOptionsMap}
-      />
+      {essentialProducts.length > 0 && (
+        <ProductsSection
+          products={essentialProducts}
+          title="Hârtie igienică"
+          highlighted="& prosoape de bucătărie"
+          viewAllHref="/produse?division=uz-casnic"
+          viewAllLabel="Vezi toate produsele"
+          variantOptionsMap={variantOptionsMap}
+        />
+      )}
+      {offerProducts.length > 0 && (
+        <ProductsSection
+          products={offerProducts}
+          title="Oferte"
+          highlighted="speciale"
+          viewAllHref="/produse?division=uz-casnic&oferte=1"
+          viewAllLabel="Vezi toate ofertele"
+          variantOptionsMap={variantOptionsMap}
+        />
+      )}
       {newProducts.length > 0 && (
         <ProductsSection
           products={newProducts}

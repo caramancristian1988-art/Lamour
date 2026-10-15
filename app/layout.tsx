@@ -10,6 +10,7 @@ const playfairDisplay = Playfair_Display({
   display: "swap",
 });
 import { SiteHeader, SiteFooter, SiteFloatingContact, SiteDiscountPopup } from "./components/SiteChrome";
+import EditSessionBanner from "./components/EditSessionBanner";
 import ScrollToTop from "./components/ScrollToTop";
 import { FavoritesProvider } from "./components/FavoritesProvider";
 import { AccessibilityProvider } from "./components/AccessibilityProvider";
@@ -108,6 +109,7 @@ export default async function RootLayout({
                     <ScrollToTop />
                   </Suspense>
                   <SiteHeader {...sectionFlags} {...contactInfo} categories={headerCategories} />
+                  <EditSessionBanner />
                   {children}
                   <SiteFooter {...socialLinks} {...contactInfo} />
                   <FloatingUIProvider>

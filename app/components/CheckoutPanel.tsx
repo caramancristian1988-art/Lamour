@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AlertCircle, ImageOff, ShoppingCart } from "lucide-react";
 import { useCart } from "./CartProvider";
 import { formatPrice } from "@/lib/pricing";
-import { submitContactMessageAction } from "@/lib/adminMessageActions";
+import { submitContactMessageAction, updateOrderMessageAction } from "@/lib/adminMessageActions";
+import { useOrderEditSession, clearOrderEditSession } from "@/lib/orderEditSession";
+import { matchLocality } from "@/lib/localityMatch";
+import { isValidMoldovanPhone, isValidPostalCode, isValidCourierEmail } from "@/lib/deliveryValidation";
+import LocalityField from "./LocalityField";
+import CatalogNotice from "./CatalogNotice";
 import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Button } from "@/app/components/ui/button";
@@ -16,21 +21,57 @@ import { SuccessState } from "@/app/components/ui/success-state";
 
 type Status = "idle" | "error" | "success" | "pending";
 
-export default function CheckoutPanel() {
-  const { lines, clearCart, subtotal, savings } = useCart();
+interface DeliveryPrices {
+  chisinau: number;
+  national: number;
+}
+
+// Chișinău are tarif separat de restul țării — acceptă orice variantă de
+// scriere/diacritice a localității ("Chișinău", "Chisinau", "chisinau", etc).
+function isChisinau(locality: string): boolean {
+  const normalized = locality
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+  return normalized.includes("chisinau");
+}
+
+export default function CheckoutPanel({ deliveryPrices }: { deliveryPrices: DeliveryPrices }) {
+  const { lines, clearCart, subtotal, savings, syncWithCatalog } = useCart();
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [needsInvoice, setNeedsInvoice] = useState(false);
+  const [locality, setLocality] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [zip, setZip] = useState("");
+  // Prezent doar când operatorul a ajuns aici prin linkul "Editează" din
+  // Telegram (vezi app/editare-comanda) — pre-completează formularul și
+  // trimite spre updateOrderMessageAction în loc de a crea o comandă nouă.
+  const editSession = useOrderEditSession();
+
+  useEffect(() => {
+    if (!editSession) return;
+    setName(editSession.name);
+    setPhone(editSession.phone);
+    setEmail(editSession.email);
+    setLocality(editSession.locality);
+    setAddress(editSession.address);
+    setZip(editSession.zip);
+  }, [editSession]);
+
+  const deliveryPrice = locality.trim()
+    ? isChisinau(locality)
+      ? deliveryPrices.chisinau
+      : deliveryPrices.national
+    : null;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const data = new FormData(e.currentTarget);
-    const name = String(data.get("name") ?? "").trim();
-    const phone = String(data.get("phone") ?? "").trim();
-    const email = String(data.get("email") ?? "").trim();
-    const locality = String(data.get("locality") ?? "").trim();
-    const address = String(data.get("address") ?? "").trim();
     const extra = String(data.get("extraMessage") ?? "").trim();
 
     const companyName = String(data.get("companyName") ?? "").trim();
@@ -38,18 +79,49 @@ export default function CheckoutPanel() {
     const companyAddress = String(data.get("companyAddress") ?? "").trim();
     const companyVat = String(data.get("companyVat") ?? "").trim();
 
+    const trimmedName = name.trim();
+    const trimmedPhone = phone.trim();
+    const trimmedEmail = email.trim();
+    const trimmedAddress = address.trim();
+    const trimmedZip = zip.trim();
+
+    // Verificare finală a localității la trimitere (nu doar la blur din
+    // LocalityField) — ca un Enter rapid, fără să părăsească niciodată
+    // câmpul, să nu treacă neverificat. Dacă localitatea scrisă corespunde
+    // uneia reale dar cu altă scriere/diacritice, o înlocuim cu forma
+    // canonică (aceeași folosită de EVS), nu doar o validăm.
+    const localityMatch = matchLocality(locality);
+    const resolvedLocality = localityMatch.exact ?? locality.trim();
+    if (localityMatch.exact && localityMatch.exact !== locality) setLocality(localityMatch.exact);
+
     const missing = [
-      !name && "numele",
-      !phone && "numărul de telefon",
-      !locality && "localitatea",
-      !address && "adresa",
+      !trimmedName && "numele",
+      !trimmedPhone && "numărul de telefon",
+      trimmedPhone && !isValidMoldovanPhone(trimmedPhone) && "un număr de telefon valid",
+      trimmedEmail && !isValidCourierEmail(trimmedEmail) && "o adresă de email completă (ex: nume@gmail.com) sau lasă câmpul gol",
+      !resolvedLocality && "localitatea",
+      resolvedLocality && !localityMatch.exact && "o localitate validă din Moldova",
+      !trimmedAddress && "adresa",
+      !trimmedZip && "codul poștal",
+      trimmedZip && !isValidPostalCode(trimmedZip) && "un cod poștal valid (4 cifre)",
       // Fără denumire și IDNO nu se poate emite factura, deci le cerem aici,
       // nu după ce comanda a plecat.
       needsInvoice && !companyName && "denumirea companiei",
       needsInvoice && !companyIdno && "IDNO-ul companiei",
     ].filter(Boolean);
     if (missing.length > 0) {
-      setErrorMsg(`Lipsește ${missing.join(", ")}.`);
+      setErrorMsg(`Lipsește sau este greșit(ă): ${missing.join(", ")}.`);
+      setStatus("error");
+      return;
+    }
+
+    // Coșul e în localStorage, deci poate conține prețuri sau produse vechi. Verificăm cu
+    // catalogul chiar înainte de trimitere: dacă ceva s-a schimbat, clientul vede totalul
+    // corect și confirmă din nou, în loc să trimită (și să vadă pe mesaj) date depășite.
+    setStatus("pending");
+    const sync = await syncWithCatalog();
+    if (!sync.failed && sync.changed) {
+      setErrorMsg("Prețurile sau produsele din coș s-au actualizat. Verifică totalul de mai jos și trimite din nou.");
       setStatus("error");
       return;
     }
@@ -66,10 +138,12 @@ export default function CheckoutPanel() {
       "Produse comandate:",
       itemsList,
       "",
-      `Total: ${formatPrice(subtotal)} MDL`,
+      `Subtotal: ${formatPrice(subtotal)} MDL`,
       savings > 0 ? `Economisește: ${formatPrice(savings)} MDL` : null,
+      deliveryPrice !== null ? `Livrare (${isChisinau(resolvedLocality) ? "Chișinău" : "național"}): ${formatPrice(deliveryPrice)} MDL` : null,
+      deliveryPrice !== null ? `Total cu livrare: ${formatPrice(subtotal + deliveryPrice)} MDL` : null,
       "",
-      `Livrare: ${locality}, ${address}`,
+      `Livrare: ${resolvedLocality}, ${trimmedAddress}, ${trimmedZip}`,
       // Marcat vizibil, ca factura sa nu fie ratata la procesarea comenzii.
       needsInvoice ? "\n🧾 CERE FACTURĂ (companie):" : null,
       needsInvoice ? `Denumire: ${companyName}` : null,
@@ -81,16 +155,33 @@ export default function CheckoutPanel() {
       .filter((l) => l !== null)
       .join("\n");
 
+    // Date structurate de livrare + cantități — folosite pentru a crea automat
+    // expedierea EVS Express la predarea către curier, și pentru a putea
+    // reconstitui coșul dacă operatorul deschide linkul de editare.
+    const totalQuantity = lines.reduce((sum, l) => sum + l.quantity, 0);
+
     const submitData = new FormData();
-    submitData.set("name", name);
-    submitData.set("phone", phone);
-    if (email) submitData.set("email", email);
+    submitData.set("name", trimmedName);
+    submitData.set("phone", trimmedPhone);
+    if (trimmedEmail) submitData.set("email", trimmedEmail);
     submitData.set("message", message);
     submitData.set("source", "Comandă din coș");
     submitData.set("productSlugs", lines.map((l) => l.slug).join(","));
+    submitData.set("orderItems", JSON.stringify(lines.map((l) => ({ slug: l.slug, quantity: l.quantity }))));
+    submitData.set("deliveryLocality", resolvedLocality);
+    submitData.set("deliveryAddress", trimmedAddress);
+    submitData.set("deliveryZip", trimmedZip);
+    submitData.set("deliveryWeightKg", String(Math.max(1, totalQuantity)));
+    submitData.set("deliveryCodAmount", String(subtotal + (deliveryPrice ?? 0)));
 
     setStatus("pending");
-    const result = await submitContactMessageAction({}, submitData);
+    const result = editSession
+      ? await (async () => {
+          submitData.set("messageId", editSession.messageId);
+          submitData.set("editToken", editSession.editToken);
+          return updateOrderMessageAction({}, submitData);
+        })()
+      : await submitContactMessageAction({}, submitData);
 
     if (result.error) {
       setErrorMsg(result.error);
@@ -98,6 +189,7 @@ export default function CheckoutPanel() {
       return;
     }
 
+    if (editSession) clearOrderEditSession();
     setStatus("success");
     clearCart();
   }
@@ -106,8 +198,12 @@ export default function CheckoutPanel() {
     return (
       <div className="max-w-md mx-auto py-8">
         <SuccessState
-          title="Comanda ta a fost trimisă!"
-          description="Te vom contacta în cel mai scurt timp pentru confirmare."
+          title={editSession ? "Comanda a fost actualizată!" : "Comanda ta a fost trimisă!"}
+          description={
+            editSession
+              ? "Mesajul din Telegram a fost actualizat cu noile date."
+              : "Te vom contacta în cel mai scurt timp pentru confirmare."
+          }
         />
         <div className="flex justify-center mt-4">
           <Button asChild variant="primary">
@@ -121,6 +217,7 @@ export default function CheckoutPanel() {
   if (lines.length === 0) {
     return (
       <div className="text-center py-16">
+        <CatalogNotice />
         <ShoppingCart className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" strokeWidth={1.5} aria-hidden />
         <p className="text-muted-foreground mb-6">Coșul tău este gol.</p>
         <Button asChild variant="primary">
@@ -131,6 +228,8 @@ export default function CheckoutPanel() {
   }
 
   return (
+    <>
+    <CatalogNotice />
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
       <form onSubmit={handleSubmit} noValidate className="border border-border rounded-2xl p-6 flex flex-col gap-3.5 h-fit bg-card">
         <h2 className="font-extrabold text-primary text-lg mb-1">Datele tale</h2>
@@ -142,18 +241,57 @@ export default function CheckoutPanel() {
           </Alert>
         )}
 
-        <Input type="text" name="name" required placeholder="Nume complet" aria-label="Nume complet" />
-        <Input type="tel" name="phone" required placeholder="Telefon" aria-label="Telefon" />
-        <Input type="email" name="email" placeholder="Email (opțional)" aria-label="Email" />
+        <Input
+          type="text"
+          name="name"
+          required
+          placeholder="Nume complet"
+          aria-label="Nume complet"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Input
+          type="tel"
+          name="phone"
+          required
+          placeholder="Telefon"
+          aria-label="Telefon"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+        <Input
+          type="email"
+          name="email"
+          placeholder="Email (opțional)"
+          aria-label="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
         <h3 className="font-bold text-primary text-sm mt-2">Livrare</h3>
-        <Input type="text" name="locality" required placeholder="Localitate" aria-label="Localitate" />
+        <LocalityField value={locality} onChange={setLocality} />
+        {deliveryPrice !== null && (deliveryPrices.chisinau > 0 || deliveryPrices.national > 0) && (
+          <p className="text-xs text-muted-foreground -mt-1.5">
+            Cost livrare estimat ({isChisinau(locality) ? "Chișinău" : "restul țării"}): <b className="text-foreground">{formatPrice(deliveryPrice)} MDL</b>
+          </p>
+        )}
         <Input
           type="text"
           name="address"
           required
           placeholder="Adresa (stradă, număr, bloc/apartament)"
           aria-label="Adresa"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
+        <Input
+          type="text"
+          name="zip"
+          required
+          placeholder="Cod poștal"
+          aria-label="Cod poștal"
+          value={zip}
+          onChange={(e) => setZip(e.target.value)}
         />
 
         {/* Facturarea pe companie cere date pe care un client persoană fizică nu le
@@ -191,10 +329,12 @@ export default function CheckoutPanel() {
         <Textarea name="extraMessage" placeholder="Mesaj suplimentar (opțional)" rows={3} className="min-h-0" aria-label="Mesaj suplimentar" />
 
         <Button type="submit" variant="accent" disabled={status === "pending"} className="mt-1">
-          {status === "pending" ? "Se trimite..." : "Trimite comanda"}
+          {status === "pending" ? "Se trimite..." : editSession ? "Salvează comanda" : "Trimite comanda"}
         </Button>
         <p className="text-center text-[11px] text-muted-foreground">
-          Te contactăm telefonic pentru confirmare și stabilirea livrării.
+          {editSession
+            ? "Modificările actualizează comanda existentă din Telegram."
+            : "Te contactăm telefonic pentru confirmare și stabilirea livrării."}
         </p>
       </form>
 
@@ -235,12 +375,22 @@ export default function CheckoutPanel() {
             <span className="font-bold">−{formatPrice(savings)} MDL</span>
           </div>
         )}
-        <p className="text-xs text-muted-foreground mb-4">Costul livrării se stabilește la confirmarea comenzii.</p>
+        {deliveryPrice !== null ? (
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+            <span>Livrare ({isChisinau(locality) ? "Chișinău" : "restul țării"})</span>
+            <span className="font-bold text-foreground">{formatPrice(deliveryPrice)} MDL</span>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground mb-4">Costul livrării se stabilește la confirmarea comenzii.</p>
+        )}
         <div className="flex items-center justify-between border-t border-border pt-4">
           <span className="font-bold text-primary">Total</span>
-          <span className="font-extrabold text-xl text-primary">{formatPrice(subtotal)} MDL</span>
+          <span className="font-extrabold text-xl text-primary">
+            {formatPrice(subtotal + (deliveryPrice ?? 0))} MDL
+          </span>
         </div>
       </div>
     </div>
+    </>
   );
 }

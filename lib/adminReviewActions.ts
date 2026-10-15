@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
+import { invalidateCatalog } from "./catalog";
 
 async function recomputeProductRating(productName: string | null) {
   if (!productName) return;
@@ -11,6 +12,7 @@ async function recomputeProductRating(productName: string | null) {
   if (!product) return;
   const avgRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
   await prisma.product.update({ where: { id: product.id }, data: { rating: avgRating, reviewCount: reviews.length } });
+  invalidateCatalog(); // stelele/nr. de recenzii de pe cardurile din /produse vin din catalogul ținut în cache
 }
 
 async function revalidateProductPage(productName: string) {

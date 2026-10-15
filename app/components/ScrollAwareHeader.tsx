@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { SectionFlags, HeaderCategory } from "@/lib/siteSettings";
 import StickyHeader from "./StickyHeader";
 
-export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categories?: HeaderCategory[] }) {
+export default function ScrollAwareHeader(props: Partial<SectionFlags> & { categories?: HeaderCategory[]; phone?: string; phoneTel?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);

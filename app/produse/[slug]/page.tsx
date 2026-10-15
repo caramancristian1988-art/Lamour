@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowRight, MessageCircle, Truck, PackageCheck, ShieldCheck, ChevronDown } from "lucide-react";
+import { ArrowRight, Banknote, MessageCircle, Truck, PackageCheck, ShieldCheck, ChevronDown } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
@@ -36,6 +36,8 @@ import { normalizeTiers, type PriceTier } from "@/lib/pricing";
 import ProductGallery from "../../components/ProductGallery";
 import FavoriteButton from "../../components/FavoriteButton";
 import ProductFilterSidebar from "../../components/ProductFilterSidebar";
+import { MultiNavChips, ProductsNavProvider, PendingRegion } from "../../components/ProductsNav";
+import { getCatalog } from "@/lib/catalog";
 import ReviewsGrid from "../../components/ReviewsGrid";
 import FaqAccordion from "../../components/FaqAccordion";
 import ProductOfferBanner from "../../components/ProductOfferBanner";
@@ -54,22 +56,27 @@ const allFallbackProducts = [
   ...fallbackDiscountProducts,
 ].map((p) => ({ ...p, images: [] as string[], brand: null as string | null, variantGroupId: null as string | null, variantLabel: null as string | null }));
 
-const getCategoryData = cache(async (slug: string, activeChildSlug?: string) => {
+const getCategoryData = cache(async (slug: string, activeChildSlugs?: string) => {
   try {
-    const category = await prisma.category.findUnique({ where: { slug } });
+    // Din catalogul ținut în cache (același ca în /produse): fără 3 interogări la baza de date la fiecare filtrare, iar
+    // pentru o pagină de produs (slug care nu e categorie) răspunsul "nu e categorie" vine fără niciun apel la bază.
+    const { categories, products: catalogProducts } = await getCatalog();
+    const category = categories.find((c) => c.slug === slug);
     if (!category) return null;
-    const children = await prisma.category.findMany({ where: { parentId: category.id }, orderBy: { createdAt: "asc" } });
+    const children = categories.filter((c) => c.parentId === category.id);
 
-    const activeChild = activeChildSlug ? children.find((c) => c.slug === activeChildSlug) : undefined;
-    const categoryIds = activeChild ? [activeChild.id] : [category.id, ...children.map((c) => c.id)];
+    // ?subcat=a,b — una sau mai multe subcategorii alese deodată (fără niciuna = categoria + toate subcategoriile ei).
+    const wanted = (activeChildSlugs ?? "").split(",").filter(Boolean);
+    const activeChildren = children.filter((c) => wanted.includes(c.slug));
+    const categoryIds = new Set(activeChildren.length > 0 ? activeChildren.map((c) => c.id) : [category.id, ...children.map((c) => c.id)]);
 
-    const products = await prisma.product.findMany({ where: { categoryId: { in: categoryIds } }, orderBy: { createdAt: "desc" } });
+    const products = catalogProducts.filter((p) => categoryIds.has(p.categoryId));
     return {
       category,
       products: dedupeVariants(products),
       variantOptionsMap: buildVariantOptionsMap(products),
       children,
-      activeChild: activeChild ?? null,
+      activeChildren,
     };
   } catch {
     const category = fallbackCategories.find((c) => c.slug === slug);
@@ -80,7 +87,7 @@ const getCategoryData = cache(async (slug: string, activeChildSlug?: string) => 
       products: dedupeVariants(products),
       variantOptionsMap: buildVariantOptionsMap(products),
       children: [] as { id: string; name: string; slug: string }[],
-      activeChild: null,
+      activeChildren: [] as { id: string; name: string; slug: string }[],
     };
   }
 });
@@ -241,7 +248,7 @@ export default async function ProduseSlugPage({
   const { slug } = await params;
   const query = await searchParams;
 
-  const subcat = typeof query.subcat === "string" ? query.subcat : undefined;
+  const subcat = typeof query.subcat === "string" ? query.subcat : undefined; // una sau mai multe, separate prin virgulă
   const categoryData = await getCategoryData(slug, subcat);
   if (categoryData) {
     return (
@@ -269,7 +276,7 @@ export default async function ProduseSlugPage({
 interface CategoryViewProps {
   category: { id: string; name: string; slug: string; description: string | null };
   children: Array<{ id: string; name: string; slug: string }>;
-  activeChild: { id: string; name: string; slug: string } | null;
+  activeChildren: Array<{ id: string; name: string; slug: string }>;
   products: Array<{
     id: string;
     name: string;
@@ -292,7 +299,7 @@ interface CategoryViewProps {
   installmentMonths: number;
 }
 
-function CategoryView({ category, children, activeChild, products: baseProducts, variantOptionsMap, sort, page, filters, ratesEnabled, installmentMonths }: CategoryViewProps) {
+function CategoryView({ category, children, activeChildren, products: baseProducts, variantOptionsMap, sort, page, filters, ratesEnabled, installmentMonths }: CategoryViewProps) {
   const products = applyFilters(baseProducts, filters);
 
   const priceBounds = baseProducts.reduce(
@@ -380,35 +387,19 @@ function CategoryView({ category, children, activeChild, products: baseProducts,
         </div>
       </section>
 
-      {/* PRODUCTS GRID */}
+      {/* PRODUCTS GRID — chip-uri, filtre și listă în același "ProductsNavProvider": apăsarea unui filtru se vede imediat
+          (chip/bifă activă, listă estompată, bară de progres) în loc să aștepte răspunsul serverului fără nicio reacție. */}
+      <ProductsNavProvider>
       <section className="bg-background py-10">
         <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
           {children.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap mb-6" role="group" aria-label="Filtrează după subcategorie">
-              <Link
-                href={`/produse/${category.slug}`}
-                className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                  !activeChild
-                    ? "bg-primary text-white"
-                    : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
-                }`}
-              >
-                Toate
-              </Link>
-              {children.map((child) => (
-                <Link
-                  key={child.id}
-                  href={`/produse/${category.slug}?subcat=${child.slug}`}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                    activeChild?.slug === child.slug
-                      ? "bg-primary text-white"
-                      : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
-                  }`}
-                >
-                  {child.name}
-                </Link>
-              ))}
-            </div>
+            <MultiNavChips
+              paramKey="subcat"
+              allValue={null}
+              ariaLabel="Filtrează după subcategorie (poți alege mai multe)"
+              className="flex items-center gap-2 flex-wrap mb-6"
+              options={children.map((child) => ({ value: child.slug, label: child.name }))}
+            />
           )}
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <ProductFilterSidebar
@@ -418,7 +409,7 @@ function CategoryView({ category, children, activeChild, products: baseProducts,
               offersCount={offersCount}
             />
 
-            <div className="flex-1 min-w-0">
+            <PendingRegion className="flex-1 min-w-0">
               <p className="text-sm text-muted-foreground mb-6">{products.length} produse găsite</p>
 
               {items.length > 0 ? (
@@ -455,16 +446,19 @@ function CategoryView({ category, children, activeChild, products: baseProducts,
                 sort={sort}
                 hasMore={hasMore}
                 extraParams={{
+                  // „Încarcă mai multe” trebuie să păstreze subcategoriile alese, altfel pagina 2 arăta toată categoria.
+                  ...(activeChildren.length > 0 ? { subcat: activeChildren.map((c) => c.slug).join(",") } : {}),
                   ...(filters.offersOnly ? { oferte: "1" } : {}),
                   ...(filters.brands.length > 0 ? { brand: filters.brands.join(",") } : {}),
                   ...(filters.priceMin !== null ? { pretMin: String(filters.priceMin) } : {}),
                   ...(filters.priceMax !== null ? { pretMax: String(filters.priceMax) } : {}),
                 }}
               />
-            </div>
+            </PendingRegion>
           </div>
         </div>
       </section>
+      </ProductsNavProvider>
 
     </main>
   );
@@ -492,6 +486,8 @@ interface ProductViewProps {
     badge: string | null;
     availability: string;
     installmentsEnabled?: boolean;
+    warrantyEnabled?: boolean | null;
+    code?: string | null;
     specifications?: { label: string; value: string }[];
     salesCount?: number;
     variantLabel?: string | null;
@@ -542,7 +538,7 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
   const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : null;
   const discountAmount = product.oldPrice ? Math.round(product.oldPrice - product.price) : null;
   const displayBadge = localProductBadges[product.slug] ?? product.badge ?? (discount ? `-${discount}%` : null);
-  const productCode = product.id.slice(-6).toUpperCase();
+  const productCode = product.code ?? product.id.slice(-6).toUpperCase();
   const countdownMinutes = discount ? await getPopupCountdownMinutes() : 0;
 
   const findSpec = (labelMatch: string) =>
@@ -777,12 +773,20 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
               </div>
               <div className="flex flex-col items-center gap-1.5">
                 <PackageCheck className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
-                <p className="text-[11px] text-muted-foreground leading-snug">Livrare în toată Moldova, 24h</p>
+                <p className="text-[11px] text-muted-foreground leading-snug">Livrare în toată Moldova, 1-7 zile</p>
               </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <ShieldCheck className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
-                <p className="text-[11px] text-muted-foreground leading-snug">Garanție 2 ani</p>
-              </div>
+              {/* Produsele fără garanție (consumabile) primesc alt avantaj în același loc, ca rândul să rămână plin. */}
+              {product.warrantyEnabled !== false ? (
+                <div className="flex flex-col items-center gap-1.5">
+                  <ShieldCheck className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
+                  <p className="text-[11px] text-muted-foreground leading-snug">Garanție 2 ani</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1.5">
+                  <Banknote className="w-6 h-6 text-accent" strokeWidth={1.8} aria-hidden />
+                  <p className="text-[11px] text-muted-foreground leading-snug">Plată la primire</p>
+                </div>
+              )}
             </div>
 
             {product.description && (

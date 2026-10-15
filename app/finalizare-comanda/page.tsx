@@ -6,6 +6,7 @@ import CheckoutPanel from "@/app/components/CheckoutPanel";
 import ProductsSection from "@/app/components/ProductsSection";
 import TrustBar from "@/app/components/TrustBar";
 import { SITE_NAME } from "@/lib/constants";
+import { getDeliveryPrices } from "@/lib/siteSettings";
 
 export const metadata: Metadata = {
   title: { absolute: `Finalizare comandă | ${SITE_NAME}` },
@@ -24,6 +25,7 @@ async function getPopularProducts() {
 
 export default async function FinalizareComandaPage() {
   const popularProducts = await getPopularProducts();
+  const deliveryPrices = await getDeliveryPrices();
 
   return (
     <main className="bg-background min-h-[60vh]">
@@ -47,7 +49,7 @@ export default async function FinalizareComandaPage() {
 
       <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <CheckoutPanel />
+          <CheckoutPanel deliveryPrices={deliveryPrices} />
         </div>
       </section>
 

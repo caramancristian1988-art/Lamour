@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { getSectionFlags } from "@/lib/siteSettings";
 import {
   fallbackCategories,
@@ -13,6 +12,8 @@ import {
 import ProductCard from "../components/ProductCard";
 import LoadMoreButton from "../components/LoadMoreButton";
 import ProductFilterSidebar from "../components/ProductFilterSidebar";
+import { getCatalog } from "@/lib/catalog";
+import { NavChips, MultiNavChips, ProductsNavProvider, PendingRegion } from "../components/ProductsNav";
 import FurnitureCard from "../components/FurnitureCard";
 import SpaceCard from "../components/SpaceCard";
 import DivisionFilterSidebar from "../components/DivisionFilterSidebar";
@@ -87,6 +88,7 @@ interface ProductRow {
   id: string;
   name: string;
   slug: string;
+  code?: string | null;
   description: string | null;
   price: number;
   oldPrice: number | null;
@@ -105,10 +107,7 @@ interface ProductRow {
 
 async function getData(): Promise<{ categories: CategoryRow[]; products: ProductRow[] }> {
   try {
-    const [categories, products] = await Promise.all([
-      prisma.category.findMany({ orderBy: { createdAt: "asc" } }),
-      prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
-    ]);
+    const { categories, products } = await getCatalog();
     if (categories.length === 0 || products.length === 0) throw new Error("empty");
     return { categories, products };
   } catch {
@@ -175,36 +174,13 @@ function facetOptions<T>(items: T[], getValue: (item: T) => string, getLabel?: (
 
 function DivisionTabs({ active }: { active: Division }) {
   return (
-    <div className="flex items-center gap-2 sm:gap-3 flex-wrap mb-6">
-      {DIVISION_TABS.map((tab) => (
-        <Link
-          key={tab.value}
-          href={`/produse?division=${tab.value}`}
-          className={`px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-sm sm:text-base font-bold transition-colors ${
-            active === tab.value
-              ? "bg-primary text-white shadow-sm"
-              : "bg-card border-2 border-border text-foreground hover:border-accent hover:text-accent"
-          }`}
-        >
-          {tab.label}
-        </Link>
-      ))}
-    </div>
+    <NavChips
+      size="lg"
+      ariaLabel="Secțiune"
+      className="flex items-center gap-2 sm:gap-3 flex-wrap mb-6"
+      items={DIVISION_TABS.map((tab) => ({ key: tab.value, href: `/produse?division=${tab.value}`, label: tab.label, active: active === tab.value }))}
+    />
   );
-}
-
-function buildCategoryHref(
-  query: { [key: string]: string | string[] | undefined },
-  slug: string
-): string {
-  const params = new URLSearchParams();
-  Object.entries(query).forEach(([key, value]) => {
-    if (key === "cat" || key === "page") return;
-    if (Array.isArray(value)) value.forEach((v) => params.append(key, v));
-    else if (value !== undefined) params.set(key, value);
-  });
-  params.set("cat", slug);
-  return `/produse?${params.toString()}`;
 }
 
 function Breadcrumb() {
@@ -295,7 +271,7 @@ export default async function ProdusePage({
                 {listings.length > 0 ? (
                   <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
                     {listings.map((listing) => (
-                      <FurnitureCard key={listing.slug} listing={listing} />
+                      <FurnitureCard key={listing.slug} listing={listing} sizes="(max-width: 1023px) 50vw, 300px" />
                     ))}
                   </div>
                 ) : (
@@ -376,7 +352,7 @@ export default async function ProdusePage({
                 {listings.length > 0 ? (
                   <div className="grid grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3 sm:gap-6">
                     {listings.map((listing) => (
-                      <SpaceCard key={listing.slug} listing={listing} />
+                      <SpaceCard key={listing.slug} listing={listing} sizes="(max-width: 1023px) 50vw, 300px" />
                     ))}
                   </div>
                 ) : (
@@ -404,24 +380,25 @@ export default async function ProdusePage({
   const categoryById = new Map(categories.map((c) => [c.id, c.slug]));
   const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
-  // When exactly one category is selected, treat it as either a parent or a
-  // child in the (one-level) category hierarchy so we can show "în 2/3/4
-  // straturi"-style filter buttons and merge parent + children products by
-  // default, matching the behavior of a category's own /produse/[slug] page.
-  const singleCategorySlug = filters.categorySlugs.length === 1 ? filters.categorySlugs[0] : null;
-  const selectedCategory = singleCategorySlug
-    ? categories.find((c) => c.slug === singleCategorySlug)
-    : undefined;
-  const parentCategory = selectedCategory
-    ? selectedCategory.parentId
-      ? categories.find((c) => c.id === selectedCategory.parentId)
-      : selectedCategory
-    : undefined;
+  // Când toate categoriile selectate aparțin aceleiași familii (un părinte și/sau subcategoriile lui, pe un singur nivel),
+  // arătăm butoanele „în 2/3/4 straturi” — cu selecție multiplă (mai multe subcategorii deodată) — și, cât timp e ales
+  // părintele („Toate”), îmbinăm produsele lui cu ale subcategoriilor, ca pe pagina proprie /produse/[slug].
+  const selectedCategories = filters.categorySlugs
+    .map((slug) => categories.find((c) => c.slug === slug))
+    .filter((c): c is (typeof categories)[number] => Boolean(c));
+  const familyParentIds = new Set(selectedCategories.map((c) => c.parentId ?? c.id));
+  const parentCategory =
+    familyParentIds.size === 1 && selectedCategories.length === filters.categorySlugs.length
+      ? categories.find((c) => c.id === [...familyParentIds][0])
+      : undefined;
   const siblingCategories = parentCategory
     ? categories.filter((c) => c.parentId === parentCategory.id)
     : [];
   const showSubcategoryFilters = Boolean(parentCategory) && siblingCategories.length > 0;
-  const isParentActive = showSubcategoryFilters && selectedCategory!.id === parentCategory!.id;
+  // „Toate” = părintele e ales, sau nicio subcategorie nu e aleasă separat.
+  const isParentActive =
+    showSubcategoryFilters &&
+    (filters.categorySlugs.includes(parentCategory!.slug) || !selectedCategories.some((c) => c.parentId));
 
   const effectiveFilters =
     showSubcategoryFilters && isParentActive
@@ -432,7 +409,7 @@ export default async function ProdusePage({
     baseProducts,
     effectiveFilters,
     (p) => categoryById.get(p.categoryId) ?? "",
-    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.id.slice(-6)}`
+    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.code ?? p.id.slice(-6)}`
   );
 
   const categoryOptions = categories
@@ -441,7 +418,11 @@ export default async function ProdusePage({
       id: cat.id,
       slug: cat.slug,
       name: cat.name,
-      count: baseProducts.filter((p) => p.categoryId === cat.id).length,
+      // Un părinte numără și produsele subcategoriilor lui (selectat, le arată pe toate) — altfel
+      // "Prosoape de bucătărie" apărea cu (0) deși toate produsele sunt în subcategorii.
+      count: baseProducts.filter(
+        (p) => p.categoryId === cat.id || categories.some((sub) => sub.parentId === cat.id && sub.id === p.categoryId)
+      ).length,
     }));
 
   const priceBounds = baseProducts.reduce(
@@ -481,41 +462,20 @@ export default async function ProdusePage({
       <Breadcrumb />
 
       {/* ── PRODUCTS GRID ── */}
+      <ProductsNavProvider>
       <section className="bg-background pt-2 pb-10 sm:py-10">
         <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
           <DivisionTabs active={division} />
           <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse de uz casnic</h1>
 
           {showSubcategoryFilters && (
-            <div
+            <MultiNavChips
+              paramKey="cat"
+              allValue={parentCategory!.slug}
+              ariaLabel="Filtrează după subcategorie (poți alege mai multe)"
               className="flex items-center gap-2 flex-wrap mb-6"
-              role="group"
-              aria-label="Filtrează după subcategorie"
-            >
-              <Link
-                href={buildCategoryHref(query, parentCategory!.slug)}
-                className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                  isParentActive
-                    ? "bg-primary text-white"
-                    : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
-                }`}
-              >
-                Toate
-              </Link>
-              {siblingCategories.map((sibling) => (
-                <Link
-                  key={sibling.id}
-                  href={buildCategoryHref(query, sibling.slug)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-colors ${
-                    selectedCategory!.id === sibling.id
-                      ? "bg-primary text-white"
-                      : "bg-card border border-border text-foreground hover:border-accent hover:text-accent"
-                  }`}
-                >
-                  {sibling.name}
-                </Link>
-              ))}
-            </div>
+              options={siblingCategories.map((sibling) => ({ value: sibling.slug, label: sibling.name }))}
+            />
           )}
 
           <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -527,7 +487,7 @@ export default async function ProdusePage({
               offersCount={offersCount}
             />
 
-            <div className="flex-1 min-w-0">
+            <PendingRegion className="flex-1 min-w-0">
               {filters.query ? (
                 <p className="text-sm text-muted-foreground mb-3 sm:mb-6">
                   {products.length} rezultate pentru <span className="font-bold text-primary">&ldquo;{filters.query}&rdquo;</span>
@@ -578,10 +538,11 @@ export default async function ProdusePage({
                   ...(filters.priceMax !== null ? { pretMax: String(filters.priceMax) } : {}),
                 }}
               />
-            </div>
+            </PendingRegion>
           </div>
         </div>
       </section>
+      </ProductsNavProvider>
 
     </main>
   );

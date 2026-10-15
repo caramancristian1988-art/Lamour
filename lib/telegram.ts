@@ -1,10 +1,16 @@
-import { SITE_URL } from "./seo";
+import { CART_ORDER_SOURCE } from "./orderStages";
+import { parseCartOrderMessage } from "./orderMessage";
+import { formatKg } from "./orderWeight";
 
 const TELEGRAM_API = "https://api.telegram.org";
 
+// Telegram cere exact una dintre cele două — callback_data pentru butoane
+// gestionate de webhook, url pentru butoane care deschid direct un link
+// (ex: Editează, care duce la /editare-comanda?token=...).
 interface InlineButton {
   text: string;
-  callback_data: string;
+  callback_data?: string;
+  url?: string;
 }
 
 // Telegram respinge orice mesaj peste 4096 de caractere, cu 400 si fara sa trimita
@@ -15,94 +21,93 @@ const TELEGRAM_MAX_LEN = 4096;
 function clampForTelegram(text: string): string {
   if (text.length <= TELEGRAM_MAX_LEN) return text;
   const notice = "\n\n… listă prescurtată, vezi comanda completă în admin.";
-  return text.slice(0, TELEGRAM_MAX_LEN - notice.length) + notice;
+  const head = text.slice(0, TELEGRAM_MAX_LEN - notice.length);
+  // Tăiem la ultimul rând întreg: tagurile HTML (<b>, <a>) sunt închise în cadrul aceluiași rând, deci o tăietură
+  // la mijlocul unui rând ar lăsa un tag deschis și Telegram ar respinge tot mesajul ("can't parse entities").
+  const lastBreak = head.lastIndexOf("\n");
+  return (lastBreak > 0 ? head.slice(0, lastBreak) : head) + notice;
 }
 
-/** Scoate marcajul HTML, pentru retrimiterea ca text simplu. */
-function stripHtml(html: string): string {
-  return html
-    .replace(/<a [^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/g, "$2")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&");
-}
-
-async function postSendMessage(
-  token: string,
-  body: Record<string, unknown>
-): Promise<{ ok: boolean; status: number; data: unknown }> {
-  const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json();
-  return { ok: Boolean((data as { ok?: boolean })?.ok), status: res.status, data };
-}
-
-export async function sendTelegramMessage(text: string, buttons: InlineButton[][]): Promise<number | null> {
+export async function sendTelegramMessage(
+  text: string,
+  buttons: InlineButton[][],
+  replyToMessageId?: number,
+  chatIdOverride?: string
+): Promise<number | null> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const chatId = chatIdOverride ?? process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) {
     console.error("telegram: TELEGRAM_BOT_TOKEN sau TELEGRAM_CHAT_ID lipseste — mesajul nu a fost trimis");
     return null;
   }
 
-  const clamped = clampForTelegram(text);
-
   try {
-    const html = await postSendMessage(token, {
-      chat_id: chatId,
-      text: clamped,
-      parse_mode: "HTML",
-      reply_markup: { inline_keyboard: buttons },
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: clampForTelegram(text),
+        parse_mode: "HTML",
+        // Linkurile către produse din mesaj generau un card mare de previzualizare care acoperea comanda.
+        link_preview_options: { is_disabled: true },
+        reply_markup: { inline_keyboard: buttons },
+        ...(replyToMessageId ? { reply_to_message_id: replyToMessageId, allow_sending_without_reply: true } : {}),
+      }),
     });
-    if (html.ok) return (html.data as { result?: { message_id?: number } })?.result?.message_id ?? null;
-
+    const data = await res.json();
     // Esecurile erau inghitite in tacere, deci o comanda pierduta nu lasa nicio urma.
-    console.error("telegram: varianta HTML respinsa:", html.status, JSON.stringify(html.data));
-
-    // Plasa de siguranta: orice problema de formatare (entitate invalida, link
-    // refuzat) facea sa se piarda comanda intreaga. Continutul conteaza mai mult
-    // decat formatarea, deci reincercam ca text simplu.
-    const plain = await postSendMessage(token, {
-      chat_id: chatId,
-      text: clampForTelegram(stripHtml(clamped)),
-      reply_markup: { inline_keyboard: buttons },
-    });
-    if (plain.ok) {
-      console.error("telegram: trimis ca text simplu, fara formatare");
-      return (plain.data as { result?: { message_id?: number } })?.result?.message_id ?? null;
+    // Acum motivul apare in logurile serverului (description-ul de la Telegram).
+    if (!data?.ok) {
+      console.error("telegram sendMessage a esuat:", res.status, JSON.stringify(data));
+      return null;
     }
-
-    console.error("telegram: si varianta text simplu a esuat:", plain.status, JSON.stringify(plain.data));
-    return null;
+    return data?.result?.message_id ?? null;
   } catch (err) {
     console.error("telegram sendMessage a aruncat:", err);
     return null;
   }
 }
 
-export async function editTelegramMessage(messageId: number, text: string, buttons: InlineButton[][]): Promise<void> {
+// "message is not modified" (400) e o eroare Telegram normală — apasă cineva un buton a
+// doua oară, sau webhook-ul livrează același update de două ori — conținutul e deja cel
+// nou, deci nu e nimic de raportat. Orice ALT 400 (ex. "can't parse entities" dintr-un HTML
+// stricat, sau alt motiv necunoscut) chiar înseamnă că butonul apăsat n-a schimbat nimic
+// vizibil pentru operator — fără logare aici, eșecul ăsta era complet invizibil.
+function isBenignEditError(description: unknown): boolean {
+  return typeof description === "string" && description.includes("message is not modified");
+}
+
+export async function editTelegramMessage(
+  messageId: number,
+  text: string,
+  buttons: InlineButton[][],
+  chatIdOverride?: string
+): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const chatId = chatIdOverride ?? process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) return;
 
   try {
-    await fetch(`${TELEGRAM_API}/bot${token}/editMessageText`, {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/editMessageText`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: chatId,
         message_id: messageId,
-        text,
+        // La fel ca la trimitere: o comandă lungă nu trebuie să facă editarea (schimbare de etapă) să eșueze tăcut.
+        text: clampForTelegram(text),
         parse_mode: "HTML",
+        link_preview_options: { is_disabled: true },
         reply_markup: { inline_keyboard: buttons },
       }),
     });
-  } catch {
-    // ignore
+    const data = await res.json();
+    if (!data?.ok && !isBenignEditError(data?.description)) {
+      console.error("telegram editMessageText a esuat:", res.status, JSON.stringify(data));
+    }
+  } catch (err) {
+    console.error("telegram editMessageText a aruncat:", err);
   }
 }
 
@@ -112,7 +117,7 @@ export async function editTelegramReplyMarkup(messageId: number, buttons: Inline
   if (!token || !chatId) return;
 
   try {
-    await fetch(`${TELEGRAM_API}/bot${token}/editMessageReplyMarkup`, {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/editMessageReplyMarkup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -121,8 +126,12 @@ export async function editTelegramReplyMarkup(messageId: number, buttons: Inline
         reply_markup: { inline_keyboard: buttons },
       }),
     });
-  } catch {
-    // ignore
+    const data = await res.json();
+    if (!data?.ok && !isBenignEditError(data?.description)) {
+      console.error("telegram editMessageReplyMarkup a esuat:", res.status, JSON.stringify(data));
+    }
+  } catch (err) {
+    console.error("telegram editMessageReplyMarkup a aruncat:", err);
   }
 }
 
@@ -141,28 +150,16 @@ export async function answerCallbackQuery(callbackQueryId: string, text?: string
   }
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Aceeasi rezolvare ca restul aplicatiei (include VERCEL_URL), nu una separata
-// care cadea pe localhost cand SITE_URL lipsea.
-function getSiteUrl(): string {
-  return SITE_URL;
-}
-
-// Telegram valideaza URL-urile din <a href> si respinge tot mesajul daca sunt
-// catre localhost sau au alt protocol. Un link decorativ nu are voie sa coste o
-// comanda, asa ca atunci cand adresa nu e publica trimitem text simplu.
-function canLinkToSite(): boolean {
-  try {
-    const url = new URL(SITE_URL);
-    if (url.protocol !== "http:" && url.protocol !== "https:") return false;
-    const host = url.hostname;
-    return host !== "localhost" && host !== "127.0.0.1" && host !== "0.0.0.0" && !host.endsWith(".local");
-  } catch {
-    return false;
-  }
+export function getSiteUrl(): string {
+  // Trim: SITE_URL din Vercel a avut un newline la coadă, iar Telegram respinge tot mesajul
+  // (400 "Disallowed character in URL host") dacă URL-ul unui buton nu e valid.
+  const url = process.env.SITE_URL?.trim().replace(/\/+$/, "");
+  if (url) return url;
+  return "http://localhost:3000";
 }
 
 // Wraps any mentioned product names in an HTML link to that product's page,
@@ -180,8 +177,6 @@ function linkifyProducts(text: string, products: { name: string; slug: string }[
   // ("Taz rotund cu mâner 24 L" ⊂ "Taz rotund cu mâner 24 L (cat II color)").
   // Al doilea replace nimerea inauntrul primului link, iar Telegram respingea
   // tot mesajul cu 400 "can't parse entities", deci comanda se pierdea.
-  if (!canLinkToSite()) return text;
-
   const usable = products
     .map((p) => ({ ...p, escapedName: escapeHtml(p.name) }))
     .filter((p) => p.escapedName)
@@ -198,6 +193,38 @@ function linkifyProducts(text: string, products: { name: string; slug: string }[
   });
 }
 
+// Comenzile din coș: textul stocat (scris de CheckoutPanel, citit și de orderExport/admin — de-asta nu-l
+// schimbăm) e reordonat pe secțiuni pentru Telegram. Dacă structura nu e recunoscută, întoarce null și
+// se folosește formatul vechi, ca nicio comandă să nu se piardă din cauza unei diferențe de format.
+function renderCartOrderBody(raw: string, products: { name: string; slug: string }[], weightKg?: number | null): string | null {
+  const parsed = parseCartOrderMessage(raw);
+  if (!parsed) return null;
+  const { items, totals, address, invoice } = parsed;
+  const clientNote = parsed.clientNote ? [parsed.clientNote] : [];
+
+  const out: string[] = [];
+  out.push("<b>🛒 Produse</b>");
+  items.forEach((it, i) => {
+    out.push(`${i + 1}. ${linkifyProducts(escapeHtml(it.name), products)}`);
+    if (it.qty) out.push(`     ${escapeHtml(it.qty)} × ${escapeHtml(it.unit ?? "")} = <b>${escapeHtml(it.total ?? "")}</b>`);
+    if (it.note) out.push(`     <i>${escapeHtml(it.note)}</i>`);
+  });
+
+  const money: string[] = [];
+  if (totals.subtotal) money.push(`Produse: ${escapeHtml(totals.subtotal)}`);
+  if (totals.savings) money.push(`Economie: ${escapeHtml(totals.savings)}`);
+  if (totals.delivery) money.push(`Livrare${totals.deliveryLabel ? ` (${escapeHtml(totals.deliveryLabel)})` : ""}: ${escapeHtml(totals.delivery)}`);
+  if (totals.total) money.push(`<b>TOTAL: ${escapeHtml(totals.total)}</b>`);
+  if (money.length > 0) out.push("", "<b>💰 Sumar</b>", ...money);
+
+  if (address) out.push("", "<b>🚚 Adresa de livrare</b>", escapeHtml(address));
+  if (weightKg) out.push(`⚖️ Greutate comandă: <b>${escapeHtml(formatKg(weightKg))}</b>`);
+  if (invoice.length > 0) out.push("", "<b>🧾 Factură (companie)</b>", ...invoice.map((l) => escapeHtml(l)));
+  const note = clientNote.join("\n").trim();
+  if (note) out.push("", "<b>💬 Mesaj client</b>", escapeHtml(note));
+  return out.join("\n");
+}
+
 export function buildContactMessageText(message: {
   name: string;
   phone: string;
@@ -207,13 +234,33 @@ export function buildContactMessageText(message: {
   statusLabel: string;
   moodLabel?: string | null;
   products?: { name: string; slug: string }[];
+  orderNumber?: string | null;
+  weightKg?: number | null;
 }): string {
   const products = message.products ?? [];
   const escapedMessage = message.message ? escapeHtml(message.message) : null;
   const escapedSource = escapeHtml(message.source);
 
+  const cartBody = message.source === CART_ORDER_SOURCE && message.message ? renderCartOrderBody(message.message, products, message.weightKg) : null;
+  if (cartBody) {
+    return [
+      message.orderNumber ? `📦 <b>Comandă #${escapeHtml(message.orderNumber)}</b>` : `📦 <b>Comandă nouă</b>`,
+      `📌 <b>${escapeHtml(message.statusLabel)}</b>`,
+      message.moodLabel ? `🙂 Reacție: <b>${escapeHtml(message.moodLabel)}</b>` : null,
+      ``,
+      `<b>👤 Client</b>`,
+      escapeHtml(message.name),
+      `📞 ${escapeHtml(message.phone)}`,
+      message.email ? `✉️ ${escapeHtml(message.email)}` : null,
+      ``,
+      cartBody,
+    ]
+      .filter((l) => l !== null)
+      .join("\n");
+  }
+
   const lines = [
-    `📩 <b>Mesaj nou</b>`,
+    message.orderNumber ? `📦 <b>Comandă #${escapeHtml(message.orderNumber)}</b>` : `📩 <b>Mesaj nou</b>`,
     ``,
     `👤 ${escapeHtml(message.name)}`,
     `📞 ${escapeHtml(message.phone)}`,
@@ -261,4 +308,178 @@ export function buildConfirmButtons(messageId: string, value: string): InlineBut
       { text: "❌ Nu", callback_data: `cancel:${messageId}` },
     ],
   ];
+}
+
+// Fluxul separat pentru comenzi din coș (operator -> depozitar -> curier) —
+// vezi lib/orderStages.ts. Nu se amestecă cu STATUS_BUTTON_ROWS/prefixele
+// "status"/"confirm"/"cancel" de mai sus, ca să nu existe ambiguitate în
+// webhook între cele două fluxuri.
+export function buildOrderStageButtons(
+  messageId: string,
+  stage: string,
+  editUrl: string,
+  canSendInvoice = false,
+  printUrl?: string
+): InlineButton[][] {
+  // Butonul "Factură" apare doar dacă clientul a cerut factură și ea n-a fost trimisă încă.
+  const invoiceRow: InlineButton[][] = canSendInvoice
+    ? [[{ text: "🧾 Trimite factura", callback_data: `ord_invoice:${messageId}` }]]
+    : [];
+  // Fișa de comandă pentru tipărit (se deschide în browser, cu dialogul de imprimare).
+  const printButton: InlineButton[] = printUrl ? [{ text: "🖨 Printează", url: printUrl }] : [];
+  if (stage === "noua") {
+    return [
+      [{ text: "✅ Confirmă", callback_data: `ord_confirm:${messageId}` }],
+      [...printButton, { text: "✏️ Editează", url: editUrl }],
+      ...invoiceRow,
+      [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }],
+    ];
+  }
+  if (stage === "confirmata") {
+    // "Gata de ridicare" e apăsat de depozitar în chatul lui (buildWarehouseButtons), nu de operator.
+    return [...(printButton.length ? [printButton] : []), ...invoiceRow, [{ text: "❌ Anulează", callback_data: `ord_cancel:${messageId}` }]];
+  }
+  return [];
+}
+
+// Linkul fișei de tipărit a unei comenzi. Token-ul e cel al comenzii (același ca la "Editează"): depozitarul nu are cont,
+// deci linkul din Telegram e singura cheie de acces (pagina se deschide fără login doar cu token valid).
+export function buildOrderPrintUrl(messageId: string, token: string | null | undefined): string | undefined {
+  if (!token) return undefined;
+  return `${getSiteUrl()}/comanda-print?id=${messageId}&token=${token}&auto=1`;
+}
+
+// Numele botului, necesar pentru linkul de conectare t.me/<bot>?start=<token>. Din env dacă e setat
+// (TELEGRAM_BOT_USERNAME, fără @), altfel îl cerem o dată de la Telegram (getMe) și îl ținem minte.
+let cachedBotUsername: string | null = null;
+
+export async function getBotUsername(): Promise<string | null> {
+  const fromEnv = process.env.TELEGRAM_BOT_USERNAME?.trim().replace(/^@/, "");
+  if (fromEnv) return fromEnv;
+  if (cachedBotUsername) return cachedBotUsername;
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return null;
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/getMe`);
+    const data = await res.json();
+    cachedBotUsername = data?.result?.username ?? null;
+  } catch (err) {
+    console.error("telegram getMe a aruncat:", err);
+  }
+  return cachedBotUsername;
+}
+
+// Mesajul comenzii unei comenzi din coș conține un bloc "🧾 CERE FACTURĂ (companie):" cu datele
+// firmei (vezi CheckoutPanel) — butonul "Factură" apare doar când blocul există.
+export function extractInvoiceBlock(message: string | null): string | null {
+  if (!message) return null;
+  const start = message.indexOf("🧾 CERE FACTURĂ");
+  if (start === -1) return null;
+  const rest = message.slice(start);
+  const end = rest.indexOf("\n\n");
+  return (end === -1 ? rest : rest.slice(0, end)).trim();
+}
+
+// Butoanele de etichetă apar doar dacă comanda are deja AWB: eticheta (PDF cu cod de bare) se lipește pe colet.
+export function buildWarehouseButtons(messageId: string, stage: string, hasAwb = false, printUrl?: string): InlineButton[][] {
+  const printRow: InlineButton[][] = printUrl ? [[{ text: "🖨 Printează comanda", url: printUrl }]] : [];
+  const labelRow: InlineButton[][] = hasAwb
+    ? [
+        [
+          { text: "🏷 Etichetă A4", callback_data: `ord_label:${messageId}:a4` },
+          { text: "🏷 Etichetă 100×100", callback_data: `ord_label:${messageId}:100` },
+        ],
+      ]
+    : [];
+  if (stage === "confirmata") {
+    return [...printRow, ...labelRow, [{ text: "📦 Gata de ridicare", callback_data: `ord_ready:${messageId}` }]];
+  }
+  if (stage === "predata_curier") return [...printRow, ...labelRow];
+  return [];
+}
+
+
+// Textul mesajului principal al comenzii e editat în același loc la fiecare tranziție de
+// etapă (syncOrderTelegramMessage) — dar Telegram NU trimite nicio notificare la o editare
+// (editMessageText e silențios), doar la un mesaj nou. Fără asta, depozitarul/curierul ar afla
+// că e rândul lor doar dacă deschid manual Telegram și dau scroll până la comandă. Un mesaj
+// nou, scurt, ca reply la cel principal, produce o notificare reală, păstrând totuși contextul
+// (thread-ul de reply arată la ce comandă se referă).
+const STAGE_NOTIFICATION_TEXT: Partial<Record<string, (label: string) => string>> = {
+  confirmata: (label) => `✅ ${label} confirmată — AWB creat, trimisă depozitarului.`,
+  predata_curier: (label) => `📦 ${label} gata de ridicare — curierul o poate prelua.`,
+  anulata: (label) => `❌ ${label} anulată.`,
+};
+
+export async function notifyOrderStageChange(
+  stage: string,
+  orderNumber: string | null,
+  replyToMessageId: number | null,
+  extraChatIds: string[] = []
+): Promise<void> {
+  const build = STAGE_NOTIFICATION_TEXT[stage];
+  if (!build) return;
+  const label = orderNumber ? `Comanda #${orderNumber}` : "Comanda";
+  await sendTelegramMessage(build(label), [], replyToMessageId ?? undefined);
+  // Conturi de staff conectate (manager / curier) — chat-uri separate, deci fără reply.
+  await Promise.all(extraChatIds.map((chatId) => sendTelegramMessage(build(label), [], undefined, chatId)));
+}
+
+export function buildOrderCancelConfirmButtons(messageId: string): InlineButton[][] {
+  return [
+    [
+      { text: "✅ Da, anulează", callback_data: `ord_cancel_yes:${messageId}` },
+      { text: "↩️ Renunță", callback_data: `ord_cancel_no:${messageId}` },
+    ],
+  ];
+}
+
+// Descarcă un fișier trimis botului (document atașat la un mesaj) — folosit pentru "comandă din fișier".
+// Limita Bot API pentru descărcare e 20 MB; MAX_ORDER_FILE_BYTES (5 MB) e verificată separat, înainte de apel.
+export async function downloadTelegramFile(fileId: string): Promise<Buffer | null> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return null;
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/getFile?file_id=${encodeURIComponent(fileId)}`);
+    const data = await res.json();
+    const filePath = data?.result?.file_path;
+    if (!data?.ok || !filePath) {
+      console.error("telegram getFile a esuat:", res.status, JSON.stringify(data));
+      return null;
+    }
+    const fileRes = await fetch(`${TELEGRAM_API}/file/bot${token}/${filePath}`, { signal: AbortSignal.timeout(30000) });
+    if (!fileRes.ok) {
+      console.error("telegram: descărcarea fișierului a eșuat:", fileRes.status);
+      return null;
+    }
+    return Buffer.from(await fileRes.arrayBuffer());
+  } catch (err) {
+    console.error("telegram downloadTelegramFile a aruncat:", err);
+    return null;
+  }
+}
+
+// Trimite un fișier PDF (ex. eticheta AWB) într-un chat, ca document.
+export async function sendTelegramDocument(chatId: string, pdf: Buffer, filename: string, caption?: string): Promise<boolean> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return false;
+  try {
+    const form = new FormData();
+    form.set("chat_id", chatId);
+    if (caption) {
+      form.set("caption", caption);
+      form.set("parse_mode", "HTML");
+    }
+    form.set("document", new Blob([new Uint8Array(pdf)], { type: "application/pdf" }), filename);
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendDocument`, { method: "POST", body: form, signal: AbortSignal.timeout(30000) });
+    const data = await res.json();
+    if (!data?.ok) {
+      console.error("telegram sendDocument a esuat:", res.status, JSON.stringify(data));
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("telegram sendDocument a aruncat:", err);
+    return false;
+  }
 }

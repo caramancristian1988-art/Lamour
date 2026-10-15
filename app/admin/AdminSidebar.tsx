@@ -18,6 +18,7 @@ import {
   HelpCircle,
   Settings,
   Users,
+  Send,
   ArrowLeft,
   LogOut,
   Menu,
@@ -45,6 +46,7 @@ const navItems = [
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/faq", label: "Întrebări frecvente", icon: HelpCircle },
   { href: "/admin/setari", label: "Setări", icon: Settings },
+  { href: "/admin/telegram", label: "Telegram", icon: Send },
   { href: "/admin/utilizatori", label: "Utilizatori", icon: Users },
 ];
 

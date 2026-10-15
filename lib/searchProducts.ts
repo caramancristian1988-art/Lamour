@@ -1,4 +1,4 @@
-import { prisma } from "./prisma";
+import { getCatalog } from "./catalog";
 import {
   fallbackCategories,
   fallbackProducts,
@@ -19,10 +19,7 @@ export interface SearchResult {
 
 async function getSearchableData() {
   try {
-    const [categories, products] = await Promise.all([
-      prisma.category.findMany(),
-      prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
-    ]);
+    const { categories, products } = await getCatalog();
     if (categories.length === 0 || products.length === 0) throw new Error("empty");
     return { categories, products };
   } catch {
@@ -41,9 +38,12 @@ async function getSearchableData() {
         specifications: [] as { label: string; value: string }[],
         popupEnabled: false,
         installmentsEnabled: true,
+        warrantyEnabled: null as boolean | null,
+        code: null as string | null,
         variantGroupId: null as string | null,
         variantLabel: null as string | null,
         salesCount: 0,
+        weightKg: null as number | null,
       })),
     };
   }
@@ -60,7 +60,7 @@ export async function searchProducts(query: string, limit = 6): Promise<SearchRe
     products,
     filters,
     undefined,
-    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.id.slice(-6)}`
+    (p) => `${categoryNameById.get(p.categoryId) ?? ""} ${p.id} ${p.code ?? p.id.slice(-6)}`
   );
 
   return matched.slice(0, limit).map((p) => ({

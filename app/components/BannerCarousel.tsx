@@ -62,7 +62,10 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
                 src={banner.image}
                 alt={banner.alt}
                 fill
-                priority={i === 0}
+                // Primul banner e elementul LCP: în Next 16 `priority` e depreciat, iar documentația recomandă
+                // loading="eager" + fetchPriority="high" (fără fetchPriority browserul îl cerea cu prioritate joasă).
+                loading={i === 0 ? "eager" : "lazy"}
+                fetchPriority={i === 0 ? "high" : "auto"}
                 className="object-cover"
                 sizes="(min-width: 1280px) 1280px, 100vw"
               />
@@ -137,13 +140,18 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
 
           <div className="absolute bottom-4 inset-x-0 z-20 flex items-center justify-center gap-2">
             {banners.map((banner, i) => (
+              // Zonă de atingere de 24×24px (minimul WCAG 2.5.8); punctul vizibil rămâne mic, în interior.
               <button
                 key={banner.id}
                 onClick={() => goTo(i)}
                 aria-label={`Mergi la bannerul ${i + 1}`}
                 aria-current={i === active}
-                className={`h-2 rounded-full transition-all ${i === active ? "w-6 bg-white" : "w-2 bg-white/60 hover:bg-white/80"}`}
-              />
+                className="group/dot flex h-6 min-w-6 items-center justify-center"
+              >
+                <span
+                  className={`block h-2 rounded-full transition-all ${i === active ? "w-6 bg-white" : "w-2 bg-white/60 group-hover/dot:bg-white/80"}`}
+                />
+              </button>
             ))}
           </div>
         </>

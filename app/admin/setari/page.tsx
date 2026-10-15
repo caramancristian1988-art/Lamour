@@ -129,6 +129,51 @@ export default async function AdminSetariPage({
         </div>
 
         <div>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">Livrare</p>
+          <p className="text-xs text-muted-foreground mb-3">
+            Cele 2 tarife afișate clientului la finalizarea comenzii, în funcție de localitatea introdusă.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+              <Label htmlFor="field-deliveryPriceChisinau" className="cursor-pointer font-normal">
+                <span className="block text-sm font-bold text-primary">Preț livrare Chișinău</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">Tariful pentru comenzi livrate în Chișinău.</span>
+              </Label>
+              <div className="flex items-center gap-2 shrink-0">
+                <input
+                  id="field-deliveryPriceChisinau"
+                  type="number"
+                  name="deliveryPriceChisinau"
+                  min={0}
+                  step="0.01"
+                  defaultValue={settings?.deliveryPriceChisinau ?? 0}
+                  className="w-24 border-2 border-input rounded-lg px-3 py-2 text-sm text-center bg-card text-foreground focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20"
+                />
+                <span className="text-xs text-muted-foreground">MDL</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-3 border border-border rounded-xl px-4 py-3.5">
+              <Label htmlFor="field-deliveryPriceNational" className="cursor-pointer font-normal">
+                <span className="block text-sm font-bold text-primary">Preț livrare național</span>
+                <span className="block text-xs text-muted-foreground mt-0.5">Tariful pentru comenzi livrate în restul țării.</span>
+              </Label>
+              <div className="flex items-center gap-2 shrink-0">
+                <input
+                  id="field-deliveryPriceNational"
+                  type="number"
+                  name="deliveryPriceNational"
+                  min={0}
+                  step="0.01"
+                  defaultValue={settings?.deliveryPriceNational ?? 0}
+                  className="w-24 border-2 border-input rounded-lg px-3 py-2 text-sm text-center bg-card text-foreground focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20"
+                />
+                <span className="text-xs text-muted-foreground">MDL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
           <p className="text-xs font-extrabold uppercase tracking-wide text-primary mb-3">Rețele sociale</p>
           <p className="text-xs text-muted-foreground mb-3">Linkurile către care duc iconițele din footer. Lasă gol ca să ascunzi o iconiță.</p>
           <div className="flex flex-col gap-3">

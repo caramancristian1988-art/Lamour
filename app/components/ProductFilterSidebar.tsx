@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useProductsNavigate, usePendingHref } from "./ProductsNav";
 import { SlidersHorizontal, X } from "lucide-react";
 import { type SortKey } from "@/lib/productListing";
 import ProductSortSelect from "./ProductSortSelect";
 import PriceRangeSlider from "./PriceRangeSlider";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/app/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/app/components/ui/sheet";
 import { Checkbox } from "@/app/components/ui/checkbox";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
@@ -74,10 +75,15 @@ function FilterGroup({
 }
 
 export default function ProductFilterSidebar({ sort, categories, brands, priceBounds, offersCount }: Props) {
-  const router = useRouter();
+  const navigate = useProductsNavigate();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const urlParams = useSearchParams();
+  const pendingHref = usePendingHref();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Optimist: cât timp se încarcă lista nouă, bifele/prețul/filtrele active se citesc din destinația aleasă, nu din URL-ul
+  // vechi — altfel o bifă apăsată se "întorcea" până răspundea serverul, iar două apăsări rapide nu se cumulau.
+  const searchParams = pendingHref ? new URLSearchParams(pendingHref.split("?")[1] ?? "") : urlParams;
 
   const selectedCats = searchParams.get("cat")?.split(",").filter(Boolean) ?? [];
   const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) ?? [];
@@ -90,7 +96,7 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
   function go(params: URLSearchParams) {
     params.delete("page");
     const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    navigate(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }
 
   function toggleListParam(key: string, value: string) {
@@ -232,11 +238,24 @@ export default function ProductFilterSidebar({ sort, categories, brands, priceBo
       <aside className="hidden lg:block w-64 shrink-0">{sidebarContent}</aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="lg:hidden overflow-y-auto">
-          <SheetHeader>
+        {/* Antet fix + zonă derulabilă separată: butonul X rămâne mereu vizibil (înainte era în zona care se derula și dispărea),
+            iar jos rămâne un buton mare pentru a vedea rezultatele. */}
+        <SheetContent
+          side="left"
+          className="lg:hidden gap-0 overflow-hidden p-0"
+          closeClassName="right-3 top-3 flex h-11 w-11 items-center justify-center bg-primary text-primary-foreground shadow-md hover:bg-primary hover:text-primary-foreground [&>svg]:h-6 [&>svg]:w-6"
+        >
+          <SheetHeader className="shrink-0 border-b border-border bg-card px-6 py-4 pr-20">
             <SheetTitle>Filtre</SheetTitle>
           </SheetHeader>
-          {sidebarContent}
+          <div className="flex-1 overflow-y-auto px-6 py-5">{sidebarContent}</div>
+          <div className="shrink-0 border-t border-border bg-card p-4">
+            <SheetClose asChild>
+              <Button variant="accent" size="lg" className="w-full">
+                Vezi produsele
+              </Button>
+            </SheetClose>
+          </div>
         </SheetContent>
       </Sheet>
     </>

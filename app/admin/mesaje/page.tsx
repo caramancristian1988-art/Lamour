@@ -14,7 +14,7 @@ async function getMessages() {
 async function getProductsByIds(ids: string[]) {
   if (ids.length === 0) return [];
   try {
-    return await prisma.product.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, slug: true } });
+    return await prisma.product.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, slug: true, code: true } });
   } catch (e) {
     console.error("mesaje: failed to load products", e);
     return [];

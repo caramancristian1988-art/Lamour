@@ -67,7 +67,7 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
           </div>
 
           <div className="sm:col-span-2 lg:col-span-1">
-            <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Abonează-te</h4>
+            <h3 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Abonează-te</h3>
             <p className="text-white/70 text-sm leading-relaxed mb-4">
               Primește noutăți și oferte speciale direct pe email.
             </p>
@@ -75,7 +75,7 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
           </div>
 
           <div>
-            <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Link-uri utile</h4>
+            <h3 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Link-uri utile</h3>
             <ul className="space-y-3">
               {usefulLinks.map((link) => (
                 <li key={link.label}>
@@ -88,7 +88,7 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
           </div>
 
           <div>
-            <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Informații</h4>
+            <h3 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Informații</h3>
             <ul className="space-y-3">
               {infoLinks.map((link) => (
                 <li key={link.label}>
@@ -101,7 +101,7 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
           </div>
 
           <div>
-            <h4 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Contacte</h4>
+            <h3 className="text-xs font-bold text-brand-rose-light uppercase tracking-wider mb-4">Contacte</h3>
             <ul className="space-y-3">
               {address && (
                 <li className="flex items-start gap-2 text-sm text-white/70">
@@ -152,7 +152,7 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
       </div>
 
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-4 text-center text-xs text-white/50">
+        <div className="max-w-7xl mx-auto px-4 py-4 text-center text-xs text-white/75">
           © {new Date().getFullYear()} {SITE_NAME}. Toate drepturile rezervate.
         </div>
       </div>

@@ -1,10 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
+import { CATALOG_TAG } from "./catalog";
 import { parseDecimalInput } from "./pricing";
+import { slugify } from "./slugify";
 
 export interface ProductFormState {
   error?: string;
@@ -51,6 +53,13 @@ interface VariantRowInput {
   unit: string;
   price: number;
   oldPrice: number | null;
+  weightKg: number | null;
+}
+
+// Greutate în kg din câmpul de formular (acceptă virgulă): gol / 0 / negativ = fără greutate (null).
+function parseWeightKg(raw: FormDataEntryValue | string | null | undefined): number | null {
+  const n = parseDecimalInput(raw ?? "");
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 1000) / 1000 : null;
 }
 
 // Lets an admin add extra size/quantity variants straight from the "new
@@ -62,6 +71,7 @@ function parseVariantRows(formData: FormData): VariantRowInput[] {
   const units = formData.getAll("variantRowUnit").map((v) => String(v).trim());
   const prices = formData.getAll("variantRowPrice").map((v) => String(v).trim());
   const oldPrices = formData.getAll("variantRowOldPrice").map((v) => String(v).trim());
+  const weights = formData.getAll("variantRowWeight").map((v) => String(v).trim());
 
   const rows: VariantRowInput[] = [];
   for (let i = 0; i < qtys.length; i++) {
@@ -69,18 +79,9 @@ function parseVariantRows(formData: FormData): VariantRowInput[] {
     if (!qtys[i] && !units[i]) continue;
     if (!price || price <= 0) continue;
     const oldPrice = parseDecimalInput(oldPrices[i]);
-    rows.push({ qty: qtys[i], unit: units[i], price, oldPrice: Number.isFinite(oldPrice) ? oldPrice : null });
+    rows.push({ qty: qtys[i], unit: units[i], price, oldPrice: Number.isFinite(oldPrice) ? oldPrice : null, weightKg: parseWeightKg(weights[i]) });
   }
   return rows;
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 async function uniqueSlug(base: string): Promise<string> {
@@ -93,9 +94,47 @@ async function uniqueSlug(base: string): Promise<string> {
   return slug;
 }
 
+// Litere/cifre, cu cratimă permisă în interior (ex. "LT-141"): fără spații și fără alte semne, ca
+// să rămână ușor de dictat/tastat la telefon. Cratima nu poate fi la început/sfârșit sau dublă.
+const PRODUCT_CODE_RE = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
+const PRODUCT_CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+function normalizeProductCode(raw: string): string {
+  return raw.trim().toUpperCase();
+}
+
+function randomProductCode(): string {
+  let code = "";
+  for (let i = 0; i < 6; i++) code += PRODUCT_CODE_CHARS[Math.floor(Math.random() * PRODUCT_CODE_CHARS.length)];
+  return code;
+}
+
+// Lăsat gol în formular -> generat automat (un admin nu trebuie să inventeze un cod pentru
+// fiecare produs nou); completat manual -> verificat că nu se repetă pe alt produs.
+async function resolveProductCode(rawCode: string, excludeId?: string): Promise<{ code: string } | { error: string }> {
+  const trimmed = rawCode.trim();
+  if (!trimmed) {
+    let code = randomProductCode();
+    while (await prisma.product.findUnique({ where: { code } })) code = randomProductCode();
+    return { code };
+  }
+
+  const code = normalizeProductCode(trimmed);
+  if (!PRODUCT_CODE_RE.test(code)) {
+    return { error: "Codul produsului poate conține doar litere, cifre și cratimă între ele (ex. LT-141), fără spații sau alte semne." };
+  }
+  const existing = await prisma.product.findUnique({ where: { code }, select: { id: true } });
+  if (existing && existing.id !== excludeId) {
+    return { error: `Există deja un produs cu codul "${code}".` };
+  }
+  return { code };
+}
+
 function readProductFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
-  const slug = String(formData.get("slug") ?? "").trim();
+  // Slug-ul se normalizează mereu aici (fără diacritice/spații/majuscule), indiferent ce a tastat adminul —
+  // altfel pagina produsului nu s-ar mai găsi după URL. Gol -> se generează din nume.
+  const slug = slugify(String(formData.get("slug") ?? "")) || slugify(name);
   const description = String(formData.get("description") ?? "").trim();
   const price = parseDecimalInput(formData.get("price")) || 0;
   const oldPrice = parseDecimalInput(formData.get("oldPrice"));
@@ -105,10 +144,12 @@ function readProductFields(formData: FormData) {
   const images = parseImageLines(formData);
   const priceTiers = parsePriceTiers(formData);
   const packageQuantity = String(formData.get("packageQuantity") ?? "").trim() || null;
+  const weightKg = parseWeightKg(formData.get("weightKg"));
   const brand = String(formData.get("brand") ?? "").trim() || null;
   const badge = String(formData.get("badge") ?? "").trim() || null;
   const availability = String(formData.get("availability") ?? "").trim() || "În stoc";
   const installmentsEnabled = formData.get("installmentsEnabled") === "on";
+  const warrantyEnabled = formData.get("warrantyEnabled") === "on";
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const specifications = parseSpecifications(formData);
   const variantGroupId = String(formData.get("variantGroupId") ?? "").trim() || null;
@@ -130,10 +171,12 @@ function readProductFields(formData: FormData) {
     images,
     priceTiers,
     packageQuantity,
+    weightKg,
     brand,
     badge,
     availability,
     installmentsEnabled,
+    warrantyEnabled,
     categoryId,
     specifications,
     variantGroupId,
@@ -157,29 +200,40 @@ export async function createProductAction(_prevState: ProductFormState, formData
   const existing = await prisma.product.findUnique({ where: { slug: data.slug } });
   if (existing) return { error: "Există deja un produs cu acest slug." };
 
-  const created = await prisma.product.create({ data });
+  const codeResult = await resolveProductCode(String(formData.get("code") ?? ""));
+  if ("error" in codeResult) return { error: codeResult.error };
+
+  const created = await prisma.product.create({ data: { ...data, code: codeResult.code } });
 
   // Extra size/quantity variants entered on the same "new product" form —
   // only meaningful when this product isn't itself already a variant of
-  // something else.
+  // something else. Fiecare variantă e propriul Product, deci are nevoie de
+  // propriul cod (generat automat — nu are sens ca admin să tasteze unul
+  // manual pentru fiecare mărime).
   if (!data.variantGroupId) {
     for (const row of parseVariantRows(formData)) {
       const label = [row.qty, row.unit].filter(Boolean).join(" ");
       const variantName = `${data.name} ${label}`.trim();
       const slug = await uniqueSlug(slugify(variantName));
+      const variantCode = await resolveProductCode("");
+      if ("error" in variantCode) continue;
       await prisma.product.create({
         data: {
           name: variantName,
           slug,
+          code: variantCode.code,
           description: data.description,
           price: row.price,
           oldPrice: row.oldPrice,
           image: data.image,
           images: data.images,
           packageQuantity: data.packageQuantity,
+          // Varianta are greutatea ei (dacă a fost completată pe rând), altfel o moștenește de la produsul principal.
+          weightKg: row.weightKg ?? data.weightKg,
           brand: data.brand,
           availability: data.availability,
           installmentsEnabled: data.installmentsEnabled,
+          warrantyEnabled: data.warrantyEnabled,
           categoryId: data.categoryId,
           specifications: data.specifications,
           variantGroupId: created.id,
@@ -193,6 +247,7 @@ export async function createProductAction(_prevState: ProductFormState, formData
   if (data.variantGroupId) await revalidateVariantFamily(data.variantGroupId);
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   revalidatePath(`/produse/${data.slug}`);
   revalidatePath("/");
   redirect("/admin/produse");
@@ -251,9 +306,12 @@ export async function updateProductAction(_prevState: ProductFormState, formData
   const existing = await prisma.product.findUnique({ where: { slug: data.slug } });
   if (existing && existing.id !== id) return { error: "Există deja un produs cu acest slug." };
 
+  const codeResult = await resolveProductCode(String(formData.get("code") ?? ""), id);
+  if ("error" in codeResult) return { error: codeResult.error };
+
   const previous = await prisma.product.findUnique({ where: { id }, select: { variantGroupId: true, categoryId: true } });
 
-  await prisma.product.update({ where: { id }, data });
+  await prisma.product.update({ where: { id }, data: { ...data, code: codeResult.code } });
   await revalidateVariantFamily(id);
   if (previous?.variantGroupId && previous.variantGroupId !== data.variantGroupId) {
     await revalidateVariantFamily(previous.variantGroupId);
@@ -264,6 +322,7 @@ export async function updateProductAction(_prevState: ProductFormState, formData
   }
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   revalidatePath(`/produse/${data.slug}`);
   revalidatePath("/");
   redirect("/admin/produse");
@@ -287,6 +346,7 @@ export async function updateVariantPriceAction(formData: FormData) {
   await revalidateVariantFamily(id);
   const product = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
   if (product?.slug) revalidatePath(`/produse/${product.slug}`);
+  updateTag(CATALOG_TAG);
   revalidatePath("/admin/produse");
   if (returnId) revalidatePath(`/admin/produse/${returnId}`);
 }
@@ -305,6 +365,20 @@ export async function deleteProductAction(formData: FormData) {
   if (product?.categoryId) await revalidateCategoryPaths([product.categoryId]);
   revalidatePath("/admin/produse");
   revalidatePath("/produse");
+  updateTag(CATALOG_TAG);
   if (product?.slug) revalidatePath(`/produse/${product.slug}`);
   revalidatePath("/");
+}
+
+// Editorul rapid de greutate din lista de produse (sunt sute de produse de completat — fără să deschizi fiecare formular).
+export async function updateProductWeightAction(formData: FormData): Promise<{ ok: boolean; weightKg: number | null; error?: string }> {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const raw = String(formData.get("weightKg") ?? "").trim();
+  if (!id) return { ok: false, weightKg: null, error: "Produs invalid." };
+  const weightKg = raw ? parseWeightKg(raw) : null;
+  if (raw && weightKg === null) return { ok: false, weightKg: null, error: "Introdu o greutate în kg, mai mare ca 0 (ex. 0,35)." };
+  await prisma.product.update({ where: { id }, data: { weightKg } });
+  revalidatePath("/admin/produse");
+  return { ok: true, weightKg };
 }

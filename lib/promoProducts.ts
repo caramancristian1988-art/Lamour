@@ -1,5 +1,4 @@
 import { prisma } from "./prisma";
-import { fallbackOfferProducts } from "./fallbackData";
 
 export async function getPromoProducts(categorySlug?: string, take = 4) {
   try {
@@ -22,8 +21,8 @@ export async function getPromoProducts(categorySlug?: string, take = 4) {
       });
     }
 
-    return products.length > 0 ? products : fallbackOfferProducts.slice(0, take);
+    return products;
   } catch {
-    return fallbackOfferProducts.slice(0, take);
+    return [];
   }
 }

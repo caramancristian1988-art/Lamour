@@ -31,6 +31,14 @@ model Product {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   slug        String   @unique
+  // "Cod produs" afișat operatorilor și clienților — inițial derivat din id (ultimele 6
+  // caractere hex), acum câmp real, editabil din admin (vezi lib/adminProductActions.ts):
+  // doar litere/cifre, fără semne, unic pe tot catalogul. Opțional în schemă (nu String
+  // simplu) — produsele existente, dinainte de acest câmp, nu-l au deloc în MongoDB, iar
+  // Prisma refuză să le citească dacă tipul e obligatoriu. Aplicația garantează totuși
+  // completarea lui la orice creare/editare (vezi resolveProductCode); null rămâne doar
+  // tranzitoriu, până la backfill (vezi scripts/backfill-product-code.mjs).
+  code        String?  @unique
   description String?
   price       Float
   oldPrice    Float?
@@ -45,6 +53,9 @@ model Product {
   image       String?
   images      String[] @default([])
   packageQuantity String?
+  // Greutatea unei bucăți, în kg (ex. 0.35) — greutatea comenzii = suma greutăților × cantități, folosită la AWB (lib/orderWeight.ts).
+  // Lipsă = se socotește 1 kg/buc.
+  weightKg    Float?
   brand       String?
   rating      Float    @default(0)
   reviewCount Int      @default(0)
@@ -56,6 +67,10 @@ model Product {
   salesCount  Int     @default(0)
   popupEnabled Boolean @default(false)
   installmentsEnabled Boolean @default(true)
+  // Opțional (nu required cu default) ca produsele existente, fără câmpul în MongoDB,
+  // să se citească fără eroare. null/true = afișează "Garanție 2 ani" pe pagina produsului;
+  // false = produs fără garanție (consumabile: hârtie, chibrituri) — în loc apare alt avantaj.
+  warrantyEnabled Boolean?
   specifications ProductSpec[]
   categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])
@@ -213,6 +228,63 @@ model ContactMessage {
   telegramMessageId Int?
   productIds        String[] @default([]) @db.ObjectId
   createdAt         DateTime @default(now())
+  // Adresa de livrare structurată, completată doar la comenzile din coș
+  // (CheckoutPanel) — necesară ca să putem crea automat expedierea EVS
+  // Express fără intervenție manuală (mesajele de tip "Cere consultație"
+  // nu au aceste câmpuri, deci nu sunt expediate automat).
+  deliveryLocality  String?
+  deliveryAddress   String?
+  deliveryZip       String?
+  deliveryWeightKg  Float?
+  deliveryCodAmount Float?
+  // Fluxul de fulfillment (operator -> depozitar -> curier), doar pentru
+  // comenzile din coș — vezi lib/orderStages.ts. Null pentru celelalte
+  // tipuri de mesaje, care rămân pe fluxul vechi (status/mood).
+  orderStage        String?
+  // Număr de comandă scurt ("42"), atribuit automat secvențial la creare (vezi
+  // lib/orderNumber.ts) — util ca referință telefonică/pe hârtie, spre deosebire
+  // de id-ul intern din bază. Editabil din admin (poate fi suprascris cu orice
+  // text, ex. ca să corespundă cu numărul dintr-un alt sistem), de-asta e String
+  // și nu are @unique — un admin poate seta manual acelși număr pe două comenzi.
+  orderNumber       String?
+  // Token opac, per comandă — dă acces la linkul "Editează" din Telegram,
+  // fără login separat pentru operatori. Index normal, nu @unique: pe
+  // MongoDB un index unic pe un câmp opțional respinge orice al doilea
+  // document cu valoarea absentă/null (toate mesajele vechi, fără token),
+  // ceea ce bloca sincronizarea schemei. Riscul de coliziune e neglijabil
+  // (192 de biți aleatori per token).
+  editToken         String?
+  // Produsele comenzii cu cantități ([{ productId, quantity }]) — spre
+  // deosebire de productIds (doar id-uri), permite reconstruirea coșului
+  // la editare cu cantitățile corecte.
+  orderItems        Json?
+  // Livrare EVS Express — completate când e creată expedierea (automat la
+  // predarea către curier, sau manual din /admin/mesaje). awbStatus e
+  // ultimul status citit de la EVS (GetGroupAWBActions).
+  awbCode           String?
+  awbStatus         String?
+  awbCreatedAt      DateTime?
+  // true = livrăm noi (fără curier EVS): la confirmare și la "Gata de ridicare" nu se încearcă AWB/ridicare EVS.
+  // Setat pentru comenzile din fișier (PDF/Excel) care nu cer explicit EVS. Null/false = fluxul EVS obișnuit.
+  ownDelivery       Boolean?
+  // Copiile mesajului comenzii trimise depozitarilor ([{ chatId, messageId }]) — editate
+  // când comanda e gata de ridicare sau anulată.
+  warehouseMessages Json?
+  // Copia comenzii (același text ca în grupul principal, fără butoane) trimisă contabililor în privat,
+  // când comanda cere factură — [{ chatId, messageId }], editată odată cu mesajul principal.
+  accountantMessages Json?
+  // Setat când operatorul a trimis factura la contabil (butonul "Factură" din Telegram).
+  invoiceSentAt     DateTime?
+
+  @@index([editToken])
+}
+
+// Contor atomic pentru numerotarea secvențială a comenzilor (vezi lib/orderNumber.ts).
+// Un singur document, name="order" — incrementat cu $inc la fiecare comandă nouă din coș.
+model Counter {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String @unique
+  value Int    @default(0)
 }
 
 model PopupEvent {
@@ -239,6 +311,10 @@ model Settings {
   ratesEnabled    Boolean @default(true)
   installmentMonths Int @default(4)
   popupCountdownMinutes Int @default(10)
+  // Cele 2 tarife de livrare afișate la checkout — Chișinău (local) vs restul
+  // țării (național). Editabile din /admin/setari, în loc să fie fixe în cod.
+  deliveryPriceChisinau  Float @default(0)
+  deliveryPriceNational  Float @default(0)
   // Hex colors for the discount popup only (DiscountPopup.tsx) — null means
   // keep the site's default theme colors. Never applied anywhere else.
   popupButtonColor String?
@@ -253,6 +329,30 @@ model User {
   isAdmin   Boolean   @default(false)
   createdAt DateTime  @default(now())
   sessions  Session[]
+}
+
+// Cereri recente pe acțiunile publice (vezi lib/rateLimit.ts) — key = "<acțiune>:<IP sau email>".
+model RateLimitHit {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+// Persoană care primește notificări de comenzi pe Telegram (depozitar, contabil, curier, manager) —
+// separată de User: nu are nevoie de cont/parolă pe site, deci nici de acces în panoul de administrare.
+// Adminul o adaugă în /admin/telegram și îi trimite linkul t.me/<bot>?start=<linkToken>; la Start,
+// webhook-ul salvează chatId (token de unică folosință, șters după legare).
+model TelegramRecipient {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  role      String
+  chatId    String?
+  linkToken String?
+  createdAt DateTime @default(now())
+
+  @@index([linkToken])
 }
 
 model Session {

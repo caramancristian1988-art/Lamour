@@ -10,9 +10,14 @@ import Footer from "./Footer";
 import FloatingContact from "./FloatingContact";
 import DiscountPopup from "./DiscountPopup";
 
+// Pagini fără antetul/subsolul site-ului: admin și fișa de comandă pentru tipărire.
+function isChromeHidden(pathname: string | null): boolean {
+  return Boolean(pathname?.startsWith("/admin") || pathname?.startsWith("/comanda-print"));
+}
+
 export function SiteHeader(props: Partial<SectionFlags> & { categories?: HeaderCategory[] } & Partial<ContactInfo>) {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
+  if (isChromeHidden(pathname)) return null;
 
   return (
     <>
@@ -30,18 +35,21 @@ export function SiteHeader(props: Partial<SectionFlags> & { categories?: HeaderC
 
 export function SiteFooter(props: Partial<SocialLinks> & Partial<ContactInfo>) {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
+  if (isChromeHidden(pathname)) return null;
 
   return <Footer {...props} />;
 }
 
 export function SiteFloatingContact(props: Partial<ContactInfo>) {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
+  if (isChromeHidden(pathname)) return null;
 
   return <FloatingContact phone={props.phone} phoneTel={props.phoneTel} phoneDigits={props.phoneDigits} />;
 }
 
 export function SiteDiscountPopup(props: Partial<PopupColors>) {
+  const pathname = usePathname();
+  if (isChromeHidden(pathname)) return null;
+
   return <DiscountPopup buttonColor={props.buttonColor ?? null} bannerColor={props.bannerColor ?? null} />;
 }

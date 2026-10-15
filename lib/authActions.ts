@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { createSession, destroySession } from "./auth";
 import { requireAdmin } from "./adminAuth";
+import { allowRequest, getClientIp, TOO_MANY_REQUESTS } from "./rateLimit";
 
 export interface AuthFormState {
   error?: string;
@@ -47,6 +48,14 @@ export async function loginAction(_prevState: AuthFormState, formData: FormData)
 
   if (!email || !password) {
     return { error: "Completează toate câmpurile." };
+  }
+
+  // Împotriva ghicirii parolelor: limită pe cont (strictă) și pe adresa IP (mai lejeră, pentru rețele partajate).
+  if (
+    !(await allowRequest(`login-email:${email}`, 10, 15 * 60 * 1000)) ||
+    !(await allowRequest(`login-ip:${await getClientIp()}`, 40, 15 * 60 * 1000))
+  ) {
+    return { error: TOO_MANY_REQUESTS };
   }
 
   const user = await prisma.user.findUnique({ where: { email } });

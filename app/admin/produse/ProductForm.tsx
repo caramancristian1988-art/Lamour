@@ -10,6 +10,7 @@ import PriceTiersEditor from "../components/PriceTiersEditor";
 import VariantRowsEditor from "../components/VariantRowsEditor";
 import type { ProductFormState } from "@/lib/adminProductActions";
 import { normalizeTiers, type PriceTier } from "@/lib/pricing";
+import { slugify } from "@/lib/slugify";
 import { createCategoryInlineAction, deleteCategoryInlineAction } from "@/lib/adminCategoryActions";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { Checkbox } from "@/app/components/ui/checkbox";
@@ -55,6 +56,7 @@ interface ProductDefaults {
   id?: string;
   name?: string;
   slug?: string;
+  code?: string | null;
   description?: string | null;
   price?: number;
   oldPrice?: number | null;
@@ -64,10 +66,12 @@ interface ProductDefaults {
   image?: string | null;
   images?: string[];
   packageQuantity?: string | null;
+  weightKg?: number | null;
   brand?: string | null;
   badge?: string | null;
   availability?: string;
   installmentsEnabled?: boolean;
+  warrantyEnabled?: boolean | null;
   categoryId?: string;
   specifications?: { label: string; value: string }[];
   variantGroupId?: string | null;
@@ -96,6 +100,21 @@ export default function ProductForm({
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const [isVariant, setIsVariant] = useState(Boolean(defaults?.variantGroupId));
+
+  // La produs nou, slug-ul urmărește numele până când adminul îl modifică manual. La editare nu se
+  // atinge singur (schimbarea lui strică linkurile deja distribuite), dar tot se curăță de diacritice.
+  const isEditing = Boolean(defaults?.id);
+  const [slug, setSlug] = useState(defaults?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(isEditing || Boolean(defaults?.slug));
+
+  function onNameChange(value: string) {
+    if (!slugTouched) setSlug(slugify(value));
+  }
+
+  function onSlugChange(value: string) {
+    setSlugTouched(true);
+    setSlug(slugify(value, { trimEdges: false }));
+  }
 
   const defaultBadges = ["Nou", "Reducere", "Cel mai vândut", "Eco"];
   const badgeOptions =
@@ -131,8 +150,36 @@ export default function ProductForm({
         </Alert>
       )}
 
-      <AdminInput label="Nume produs" name="name" required defaultValue={defaults?.name} placeholder="Daikin Sensira FTXF35E" />
-      <AdminInput label="Slug" name="slug" required defaultValue={defaults?.slug} placeholder="daikin-sensira-ftxf35e" />
+      <AdminInput
+        label="Nume produs"
+        name="name"
+        required
+        defaultValue={defaults?.name}
+        placeholder="Daikin Sensira FTXF35E"
+        onChange={onNameChange}
+      />
+      <div>
+        <AdminInput
+          label="Slug"
+          name="slug"
+          required
+          value={slug}
+          onChange={onSlugChange}
+          onBlur={() => setSlug((current) => slugify(current))}
+          placeholder="daikin-sensira-ftxf35e"
+        />
+        <p className="text-xs text-muted-foreground mt-1.5">
+          {isEditing
+            ? "Adresa produsului pe site. Se curăță automat (fără diacritice sau spații). Dacă îl schimbi, vechiul link nu va mai funcționa."
+            : "Se generează automat din nume, fără diacritice (ă → a, î → i, ș → s, ț → t). Îl poți ajusta manual."}
+        </p>
+      </div>
+      <div>
+        <AdminInput label="Cod produs" name="code" defaultValue={defaults?.code ?? ""} placeholder="lasă gol pentru cod automat (litere, cifre și cratimă, ex. LT-141)" />
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Litere și cifre, cu cratimă între ele dacă vrei (ex. LMP204 sau LT-141), fără spații sau alte semne. Trebuie să fie unic — dacă lași câmpul gol, se generează unul automat.
+        </p>
+      </div>
       <AdminTextarea label="Descriere" name="description" defaultValue={defaults?.description ?? ""} placeholder="Descrierea produsului..." rows={3} />
 
       <ManagedSelect
@@ -191,6 +238,20 @@ export default function ProductForm({
         defaultValue={defaults?.packageQuantity ?? ""}
         placeholder="ex: 32 role, 100 buc, 500 ml"
       />
+
+      <div>
+        <AdminInput
+          label="Greutate (kg / bucată)"
+          name="weightKg"
+          inputMode="decimal"
+          defaultValue={defaults?.weightKg != null ? String(defaults.weightKg).replace(".", ",") : ""}
+          placeholder="ex: 0,35"
+        />
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Greutatea unei bucăți. Greutatea comenzii (pentru AWB) se calculează automat din greutățile produselor × cantități. Dacă lași câmpul
+          gol, produsul se socotește la 1 kg/buc.
+        </p>
+      </div>
 
       <div className="border border-border rounded-xl p-4 flex flex-col gap-3">
         <p className="text-xs font-bold uppercase tracking-wide text-primary">
@@ -312,6 +373,23 @@ export default function ProductForm({
         <Label htmlFor="field-installmentsEnabled" className="font-bold">
           Disponibil în rate (afișează butonul &quot;Cumpără în rate&quot;)
         </Label>
+      </div>
+
+      <div className="flex items-start gap-2.5">
+        <Checkbox
+          id="field-warrantyEnabled"
+          name="warrantyEnabled"
+          defaultChecked={defaults?.warrantyEnabled ?? true}
+          className="mt-0.5"
+        />
+        <div>
+          <Label htmlFor="field-warrantyEnabled" className="font-bold">
+            Produsul are garanție (afișează &quot;Garanție 2 ani&quot;)
+          </Label>
+          <p className="text-xs text-muted-foreground mt-1">
+            Debifează pentru consumabile (hârtie, chibrituri etc.) — pe pagina produsului apare &quot;Plată la primire&quot; în locul garanției.
+          </p>
+        </div>
       </div>
 
       <Button type="submit" variant="accent" disabled={pending} className="self-start mt-2">

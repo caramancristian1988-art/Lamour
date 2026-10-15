@@ -9,8 +9,14 @@ import { Button } from "@/app/components/ui/button";
 import { cn } from "@/lib/utils";
 import MessageStatusBadge from "../components/MessageStatusBadge";
 import MoodBadge from "../components/MoodBadge";
+import OrderStageBadge from "../components/OrderStageBadge";
+import OrderNumberEditor from "../components/OrderNumberEditor";
+import OrderActions from "../components/OrderActions";
 import LinkedProductText from "../components/LinkedProductText";
 import CopyableId from "../components/CopyableId";
+import EvsShipmentPanel from "../components/EvsShipmentPanel";
+import OrdersExportButton from "../components/OrdersExportButton";
+import OrderFromFileDialog from "./OrderFromFileDialog";
 import { markMessageReadAction, deleteMessageAction } from "@/lib/adminMessageActions";
 
 interface Message {
@@ -24,7 +30,26 @@ interface Message {
   status: string;
   mood: string | null;
   createdAt: Date;
-  products: { id: string; name: string; slug: string }[];
+  products: { id: string; name: string; slug: string; code: string | null }[];
+  awbCode: string | null;
+  awbStatus: string | null;
+  orderStage: string | null;
+  orderNumber: string | null;
+  editToken: string | null;
+  invoiceSentAt: Date | string | null;
+  deliveryZip?: string | null;
+  deliveryWeightKg?: number | null;
+  deliveryCodAmount?: number | null;
+}
+
+// Comenzile din coș includ o linie "Livrare: localitate, adresă" în textul
+// liber al mesajului (vezi CheckoutPanel) — o extragem ca sugestie de
+// adresă pre-completată în formularul de livrare EVS Express, ca admin-ul
+// să nu retasteze de la zero.
+function extractDeliveryLine(message: string | null): string {
+  if (!message) return "";
+  const match = message.match(/^Livrare:\s*(.+)$/m);
+  return match ? match[1].trim() : "";
 }
 
 type Category = "oferte" | "contact" | "comenzi";
@@ -44,6 +69,13 @@ const STATUS_ACCENT_COLORS: Record<string, string> = {
   in_lucru: "#0ea5e9",
   achitat: "#14b8a6",
   anulat: "#9ca3af",
+};
+
+const ORDER_STAGE_ACCENT_COLORS: Record<string, string> = {
+  noua: "#f59e0b",
+  confirmata: "#6366f1",
+  predata_curier: "#14b8a6",
+  anulata: "#9ca3af",
 };
 
 function formatDate(date: Date) {
@@ -99,15 +131,23 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
 
   return (
     <div>
-      <Tabs value={tab} onValueChange={(v) => setTab(v as Category)} className="mb-4">
-        <TabsList>
-          {tabs.map((t) => (
-            <TabsTrigger key={t.value} value={t.value}>
-              {t.label} <span className="opacity-70">({t.count})</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as Category)}>
+          <TabsList>
+            {tabs.map((t) => (
+              <TabsTrigger key={t.value} value={t.value}>
+                {t.label} <span className="opacity-70">({t.count})</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        {tab === "comenzi" && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <OrderFromFileDialog />
+            <OrdersExportButton />
+          </div>
+        )}
+      </div>
 
       {visibleMessages.length === 0 ? (
         <div className="bg-card border border-border rounded-2xl p-10 text-center text-muted-foreground">
@@ -117,10 +157,14 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
         <div className="flex flex-col gap-2">
           {visibleMessages.map((m) => {
             const expanded = expandedId === m.id;
+            const isOrder = categoryOf(m.source) === "comenzi";
+            const accentColor = isOrder
+              ? (ORDER_STAGE_ACCENT_COLORS[m.orderStage ?? "noua"] ?? ORDER_STAGE_ACCENT_COLORS.noua)
+              : (STATUS_ACCENT_COLORS[m.status] ?? STATUS_ACCENT_COLORS.in_asteptare);
             return (
               <div
                 key={m.id}
-                style={{ borderLeftColor: STATUS_ACCENT_COLORS[m.status] ?? STATUS_ACCENT_COLORS.in_asteptare }}
+                style={{ borderLeftColor: accentColor }}
                 className={cn(
                   "bg-card border rounded-xl border-l-4 transition-colors",
                   m.read ? "border-border" : "border-accent/30"
@@ -130,6 +174,9 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                 <div className="relative flex items-center gap-2 px-3 py-2.5">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
+                      {isOrder && m.orderNumber && (
+                        <span className="shrink-0 text-xs font-bold text-accent">#{m.orderNumber}</span>
+                      )}
                       <p className="font-bold text-xs text-primary truncate">{m.name}</p>
                       {!m.read && <Badge variant="accent">Nou</Badge>}
                     </div>
@@ -187,7 +234,8 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                               <span className="opacity-30 shrink-0">|</span>
                               <CopyableId
                                 id={p.id}
-                                label={p.id.slice(-6)}
+                                label={p.code ?? p.id.slice(-6)}
+                                copyValue={p.code ?? p.id.slice(-6)}
                                 className="inline-flex items-center gap-1 font-mono opacity-70 normal-case hover:opacity-100 transition-opacity shrink-0"
                               />
                             </div>
@@ -196,8 +244,17 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                       )}
 
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
-                        <MessageStatusBadge id={m.id} status={m.status} onChange={(status) => patchMessage(m.id, { status })} />
-                        <MoodBadge id={m.id} mood={m.mood} onChange={(mood) => patchMessage(m.id, { mood })} />
+                        {isOrder ? (
+                          <>
+                            <OrderNumberEditor id={m.id} orderNumber={m.orderNumber} onChange={(orderNumber) => patchMessage(m.id, { orderNumber })} />
+                            <OrderStageBadge id={m.id} stage={m.orderStage} onChange={(orderStage) => patchMessage(m.id, { orderStage })} />
+                          </>
+                        ) : (
+                          <>
+                            <MessageStatusBadge id={m.id} status={m.status} onChange={(status) => patchMessage(m.id, { status })} />
+                            <MoodBadge id={m.id} mood={m.mood} onChange={(mood) => patchMessage(m.id, { mood })} />
+                          </>
+                        )}
                         {!m.read && (
                           <Button variant="outline" size="sm" onClick={() => handleMarkRead(m.id)}>
                             Marchează ca citit
@@ -214,10 +271,40 @@ export default function MessagesList({ messages: initialMessages }: { messages: 
                         </Button>
                       </div>
 
+                      {isOrder && (
+                        <OrderActions
+                          id={m.id}
+                          stage={m.orderStage}
+                          message={m.message}
+                          editToken={m.editToken}
+                          invoiceSentAt={m.invoiceSentAt}
+                          onInvoiceSent={() => patchMessage(m.id, { invoiceSentAt: new Date() })}
+                        />
+                      )}
+
                       {m.message && (
                         <p className="text-sm text-muted-foreground mt-3 leading-relaxed whitespace-pre-line">
                           <LinkedProductText text={m.message} products={m.products} />
                         </p>
+                      )}
+
+                      {/* Pentru comenzi, AWB-ul se creează automat la "Confirmă" (curierul e chemat abia la "Gata de ridicare"). Panoul cu
+                          AWB, status și etichete apare de la confirmare, ca depozitarul din Telegram; formularul manual de creare
+                          (rezervă dacă expedierea automată eșuează) doar la "Gata de ridicare", ca să nu
+                          ajungă curierul înaintea depozitarului. */}
+                      {(!isOrder || m.orderStage === "predata_curier" || (m.orderStage === "confirmata" && m.awbCode)) && (
+                        <EvsShipmentPanel
+                          messageId={m.id}
+                          defaultName={m.name}
+                          defaultPhone={m.phone}
+                          defaultEmail={m.email}
+                          defaultAddress={extractDeliveryLine(m.message)}
+                          defaultZip={m.deliveryZip}
+                          defaultWeightKg={m.deliveryWeightKg}
+                          defaultCodAmount={m.deliveryCodAmount}
+                          awbCode={m.awbCode}
+                          awbStatus={m.awbStatus}
+                        />
                       )}
                     </div>
                   </div>

@@ -118,7 +118,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
 
           <div className="absolute inset-0 flex flex-col justify-end max-w-7xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
-            <nav className="flex items-center gap-1.5 text-white/60 text-xs mb-4" aria-label="Fir de ariadnă">
+            <nav className="flex items-center gap-1.5 text-white/80 text-xs mb-4" aria-label="Fir de ariadnă">
               <Link href="/" className="hover:text-white transition-colors">Acasă</Link>
               <span aria-hidden>/</span>
               <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>

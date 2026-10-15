@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "./prisma";
+import { allowRequest, getClientIp, TOO_MANY_REQUESTS } from "./rateLimit";
 
 export interface ReviewFormState {
   error?: string;
@@ -33,6 +34,7 @@ export async function submitReviewAction(_prevState: ReviewFormState, formData: 
   if (!text) {
     return { error: "Scrie un comentariu." };
   }
+  if (!(await allowRequest(`review:${await getClientIp()}`, 8, 60 * 60 * 1000))) return { error: TOO_MANY_REQUESTS };
 
   try {
     await prisma.review.create({
