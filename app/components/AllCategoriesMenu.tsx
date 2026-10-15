@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Menu, ChevronDown, Sparkles, ImageOff } from "lucide-react";
+import { categoryIcons } from "./CategoryIcons";
+import { HeadingFlourish } from "@/app/components/ui/motif";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,38 +69,71 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
           <ChevronDown className="w-3.5 h-3.5" aria-hidden />
         </button>
       </DropdownMenuTrigger>
+      {/* Panou lat (mega-meniu): categoriile se așază pe mai multe coloane, pe lățimea paginii, ca să încapă toate
+          fără o listă lungă în jos; derulare în stilul site-ului dacă sunt foarte multe. */}
       <DropdownMenuContent
         align="start"
-        className="w-[calc(100vw-2rem)] max-w-md lg:w-96 max-h-[70vh] overflow-y-auto p-2"
+        collisionPadding={16}
+        className="w-[calc(100vw-2rem)] sm:w-[min(calc(100vw-3rem),70rem)] max-h-[min(78vh,46rem)] overflow-y-auto scrollbar-brand p-4 sm:p-6 rounded-2xl"
       >
-        <p className="px-3 pt-1.5 pb-2 text-xs font-bold text-muted-foreground uppercase tracking-wide">Produse</p>
-        <Link
-          href="/produse?oferte=1"
-          onClick={() => setOpen(false)}
-          className="flex items-center gap-4 rounded-xl px-3 py-3 text-base font-bold text-accent hover:bg-muted transition-colors"
-        >
-          <span className="relative w-14 h-14 rounded-xl bg-secondary/40 shrink-0 flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-accent" aria-hidden />
-          </span>
-          Oferte speciale
-        </Link>
-        {productsDropdown.map((item) => (
+        <div className="flex items-center gap-3 mb-4 sm:mb-5">
+          <h2 className="text-lg sm:text-xl font-bold text-primary tracking-tight uppercase">Categorii</h2>
+          <HeadingFlourish className="shrink-0" />
+          <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-brand-rose to-brand-rose/15" />
           <Link
-            key={item.id}
-            href={`/produse?cat=${item.slug}`}
+            href="/produse"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-4 rounded-xl px-3 py-3 text-base font-semibold text-foreground hover:text-accent hover:bg-muted transition-colors"
+            className="shrink-0 text-sm font-bold text-accent hover:underline underline-offset-4 rounded"
           >
-            <span className="relative w-14 h-14 rounded-xl bg-muted overflow-hidden shrink-0 flex items-center justify-center">
-              {item.image ? (
-                <Image src={item.image} alt={item.name} fill className="object-cover" />
-              ) : (
-                <ImageOff className="w-6 h-6 text-muted-foreground" aria-hidden />
-              )}
-            </span>
-            {item.name}
+            Toate produsele
           </Link>
-        ))}
+        </div>
+
+        <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+          <li>
+            <Link
+              href="/produse?oferte=1"
+              onClick={() => setOpen(false)}
+              className="group flex flex-col items-center text-center gap-2.5 rounded-2xl"
+            >
+              <span className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-secondary/50 to-accent/25 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+                <Sparkles className="w-1/3 h-1/3 text-accent" aria-hidden />
+              </span>
+              <span className="text-sm sm:text-[15px] font-bold text-accent leading-snug">Oferte speciale</span>
+            </Link>
+          </li>
+          {productsDropdown.map((item) => {
+            const Icon = categoryIcons[item.slug];
+            return (
+              <li key={item.id}>
+                <Link
+                  href={`/produse?cat=${item.slug}`}
+                  onClick={() => setOpen(false)}
+                  className="group flex flex-col items-center text-center gap-2.5 rounded-2xl"
+                >
+                  <span className="relative w-full aspect-square rounded-2xl overflow-hidden bg-secondary/25 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
+                    {item.image ? (
+                      <Image
+                        src={item.image}
+                        alt=""
+                        fill
+                        sizes="(max-width: 640px) 45vw, (max-width: 1280px) 20vw, 180px"
+                        className="object-cover"
+                      />
+                    ) : Icon ? (
+                      <Icon className="w-1/2 h-1/2 text-primary" />
+                    ) : (
+                      <ImageOff className="w-7 h-7 text-muted-foreground" aria-hidden />
+                    )}
+                  </span>
+                  <span className="text-sm sm:text-[15px] font-bold text-foreground group-hover:text-accent transition-colors leading-snug line-clamp-2">
+                    {item.name}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </DropdownMenuContent>
     </DropdownMenu>
   );

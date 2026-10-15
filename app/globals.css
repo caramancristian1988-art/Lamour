@@ -320,3 +320,26 @@ h1, h2, h3 {
   background-repeat: repeat-x;
   background-position: center;
 }
+/* ---------------------------------------------------------------------
+   Bară de derulare în stilul site-ului: subțire, roz pudrat, cu capete rotunjite (meniul de categorii etc.)
+--------------------------------------------------------------------- */
+.scrollbar-brand {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand-rose) transparent;
+}
+.scrollbar-brand::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.scrollbar-brand::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 10px 0;
+}
+.scrollbar-brand::-webkit-scrollbar-thumb {
+  background: var(--brand-rose);
+  border-radius: 9999px;
+  border: 2px solid var(--card);
+}
+.scrollbar-brand::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-red);
+}

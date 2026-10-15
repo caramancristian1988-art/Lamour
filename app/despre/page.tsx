@@ -125,13 +125,13 @@ export default async function DesprePage() {
       {/* ── CINE SUNTEM ── */}
       <section id="cine-suntem" className="scroll-mt-24 py-14 lg:py-20">
         <span id="misiune-sociala" className="block scroll-mt-24" />
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-10 items-center">
           <FacebookVideo
             videoUrl={TEAM_VIDEO.url}
             poster={TEAM_VIDEO.poster}
             title={TEAM_VIDEO.title}
             orientation="portrait"
-            className="mx-auto w-full max-w-[300px] sm:max-w-[330px] aspect-[9/16] rounded-md shadow-lg"
+            className="mx-auto lg:mr-0 lg:ml-auto w-full max-w-[300px] sm:max-w-[330px] aspect-[9/16] rounded-md shadow-lg"
           />
 
           <div>
@@ -172,8 +172,8 @@ export default async function DesprePage() {
             </p>
           </div>
 
-          {/* Reel vertical, pe un fundal roz discret — ocupă coloana din dreapta, până la marginea ecranului */}
-          <div className="flex h-full items-center justify-center bg-brand-rose-light/25 px-5 py-10 lg:py-14">
+          {/* Reel vertical, centrat în coloana din dreapta (fără fundal) */}
+          <div className="flex h-full items-center justify-center lg:justify-start px-5 lg:pl-8 lg:pr-5 py-10 lg:py-14">
             <FacebookVideo
               videoUrl={PRODUCTS_VIDEO.url}
               poster={PRODUCTS_VIDEO.poster}
