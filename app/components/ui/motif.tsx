@@ -91,3 +91,27 @@ export function MotifBackground({ className }: { className?: string }) {
     />
   );
 }
+
+/**
+ * Rozetă mare, din petale concentrice — ornament de fundal pentru zone întunecate (footer). Se colorează prin
+ * `currentColor`; se folosește la opacitate foarte mică, parțial ieșită din cadru.
+ */
+export function MotifRosette({ className }: { className?: string }) {
+  const petals = Array.from({ length: 12 }, (_, i) => i * 30);
+  return (
+    <svg viewBox="0 0 200 200" fill="none" aria-hidden className={cn("text-brand-rose-light", className)}>
+      <g stroke="currentColor" strokeWidth="1.2" transform="translate(100,100)">
+        {petals.map((deg) => (
+          <ellipse key={`o-${deg}`} cx="0" cy="-64" rx="9" ry="26" transform={`rotate(${deg})`} />
+        ))}
+        {petals.map((deg) => (
+          <ellipse key={`i-${deg}`} cx="0" cy="-34" rx="5" ry="14" transform={`rotate(${deg + 15})`} />
+        ))}
+        <circle r="14" />
+        <circle r="6" fill="currentColor" />
+        <circle r="92" strokeDasharray="2 5" />
+        <circle r="98" />
+      </g>
+    </svg>
+  );
+}
