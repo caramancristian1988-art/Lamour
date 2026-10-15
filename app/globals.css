@@ -208,8 +208,10 @@ h1, h2, h3 {
   font-family: var(--font-serif);
 }
 
-/* Generous, WCAG-friendly focus ring on every interactive element. */
-:focus-visible {
+/* Generous, WCAG-friendly focus ring on every interactive element. Câmpurile care își desenează singure indicatorul de focus
+   (containerul rotunjit al căutării, bordura + inelul câmpului din filtre) au data-own-focus — altfel apărea un dreptunghi
+   pătrat, cu colțuri de 2px, în interiorul câmpului rotunjit. */
+:focus-visible:not([data-own-focus]) {
   outline: 3px solid var(--ring);
   outline-offset: 2px;
   border-radius: 2px;

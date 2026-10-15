@@ -191,6 +191,7 @@ function CatalogSearch({ value, onCommit }: { value: string; onCommit: (q: strin
           value={text}
           onChange={(e) => schedule(e.target.value)}
           placeholder="Caută în catalog…"
+          data-own-focus
           className="h-11 w-full rounded-xl border-2 border-input bg-card pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus-visible:border-accent focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/20 [&::-webkit-search-cancel-button]:hidden"
         />
         {text && (

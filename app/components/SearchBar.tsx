@@ -148,6 +148,7 @@ export default function SearchBar() {
               onBlur={() => setFocused(false)}
               placeholder={focused ? "Ce produs cauți?" : ""}
               autoComplete="off"
+              data-own-focus
               className="h-full w-full min-w-0 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
             />
             {/* Placeholder-ul animat (nu e „placeholder” real, ca să poată face fade între sugestii) */}

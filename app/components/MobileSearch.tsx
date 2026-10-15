@@ -189,7 +189,7 @@ export default function MobileSearch({ categories = [] }: { categories?: SearchC
               }}
               placeholder="Ce produs cauți?"
               // regula globală :focus-visible nu e în layer, deci bate clasele Tailwind — nu vrem inel dublu în câmp
-              style={{ outline: "none" }}
+              data-own-focus
               className="h-full w-full min-w-0 bg-transparent text-base text-foreground placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
