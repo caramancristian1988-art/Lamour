@@ -7,6 +7,13 @@ export const INTRO_VIDEO = {
   poster: "/despre/video-poster.jpg",
 } as const;
 
+// Reel vertical (9:16), secțiunea „Ce facem” din /despre.
+export const PRODUCTS_VIDEO = {
+  url: "https://www.facebook.com/lumintehnica/videos/produse-din-plastic-la-cele-mai-bune-pre%C8%9Buri-de-pe-pia%C8%9B%C4%83-produsacasa-produsinmol/1337348211489588/",
+  title: "Produse din plastic la cele mai bune prețuri de pe piață",
+  poster: "/despre/video-poster-3.jpg",
+} as const;
+
 // Clip vertical (9:16).
 export const TEAM_VIDEO = {
   url: "https://www.facebook.com/lumintehnica/videos/lumintehnica-locul-unde-imposibilul-devine-posibil-moldova1lumintehnica-moldova/1266136635565105/",

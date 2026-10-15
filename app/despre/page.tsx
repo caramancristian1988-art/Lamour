@@ -9,7 +9,7 @@ import { Button } from "@/app/components/ui/button";
 import { HeadingFlourish } from "@/app/components/ui/motif";
 import JsonLd from "@/app/components/JsonLd";
 import FacebookVideo from "@/app/components/FacebookVideo";
-import { INTRO_VIDEO, TEAM_VIDEO } from "@/lib/siteVideos";
+import { INTRO_VIDEO, TEAM_VIDEO, PRODUCTS_VIDEO } from "@/lib/siteVideos";
 import { breadcrumbList } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
@@ -172,13 +172,14 @@ export default async function DesprePage() {
             </p>
           </div>
 
-          <div className="relative aspect-[474/305] w-full lg:aspect-auto lg:h-full lg:min-h-[420px]">
-            <Image
-              src="/despre/ce-facem.jpg"
-              alt="Atelier cu rafturi, flori și role de hârtie cu model popular, în fundal o angajată la lucru"
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
+          {/* Reel vertical, pe un fundal roz discret — ocupă coloana din dreapta, până la marginea ecranului */}
+          <div className="flex h-full items-center justify-center bg-brand-rose-light/25 px-5 py-10 lg:py-14">
+            <FacebookVideo
+              videoUrl={PRODUCTS_VIDEO.url}
+              poster={PRODUCTS_VIDEO.poster}
+              title={PRODUCTS_VIDEO.title}
+              orientation="portrait"
+              className="w-full max-w-[300px] sm:max-w-[320px] aspect-[9/16] rounded-md shadow-lg"
             />
           </div>
         </div>
