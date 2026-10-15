@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowDown, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { getSectionFlags } from "@/lib/siteSettings";
 import { SITE_NAME } from "@/lib/constants";
 import { Button } from "@/app/components/ui/button";
@@ -110,14 +110,6 @@ export default async function DesprePage() {
               </p>
             </div>
 
-            <div className="mt-8">
-              <Button asChild variant="primary" size="lg">
-                <a href="#cine-suntem">
-                  Descoperă mai multe
-                  <ArrowDown className="w-4 h-4" aria-hidden />
-                </a>
-              </Button>
-            </div>
           </div>
 
           {/* Banda verticală cu motiv popular, între text și fotografie */}
