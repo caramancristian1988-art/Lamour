@@ -8,10 +8,16 @@ import { SITE_NAME } from "@/lib/constants";
 import { Button } from "@/app/components/ui/button";
 import { HeadingFlourish } from "@/app/components/ui/motif";
 import JsonLd from "@/app/components/JsonLd";
+import FacebookVideo from "@/app/components/FacebookVideo";
 import { breadcrumbList } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
+
+// Videoclipul de prezentare, publicat pe pagina de Facebook LuminTehnica (se încarcă doar la apăsarea butonului de redare).
+const INTRO_VIDEO_URL =
+  "https://www.facebook.com/lumintehnica/videos/la-lumintehnica-persoanele-nev%C4%83z%C4%83toare-muncesc-zilnic-pentru-a-crea-produse-de-c/2008314553086274/";
+const INTRO_VIDEO_TITLE = "La LuminTehnica, persoanele nevăzătoare muncesc zilnic pentru a crea produse de calitate";
 
 const DESPRE_TITLE = "Despre noi — povestea LuminTehnica | LuminTehnica";
 const DESPRE_DESCRIPTION =
@@ -116,16 +122,13 @@ export default async function DesprePage() {
             style={{ backgroundImage: "url(/despre/motiv-vertical.jpg)", backgroundSize: "100% auto" }}
           />
 
-          <div className="relative h-72 sm:h-96 lg:h-auto">
-            <Image
-              src="/despre/hero.jpg"
-              alt="Mâini care aranjează role de hârtie igienică cu model popular, într-un atelier luminos"
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-            />
-          </div>
+          <FacebookVideo
+            videoUrl={INTRO_VIDEO_URL}
+            poster="/despre/video-poster.jpg"
+            title={INTRO_VIDEO_TITLE}
+            priority
+            className="aspect-video w-full lg:aspect-auto lg:h-full"
+          />
         </div>
       </section>
 
