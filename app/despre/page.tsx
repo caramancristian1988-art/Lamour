@@ -9,20 +9,13 @@ import { Button } from "@/app/components/ui/button";
 import { HeadingFlourish } from "@/app/components/ui/motif";
 import JsonLd from "@/app/components/JsonLd";
 import FacebookVideo from "@/app/components/FacebookVideo";
+import { INTRO_VIDEO, TEAM_VIDEO } from "@/lib/siteVideos";
 import { breadcrumbList } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-// Videoclipul de prezentare, publicat pe pagina de Facebook LuminTehnica (se încarcă doar la apăsarea butonului de redare).
-const INTRO_VIDEO_URL =
-  "https://www.facebook.com/lumintehnica/videos/la-lumintehnica-persoanele-nev%C4%83z%C4%83toare-muncesc-zilnic-pentru-a-crea-produse-de-c/2008314553086274/";
-const INTRO_VIDEO_TITLE = "La LuminTehnica, persoanele nevăzătoare muncesc zilnic pentru a crea produse de calitate";
 
-// Al doilea videoclip (vertical, 9:16), în secțiunea „Cine suntem”.
-const TEAM_VIDEO_URL =
-  "https://www.facebook.com/lumintehnica/videos/lumintehnica-locul-unde-imposibilul-devine-posibil-moldova1lumintehnica-moldova/1266136635565105/";
-const TEAM_VIDEO_TITLE = "LuminTehnica – locul unde imposibilul devine posibil";
 
 const DESPRE_TITLE = "Despre noi — povestea LuminTehnica | LuminTehnica";
 const DESPRE_DESCRIPTION =
@@ -120,9 +113,9 @@ export default async function DesprePage() {
           />
 
           <FacebookVideo
-            videoUrl={INTRO_VIDEO_URL}
-            poster="/despre/video-poster.jpg"
-            title={INTRO_VIDEO_TITLE}
+            videoUrl={INTRO_VIDEO.url}
+            poster={INTRO_VIDEO.poster}
+            title={INTRO_VIDEO.title}
             priority
             className="aspect-video w-full lg:aspect-auto lg:h-full"
           />
@@ -134,9 +127,9 @@ export default async function DesprePage() {
         <span id="misiune-sociala" className="block scroll-mt-24" />
         <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <FacebookVideo
-            videoUrl={TEAM_VIDEO_URL}
-            poster="/despre/video-poster-2.jpg"
-            title={TEAM_VIDEO_TITLE}
+            videoUrl={TEAM_VIDEO.url}
+            poster={TEAM_VIDEO.poster}
+            title={TEAM_VIDEO.title}
             orientation="portrait"
             className="mx-auto w-full max-w-[300px] sm:max-w-[330px] aspect-[9/16] rounded-md shadow-lg"
           />
@@ -158,7 +151,7 @@ export default async function DesprePage() {
       </section>
 
       {/* ── CE FACEM ── */}
-      <section className="overflow-hidden pb-14 lg:pb-0">
+      <section className="overflow-hidden pb-6 lg:pb-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center">
           <div className={`${COLUMN_INSET} py-6 lg:py-16`}>
             <SectionLabel>Ce facem</SectionLabel>
@@ -194,12 +187,12 @@ export default async function DesprePage() {
       {/* ── MISIUNEA NOASTRĂ ── */}
       <section id="misiune" className="scroll-mt-24 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch">
-          <div className="relative aspect-[500/256] w-full lg:aspect-auto lg:min-h-[400px]">
+          <div className="relative aspect-[4/3] sm:aspect-[16/9] w-full lg:aspect-auto lg:min-h-[400px]">
             <Image
               src="/despre/misiune.jpg"
               alt="Detaliu al ambalajului Lamour Cu Dragoste, cu model în relief și flori de câmp"
               fill
-              className="object-cover"
+              className="object-cover object-[78%_50%] lg:object-center"
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
           </div>

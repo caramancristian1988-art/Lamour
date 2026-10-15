@@ -1,9 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
 import { HeartHandshake } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
-import { SITE_NAME } from "@/lib/constants";
+import FacebookVideo from "@/app/components/FacebookVideo";
+import { INTRO_VIDEO } from "@/lib/siteVideos";
 
 export default function AboutTeaser() {
   return (
@@ -33,14 +33,12 @@ export default function AboutTeaser() {
             </Button>
           </div>
 
-          <div className="relative h-64 sm:h-80 lg:h-auto rounded-2xl overflow-hidden">
-            <Image
-              src="/fabrica-lamour.png"
-              alt={`Fabrica ${SITE_NAME}`}
-              fill
-              className="object-cover"
-            />
-          </div>
+          <FacebookVideo
+            videoUrl={INTRO_VIDEO.url}
+            poster={INTRO_VIDEO.poster}
+            title={INTRO_VIDEO.title}
+            className="aspect-video w-full lg:aspect-auto lg:h-full lg:min-h-[320px] rounded-2xl"
+          />
         </div>
 
         <div className="mt-10 sm:mt-14 flex items-center justify-center gap-3 bg-secondary/20 border border-accent/30 rounded-2xl px-6 py-4 text-center">

@@ -2,7 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Phone, MessageCircle, Mail, Clock, HeadphonesIcon } from "lucide-react";
+import { Phone, Mail, Clock, HeadphonesIcon } from "lucide-react";
+import { WhatsAppIcon, ViberIcon } from "@/app/components/ui/brand-icons";
 import { prisma } from "@/lib/prisma";
 import { onlyVisible } from "@/lib/productVisibility";
 import { fallbackProducts } from "@/lib/fallbackData";
@@ -167,8 +168,8 @@ export default async function ContactPage() {
           </div>
 
           <div className="border border-border bg-card rounded-2xl p-6 flex flex-col items-center text-center gap-3 hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-success/10 rounded-full flex items-center justify-center">
-              <MessageCircle className="w-7 h-7 text-success" aria-hidden />
+            <div className="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center">
+              <WhatsAppIcon className="w-7 h-7" />
             </div>
             <p className="font-bold text-sm text-foreground">WhatsApp</p>
             <p className="text-success font-bold text-sm">{phone}</p>
@@ -183,8 +184,8 @@ export default async function ContactPage() {
           </div>
 
           <div className="border border-border bg-card rounded-2xl p-6 flex flex-col items-center text-center gap-3 hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-secondary/30 rounded-full flex items-center justify-center">
-              <MessageCircle className="w-7 h-7 text-primary" aria-hidden />
+            <div className="w-14 h-14 bg-[#7360F2] text-white rounded-full flex items-center justify-center">
+              <ViberIcon className="w-7 h-7" />
             </div>
             <p className="font-bold text-sm text-foreground">Viber</p>
             <p className="text-primary font-bold text-sm">{phone}</p>

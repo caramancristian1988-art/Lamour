@@ -27,6 +27,21 @@ export default function FacebookVideo({ videoUrl, poster, title, className = "",
 
   return (
     <div className={`relative overflow-hidden bg-black ${className}`}>
+      {/* Link către videoclip pe Facebook — în afara butonului de redare (un link nu poate sta într-un buton). */}
+      <a
+        href={videoUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Vezi videoclipul pe Facebook (se deschide într-o filă nouă): ${title}`}
+        className="absolute right-3 top-3 sm:right-4 sm:top-4 z-10 inline-flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-sm font-semibold text-primary shadow-md hover:bg-white focus-visible:outline-offset-2 transition-colors"
+      >
+        <svg className="w-4 h-4 shrink-0 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
+        </svg>
+        <span className="hidden min-[380px]:inline">Vezi pe Facebook</span>
+        <span className="min-[380px]:hidden">Facebook</span>
+      </a>
+
       {playing ? (
         <div className="absolute inset-0 flex items-center justify-center bg-black">
           <iframe

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Phone, MessageCircle, X } from "lucide-react";
+import { Phone, X } from "lucide-react";
+import { WhatsAppIcon, ViberIcon } from "@/app/components/ui/brand-icons";
 import { useFloatingUI } from "./FloatingUIState";
 
 export default function FloatingContact({
@@ -54,8 +55,8 @@ export default function FloatingContact({
             className="flex items-center gap-2 bg-card shadow-lg border border-border rounded-full pl-4 pr-1.5 py-1.5 text-sm font-bold text-[#7360f2] hover:shadow-xl transition-shadow"
           >
             Viber
-            <span className="w-10 h-10 rounded-full bg-[#7360f2]/10 flex items-center justify-center shrink-0">
-              <MessageCircle className="w-5 h-5" aria-hidden />
+            <span className="w-10 h-10 rounded-full bg-[#7360F2] text-white flex items-center justify-center shrink-0">
+              <ViberIcon className="w-5 h-5" />
             </span>
           </a>
           <a
@@ -66,8 +67,8 @@ export default function FloatingContact({
             className="flex items-center gap-2 bg-card shadow-lg border border-border rounded-full pl-4 pr-1.5 py-1.5 text-sm font-bold text-green-600 hover:shadow-xl transition-shadow"
           >
             WhatsApp
-            <span className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center shrink-0">
-              <MessageCircle className="w-5 h-5" aria-hidden />
+            <span className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0">
+              <WhatsAppIcon className="w-5 h-5" />
             </span>
           </a>
           <a
