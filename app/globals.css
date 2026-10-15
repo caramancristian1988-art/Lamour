@@ -217,6 +217,11 @@ h1, h2, h3 {
   border-radius: 2px;
 }
 
+/* Câmpurile cu propriul indicator de focus nu primesc nici conturul implicit al browserului (cel alb-negru, pătrat). */
+[data-own-focus]:focus-visible {
+  outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

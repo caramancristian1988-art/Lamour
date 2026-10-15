@@ -167,7 +167,7 @@ export default function MobileSearch({ categories = [] }: { categories?: SearchC
           >
             <ArrowLeft className="h-6 w-6" aria-hidden />
           </button>
-          <div className="relative flex h-12 min-w-0 flex-1 items-center rounded-full bg-white pl-4 pr-1 shadow-md ring-4 ring-white/15">
+          <div className="relative flex h-12 min-w-0 flex-1 items-center rounded-full bg-white pl-4 pr-1 shadow-md ring-4 ring-white/15 transition-shadow focus-within:ring-white/50">
             <Search className="mr-2.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
             <label htmlFor={`${titleId}-input`} className="sr-only">
               Ce produs cauți?
@@ -188,7 +188,7 @@ export default function MobileSearch({ categories = [] }: { categories?: SearchC
                 if (!e.target.value.trim()) setResults([]);
               }}
               placeholder="Ce produs cauți?"
-              // regula globală :focus-visible nu e în layer, deci bate clasele Tailwind — nu vrem inel dublu în câmp
+              // câmpul nu are contur propriu (data-own-focus): indicatorul de focus e inelul din jurul pastilei albe
               data-own-focus
               className="h-full w-full min-w-0 bg-transparent text-base text-foreground placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
             />
@@ -274,18 +274,21 @@ export default function MobileSearch({ categories = [] }: { categories?: SearchC
                   <div className="mb-3">
                     <SectionTitle icon={<LayoutGrid className="h-4 w-4" aria-hidden />}>Categorii</SectionTitle>
                   </div>
-                  <ul className="grid grid-cols-3 gap-3">
-                    {categories.slice(0, 9).map((cat) => (
+                  <ul className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+                    {categories.map((cat) => (
                       <li key={cat.id}>
                         <Link
                           href={`/produse/${cat.slug}`}
                           onClick={close}
-                          className="flex h-full flex-col items-center gap-2 rounded-2xl border border-brand-rose/60 bg-card p-2.5 text-center shadow-sm transition-colors active:border-accent active:bg-muted"
+                          className="flex h-full flex-col overflow-hidden rounded-xl border border-brand-rose/60 bg-card text-center shadow-sm transition-colors active:border-accent active:bg-muted"
                         >
-                          <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-border bg-white">
-                            {cat.image && <Image src={cat.image} alt="" fill sizes="64px" className="object-cover" />}
+                          {/* Pătrat, ca pe cardurile de categorii: poza se vede întreagă (object-contain) */}
+                          <span className="relative block aspect-square w-full shrink-0 bg-white">
+                            {cat.image && <Image src={cat.image} alt="" fill sizes="(max-width: 640px) 33vw, 160px" className="object-contain p-1.5" />}
                           </span>
-                          <span className="line-clamp-2 text-xs font-bold leading-tight text-primary">{cat.name}</span>
+                          <span className="flex flex-1 items-center justify-center px-1.5 py-2 text-xs font-bold leading-tight text-primary">
+                            <span className="line-clamp-3">{cat.name}</span>
+                          </span>
                         </Link>
                       </li>
                     ))}
