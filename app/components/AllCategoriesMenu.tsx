@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Menu, ChevronDown, Sparkles, ImageOff } from "lucide-react";
+import { Menu, ChevronDown, ImageOff } from "lucide-react";
 import { categoryIcons } from "./CategoryIcons";
 import { HeadingFlourish } from "@/app/components/ui/motif";
 import {
@@ -114,7 +114,14 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
               className="group flex flex-col items-center text-center gap-2.5 rounded-2xl"
             >
               <span className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-secondary/50 to-accent/25 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-                <Sparkles className="w-1/3 h-1/3 text-accent" aria-hidden />
+                {/* Eticheta 3D roșie cu „%” și panglică aurie */}
+                <Image
+                  src="/oferte-speciale.webp"
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 45vw, (max-width: 1280px) 20vw, 180px"
+                  className="object-contain p-2 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+                />
               </span>
               <span className="text-sm sm:text-[15px] font-bold text-accent leading-snug">Oferte speciale</span>
             </Link>
