@@ -142,7 +142,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
                         alt=""
                         fill
                         sizes="(max-width: 640px) 45vw, (max-width: 1280px) 20vw, 180px"
-                        className="object-cover transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:scale-[0.88] group-focus-visible:scale-[0.88]"
+                        className="object-contain transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:scale-[0.88] group-focus-visible:scale-[0.88]"
                       />
                     ) : Icon ? (
                       <Icon className="w-1/2 h-1/2 text-primary transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:scale-[0.88] group-focus-visible:scale-[0.88]" />
