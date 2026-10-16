@@ -8,7 +8,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { EXPORT_HEADERS, exportRows } from "./orderRegistryExcel";
-import type { RegistryOrder } from "./orderRegistry";
+import type { Actor, RegistryOrder } from "./orderRegistry";
 
 function configuredKeys(): string[] {
   return (process.env.REGISTRY_API_KEYS ?? "")
@@ -21,6 +21,13 @@ function sameKey(a: string, b: string): boolean {
   const x = Buffer.from(a);
   const y = Buffer.from(b);
   return x.length === y.length && timingSafeEqual(x, y);
+}
+
+/** Cine a făcut cererea (pentru „extras de” și jurnalul de audit): ultimele 4 caractere ale cheii, niciodată cheia întreagă. */
+export function apiActor(request: NextRequest): Actor {
+  const bearer = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
+  const provided = (request.headers.get("x-api-key") ?? bearer ?? "").trim();
+  return { channel: "api", id: `cheie-${provided.slice(-4)}`, name: `cheia …${provided.slice(-4)}` };
 }
 
 /** null = autorizat; altfel răspunsul de eroare gata de returnat. */
@@ -55,7 +62,7 @@ function cellText(v: string | number | null): string {
  *  - tsv:  text separat prin TAB, primul rând = antetul (cel mai simplu de împărțit în VBA: Split pe vbTab / vbLf)
  *  - csv:  separat prin virgulă, cu ghilimele unde trebuie (se deschide direct în Excel / Power Query)
  */
-export function ordersResponse(orders: RegistryOrder[], format: ApiFormat): NextResponse {
+export function ordersResponse(orders: RegistryOrder[], format: ApiFormat, extraHeaders: Record<string, string> = {}): NextResponse {
   const rows = exportRows({ number: "" }, orders);
   const headers = [...EXPORT_HEADERS];
 
@@ -66,7 +73,7 @@ export function ordersResponse(orders: RegistryOrder[], format: ApiFormat): Next
         columns: headers,
         rows: rows.map((r) => Object.fromEntries(headers.map((h, i) => [h, r[i]]))),
       },
-      { headers: NO_STORE }
+      { headers: { ...NO_STORE, ...extraHeaders } }
     );
   }
 
@@ -74,7 +81,7 @@ export function ordersResponse(orders: RegistryOrder[], format: ApiFormat): Next
     const clean = (v: string | number | null) => cellText(v).replace(/[\t\r\n]+/g, " ");
     const body = [headers, ...rows].map((r) => r.map(clean).join("\t")).join("\n");
     return new NextResponse(body + "\n", {
-      headers: { "Content-Type": "text/tab-separated-values; charset=utf-8", ...NO_STORE },
+      headers: { "Content-Type": "text/tab-separated-values; charset=utf-8", ...NO_STORE, ...extraHeaders },
     });
   }
 
@@ -84,6 +91,6 @@ export function ordersResponse(orders: RegistryOrder[], format: ApiFormat): Next
   };
   const body = [headers, ...rows].map((r) => r.map(esc).join(",")).join("\r\n");
   return new NextResponse(body + "\r\n", {
-    headers: { "Content-Type": "text/csv; charset=utf-8", ...NO_STORE },
+    headers: { "Content-Type": "text/csv; charset=utf-8", ...NO_STORE, ...extraHeaders },
   });
 }

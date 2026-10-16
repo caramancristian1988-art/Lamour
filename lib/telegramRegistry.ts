@@ -10,6 +10,8 @@ import {
   EXTRACTION_LABELS,
   confirmExport,
   cancelExport,
+  claimNextOrder,
+  reopenOrder,
   findRegistryOrder,
   formatDateTime,
   formatMoney,
@@ -137,6 +139,7 @@ const HELP_TEXT = [
   "/registru — toate comenzile din registru, cu paginare.",
   "/extrase — comenzile deja extrase.",
   "/comanda 1052 — detaliile comenzii cu numărul 1052.",
+  "/urmatoarea — primești cea mai veche comandă neextrasă, fără să scrii numărul; ea trece la extrase, iar data viitoare vine următoarea. /urmatoarea excel o trimite în Excel.",
   "/extrage — pregătește fișierul Excel cu toate comenzile neextrase.",
   "Scrieți cuvântul excel după orice comandă ca să primiți rezultatul în Excel: /registru excel, /noi excel, /extrase excel, /comanda 1052 excel (doar acea comandă). Este doar o copie, nu marchează nimic ca extras.",
   "/istoric — ultimele extrageri.",
@@ -215,6 +218,31 @@ async function sendListPage(ctx: Ctx, filter: RegistryFilter, page: number): Pro
   const buttons: Button[][] = row.length ? [row] : [];
   buttons.push([{ text: "Descarcă lista în Excel", callback_data: `reg_xl:${code}` }]);
   await sayHtml(ctx.chatId, `${escapeHtml(head)}\n\n${table}\n${escapeHtml(hint)}`, buttons);
+}
+
+/**
+ * „/urmatoarea": oferă cea mai veche comandă neextrasă (fără să scrii numărul) și o trece la „extrase", ca data viitoare
+ * să primești următoarea. „/urmatoarea excel" o trimite ca fișier Excel. Butonul de sub mesaj o pune înapoi la neextrase.
+ */
+async function sendNextOrder(ctx: Ctx, excel: boolean): Promise<void> {
+  if (!(await requirePerm(ctx, "extragere", "extragerea comenzilor"))) return;
+  if (excel && !(await requirePerm(ctx, "date_personale", "descărcarea comenzii în Excel (conține telefon și adresă)"))) return;
+
+  const claimed = await claimNextOrder(ctx.actor);
+  if (!claimed) {
+    await say(ctx.chatId, "Nu mai sunt comenzi neextrase.");
+    return;
+  }
+  const { order, remaining } = claimed;
+  if (excel) await sendOrderExcel(ctx, order.ref);
+  else await sendOrderDetails(ctx, order.ref);
+
+  const left = remaining === 0 ? "Nu mai sunt comenzi neextrase." : `Au mai rămas ${plural(remaining, "comandă neextrasă", "comenzi neextrase")}.`;
+  await say(
+    ctx.chatId,
+    `Comanda ${order.ref} a fost marcată ca extrasă. ${left} Pentru următoarea scrieți /urmatoarea.`,
+    [[{ text: `Pune comanda ${order.ref} înapoi la neextrase`, callback_data: `reg_reopen:${order.ref}` }]]
+  );
 }
 
 /** „/comanda 40 excel": doar acea comandă, ca fișier Excel (în privat). Nu schimbă starea comenzii. */
@@ -439,7 +467,7 @@ export async function handleRegistryMessage(message: TgMessage): Promise<boolean
   // „/extrase excel", „/comanda 40 excel" (doar acea comandă).
   const wantsExcel = /(^|\s)excel(\s|$)/i.test(arg);
   if (wantsExcel) arg = arg.replace(/(^|\s)excel(?=\s|$)/gi, " ").replace(/\s+/g, " ").trim();
-  const known = ["start", "ajutor", "help", "id", "noi", "lista", "registru", "extrase", "comanda", "extrage", "istoric", "status", "excel"];
+  const known = ["start", "ajutor", "help", "id", "noi", "lista", "registru", "extrase", "comanda", "extrage", "istoric", "status", "excel", "urmatoarea", "next"];
   if (!known.includes(command)) return false;
 
   const ctx = await buildCtx(message.from, message.chat);
@@ -492,6 +520,10 @@ export async function handleRegistryMessage(message: TgMessage): Promise<boolean
     case "extrage":
       await offerExport(ctx);
       break;
+    case "urmatoarea":
+    case "next":
+      await sendNextOrder(ctx, wantsExcel);
+      break;
     case "excel": {
       const a = arg.toLowerCase();
       const filter: RegistryFilter = a.startsWith("toate") || a.startsWith("registru") ? "toate" : a.startsWith("extras") ? EXTRACTION.DONE : EXTRACTION.NEW;
@@ -531,6 +563,18 @@ export async function handleRegistryCallback(cb: TgCallback): Promise<void> {
         const filter = FILTER_CODE[arg1] ?? EXTRACTION.NEW;
         await answerCallbackQuery(cb.id);
         await sendListPage(ctx, filter, Math.max(1, Number(arg2) || 1));
+        return;
+      }
+      case "reg_reopen": {
+        if (!(await requirePerm(ctx, "confirmare", "readucerea unei comenzi la neextrase"))) break;
+        const back = await reopenOrder(arg1, ctx.actor);
+        if (!back) {
+          await answerCallbackQuery(cb.id, "Nu se poate.");
+          await say(ctx.chatId, `Comanda ${arg1} nu poate fi pusă înapoi la neextrase (nu e extrasă sau a fost extrasă printr-un export Excel).`);
+          return;
+        }
+        await answerCallbackQuery(cb.id, "Comanda e din nou neextrasă.");
+        await say(ctx.chatId, `Comanda ${back.ref} este din nou neextrasă și va fi oferită la următoarea cerere.`);
         return;
       }
       case "reg_xl": {

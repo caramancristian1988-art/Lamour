@@ -67,3 +67,25 @@ Sub ImportaComanda()
     Next r
 End Sub
 ```
+
+## „Următoarea comandă" — fără să introduci numărul
+
+Registrul are două liste: **neextrase** și **extrase**. Cu `POST /api/registru/urmatoarea` sistemul oferă cea mai
+**veche** comandă neextrasă (în ordinea primirii) și, în aceeași clipă, o trece la **extrase**. Data viitoare oferă
+următoarea. Nu trebuie reținut nimic în Excel: starea e în registru. Două cereri simultane nu primesc niciodată aceeași comandă.
+
+| Adresă | Ce face |
+|---|---|
+| `POST /api/registru/urmatoarea?format=tsv` | oferă următoarea comandă neextrasă și o marchează extrasă. Antetul `X-Comenzi-Ramase` = câte au mai rămas. Dacă nu mai sunt: `404` cu `{"code": "nu_mai_sunt"}` |
+| `GET /api/registru/ultima?format=tsv` | reciți ultima comandă oferită cheii tale (nu schimbă nimic) — dacă importul a eșuat |
+| `POST /api/registru/comanda/40/redeschide` | pune comanda înapoi la neextrase (ex. fișierul n-a ajuns), ca `/urmatoarea` s-o ofere din nou |
+
+Este `POST` (nu `GET`) fiindcă **modifică** starea comenzii: un link deschis din greșeală nu trebuie să „consume" comenzi.
+Comenzile rezervate într-un export Excel din Registru nu sunt oferite de `/urmatoarea` și nu pot fi redeschise prin API.
+Fiecare cheie e înregistrată la „extras de" doar prin ultimele 4 caractere ale ei.
+
+VBA: la fel ca mai sus, dar cu `http.Open "POST", ".../api/registru/urmatoarea?format=tsv", False`. Dacă `http.Status = 404`,
+nu mai sunt comenzi noi. Numărul rămas se citește cu `http.getResponseHeader("X-Comenzi-Ramase")`.
+
+În Telegram: `/urmatoarea` oferă următoarea comandă (cu butonul „Pune comanda înapoi la neextrase"), iar
+`/urmatoarea excel` o trimite ca fișier Excel.

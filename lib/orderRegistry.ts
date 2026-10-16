@@ -38,7 +38,7 @@ export const RESERVATION_HOURS = 24;
 export const PAYMENT_METHOD = "Plată la livrare";
 
 export interface Actor {
-  channel: "site" | "telegram";
+  channel: "site" | "telegram" | "api";
   /** ID-ul utilizatorului admin (site) sau ID-ul Telegram (from.id). */
   id: string;
   name: string;
@@ -502,6 +502,57 @@ export async function prepareExport(actor: Actor, scope?: Scope): Promise<Prepar
   const saved = await prisma.orderExport.update({ where: { id: exp.id }, data: { orderIds: ids, orderCount: ids.length } });
   await logExportAudit("export_pregatit", actor, exp.id, { comenzi: ids.length, numar: number });
   return { kind: "created", export: toExportSummary(saved) };
+}
+
+// ── „Următoarea comandă”: se oferă pe rând, fără să introduci numărul ───────────────────────────
+// Registrul are două liste: neextrase și extrase. „Următoarea” = cea mai VECHE comandă neextrasă (în ordinea primirii);
+// în clipa în care e oferită trece la „extrase", deci data viitoare se oferă următoarea. Revendicarea e atomică
+// (updateMany pe documentul ales, doar dacă e încă neextras), deci două cereri simultane nu primesc aceeași comandă.
+function actorLabel(actor: Actor): string {
+  return `${actor.name} (${actor.channel === "site" ? "site" : actor.channel === "telegram" ? "Telegram" : "API"})`;
+}
+
+export async function claimNextOrder(actor: Actor, scope?: Scope): Promise<{ order: RegistryOrder; remaining: number } | null> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const where: Prisma.ContactMessageWhereInput = { AND: [unextractedWhere(scope), NOT_ARCHIVED_FILTER] };
+    const next = await prisma.contactMessage.findFirst({ where, orderBy: { createdAt: "asc" }, select: { id: true } });
+    if (!next) return null;
+    const claimed = await prisma.contactMessage.updateMany({
+      where: { AND: [{ id: next.id }, NOT_EXTRACTED_FILTER] },
+      data: { extractionStatus: EXTRACTION.DONE, extractedAt: new Date(), extractedBy: actorLabel(actor) },
+    });
+    if (claimed.count === 1) {
+      const row = await prisma.contactMessage.findUnique({ where: { id: next.id } });
+      if (!row) return null;
+      const remaining = await prisma.contactMessage.count({ where });
+      await logExportAudit("comanda_urmatoare", actor, null, { comanda: row.orderNumber ?? row.id, ramase: remaining });
+      return { order: (await toRegistryOrders([row]))[0], remaining };
+    }
+    // altcineva a luat-o între timp — încercăm următoarea
+  }
+  return null;
+}
+
+/** Ultima comandă oferită prin „următoarea” de același solicitant (ca să poți reciti dacă ai pierdut-o pe drum). */
+export async function lastClaimedOrder(actor: Actor, scope?: Scope): Promise<RegistryOrder | null> {
+  const row = await prisma.contactMessage.findFirst({
+    where: { AND: [sourceFilter(scope), { extractionStatus: EXTRACTION.DONE }, { extractedBy: actorLabel(actor) }] },
+    orderBy: { extractedAt: "desc" },
+  });
+  return row ? (await toRegistryOrders([row]))[0] : null;
+}
+
+/** Pune o comandă extrasă înapoi la „neextrasă” (ex. fișierul nu a ajuns). Nu atinge comenzile dintr-un export Excel. */
+export async function reopenOrder(reference: string, actor: Actor, scope?: Scope): Promise<RegistryOrder | null> {
+  const found = await findRegistryOrder(reference, scope);
+  if (!found || found.extractionStatus !== EXTRACTION.DONE || found.exportId) return null;
+  const done = await prisma.contactMessage.updateMany({
+    where: { id: found.id, extractionStatus: EXTRACTION.DONE },
+    data: { extractionStatus: EXTRACTION.NEW, extractedAt: null, extractedBy: null },
+  });
+  if (done.count === 0) return null;
+  await logExportAudit("comanda_redeschisa", actor, null, { comanda: found.ref });
+  return findRegistryOrder(found.ref, scope);
 }
 
 export async function getExportSummary(exportId: string): Promise<ExportSummary | null> {
