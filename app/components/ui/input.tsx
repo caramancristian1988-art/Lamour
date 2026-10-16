@@ -7,6 +7,7 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
       <input
         type={type}
         ref={ref}
+        data-own-focus
         className={cn(
           "flex h-12 w-full rounded-xl border-2 border-input bg-card px-4 py-3 text-base text-foreground placeholder:text-muted-foreground transition-colors",
           "focus-visible:outline-none focus-visible:border-accent focus-visible:ring-3 focus-visible:ring-accent/20",
