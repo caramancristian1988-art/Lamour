@@ -352,6 +352,16 @@ model ExportAuditLog {
 
 // Drepturile unui utilizator Telegram asupra registrului — după ID-ul Telegram (from.id), nu după numele afișat.
 // permissions: vizualizare | consultare | date_personale | extragere | confirmare | administrare
+// Cheie unică pentru comenzile importate din fișier (Telegram): dacă același expeditor trimite ȘI Excel, ȘI PDF pentru aceeași
+// comandă, a doua încercare găsește cheia deja luată și NU mai creează o comandă (nici AWB) — indexul unic face revendicarea atomică,
+// chiar dacă cele două fișiere ajung în aceeași secundă. orderId se completează după crearea comenzii.
+model OrderImportKey {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique
+  orderId   String?
+  createdAt DateTime @default(now())
+}
+
 model TelegramUserPermission {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   telegramUserId String   @unique

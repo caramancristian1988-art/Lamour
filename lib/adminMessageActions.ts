@@ -289,6 +289,26 @@ export async function applySalesCountForStatusChange(
 // schimbarea de status — rămâne doar fără AWB, creabil manual din panoul
 // EVS Express al mesajului. Apelată atât din admin cât și din webhook-ul
 // Telegram (butonul "💰 Achitat" schimbă statusul direct din Telegram).
+// Comentariul AWB-ului: toate produsele comenzii (curierul / depozitul văd ce e în colet). EVS nu are un câmp de produse,
+// iar Comment e liber; limitat ca un text foarte lung să nu strice înregistrarea.
+async function courierComment(message: { orderNumber?: string | null; orderItems?: unknown }): Promise<string | undefined> {
+  try {
+    const items = Array.isArray(message.orderItems)
+      ? (message.orderItems as { productId?: unknown; quantity?: unknown }[]).filter(
+          (it): it is { productId: string; quantity: number } => typeof it?.productId === "string" && typeof it?.quantity === "number"
+        )
+      : [];
+    if (items.length === 0) return undefined;
+    const products = await prisma.product.findMany({ where: { id: { in: items.map((it) => it.productId) } }, select: { id: true, name: true } });
+    const nameById = new Map(products.map((p) => [p.id, p.name]));
+    const list = items.map((it) => `${nameById.get(it.productId) ?? "Produs"} x${it.quantity}`).join("; ");
+    const text = `${message.orderNumber ? `Comanda #${message.orderNumber}: ` : ""}${list}`;
+    return text.length > 250 ? `${text.slice(0, 247)}...` : text;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function maybeCreateEvsShipment(message: {
   id: string;
   name: string;
@@ -300,6 +320,8 @@ export async function maybeCreateEvsShipment(message: {
   deliveryZip: string | null;
   deliveryWeightKg: number | null;
   deliveryCodAmount: number | null;
+  orderNumber?: string | null;
+  orderItems?: unknown;
 }, options: { pickup?: boolean } = {}): Promise<{ ok: boolean; description: string } | null> {
   if (message.awbCode) return null;
   if (!message.deliveryAddress || !message.deliveryZip) {
@@ -320,6 +342,7 @@ export async function maybeCreateEvsShipment(message: {
       },
       weight: message.deliveryWeightKg ?? 1,
       codAmount: message.deliveryCodAmount ?? 0,
+      comment: await courierComment(message),
     },
     { validateOnly: false, pickup: options.pickup }
   );
@@ -571,12 +594,23 @@ export async function advanceOrderStage(messageId: string, nextStage: OrderStage
   return (await applyOrderStage(messageId, nextStage)).row;
 }
 
+/** Ca advanceOrderStage, dar întoarce și rezultatul EVS (AWB creat / eroarea exactă) — pentru confirmările din Telegram. */
+export async function advanceOrderStageReport(messageId: string, nextStage: OrderStage) {
+  return applyOrderStage(messageId, nextStage);
+}
+
 // Aceeași tranziție, dar întoarce și motivul refuzului (ex. EVS a respins ridicarea) — ca adminul din site să
 // vadă de ce nu s-a schimbat etapa, nu doar Telegramul. Nu e exportată: fișierul e "use server".
 async function applyOrderStage(
   messageId: string,
   nextStage: OrderStage
-): Promise<{ row: Awaited<ReturnType<typeof prisma.contactMessage.findUniqueOrThrow>>; failure: string | null }> {
+): Promise<{
+  row: Awaited<ReturnType<typeof prisma.contactMessage.findUniqueOrThrow>>;
+  failure: string | null;
+  /** Rezultatul încercării de a crea AWB-ul la această tranziție (null = nu s-a încercat). */
+  evs?: { ok: boolean; description: string } | null;
+}> {
+  let evs: { ok: boolean; description: string } | null = null;
   const before = await prisma.contactMessage.findUniqueOrThrow({ where: { id: messageId } });
   // Buton apăsat de două ori / update Telegram livrat de două ori — nu repetăm efectele
   // (AWB duplicat, contor de vânzări dublu, notificări duble).
@@ -606,6 +640,7 @@ async function applyOrderStage(
       const shipment = await maybeCreateEvsShipment(before.awbCode ? before : await refreshDeliveryWeight(before), { pickup: false });
       // Comanda rămâne confirmată chiar dacă AWB-ul nu s-a creat (se reîncearcă la "gata de ridicare"),
       // dar operatorul trebuie să știe — altfel eșecul rămânea doar în logurile serverului.
+      evs = shipment;
       if (shipment && !shipment.ok) await warn(`AWB-ul nu a putut fi creat la confirmare (${shipment.description}). Se reîncearcă la „Gata de ridicare”.`);
     }
   } else if (nextStage === "predata_curier") {
@@ -667,7 +702,7 @@ async function applyOrderStage(
     revalidatePath("/admin/produse");
     revalidatePath("/produse");
   }
-  return { row: updated, failure: null };
+  return { row: updated, failure: null, evs };
 }
 
 function orderRef(orderNumber: string | null): string {

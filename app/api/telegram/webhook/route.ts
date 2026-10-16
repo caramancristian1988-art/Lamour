@@ -25,7 +25,18 @@ import {
 import { linkChatByToken, isKnownChat } from "@/lib/telegramRecipients";
 import { handleRegistryMessage, handleRegistryCallback, isRegistryCallback } from "@/lib/telegramRegistry";
 import { getAwbLabel } from "@/lib/evsExpress";
-import { parseOrderFile, createCartOrderFromParsedItems, OrderFileError, MAX_ORDER_FILE_BYTES } from "@/lib/orderFileImport";
+import {
+  parseOrderFile,
+  createCartOrderFromParsedItems,
+  parseCourierAddress,
+  orderImportKey,
+  claimOrderImport,
+  attachOrderImport,
+  releaseOrderImport,
+  OrderFileError,
+  MAX_ORDER_FILE_BYTES,
+} from "@/lib/orderFileImport";
+import { formatKg } from "@/lib/orderWeight";
 
 // O tranziție de etapă face mai multe apeluri de rețea în serie (EVS + Telegram + bază de date);
 // implicitul de 10s al platformei ar putea tăia cererea la mijloc.
@@ -337,10 +348,32 @@ async function handleOrderFileMessage(message: TelegramDocumentMessage): Promise
     return;
   }
 
+  // „Livrare prin compania de curierat” în fișier -> AWB la EVS (cu localitate + stradă + cod poștal din adresă).
+  const courier = parsed.header.deliveryMethod === "evs";
+  const courierAddress = courier ? parseCourierAddress(address) : null;
+
+  // Anti-dublură: același expeditor poate trimite ȘI Excel, ȘI PDF pentru aceeași comandă. Cheia (nr. extern + lună, sau
+  // amprenta conținutului) se revendică atomic ÎNAINTE de a crea comanda: al doilea fișier e ignorat, deci nu apare nici
+  // o a doua comandă, nici un al doilea AWB.
+  const importItems = matchedRows.map((r) => ({ productId: r.matchedProductId as string, quantity: r.quantity }));
+  const importKey = orderImportKey(parsed.header, phone, importItems);
+  const claim = await claimOrderImport(importKey);
+  if (!claim.claimed) {
+    const which = claim.orderNumber ? `Comanda #${claim.orderNumber}` : "comanda";
+    await reply(
+      `ℹ️ Fișierul „${escapeHtml(filename)}” a fost ignorat: aceeași comandă${
+        parsed.header.externalOrderNumber ? ` (nr. extern ${escapeHtml(parsed.header.externalOrderNumber)})` : ""
+      } a fost deja încărcată (${claim.inProgress ? "se procesează chiar acum" : which}${claim.awb ? `, AWB ${escapeHtml(claim.awb)}` : ""}). Nu am creat nicio comandă sau AWB nou. Dacă e totuși o comandă diferită, trimite-o din nou cu alt număr de comandă în fișier.`
+    );
+    return;
+  }
+
   const result = await createCartOrderFromParsedItems({
     name,
     phone,
-    deliveryAddress: address,
+    deliveryLocality: courierAddress?.locality ?? null,
+    deliveryAddress: courier ? courierAddress?.street ?? address : address,
+    deliveryZip: courierAddress?.zip ?? null,
     note: `Comandă introdusă din Telegram, din fișierul „${filename}”${
       parsed.header.externalOrderNumber ? ` (nr. extern ${parsed.header.externalOrderNumber})` : ""
     }.`,
@@ -350,14 +383,16 @@ async function handleOrderFileMessage(message: TelegramDocumentMessage): Promise
     companyIdno: parsed.header.companyIdno,
     companyAddress: parsed.header.companyAddress,
     companyVat: parsed.header.companyVat,
-    ownDelivery: parsed.header.deliveryMethod !== "evs",
+    ownDelivery: !courier,
     paymentByTransfer: parsed.header.paymentByTransfer,
   });
 
   if (!result.ok) {
+    await releaseOrderImport(importKey); // comanda nu s-a creat: trimiterea repetată trebuie să poată reuși
     await reply(`Nu am putut crea comanda: ${result.error}`);
     return;
   }
+  if (result.id) await attachOrderImport(importKey, result.id);
 
   const ref = result.orderNumber ? `Comanda #${result.orderNumber}` : "Comanda";
   const plural = matchedRows.length === 1 ? "produs" : "produse";
@@ -368,5 +403,39 @@ async function handleOrderFileMessage(message: TelegramDocumentMessage): Promise
           .map((r) => `• ${escapeHtml(r.raw.slice(0, 60))}`)
           .join("\n")}${unmatchedRows.length > 5 ? "\n…" : ""}\nAdaugă-le manual din „Editează comanda”.`
       : "";
-  await reply(`✅ ${ref} a fost creată cu ${matchedRows.length} ${plural} și a plecat direct la depozitar.${skippedNote}`);
+  if (!courier) {
+    await reply(`✅ ${ref} a fost creată cu ${matchedRows.length} ${plural} și a plecat direct la depozitar.${skippedNote}`);
+    return;
+  }
+
+  // Livrare prin curier: raport complet despre AWB-ul de la EVS (succes SAU eroarea exactă), ca să se vadă în grup.
+  const nameById = new Map(parsed.products.map((p) => [p.id, p.name]));
+  const productLines = matchedRows
+    .map((r) => `• ${escapeHtml(nameById.get(r.matchedProductId as string) ?? r.raw.slice(0, 60))} × ${r.quantity}`)
+    .join("\n");
+  const addressText = [courierAddress?.locality, courierAddress?.street, courierAddress?.zip].filter(Boolean).join(", ") || address || "—";
+  const payText = parsed.header.paymentByTransfer ? "plătită prin transfer (fără ramburs)" : `ramburs ${(result.codAmount ?? 0).toLocaleString("ro-MD")} MDL`;
+  const dataBlock =
+    `\n\n👤 ${escapeHtml(name)} · ${escapeHtml(phone)}` +
+    `\n📍 ${escapeHtml(addressText)}` +
+    `\n⚖️ ${result.weightKg ? formatKg(result.weightKg) : "greutate calculată la confirmare"} · ${payText}` +
+    `\n\n${productLines}`;
+
+  console.log(
+    `import fișier (curier): ${ref} awb=${result.awb ?? "-"} evs=${result.evs ? (result.evs.ok ? "ok" : "eroare") : "neîncercat"} ${result.evs?.description ?? ""}`
+  );
+
+  if (result.awb) {
+    await reply(
+      `✅ ${ref} a fost creată cu ${matchedRows.length} ${plural} și a plecat la depozitar.\n🚚 <b>AWB creat la EVS Express: ${escapeHtml(result.awb)}</b>${dataBlock}${skippedNote}`
+    );
+    return;
+  }
+
+  const reason = result.evs?.description ?? "AWB-ul nu a putut fi încercat (confirmarea comenzii a eșuat — vezi mesajul comenzii).";
+  await reply(
+    `⚠️ ${ref} a fost creată cu ${matchedRows.length} ${plural}, dar <b>AWB-ul NU s-a creat la EVS</b>.\n<b>Motiv EVS/sistem:</b> ${escapeHtml(reason)}${dataBlock}${skippedNote}\n\n` +
+      `Ce poți face: completează în fișier „Adresa: localitate, stradă și număr, MD-cod poștal de 4 cifre” (localitatea exact ca în nomenclatorul EVS), ` +
+      `sau corectează adresa din „Editează comanda”, apoi apasă din nou „Gata de ridicare” — AWB-ul se reîncearcă automat.`
+  );
 }

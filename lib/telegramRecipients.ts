@@ -25,7 +25,10 @@ export async function isKnownChat(chatId: string): Promise<boolean> {
   if (chatId === process.env.TELEGRAM_CHAT_ID) return true;
   try {
     const recipient = await prisma.telegramRecipient.findFirst({ where: { chatId }, select: { id: true } });
-    return Boolean(recipient);
+    if (recipient) return true;
+    // Grupurile configurate în Admin → Telegram → drepturi pe grup (ex. „Export comenzi”) sunt tot de-ale echipei.
+    const group = await prisma.telegramGroupPermission.findFirst({ where: { chatId }, select: { id: true } });
+    return Boolean(group);
   } catch (err) {
     console.error("telegram: nu am putut verifica chatul:", err);
     return false;

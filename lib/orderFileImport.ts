@@ -1,9 +1,11 @@
 import * as XLSX from "xlsx";
+import { createHash } from "node:crypto";
 import { prisma } from "./prisma";
 import { getCatalog } from "./catalog";
 import { normalizeTiers, unitPriceFor, formatPrice, type PriceTier } from "./pricing";
 import { CART_ORDER_SOURCE } from "./orderStages";
-import { submitContactMessageAction, advanceOrderStage } from "./adminMessageActions";
+import { submitContactMessageAction, advanceOrderStageReport } from "./adminMessageActions";
+import { matchLocality } from "./localityMatch";
 
 // Comandă nouă dintr-un fișier Excel/CSV/PDF trimis de client (operatorii primesc adesea o listă de produse așa, în
 // loc s-o retasteze pe site) — recunoaște produsele și cantitățile, apoi creează o comandă normală "din coș", care
@@ -212,7 +214,11 @@ function extractOrderHeaderFields(lines: string[]): ParsedOrderHeader {
       header.needsInvoice = true;
       continue;
     }
-    if (/livr(are|at|[aă]m)/i.test(trimmed) && /\bevs\b/i.test(trimmed)) {
+    // „Livrare prin compania de curierat" (formularea din fișierele operatorilor) sau orice rând de livrare cu „EVS".
+    if (
+      (/livr(are|at|[aă]m)/i.test(trimmed) && /\bevs\b/i.test(trimmed)) ||
+      /livrare\s+prin\s+(compania\s+de\s+)?curierat/i.test(trimmed)
+    ) {
       header.deliveryMethod = "evs";
       continue;
     }
@@ -539,6 +545,14 @@ export interface CreateOrderFromFileResult {
   ok: boolean;
   error?: string;
   orderNumber?: string | null;
+  id?: string;
+  /** Codul AWB EVS, dacă s-a creat (livrare prin curier). */
+  awb?: string | null;
+  /** Rezultatul încercării de creare a AWB-ului (null = nu s-a încercat: livrare proprie). */
+  evs?: { ok: boolean; description: string } | null;
+  weightKg?: number | null;
+  codAmount?: number | null;
+  total?: number;
 }
 
 /**
@@ -636,14 +650,107 @@ export async function createCartOrderFromParsedItems(input: CreateOrderFromFileI
     await prisma.contactMessage.update({ where: { id: result.id }, data: { ownDelivery: true } });
   }
 
+  let evs: { ok: boolean; description: string } | null = null;
+  let awb: string | null = null;
+  let weightKg: number | null = null;
   if (input.autoConfirm !== false && result.id) {
     try {
-      await advanceOrderStage(result.id, "confirmata");
+      const advanced = await advanceOrderStageReport(result.id, "confirmata");
+      evs = advanced.evs ?? null;
+      awb = advanced.row.awbCode ?? null;
+      weightKg = advanced.row.deliveryWeightKg ?? null;
     } catch (err) {
       // O comandă rămasă la "nouă" tot ajunge la operator din Admin → Cereri și comenzi — nu blocăm crearea.
       console.error("comandă din fișier: avansarea automată la „confirmată” a eșuat:", err);
     }
   }
 
-  return { ok: true, orderNumber: result.orderNumber ?? null };
+  return {
+    ok: true,
+    orderNumber: result.orderNumber ?? null,
+    id: result.id,
+    awb,
+    evs,
+    weightKg,
+    codAmount: paymentByTransfer ? 0 : subtotal,
+    total: subtotal,
+  };
+}
+
+// ── Adresa pentru curier: localitate + stradă + cod poștal, din textul liber „Adresa: …” ─────────────────────────
+
+const LOCALITY_PREFIX = /^(mun(icipiul)?\.?|or(a[sș]ul)?\.?|s(atul)?\.?|com(una)?\.?|r-?nul|raionul)\s+/i;
+
+/**
+ * Împarte o adresă scrisă liber în ce are nevoie EVS: localitate (EXACT din nomenclatorul EVS), stradă și cod poștal de
+ * 4 cifre. Codul poștal se recunoaște după „MD-2001” / „cod poștal 2001” sau ca un număr de 4 cifre singur între virgule;
+ * un număr de 4 cifre lipit de o stradă (ex. „str. Mihai Viteazu 1234”) NU se ia drept cod. Ce nu se recunoaște rămâne null.
+ */
+export function parseCourierAddress(raw: string | null | undefined): { locality: string | null; street: string | null; zip: string | null } {
+  if (!raw?.trim()) return { locality: null, street: null, zip: null };
+  let text = raw.trim();
+  let zip: string | null = null;
+
+  const labelled = text.match(/(?:cod\s*po[sș]tal|zip|index)\s*[:\-]?\s*(?:MD[-\s]?)?(\d{4})\b/i) ?? text.match(/\bMD[-\s]?(\d{4})\b/i);
+  if (labelled) {
+    zip = labelled[1];
+    text = text.replace(labelled[0], "");
+  }
+  const parts = text.split(/[,;]+/).map((p) => p.trim()).filter(Boolean);
+  if (!zip) {
+    const idx = parts.findIndex((p) => /^\d{4}$/.test(p));
+    if (idx >= 0) {
+      zip = parts[idx];
+      parts.splice(idx, 1);
+    }
+  }
+
+  let locality: string | null = null;
+  const rest: string[] = [];
+  for (const part of parts) {
+    if (!locality) {
+      const match = matchLocality(part.replace(LOCALITY_PREFIX, "").trim());
+      if (match.exact) {
+        locality = match.exact;
+        continue;
+      }
+    }
+    rest.push(part);
+  }
+  return { locality, street: rest.join(", ") || null, zip };
+}
+
+// ── Anti-dublură: același expeditor trimite Excel ȘI PDF pentru aceeași comandă ─────────────────────────────────
+
+/**
+ * Cheia comenzii din fișier: numărul extern („Comanda Nr. 72”) + luna, dacă fișierul îl are (Excel și PDF-ul aceleiași comenzi
+ * au același număr); altfel o amprentă a conținutului (telefon + produse + cantități) pe ziua curentă.
+ */
+export function orderImportKey(header: { externalOrderNumber: string | null }, phone: string, items: { productId: string; quantity: number }[]): string {
+  const month = new Date().toISOString().slice(0, 7);
+  if (header.externalOrderNumber) return `ext:${header.externalOrderNumber.trim()}:${month}`;
+  const digits = phone.replace(/\D/g, "").slice(-8);
+  const content = [...items].sort((a, b) => a.productId.localeCompare(b.productId)).map((i) => `${i.productId}x${i.quantity}`).join(",");
+  return `content:${createHash("sha1").update(`${digits}|${content}`).digest("hex")}:${new Date().toISOString().slice(0, 10)}`;
+}
+
+/** Revendică cheia (atomic, prin indexul unic). false = a mai fost luată: comanda există deja / se creează chiar acum. */
+export async function claimOrderImport(key: string): Promise<{ claimed: true } | { claimed: false; orderNumber: string | null; awb: string | null; inProgress: boolean }> {
+  try {
+    await prisma.orderImportKey.create({ data: { key } });
+    return { claimed: true };
+  } catch {
+    const existing = await prisma.orderImportKey.findUnique({ where: { key } });
+    const order = existing?.orderId ? await prisma.contactMessage.findUnique({ where: { id: existing.orderId }, select: { orderNumber: true, awbCode: true } }) : null;
+    return { claimed: false, orderNumber: order?.orderNumber ?? null, awb: order?.awbCode ?? null, inProgress: !existing?.orderId };
+  }
+}
+
+export async function attachOrderImport(key: string, orderId: string): Promise<void> {
+  await prisma.orderImportKey.update({ where: { key }, data: { orderId } }).catch(() => undefined);
+}
+
+/** Comanda nu s-a creat (eroare): eliberăm cheia, ca trimiterea repetată să poată reuși. */
+export async function releaseOrderImport(key: string): Promise<void> {
+  await prisma.orderImportKey.delete({ where: { key } }).catch(() => undefined);
 }

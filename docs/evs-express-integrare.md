@@ -167,3 +167,20 @@ Reguli de siguranță din cod:
 - Serviciul este fix `Service: 1` și `method=Standard`.
 - Statusul AWB se actualizează la tranzițiile de etapă și la cerere (buton în admin); nu există o sincronizare periodică în fundal.
 - Expeditorul este mereu sucursala din variabilele de mediu.
+
+## 10. Comenzi din fișier (Telegram) cu livrare prin curier
+
+Fișierele Excel/PDF trimise botului într-un chat cunoscut (grupul principal, un destinatar conectat sau un grup din
+Admin → Telegram → drepturi pe grup, ex. „Export comenzi”) creează o comandă (`handleOrderFileMessage` în `app/api/telegram/webhook/route.ts`).
+
+- Dacă fișierul conține rândul **„Livrare prin compania de curierat”** (sau orice rând de livrare cu „EVS”), comanda NU mai e „livrare proprie”: adresa
+  se desparte în **localitate** (exact din nomenclatorul EVS), **stradă** și **cod poștal** (`parseCourierAddress`), apoi comanda se confirmă și
+  se creează AWB-ul (`advanceOrderStageReport` → `maybeCreateEvsShipment`, `pickup=0`; curierul e chemat abia la „Gata de ridicare”).
+- AWB-ul poartă numele, telefonul, adresa, greutatea, rambursul (0 dacă „plată prin transfer”) și, în `Comment`, **toate produsele** cu cantități.
+- Botul răspunde în același grup: **AWB creat** (cu cod, client, adresă, greutate, ramburs, produse) sau **eroarea exactă** de la EVS / ce lipsește
+  (de ex. codul poștal) și cum se repară. Rezultatul apare și în jurnalul serverului (`import fișier (curier): …`).
+- Codul poștal se recunoaște ca `MD-2001`, `cod poștal 2001` sau ca număr de 4 cifre singur între virgule. Fără el, AWB-ul nu se poate crea (EVS cere ZIP).
+- **Anti-dublură (Excel + PDF ale aceleiași comenzi):** cheia comenzii (`OrderImportKey`, index unic) = numărul extern „Comanda Nr.” + luna, sau o
+  amprentă a conținutului (telefon + produse + cantități) pe zi. Al doilea fișier e ignorat cu un mesaj; nu se creează nici comandă, nici AWB nou.
+  Dacă primul import eșuează, cheia se eliberează ca retrimiterea să poată reuși.
+- Pentru ca botul să primească fișiere într-un grup, trebuie să fie **administrator** al grupului sau să aibă „Group Privacy” oprit în BotFather.
