@@ -8,6 +8,13 @@ export const BLOG_CATEGORIES: { label: string; slug: string }[] = [
   { label: "Producție", slug: "productie" },
 ];
 
+import { INTRO_VIDEO } from "./siteVideos";
+
+/** Articole care au un videoclip (de pe Facebook) afișat în text, sub paragraful introductiv. */
+export const ARTICLE_VIDEOS: Record<string, { url: string; title: string; poster: string }> = {
+  "cum-te-poti-implica-ca-voluntar": INTRO_VIDEO,
+};
+
 export const BLOG_FALLBACK_IMAGE = "https://placehold.co/800x600/D8B2B1/652F37?text=Articol";
 
 export function formatBlogDate(date: Date): string {

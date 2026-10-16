@@ -9,7 +9,10 @@ import JsonLd from "@/app/components/JsonLd";
 import { Logo } from "@/app/components/Logo";
 import { breadcrumbList, articleSchema } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
-import { BLOG_CATEGORIES, BLOG_FALLBACK_IMAGE, formatBlogDate, readingTime } from "@/lib/blog";
+import { ARTICLE_VIDEOS, BLOG_CATEGORIES, BLOG_FALLBACK_IMAGE, formatBlogDate, readingTime } from "@/lib/blog";
+import FacebookVideo from "@/app/components/FacebookVideo";
+import ProductsSection from "@/app/components/ProductsSection";
+import { getRecommendedProducts } from "@/lib/recommendedProducts";
 import { BlogCard, BlogNewsletter } from "@/app/components/blog/BlogParts";
 import { HeadingFlourish } from "@/app/components/ui/motif";
 
@@ -46,7 +49,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
   const post = await prisma.blogPost.findFirst({ where: { slug, published: true } });
   if (!post) notFound();
 
-  const [relatedPosts, recentPosts] = await Promise.all([
+  const [relatedPosts, recentPosts, recommendedProducts] = await Promise.all([
     post.category
       ? prisma.blogPost.findMany({
           where: { published: true, category: post.category, slug: { not: slug } },
@@ -59,6 +62,7 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
       orderBy: { createdAt: "desc" },
       take: 3,
     }),
+    getRecommendedProducts(),
   ]);
   // „Citește și": întâi din aceeași categorie, completat cu cele mai recente
   const more = [...relatedPosts, ...recentPosts.filter((r) => !relatedPosts.some((x) => x.slug === r.slug))].slice(0, 3);
@@ -139,6 +143,20 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
             <p className="mb-8 border-l-4 border-accent pl-5 font-serif text-lg italic leading-relaxed text-foreground/80 sm:text-xl">
               {post.description}
             </p>
+            {ARTICLE_VIDEOS[slug] && (
+              <figure className="mb-10 overflow-hidden rounded-2xl border border-brand-rose/60 shadow-md">
+                <FacebookVideo
+                  videoUrl={ARTICLE_VIDEOS[slug].url}
+                  poster={ARTICLE_VIDEOS[slug].poster}
+                  title={ARTICLE_VIDEOS[slug].title}
+                  className="aspect-video w-full"
+                />
+                <figcaption className="flex items-start gap-2 bg-card px-5 py-3 text-sm text-muted-foreground">
+                  <span className="font-bold text-primary">Video:</span>
+                  {ARTICLE_VIDEOS[slug].title}
+                </figcaption>
+              </figure>
+            )}
             {post.content && <div className="blog-content" dangerouslySetInnerHTML={{ __html: post.content }} />}
           </div>
 
@@ -186,6 +204,9 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
             </div>
           </section>
         )}
+
+        {/* Produse recomandate (toate cele bifate în admin) */}
+        <ProductsSection products={recommendedProducts} viewAllHref="/produse" />
 
         <BlogNewsletter />
       </main>

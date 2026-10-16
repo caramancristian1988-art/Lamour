@@ -442,12 +442,39 @@ html {
 .blog-content a { color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .blog-content a:hover { color: var(--brand-red-dark); }
 .blog-content strong { color: var(--foreground); font-weight: 700; }
+/* Listele: fiecare punct e un card moale, cu bifă (liste simple) sau număr (liste numerotate) într-un cerc. */
 .blog-content ul,
-.blog-content ol { padding-left: 1.5em; }
-.blog-content ul { list-style: disc; }
-.blog-content ol { list-style: decimal; }
-.blog-content li + li { margin-top: 0.4em; }
-.blog-content li::marker { color: var(--accent); }
+.blog-content ol { list-style: none; padding: 0; display: grid; gap: 0.65rem; counter-reset: blog-item; }
+.blog-content ul > li,
+.blog-content ol > li {
+  position: relative;
+  counter-increment: blog-item;
+  background: color-mix(in srgb, var(--secondary) 22%, white);
+  border: 1px solid color-mix(in srgb, var(--brand-rose) 55%, transparent);
+  border-radius: 1rem;
+  padding: 0.85rem 1.1rem 0.85rem 3.4rem;
+  line-height: 1.6;
+}
+.blog-content ul > li::before,
+.blog-content ol > li::before {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 9999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.blog-content ul > li::before { content: "✓"; }
+.blog-content ol > li::before { content: counter(blog-item); }
 .blog-content blockquote {
   border-left: 4px solid var(--accent);
   background: color-mix(in srgb, var(--secondary) 35%, transparent);
