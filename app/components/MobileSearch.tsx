@@ -278,7 +278,7 @@ export default function MobileSearch({ categories = [] }: { categories?: SearchC
                     {categories.map((cat) => (
                       <li key={cat.id}>
                         <Link
-                          href={`/produse/${cat.slug}`}
+                          href={`/produse?cat=${cat.slug}`}
                           onClick={close}
                           className="flex h-full flex-col overflow-hidden rounded-xl border border-brand-rose/60 bg-card text-center shadow-sm transition-colors active:border-accent active:bg-muted"
                         >
