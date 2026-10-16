@@ -5,6 +5,7 @@ import { Phone, Mail, Clock, HeadphonesIcon, MapPin, ArrowRight } from "lucide-r
 import { WhatsAppIcon, ViberIcon } from "@/app/components/ui/brand-icons";
 import { prisma } from "@/lib/prisma";
 import { onlyVisible } from "@/lib/productVisibility";
+import { dedupeVariants } from "@/lib/productListing";
 import { fallbackProducts } from "@/lib/fallbackData";
 import { getSectionFlags, getContactInfo } from "@/lib/siteSettings";
 import { SITE_NAME } from "@/lib/constants";
@@ -53,15 +54,17 @@ const FALLBACK_FAQS: FaqItem[] = [
   },
 ];
 
+// Toate produsele bifate „Recomandat" în admin (ca pe prima pagină), fără limită; cât timp niciunul nu e bifat,
+// se folosesc cele mai bine cotate (cel mult 15).
 async function getRecommendedProducts() {
   try {
-    const products = await prisma.product.findMany({
-      where: onlyVisible(),
-      orderBy: { rating: "desc" },
-      take: 4,
-    });
-    if (products.length === 0) throw new Error("empty");
-    return products;
+    const ticked = dedupeVariants(
+      await prisma.product.findMany({ where: onlyVisible({ recommended: true }), orderBy: { createdAt: "desc" } })
+    );
+    if (ticked.length > 0) return ticked;
+    const top = dedupeVariants(await prisma.product.findMany({ where: onlyVisible(), orderBy: { rating: "desc" }, take: 80 })).slice(0, 15);
+    if (top.length === 0) throw new Error("empty");
+    return top;
   } catch {
     return fallbackProducts.slice(0, 4);
   }
