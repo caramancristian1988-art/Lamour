@@ -197,7 +197,13 @@ async function sendListPage(ctx: Ctx, filter: RegistryFilter, page: number): Pro
   const head = `${FILTER_TITLE[filter]}. În total ${plural(r.total, "comandă", "comenzi")}. Pagina ${r.page} din ${r.pages}.`;
   let table = ordersTable(r.orders, 8);
   for (const rows of [4, 2, 1]) if (table.length > TABLE_MAX_CHARS) table = ordersTable(r.orders, rows);
-  const hint = "Pentru detalii folosiți /comanda urmat de număr, de exemplu /comanda " + r.orders[0].ref + ".";
+  const excelCommand = filter === EXTRACTION.NEW ? "/excel" : filter === EXTRACTION.DONE ? "/excel extrase" : "/excel toate";
+  const hint =
+    "Pentru detalii folosiți /comanda urmat de număr, de exemplu /comanda " +
+    r.orders[0].ref +
+    ". Pentru această listă în Excel, scrieți " +
+    excelCommand +
+    " sau apăsați butonul Descarcă lista în Excel.";
 
   const code = FILTER_TO_CODE[filter];
   const row: Button[] = [];

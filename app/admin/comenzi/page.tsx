@@ -74,11 +74,6 @@ export default async function RegistryPage({ searchParams }: { searchParams: Pro
     return `/admin/comenzi${s ? `?${s}` : ""}`;
   }
 
-  const excelParams = new URLSearchParams();
-  excelParams.set("status", status);
-  if (q) excelParams.set("q", q);
-  if (includeArchived) excelParams.set("arhivate", "1");
-
   return (
     <div>
       <AdminPageHeader
@@ -136,13 +131,6 @@ export default async function RegistryPage({ searchParams }: { searchParams: Pro
           <button type="submit" className="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">
             Aplică filtrele
           </button>
-          {/* Aceeași listă (cu filtrele de mai sus, toate paginile) ca fișier Excel — doar o copie, nu marchează nimic ca extras. */}
-          <a
-            href={`/api/admin/comenzi/lista-excel?${excelParams.toString()}`}
-            className="h-11 px-5 rounded-xl border-2 border-primary text-primary text-sm font-semibold inline-flex items-center hover:bg-primary hover:text-primary-foreground transition-colors"
-          >
-            Descarcă lista în Excel
-          </a>
         </form>
 
         <p role="status" className="text-sm text-muted-foreground mb-3">
@@ -150,6 +138,37 @@ export default async function RegistryPage({ searchParams }: { searchParams: Pro
             ? "Nicio comandă nu corespunde filtrelor alese."
             : `${FILTER_LABELS[status]}: ${plural(list.total, "comandă", "comenzi")}. Pagina ${list.page} din ${list.pages}.`}
         </p>
+
+        {/* Descărcarea Excel: un BUTON real (<button type="submit"> într-un formular), nu un simplu link — cititoarele de ecran îl
+            găsesc în lista de butoane/controale, iar grupul are nume și explicație. Aceeași listă, cu filtrele alese mai sus,
+            pentru toate paginile; este doar o copie (nu marchează nimic ca extras). */}
+        <form
+          method="get"
+          action="/api/admin/comenzi/lista-excel"
+          role="group"
+          aria-labelledby="excel-titlu"
+          className="mb-4 flex flex-wrap items-center gap-3"
+        >
+          <input type="hidden" name="status" value={status} />
+          {q && <input type="hidden" name="q" value={q} />}
+          {includeArchived && <input type="hidden" name="arhivate" value="1" />}
+          <h3 id="excel-titlu" className="sr-only">
+            Descărcare în Excel
+          </h3>
+          <button
+            type="submit"
+            disabled={list.total === 0}
+            aria-describedby="excel-info"
+            className="h-11 px-5 rounded-xl border-2 border-primary text-primary text-sm font-semibold hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50 disabled:pointer-events-none"
+          >
+            Descarcă lista în Excel
+          </button>
+          <p id="excel-info" className="text-sm text-muted-foreground">
+            {list.total === 0
+              ? "Nu există comenzi de descărcat cu filtrele alese."
+              : `Se descarcă toate cele ${plural(list.total, "comandă", "comenzi")} din lista filtrată, pe toate paginile, ca fișier Excel. Este doar o copie: nu marchează nimic ca extras.`}
+          </p>
+        </form>
 
         {list.orders.length > 0 && view === "tabel" && (
           <div className="overflow-x-auto rounded-2xl border border-border bg-card" tabIndex={0} role="region" aria-label="Tabelul comenzilor, derulabil pe orizontală">
