@@ -89,6 +89,12 @@ async function callEvs<T = unknown>(
   }
 }
 
+// Nomenclatoare EVS (GetNomenclatures): "regions" | "localities" | "services". Folosit de ruta admin /api/admin/evs-nomenclatura
+// ca să vedem ce câmpuri (ex. cod poștal) întoarce EVS pe lângă nume.
+export async function getNomenclature(type: "regions" | "localities" | "services"): Promise<EvsResult<unknown>> {
+  return callEvs("GetNomenclatures", { type });
+}
+
 // Format cerut de EVS: XXX[0-9A-Z]{7}MMYY (14 caractere).
 // XXX = prefixul alocat de EVS Express contului nostru — vezi EVS_AWB_CUSTOMER_PREFIX.
 function generateAwbNumber(): { awb: string } | { error: string } {
