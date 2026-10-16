@@ -51,6 +51,8 @@ export interface Scope {
 
 export interface RegistryItem {
   name: string;
+  /** Codul produsului („Cod produs” din admin); null dacă produsul a fost șters din catalog. */
+  code: string | null;
   quantity: number;
   unitPrice: number | null;
   lineTotal: number | null;
@@ -181,11 +183,12 @@ export async function saveOrderItemsSnapshot(orderId: string, rawItems: unknown)
   }
 }
 
-function readSnapshot(raw: unknown): { name: string; quantity: number; unitPrice: number | null; lineTotal: number | null }[] | null {
+function readSnapshot(raw: unknown): { productId: string | null; name: string; quantity: number; unitPrice: number | null; lineTotal: number | null }[] | null {
   if (!Array.isArray(raw) || raw.length === 0) return null;
   const out = raw.map((it) => {
     const r = it as Record<string, unknown>;
     return {
+      productId: typeof r?.productId === "string" ? r.productId : null,
       name: typeof r?.name === "string" ? r.name : "Produs",
       quantity: typeof r?.quantity === "number" ? r.quantity : 1,
       unitPrice: typeof r?.unitPrice === "number" ? r.unitPrice : null,
@@ -207,8 +210,15 @@ type MessageRow = Awaited<ReturnType<typeof prisma.contactMessage.findMany>>[num
 
 async function toRegistryOrders(rows: MessageRow[]): Promise<RegistryOrder[]> {
   // Comenzile vechi nu au prețuri salvate — le estimăm din catalogul actual (marcate "estimated").
-  const needLookup = rows.filter((r) => !readSnapshot(r.orderItemsSnapshot));
-  const ids = [...new Set(needLookup.flatMap((r) => readStoredItems(r.orderItems).map((i) => i.productId)))];
+  // Codul produsului se citește mereu din catalog (se poate edita din admin), deci căutăm toate produsele comenzilor.
+  const ids = [
+    ...new Set(
+      rows.flatMap((r) => {
+        const snap = readSnapshot(r.orderItemsSnapshot);
+        return snap ? snap.flatMap((s) => (s.productId ? [s.productId] : [])) : readStoredItems(r.orderItems).map((i) => i.productId);
+      })
+    ),
+  ];
   const products = ids.length ? await prisma.product.findMany({ where: { id: { in: ids } } }) : [];
   const byId = new Map(products.map((p) => [p.id, p]));
 
@@ -216,13 +226,20 @@ async function toRegistryOrders(rows: MessageRow[]): Promise<RegistryOrder[]> {
     const snap = readSnapshot(r.orderItemsSnapshot);
     let items: RegistryItem[];
     if (snap) {
-      items = snap.map((s) => ({ ...s, estimated: false }));
+      const stored = readStoredItems(r.orderItems);
+      items = snap.map((s, idx) => {
+        const productId = s.productId ?? stored[idx]?.productId ?? null;
+        const p = productId ? byId.get(productId) : undefined;
+        const { productId: _omit, ...rest } = s;
+        void _omit;
+        return { ...rest, code: p ? (p.code ?? p.id.slice(-6).toUpperCase()) : null, estimated: false };
+      });
     } else {
       items = readStoredItems(r.orderItems).map((it) => {
         const p = byId.get(it.productId);
-        if (!p) return { name: "Produs șters", quantity: it.quantity, unitPrice: null, lineTotal: null, estimated: true };
+        if (!p) return { name: "Produs șters", code: null, quantity: it.quantity, unitPrice: null, lineTotal: null, estimated: true };
         const unitPrice = unitPriceFor(p.price, normalizeTiers(p), it.quantity);
-        return { name: p.name, quantity: it.quantity, unitPrice, lineTotal: Math.round(unitPrice * it.quantity * 100) / 100, estimated: true };
+        return { name: p.name, code: p.code ?? p.id.slice(-6).toUpperCase(), quantity: it.quantity, unitPrice, lineTotal: Math.round(unitPrice * it.quantity * 100) / 100, estimated: true };
       });
     }
 

@@ -28,7 +28,6 @@ export default async function EditReviewPage({ params }: { params: Promise<{ id:
         <input type="hidden" name="id" value={review.id} />
 
         <AdminInput label="Nume client" name="name" required defaultValue={review.name} />
-        <AdminInput label="Email (opțional)" name="email" type="email" defaultValue={review.email ?? ""} />
 
         <AdminSelect label="Rating" name="rating" required defaultValue={String(review.rating)}>
           <option value="5">5 stele</option>
@@ -54,8 +53,6 @@ export default async function EditReviewPage({ params }: { params: Promise<{ id:
         </AdminSelect>
 
         <AdminTextarea label="Text recenzie" name="text" required defaultValue={review.text} />
-        <AdminInput label="Plusuri (opțional)" name="pros" defaultValue={review.pros ?? ""} />
-        <AdminInput label="Minusuri (opțional)" name="cons" defaultValue={review.cons ?? ""} />
         <ImageUploadField name="image" label="Imagine client (opțional)" defaultValue={review.image} />
 
         <SaveButton label="Salvează modificările" />

@@ -60,9 +60,6 @@ function ReviewFormPanel({
         )}
 
         <Input name="name" required placeholder="Nume/Prenume" aria-label="Nume/Prenume" />
-        <Input type="email" name="email" placeholder="Email" aria-label="Email" />
-        <Textarea name="pros" placeholder="Plusuri" rows={2} className="min-h-0" aria-label="Plusuri" />
-        <Textarea name="cons" placeholder="Minusuri" rows={2} className="min-h-0" aria-label="Minusuri" />
         <Textarea name="text" required placeholder="Comentariu" rows={3} className="min-h-0" aria-label="Comentariu" />
 
         <Button type="submit" variant="accent" disabled={pending} className="mt-1">

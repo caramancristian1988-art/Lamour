@@ -47,11 +47,8 @@ export async function updateAdminReviewAction(formData: FormData) {
 
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim() || null;
   const text = String(formData.get("text") ?? "").trim();
   const rating = Number(formData.get("rating") ?? 0);
-  const pros = String(formData.get("pros") ?? "").trim() || null;
-  const cons = String(formData.get("cons") ?? "").trim() || null;
   const product = String(formData.get("product") ?? "").trim() || null;
   const image = String(formData.get("image") ?? "").trim() || null;
 
@@ -60,7 +57,7 @@ export async function updateAdminReviewAction(formData: FormData) {
   const existing = await prisma.review.findUnique({ where: { id } });
   if (!existing) return;
 
-  await prisma.review.update({ where: { id }, data: { name, email, text, rating, pros, cons, product, image } });
+  await prisma.review.update({ where: { id }, data: { name, text, rating, product, image } });
 
   await recomputeProductRating(existing.product);
   if (product !== existing.product) await recomputeProductRating(product);

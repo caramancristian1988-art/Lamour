@@ -1,8 +1,8 @@
 // Registrul de comenzi în Telegram — comenzile text (/noi, /registru, /extrage ...) și butoanele lor.
 //
 // Aceeași bază de date și aceleași funcții ca pe site (lib/orderRegistry.ts): o comandă extrasă dintr-o parte apare
-// extrasă și în cealaltă, imediat. Mesajele sunt text simplu, în propoziții, fără emoji sau tabele, ca să fie citite
-// bine de cititoarele de ecran. Datele personale (telefon, adresă) și fișierul Excel complet merg DOAR în conversația
+// extrasă și în cealaltă, imediat. Mesajele sunt text simplu, în propoziții, fără emoji, ca să fie citite bine de
+// cititoarele de ecran; doar listele de comenzi (/noi, /registru, /extrase) au un tabel monospațiat, cu codurile produselor. Datele personale (telefon, adresă) și fișierul Excel complet merg DOAR în conversația
 // privată cu botul, DOAR către persoanele autorizate (verificate după ID-ul Telegram, la fiecare acțiune).
 import { sendTelegramMessage, sendTelegramDocument, answerCallbackQuery, escapeHtml } from "./telegram";
 import {
@@ -10,7 +10,6 @@ import {
   EXTRACTION_LABELS,
   confirmExport,
   cancelExport,
-  describeOrderForSpeech,
   findRegistryOrder,
   formatDateTime,
   formatMoney,
@@ -110,6 +109,11 @@ async function say(chatId: string, plain: string, buttons: Button[][] = []): Pro
   return sendTelegramMessage(escapeHtml(plain), buttons, undefined, chatId);
 }
 
+/** Ca say(), dar textul e HTML pregătit de apelant (ex. tabelul <pre>); apelantul escapează conținutul. */
+async function sayHtml(chatId: string, html: string, buttons: Button[][] = []): Promise<number | null> {
+  return sendTelegramMessage(html, buttons, undefined, chatId);
+}
+
 function plural(n: number, one: string, many: string): string {
   return n === 1 ? `1 ${one}` : `${n} ${many}`;
 }
@@ -151,6 +155,37 @@ const FILTER_TITLE: Record<RegistryFilter, string> = {
   rezervata: "Comenzi rezervate pentru extragere",
 };
 
+// Telegram acceptă cel mult ~4096 de caractere; o tăietură în mijlocul <pre> ar face mesajul invalid, deci limităm liniile.
+const TABLE_MAX_CHARS = 3600;
+
+function cell(value: string, width: number): string {
+  const v = value.length > width ? `${value.slice(0, width - 1)}…` : value;
+  return v.padEnd(width);
+}
+
+const STATUS_SHORT: Record<string, string> = { neextrasa: "nou", rezervata: "rezervat", extrasa: "extras" };
+
+/**
+ * Tabel monospațiat (Telegram îl afișează într-un bloc cu derulare orizontală): o linie pe produs, cu numărul comenzii
+ * și clientul repetate pe fiecare linie ca să fie clar cui aparține; totalul și starea apar pe prima linie a comenzii.
+ */
+function ordersTable(orders: RegistryOrder[], maxItemRows: number): string {
+  const header = `${cell("Nr", 4)} ${cell("Client", 10)} ${cell("Cod", 8)} ${cell("Produs", 22)} ${cell("Buc", 3)} ${cell("Total", 10)} Stare`;
+  const lines = [header, "-".repeat(header.length)];
+  for (const o of orders) {
+    const total = formatMoney(o.total);
+    const state = STATUS_SHORT[o.extractionStatus] ?? "";
+    const rows = o.items.slice(0, maxItemRows);
+    const make = (code: string, product: string, qty: string, first: boolean) =>
+      `${cell(o.ref, 4)} ${cell(o.name, 10)} ${cell(code, 8)} ${cell(product, 22)} ${cell(qty, 3)} ${cell(first ? total : "", 10)} ${first ? state : ""}`.trimEnd();
+    if (rows.length === 0) lines.push(make("-", "fără produse", "", true));
+    rows.forEach((it, i) => lines.push(make(it.code ?? "-", it.name, String(it.quantity), i === 0)));
+    if (o.items.length > rows.length) lines.push(make("", `+ încă ${o.items.length - rows.length} produse`, "", false));
+    lines.push("");
+  }
+  return `<pre>${escapeHtml(lines.join("\n").trimEnd())}</pre>`;
+}
+
 async function sendListPage(ctx: Ctx, filter: RegistryFilter, page: number): Promise<void> {
   const r = await listRegistry({ status: filter, page, pageSize: PAGE_SIZE, includeArchived: true });
   if (r.total === 0) {
@@ -158,7 +193,8 @@ async function sendListPage(ctx: Ctx, filter: RegistryFilter, page: number): Pro
     return;
   }
   const head = `${FILTER_TITLE[filter]}. În total ${plural(r.total, "comandă", "comenzi")}. Pagina ${r.page} din ${r.pages}.`;
-  const body = r.orders.map((o) => describeOrderForSpeech(o)).join("\n\n");
+  let table = ordersTable(r.orders, 8);
+  for (const rows of [4, 2, 1]) if (table.length > TABLE_MAX_CHARS) table = ordersTable(r.orders, rows);
   const hint = "Pentru detalii folosiți /comanda urmat de număr, de exemplu /comanda " + r.orders[0].ref + ".";
 
   const code = FILTER_TO_CODE[filter];
@@ -168,7 +204,7 @@ async function sendListPage(ctx: Ctx, filter: RegistryFilter, page: number): Pro
     const remaining = r.total - r.page * PAGE_SIZE;
     row.push({ text: `Următoarele ${Math.min(PAGE_SIZE, remaining)} comenzi`, callback_data: `reg_pg:${code}:${r.page + 1}` });
   }
-  await say(ctx.chatId, `${head}\n\n${body}\n\n${hint}`, row.length ? [row] : []);
+  await sayHtml(ctx.chatId, `${escapeHtml(head)}\n\n${table}\n${escapeHtml(hint)}`, row.length ? [row] : []);
 }
 
 // ── Detalii comandă ────────────────────────────────────────────────────────────────────────────

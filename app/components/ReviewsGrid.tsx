@@ -14,8 +14,6 @@ interface Review {
   name: string;
   rating: number;
   text: string;
-  pros?: string | null;
-  cons?: string | null;
   product: string | null;
 }
 
@@ -71,12 +69,6 @@ export default function ReviewsGrid({
           <div key={review.id} className="bg-card border border-border rounded-2xl p-6 flex flex-col">
             <StarRating rating={review.rating} />
             <p className="text-sm text-muted-foreground mt-3 leading-relaxed flex-1">&ldquo;{review.text}&rdquo;</p>
-            {review.pros && (
-              <p className="text-xs text-success mt-2"><span className="font-bold">Plusuri:</span> {review.pros}</p>
-            )}
-            {review.cons && (
-              <p className="text-xs text-accent mt-1"><span className="font-bold">Minusuri:</span> {review.cons}</p>
-            )}
             <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border">
               <Avatar className="w-9 h-9">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">{getInitials(review.name)}</AvatarFallback>
