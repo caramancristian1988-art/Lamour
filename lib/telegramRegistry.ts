@@ -26,7 +26,7 @@ import {
   type RegistryFilter,
   type RegistryOrder,
 } from "./orderRegistry";
-import { buildExportWorkbook, buildListWorkbook, exportFilename, listFilename } from "./orderRegistryExcel";
+import { buildExportWorkbook, buildListWorkbook, exportFilename, listFilename, orderFilename } from "./orderRegistryExcel";
 import { getUserPermissions, getGroupPermissions, mainGroupChatId, type RegistryPermission } from "./telegramPermissions";
 import { registryChatId, retryPendingRegistryNotifications } from "./registryNotify";
 
@@ -138,7 +138,7 @@ const HELP_TEXT = [
   "/extrase — comenzile deja extrase.",
   "/comanda 1052 — detaliile comenzii cu numărul 1052.",
   "/extrage — pregătește fișierul Excel cu toate comenzile neextrase.",
-  "/excel — descarcă în Excel lista comenzilor noi (sau /excel toate, /excel extrase), doar ca o copie.",
+  "Scrieți cuvântul excel după orice comandă ca să primiți rezultatul în Excel: /registru excel, /noi excel, /extrase excel, /comanda 1052 excel (doar acea comandă). Este doar o copie, nu marchează nimic ca extras.",
   "/istoric — ultimele extrageri.",
   "/status — informații generale despre sistem.",
   "/id — ID-ul dumneavoastră Telegram, necesar pentru drepturi.",
@@ -197,13 +197,13 @@ async function sendListPage(ctx: Ctx, filter: RegistryFilter, page: number): Pro
   const head = `${FILTER_TITLE[filter]}. În total ${plural(r.total, "comandă", "comenzi")}. Pagina ${r.page} din ${r.pages}.`;
   let table = ordersTable(r.orders, 8);
   for (const rows of [4, 2, 1]) if (table.length > TABLE_MAX_CHARS) table = ordersTable(r.orders, rows);
-  const excelCommand = filter === EXTRACTION.NEW ? "/excel" : filter === EXTRACTION.DONE ? "/excel extrase" : "/excel toate";
+  const excelCommand = filter === EXTRACTION.NEW ? "/noi excel" : filter === EXTRACTION.DONE ? "/extrase excel" : "/registru excel";
   const hint =
     "Pentru detalii folosiți /comanda urmat de număr, de exemplu /comanda " +
     r.orders[0].ref +
     ". Pentru această listă în Excel, scrieți " +
     excelCommand +
-    " sau apăsați butonul Descarcă lista în Excel.";
+    " sau apăsați butonul Descarcă lista în Excel. Pentru o singură comandă: /comanda urmat de număr și cuvântul excel.";
 
   const code = FILTER_TO_CODE[filter];
   const row: Button[] = [];
@@ -215,6 +215,30 @@ async function sendListPage(ctx: Ctx, filter: RegistryFilter, page: number): Pro
   const buttons: Button[][] = row.length ? [row] : [];
   buttons.push([{ text: "Descarcă lista în Excel", callback_data: `reg_xl:${code}` }]);
   await sayHtml(ctx.chatId, `${escapeHtml(head)}\n\n${table}\n${escapeHtml(hint)}`, buttons);
+}
+
+/** „/comanda 40 excel": doar acea comandă, ca fișier Excel (în privat). Nu schimbă starea comenzii. */
+async function sendOrderExcel(ctx: Ctx, reference: string): Promise<void> {
+  if (!reference) {
+    await say(ctx.chatId, "Scrieți numărul comenzii, de exemplu: /comanda 1052 excel.");
+    return;
+  }
+  if (!(await requirePerm(ctx, "date_personale", "descărcarea comenzii în Excel (conține telefon și adresă)"))) return;
+  const order = await findRegistryOrder(reference);
+  if (!order) {
+    await say(ctx.chatId, `Nu am găsit comanda ${reference}. Verificați numărul și încercați din nou.`);
+    return;
+  }
+  const chat = dataChatId(ctx);
+  const ok = await sendTelegramDocument(
+    chat,
+    buildListWorkbook([order]),
+    orderFilename(order.ref),
+    escapeHtml(`Comanda ${order.ref}. Este doar o copie a datelor — nu s-a marcat nimic ca extras.`),
+    XLSX_MIME
+  );
+  if (!ok) await say(ctx.chatId, "Eroare. Fișierul nu a putut fi trimis. Deschideți o conversație privată cu botul, apăsați Start și încercați din nou.");
+  else if (chat !== ctx.chatId) await say(ctx.chatId, "Fișierul Excel a fost trimis în conversația privată.");
 }
 
 /** Trimite ÎN PRIVAT un Excel cu toate comenzile unei liste (copie a datelor: nu rezervă și nu marchează nimic ca extras). */
@@ -409,8 +433,12 @@ export async function handleRegistryMessage(message: TgMessage): Promise<boolean
   const compact = match[1].match(/^comanda_(.+)$/i);
   if (compact) {
     command = "comanda";
-    arg = compact[1];
+    arg = `${compact[1]} ${match[2] ?? ""}`.trim(); // „/comanda_40 excel": cuvântul excel rămâne
   }
+  // Oriunde apare cuvântul „excel" după o comandă, rezultatul vine ca fișier Excel: „/registru excel", „/noi excel",
+  // „/extrase excel", „/comanda 40 excel" (doar acea comandă).
+  const wantsExcel = /(^|\s)excel(\s|$)/i.test(arg);
+  if (wantsExcel) arg = arg.replace(/(^|\s)excel(?=\s|$)/gi, " ").replace(/\s+/g, " ").trim();
   const known = ["start", "ajutor", "help", "id", "noi", "lista", "registru", "extrase", "comanda", "extrage", "istoric", "status", "excel"];
   if (!known.includes(command)) return false;
 
@@ -431,18 +459,34 @@ export async function handleRegistryMessage(message: TgMessage): Promise<boolean
       break;
     case "noi":
     case "lista":
+      if (wantsExcel) {
+        await sendListExcel(ctx, EXTRACTION.NEW);
+        break;
+      }
       if (await requirePerm(ctx, "vizualizare", "vizualizarea comenzilor")) {
         await retryPendingRegistryNotifications(3);
         await sendListPage(ctx, EXTRACTION.NEW, 1);
       }
       break;
     case "registru":
+      if (wantsExcel) {
+        await sendListExcel(ctx, "toate");
+        break;
+      }
       if (await requirePerm(ctx, "vizualizare", "vizualizarea registrului")) await sendListPage(ctx, "toate", 1);
       break;
     case "extrase":
+      if (wantsExcel) {
+        await sendListExcel(ctx, EXTRACTION.DONE);
+        break;
+      }
       if (await requirePerm(ctx, "vizualizare", "vizualizarea comenzilor extrase")) await sendListPage(ctx, EXTRACTION.DONE, 1);
       break;
     case "comanda":
+      if (wantsExcel) {
+        await sendOrderExcel(ctx, arg);
+        break;
+      }
       if (await requirePerm(ctx, "consultare", "consultarea detaliilor unei comenzi")) await sendOrderDetails(ctx, arg);
       break;
     case "extrage":

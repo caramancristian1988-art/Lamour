@@ -70,6 +70,10 @@ export function buildListWorkbook(orders: RegistryOrder[]): Buffer {
   return buildExportWorkbook({ number: "" }, orders);
 }
 
+export function orderFilename(ref: string, date = new Date()): string {
+  return `comanda_${ref.replace(/[^\w-]+/g, "_")}_${date.toISOString().slice(0, 10)}.xlsx`;
+}
+
 export function listFilename(filter: string, date = new Date()): string {
   const names: Record<string, string> = { neextrasa: "neextrase", rezervata: "rezervate", extrasa: "extrase", toate: "toate" };
   return `comenzi_${names[filter] ?? filter}_${date.toISOString().slice(0, 10)}.xlsx`;
