@@ -1,8 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Phone, Mail, Clock, HeadphonesIcon } from "lucide-react";
+import { Phone, Mail, Clock, HeadphonesIcon, MapPin, ArrowRight } from "lucide-react";
 import { WhatsAppIcon, ViberIcon } from "@/app/components/ui/brand-icons";
 import { prisma } from "@/lib/prisma";
 import { onlyVisible } from "@/lib/productVisibility";
@@ -12,6 +11,9 @@ import { SITE_NAME } from "@/lib/constants";
 import ProductsSection from "../components/ProductsSection";
 import FaqAccordion, { type FaqItem } from "../components/FaqAccordion";
 import ContactForm from "../components/ContactForm";
+import { PageHeader } from "../components/PageHeader";
+import LocationMap from "../components/LocationMap";
+import { HeadingFlourish } from "@/app/components/ui/motif";
 import JsonLd from "../components/JsonLd";
 import { breadcrumbList } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
@@ -75,199 +77,192 @@ async function getFaqs(): Promise<FaqItem[]> {
   }
 }
 
+// Un card de contact (telefon / WhatsApp / Viber / email): pictogramă mare într-un cerc, valoarea, butonul-pastilă dedesubt.
+function ContactCard({
+  icon,
+  label,
+  value,
+  href,
+  action,
+  external,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  href: string;
+  action: string;
+  external?: boolean;
+  tone: string;
+}) {
+  return (
+    <div className="group flex flex-col items-center gap-3 rounded-3xl border border-brand-rose/60 bg-card p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+      <div className={`flex h-16 w-16 items-center justify-center rounded-full ring-4 ring-brand-rose/20 transition-transform duration-300 group-hover:scale-105 ${tone}`}>{icon}</div>
+      <p className="font-serif text-lg font-bold text-primary">{label}</p>
+      <p className="break-all text-sm font-bold text-foreground">{value}</p>
+      <a
+        href={href}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        className="mt-auto inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-accent text-sm font-bold uppercase tracking-wide text-accent-foreground shadow-md transition-colors hover:bg-brand-red-dark"
+      >
+        {action}
+        {external && <span className="sr-only">(se deschide într-o fereastră nouă)</span>}
+      </a>
+    </div>
+  );
+}
+
+function SectionHeading({ id, children }: { id?: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-6 flex items-center gap-4">
+      <h2 id={id} className="font-serif text-2xl font-bold uppercase tracking-tight text-primary sm:text-3xl">
+        {children}
+      </h2>
+      <HeadingFlourish />
+      <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-brand-rose to-brand-rose/10" />
+    </div>
+  );
+}
+
 export default async function ContactPage() {
   const { contactEnabled } = await getSectionFlags();
   if (!contactEnabled) notFound();
 
   const products = await getRecommendedProducts();
   const faqs = await getFaqs();
-  const { phone, phoneTel, phoneDigits, email } = await getContactInfo();
+  const { phone, phoneTel, phoneDigits, email, address } = await getContactInfo();
 
   return (
     <main className="page-motif">
       <JsonLd data={breadcrumbList([{ name: "Acasă", path: "/" }, { name: "Contact", path: "/contact" }])} />
-      {/* ── HERO SECTION — MOBILE ── */}
-      <section className="sm:hidden relative bg-background">
-        <div className="relative w-full aspect-[3/4] overflow-hidden">
-          <Image
-            src="/contact-nevazatori-mobil.png"
-            alt="Susținem nevăzătorii — persoană cu baston alb"
-            fill
-            priority
-            className="object-cover object-top"
-            sizes="100vw"
+
+      <PageHeader
+        title="Contact"
+        description="Ai nevoie de sprijin, consultanță sau informații despre produsele noastre? Scrie-ne și revenim rapid cu un răspuns."
+        crumbs={[{ label: "Acasă", href: "/" }, { label: "Contact" }]}
+      />
+
+      {/* Moduri de contact */}
+      <section className="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 sm:pt-12" aria-label="Moduri de contact">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ContactCard
+            icon={<Phone className="h-7 w-7 text-white" aria-hidden />}
+            tone="bg-primary"
+            label="Telefon"
+            value={phone}
+            href={`tel:${phoneTel}`}
+            action="Sună acum"
           />
-          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background via-background/85 to-transparent pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-          <div className="absolute inset-x-0 top-0 px-5 pt-5 pb-4">
-            <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-xs text-muted-foreground mb-5">
-              <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
-              <span aria-hidden>›</span>
-              <span className="text-foreground font-medium">Contact</span>
-            </nav>
-            <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
-            <h1 className="text-3xl font-bold leading-tight tracking-tight mb-4 text-primary">
-              Contactează <span className="text-accent">{SITE_NAME}</span>
-            </h1>
-            <p className="text-sm text-foreground/80 leading-relaxed">
-              Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
-              Scrie-ne și revenim rapid cu un răspuns.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── HERO SECTION — TABLET / DESKTOP ── */}
-      <section className="hidden sm:block relative overflow-hidden bg-background pb-10 lg:pb-12">
-        <div className="relative min-h-[400px] lg:min-h-[460px]">
-          <Image
-            src="/contact-nevazatori.png"
-            alt="Susținem nevăzătorii — persoană cu baston alb"
-            fill
-            priority
-            className="object-cover object-[32%_center] lg:object-center"
-            sizes="100vw"
+          <ContactCard
+            icon={<WhatsAppIcon className="h-7 w-7 text-white" />}
+            tone="bg-[#25D366]"
+            label="WhatsApp"
+            value={phone}
+            href={`https://wa.me/${phoneDigits}`}
+            action="Scrie pe WhatsApp"
+            external
           />
-          <div className="relative max-w-7xl mx-auto px-6 lg:px-12 h-full">
-            <div className="flex items-center min-h-[400px] lg:min-h-[460px] py-6">
-              <div className="relative z-10 max-w-sm lg:max-w-md">
-                <nav aria-label="Fir de ariadnă" className="flex items-center gap-1.5 text-sm text-muted-foreground mb-5">
-                  <Link href="/" className="hover:text-accent transition-colors rounded">Acasă</Link>
-                  <span aria-hidden>›</span>
-                  <span className="text-foreground font-medium">Contact</span>
-                </nav>
-                <p className="text-accent text-xs font-bold tracking-widest uppercase mb-3">Contact</p>
-                <h1 className="text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-4 text-primary">
-                  Contactează <span className="text-accent">{SITE_NAME}</span>
-                </h1>
-                <p className="text-base text-foreground/80 leading-relaxed">
-                  Ai nevoie de sprijin, consultanță sau informații despre programele noastre?
-                  Scrie-ne și revenim rapid cu un răspuns.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ContactCard
+            icon={<ViberIcon className="h-7 w-7 text-white" />}
+            tone="bg-[#7360F2]"
+            label="Viber"
+            value={phone}
+            href={`viber://chat?number=%2B${phoneDigits}`}
+            action="Scrie pe Viber"
+          />
+          <ContactCard
+            icon={<Mail className="h-7 w-7 text-white" aria-hidden />}
+            tone="bg-accent"
+            label="Email"
+            value={email}
+            href={`mailto:${email}`}
+            action="Trimite email"
+          />
         </div>
       </section>
 
-      {/* Contact cards */}
-      <section className="max-w-7xl mx-auto px-5 sm:px-6 pb-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="border border-border bg-card rounded-2xl p-6 flex flex-col items-center text-center gap-3 hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-secondary/30 rounded-full flex items-center justify-center">
-              <Phone className="w-7 h-7 text-primary" aria-hidden />
-            </div>
-            <p className="font-bold text-sm text-foreground">Telefon</p>
-            <p className="text-accent font-bold text-sm">{phone}</p>
-            <a
-              href={`tel:${phoneTel}`}
-              className="w-full border border-primary text-primary text-xs font-bold py-2.5 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              Sună acum
-            </a>
-          </div>
-
-          <div className="border border-border bg-card rounded-2xl p-6 flex flex-col items-center text-center gap-3 hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center">
-              <WhatsAppIcon className="w-7 h-7" />
-            </div>
-            <p className="font-bold text-sm text-foreground">WhatsApp</p>
-            <p className="text-success font-bold text-sm">{phone}</p>
-            <a
-              href={`https://wa.me/${phoneDigits}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full border border-success text-success text-xs font-bold py-2.5 rounded-lg hover:bg-success hover:text-success-foreground transition-colors"
-            >
-              Scrie pe WhatsApp
-            </a>
-          </div>
-
-          <div className="border border-border bg-card rounded-2xl p-6 flex flex-col items-center text-center gap-3 hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-[#7360F2] text-white rounded-full flex items-center justify-center">
-              <ViberIcon className="w-7 h-7" />
-            </div>
-            <p className="font-bold text-sm text-foreground">Viber</p>
-            <p className="text-primary font-bold text-sm">{phone}</p>
-            <a
-              href={`viber://chat?number=%2B${phoneDigits}`}
-              className="w-full border border-primary text-primary text-xs font-bold py-2.5 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              Scrie pe Viber
-            </a>
-          </div>
-
-          <div className="border border-border bg-card rounded-2xl p-6 flex flex-col items-center text-center gap-3 hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-accent/10 rounded-full flex items-center justify-center">
-              <Mail className="w-7 h-7 text-accent" aria-hidden />
-            </div>
-            <p className="font-bold text-sm text-foreground">Email</p>
-            <p className="text-accent font-bold text-xs break-all">{email}</p>
-            <a
-              href={`mailto:${email}`}
-              className="w-full border border-primary text-primary text-xs font-bold py-2.5 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
-              Trimite email
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Form + Sidebar */}
-      <section className="max-w-7xl mx-auto px-5 sm:px-6 pb-14">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {/* Form */}
-          <div className="md:col-span-2">
-            <h2 className="text-2xl font-bold text-primary tracking-tight mb-6">Trimite-ne un mesaj</h2>
+      {/* Formular + informații */}
+      <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6" aria-labelledby="mesaj-titlu">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.6fr_1fr]">
+          <div className="rounded-3xl border border-brand-rose/60 bg-card p-6 shadow-sm sm:p-9">
+            <h2 id="mesaj-titlu" className="font-serif text-2xl font-bold text-primary sm:text-3xl">
+              Trimite-ne un mesaj
+            </h2>
+            <p className="mb-6 mt-2 text-sm text-muted-foreground">Completează câmpurile de mai jos și te sunăm noi.</p>
             <ContactForm />
           </div>
 
-          {/* Sidebar */}
           <div className="flex flex-col gap-4">
-            <div className="border border-border bg-card rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0">
-                  <Clock className="w-5 h-5" aria-hidden />
-                </div>
-                <p className="font-bold text-foreground">Program</p>
+            <div className="rounded-3xl border border-brand-rose/60 bg-card p-6 shadow-sm">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-white">
+                  <MapPin className="h-5 w-5" aria-hidden />
+                </span>
+                <h3 className="font-serif text-lg font-bold text-primary">Adresa</h3>
               </div>
-              <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                <p>Luni - Vineri: 09:00 - 18:00</p>
-                <p>Sâmbătă: 10:00 - 14:00</p>
-                <p>Duminică: Închis</p>
-              </div>
+              <p className="text-sm text-foreground">{address}</p>
+              <Link href="#harta" className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:underline">
+                Vezi pe hartă
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
             </div>
 
-            <div className="border border-border bg-card rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shrink-0">
-                  <HeadphonesIcon className="w-5 h-5" aria-hidden />
-                </div>
-                <p className="font-bold text-foreground">Suport</p>
+            <div className="rounded-3xl border border-brand-rose/60 bg-card p-6 shadow-sm">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-white">
+                  <Clock className="h-5 w-5" aria-hidden />
+                </span>
+                <h3 className="font-serif text-lg font-bold text-primary">Program</h3>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Echipa noastră îți stă la dispoziție pentru orice întrebare legată de
-                servicii, programe sau modalități de sprijin.
-              </p>
-              <Link
-                href="#faq"
-                className="text-accent font-bold text-xs mt-4 block hover:underline"
-              >
-                Întrebări frecvente →
-              </Link>
+              <dl className="flex flex-col gap-2 text-sm">
+                <div className="flex justify-between gap-4 border-b border-border pb-2">
+                  <dt className="text-muted-foreground">Luni - Vineri</dt>
+                  <dd className="font-semibold text-foreground">09:00 - 18:00</dd>
+                </div>
+                <div className="flex justify-between gap-4 border-b border-border pb-2">
+                  <dt className="text-muted-foreground">Sâmbătă</dt>
+                  <dd className="font-semibold text-foreground">10:00 - 14:00</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Duminică</dt>
+                  <dd className="font-semibold text-foreground">Închis</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-maroon-dark via-brand-maroon to-brand-maroon-dark p-6 text-white shadow-sm">
+              <div aria-hidden className="pointer-events-none absolute inset-0 bg-footer-pattern opacity-[0.08]" />
+              <div className="relative">
+                <div className="mb-3 flex items-center gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/25">
+                    <HeadphonesIcon className="h-5 w-5 text-brand-rose-light" aria-hidden />
+                  </span>
+                  <h3 className="font-serif text-lg font-bold">Suport</h3>
+                </div>
+                <p className="text-sm leading-relaxed text-white/85">
+                  Echipa noastră îți stă la dispoziție pentru orice întrebare legată de produse, comenzi sau livrare.
+                </p>
+                <Link href="#faq" className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-white underline-offset-4 hover:underline">
+                  Întrebări frecvente
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="max-w-7xl mx-auto px-5 sm:px-6 pb-14">
-        <h2 className="text-2xl font-bold text-primary tracking-tight mb-2">Întrebări frecvente</h2>
-        <div className="w-10 h-[3px] bg-accent rounded-full mb-6" />
+      <section id="faq" className="mx-auto max-w-4xl scroll-mt-24 px-4 pb-14 sm:px-6" aria-labelledby="faq-titlu">
+        <SectionHeading id="faq-titlu">
+          Întrebări <span className="text-accent">frecvente</span>
+        </SectionHeading>
         <FaqAccordion faqs={faqs} />
       </section>
 
-      {/* Recommended products */}
+      <LocationMap />
+
+      {/* Produse recomandate */}
       <ProductsSection products={products} viewAllHref="/produse" />
     </main>
   );

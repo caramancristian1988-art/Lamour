@@ -60,7 +60,7 @@ export default async function LocationMap() {
   );
 
   return (
-    <section aria-label="Locația LuminTehnica pe hartă" className="relative border-t border-border bg-muted">
+    <section id="harta" aria-label="Locația LuminTehnica pe hartă" className="relative scroll-mt-24 border-t border-border bg-muted">
       {/* Pe telefon: cardul deasupra hărții */}
       <div className="px-4 py-4 sm:hidden">{card}</div>
       <iframe
