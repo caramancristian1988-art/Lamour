@@ -77,7 +77,7 @@ export function FeaturedCard({ post }: { post: BlogCardData }) {
           fill
           priority
           sizes="(max-width: 768px) 100vw, 60vw"
-          className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+          className="object-cover"
         />
         <span className="absolute left-4 top-4 rounded-full bg-accent px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide text-accent-foreground shadow-md">
           {post.category}
@@ -112,7 +112,7 @@ export function BlogCard({ post }: { post: BlogCardData }) {
           fill
           loading="lazy"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+          className="object-cover"
         />
         <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-accent-foreground shadow-sm">
           {post.category}
