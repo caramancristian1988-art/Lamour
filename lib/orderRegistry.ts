@@ -347,6 +347,16 @@ export async function listRegistry(opts: ListOptions = {}) {
   return { orders: await toRegistryOrders(rows), total, page, pages, pageSize };
 }
 
+/** Toate comenzile care se potrivesc filtrului (fără paginare, cel mult 5000) — pentru descărcarea listei în Excel. */
+export async function listRegistryAll(opts: ListOptions = {}): Promise<RegistryOrder[]> {
+  const rows = await prisma.contactMessage.findMany({
+    where: buildListWhere(opts),
+    orderBy: { createdAt: "desc" },
+    take: 5000,
+  });
+  return toRegistryOrders(rows);
+}
+
 export async function registryCounts(scope?: Scope) {
   const base = sourceFilter(scope);
   const [neextrase, rezervate, extrase, total] = await Promise.all([

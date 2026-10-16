@@ -13,6 +13,7 @@ export const EXPORT_HEADERS = [
   "Client",
   "Telefon",
   "Adresa de livrare",
+  "Cod produs",
   "Produs",
   "Cantitate",
   "Preț unitar (lei)",
@@ -24,10 +25,10 @@ export const EXPORT_HEADERS = [
 
 type Cell = string | number | null;
 
-export function exportRows(exp: Pick<ExportSummary, "number">, orders: RegistryOrder[]): Cell[][] {
+export function exportRows(exp: { number: number | string }, orders: RegistryOrder[]): Cell[][] {
   const rows: Cell[][] = [];
   for (const o of orders) {
-    const base = (item: { name: string; quantity: number; unitPrice: number | null; lineTotal: number | null; estimated: boolean } | null): Cell[] => [
+    const base = (item: { name: string; code: string | null; quantity: number; unitPrice: number | null; lineTotal: number | null; estimated: boolean } | null): Cell[] => [
       exp.number,
       o.ref,
       formatDateTime(o.createdAt),
@@ -36,6 +37,7 @@ export function exportRows(exp: Pick<ExportSummary, "number">, orders: RegistryO
       o.name,
       o.phone,
       o.address,
+      item?.code ?? "",
       item?.name ?? "Fără produse înregistrate",
       item?.quantity ?? null,
       item?.unitPrice ?? null,
@@ -50,7 +52,7 @@ export function exportRows(exp: Pick<ExportSummary, "number">, orders: RegistryO
   return rows;
 }
 
-export function buildExportWorkbook(exp: Pick<ExportSummary, "number">, orders: RegistryOrder[]): Buffer {
+export function buildExportWorkbook(exp: { number: number | string }, orders: RegistryOrder[]): Buffer {
   const data: Cell[][] = [[...EXPORT_HEADERS], ...exportRows(exp, orders)];
   const ws = XLSX.utils.aoa_to_sheet(data);
   ws["!cols"] = EXPORT_HEADERS.map((h, i) => ({
@@ -61,6 +63,16 @@ export function buildExportWorkbook(exp: Pick<ExportSummary, "number">, orders: 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Comenzi");
   return XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
+}
+
+/** Lista curentă (un filtru) descărcată ca Excel, FĂRĂ a rezerva sau marca nimic ca extras — doar o copie a datelor. */
+export function buildListWorkbook(orders: RegistryOrder[]): Buffer {
+  return buildExportWorkbook({ number: "" }, orders);
+}
+
+export function listFilename(filter: string, date = new Date()): string {
+  const names: Record<string, string> = { neextrasa: "neextrase", rezervata: "rezervate", extrasa: "extrase", toate: "toate" };
+  return `comenzi_${names[filter] ?? filter}_${date.toISOString().slice(0, 10)}.xlsx`;
 }
 
 export function exportFilename(exp: Pick<ExportSummary, "number">, date = new Date()): string {

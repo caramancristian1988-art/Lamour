@@ -18,6 +18,7 @@ import {
   listActiveExports,
   listExports,
   listRegistry,
+  listRegistryAll,
   prepareExport,
   registryCounts,
   type Actor,
@@ -25,7 +26,7 @@ import {
   type RegistryFilter,
   type RegistryOrder,
 } from "./orderRegistry";
-import { buildExportWorkbook, exportFilename } from "./orderRegistryExcel";
+import { buildExportWorkbook, buildListWorkbook, exportFilename, listFilename } from "./orderRegistryExcel";
 import { getUserPermissions, getGroupPermissions, mainGroupChatId, type RegistryPermission } from "./telegramPermissions";
 import { registryChatId, retryPendingRegistryNotifications } from "./registryNotify";
 
@@ -137,6 +138,7 @@ const HELP_TEXT = [
   "/extrase — comenzile deja extrase.",
   "/comanda 1052 — detaliile comenzii cu numărul 1052.",
   "/extrage — pregătește fișierul Excel cu toate comenzile neextrase.",
+  "/excel — descarcă în Excel lista comenzilor noi (sau /excel toate, /excel extrase), doar ca o copie.",
   "/istoric — ultimele extrageri.",
   "/status — informații generale despre sistem.",
   "/id — ID-ul dumneavoastră Telegram, necesar pentru drepturi.",
@@ -158,11 +160,6 @@ const FILTER_TITLE: Record<RegistryFilter, string> = {
 // Telegram acceptă cel mult ~4096 de caractere; o tăietură în mijlocul <pre> ar face mesajul invalid, deci limităm liniile.
 const TABLE_MAX_CHARS = 3600;
 
-function cell(value: string, width: number): string {
-  const v = value.length > width ? `${value.slice(0, width - 1)}…` : value;
-  return v.padEnd(width);
-}
-
 const STATUS_SHORT: Record<string, string> = { neextrasa: "nou", rezervata: "rezervat", extrasa: "extras" };
 
 /**
@@ -170,19 +167,24 @@ const STATUS_SHORT: Record<string, string> = { neextrasa: "nou", rezervata: "rez
  * și clientul repetate pe fiecare linie ca să fie clar cui aparține; totalul și starea apar pe prima linie a comenzii.
  */
 function ordersTable(orders: RegistryOrder[], maxItemRows: number): string {
-  const header = `${cell("Nr", 4)} ${cell("Client", 10)} ${cell("Cod", 8)} ${cell("Produs", 22)} ${cell("Buc", 3)} ${cell("Total", 10)} Stare`;
-  const lines = [header, "-".repeat(header.length)];
+  // TEXT ÎNTREG în celule (numele produselor și ale clienților nu se mai taie cu „…”): lățimea fiecărei coloane e cea a
+  // celui mai lung conținut. Blocul <pre> se derulează orizontal în Telegram, deci liniile lungi nu strică mesajul.
+  const header = ["Nr", "Client", "Cod", "Produs", "Buc", "Total", "Stare"];
+  const rows: (string[] | null)[] = [];
   for (const o of orders) {
     const total = formatMoney(o.total);
     const state = STATUS_SHORT[o.extractionStatus] ?? "";
-    const rows = o.items.slice(0, maxItemRows);
-    const make = (code: string, product: string, qty: string, first: boolean) =>
-      `${cell(o.ref, 4)} ${cell(o.name, 10)} ${cell(code, 8)} ${cell(product, 22)} ${cell(qty, 3)} ${cell(first ? total : "", 10)} ${first ? state : ""}`.trimEnd();
-    if (rows.length === 0) lines.push(make("-", "fără produse", "", true));
-    rows.forEach((it, i) => lines.push(make(it.code ?? "-", it.name, String(it.quantity), i === 0)));
-    if (o.items.length > rows.length) lines.push(make("", `+ încă ${o.items.length - rows.length} produse`, "", false));
-    lines.push("");
+    const items = o.items.slice(0, maxItemRows);
+    const make = (code: string, product: string, qty: string, first: boolean) => [o.ref, o.name, code, product, qty, first ? total : "", first ? state : ""];
+    if (items.length === 0) rows.push(make("-", "fără produse", "", true));
+    items.forEach((it, i) => rows.push(make(it.code ?? "-", it.name, String(it.quantity), i === 0)));
+    if (o.items.length > items.length) rows.push(make("", `+ încă ${o.items.length - items.length} produse`, "", false));
+    rows.push(null); // linie goală între comenzi
   }
+  const widths = header.map((h, i) => Math.max(h.length, ...rows.map((r) => (r ? r[i].length : 0))));
+  const fmt = (r: string[]) => r.map((c, i) => (i === r.length - 1 ? c : c.padEnd(widths[i]))).join(" ").trimEnd();
+  const headerLine = fmt(header);
+  const lines = [headerLine, "-".repeat(headerLine.length), ...rows.map((r) => (r ? fmt(r) : ""))];
   return `<pre>${escapeHtml(lines.join("\n").trimEnd())}</pre>`;
 }
 
@@ -204,7 +206,29 @@ async function sendListPage(ctx: Ctx, filter: RegistryFilter, page: number): Pro
     const remaining = r.total - r.page * PAGE_SIZE;
     row.push({ text: `Următoarele ${Math.min(PAGE_SIZE, remaining)} comenzi`, callback_data: `reg_pg:${code}:${r.page + 1}` });
   }
-  await sayHtml(ctx.chatId, `${escapeHtml(head)}\n\n${table}\n${escapeHtml(hint)}`, row.length ? [row] : []);
+  const buttons: Button[][] = row.length ? [row] : [];
+  buttons.push([{ text: "Descarcă lista în Excel", callback_data: `reg_xl:${code}` }]);
+  await sayHtml(ctx.chatId, `${escapeHtml(head)}\n\n${table}\n${escapeHtml(hint)}`, buttons);
+}
+
+/** Trimite ÎN PRIVAT un Excel cu toate comenzile unei liste (copie a datelor: nu rezervă și nu marchează nimic ca extras). */
+async function sendListExcel(ctx: Ctx, filter: RegistryFilter): Promise<void> {
+  if (!(await requirePerm(ctx, "date_personale", "descărcarea listei în Excel (conține telefoane și adrese)"))) return;
+  const orders = await listRegistryAll({ status: filter, includeArchived: true });
+  if (orders.length === 0) {
+    await say(ctx.chatId, `${FILTER_TITLE[filter]}: nu există comenzi de descărcat.`);
+    return;
+  }
+  const chat = dataChatId(ctx);
+  const ok = await sendTelegramDocument(
+    chat,
+    buildListWorkbook(orders),
+    listFilename(filter),
+    escapeHtml(`${FILTER_TITLE[filter]}: ${plural(orders.length, "comandă", "comenzi")}. Este doar o copie a datelor — nu s-a marcat nimic ca extras.`),
+    XLSX_MIME
+  );
+  if (!ok) await say(ctx.chatId, "Eroare. Fișierul nu a putut fi trimis. Deschideți o conversație privată cu botul, apăsați Start și încercați din nou.");
+  else if (chat !== ctx.chatId) await say(ctx.chatId, "Fișierul Excel a fost trimis în conversația privată.");
 }
 
 // ── Detalii comandă ────────────────────────────────────────────────────────────────────────────
@@ -381,7 +405,7 @@ export async function handleRegistryMessage(message: TgMessage): Promise<boolean
     command = "comanda";
     arg = compact[1];
   }
-  const known = ["start", "ajutor", "help", "id", "noi", "lista", "registru", "extrase", "comanda", "extrage", "istoric", "status"];
+  const known = ["start", "ajutor", "help", "id", "noi", "lista", "registru", "extrase", "comanda", "extrage", "istoric", "status", "excel"];
   if (!known.includes(command)) return false;
 
   const ctx = await buildCtx(message.from, message.chat);
@@ -418,6 +442,12 @@ export async function handleRegistryMessage(message: TgMessage): Promise<boolean
     case "extrage":
       await offerExport(ctx);
       break;
+    case "excel": {
+      const a = arg.toLowerCase();
+      const filter: RegistryFilter = a.startsWith("toate") || a.startsWith("registru") ? "toate" : a.startsWith("extras") ? EXTRACTION.DONE : EXTRACTION.NEW;
+      await sendListExcel(ctx, filter);
+      break;
+    }
     case "istoric":
       if (await requirePerm(ctx, "vizualizare", "vizualizarea istoricului")) await sendHistory(ctx);
       break;
@@ -451,6 +481,11 @@ export async function handleRegistryCallback(cb: TgCallback): Promise<void> {
         const filter = FILTER_CODE[arg1] ?? EXTRACTION.NEW;
         await answerCallbackQuery(cb.id);
         await sendListPage(ctx, filter, Math.max(1, Number(arg2) || 1));
+        return;
+      }
+      case "reg_xl": {
+        await answerCallbackQuery(cb.id, "Se pregătește fișierul.");
+        await sendListExcel(ctx, FILTER_CODE[arg1] ?? EXTRACTION.NEW);
         return;
       }
       case "reg_x":

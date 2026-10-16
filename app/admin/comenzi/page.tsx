@@ -74,6 +74,11 @@ export default async function RegistryPage({ searchParams }: { searchParams: Pro
     return `/admin/comenzi${s ? `?${s}` : ""}`;
   }
 
+  const excelParams = new URLSearchParams();
+  excelParams.set("status", status);
+  if (q) excelParams.set("q", q);
+  if (includeArchived) excelParams.set("arhivate", "1");
+
   return (
     <div>
       <AdminPageHeader
@@ -131,6 +136,13 @@ export default async function RegistryPage({ searchParams }: { searchParams: Pro
           <button type="submit" className="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold">
             Aplică filtrele
           </button>
+          {/* Aceeași listă (cu filtrele de mai sus, toate paginile) ca fișier Excel — doar o copie, nu marchează nimic ca extras. */}
+          <a
+            href={`/api/admin/comenzi/lista-excel?${excelParams.toString()}`}
+            className="h-11 px-5 rounded-xl border-2 border-primary text-primary text-sm font-semibold inline-flex items-center hover:bg-primary hover:text-primary-foreground transition-colors"
+          >
+            Descarcă lista în Excel
+          </a>
         </form>
 
         <p role="status" className="text-sm text-muted-foreground mb-3">
