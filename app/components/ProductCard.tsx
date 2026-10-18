@@ -72,6 +72,7 @@ export default function ProductCard({
   const discount = oldPrice ? Math.round((1 - price / oldPrice) * 100) : null;
   const discountAmount = oldPrice ? Math.round(oldPrice - price) : null;
   const displayBadge = badge ?? (discount ? `-${discount}%` : null);
+  const isDiscountBadge = !badge && discount !== null;
 
   const specs = [packageQuantity || null].filter(Boolean).join(", ");
 
@@ -113,8 +114,10 @@ export default function ProductCard({
           <div className="absolute left-2 top-2 flex max-w-[calc(100%-3.25rem)] flex-col items-start gap-1 sm:left-4 sm:top-4 sm:max-w-[70%]">
             {highlight && <HighlightRibbon kind={highlight} />}
             {displayBadge && (
-              <Badge variant="accent" className="max-w-full truncate shadow-sm">
-                {displayBadge}
+              <Badge variant="accent" className="relative max-w-full overflow-hidden shadow-sm">
+                <span className="relative z-20 truncate">{displayBadge}</span>
+                {/* reducerea: frunze de toamnă care cad peste insigna cu procentul */}
+                {isDiscountBadge && <AutumnLeaves count={5} scale={0.42} palette="bright" className="!inset-0 z-10" />}
               </Badge>
             )}
           </div>
@@ -149,11 +152,13 @@ export default function ProductCard({
                 <span className="text-xs text-muted-foreground line-through">
                   {oldPrice.toLocaleString("ro-MD")} MDL
                 </span>
-                <Badge variant="accent" className="normal-case px-2 py-0.5">
-                  -{discountAmount?.toLocaleString("ro-MD")} MDL
+                <Badge variant="accent" className="relative overflow-hidden normal-case px-2 py-0.5">
+                  <span className="relative z-20">-{discountAmount?.toLocaleString("ro-MD")} MDL</span>
+                  <AutumnLeaves count={4} scale={0.4} palette="bright" className="!inset-0 z-10" />
                 </Badge>
-                <Badge variant="secondary" className="normal-case px-2 py-0.5">
-                  -{discount}%
+                <Badge variant="secondary" className="relative overflow-hidden normal-case px-2 py-0.5">
+                  <span className="relative z-20">-{discount}%</span>
+                  <AutumnLeaves count={4} scale={0.4} className="!inset-0 z-10" />
                 </Badge>
               </div>
             )}
