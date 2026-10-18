@@ -110,7 +110,7 @@ export default function ProductCard({
         </Link>
 
         {(highlight || displayBadge) && (
-          <div className="absolute left-2 top-2 flex max-w-[calc(100%-3.25rem)] flex-col items-start gap-1.5 sm:left-4 sm:top-4 sm:max-w-[70%]">
+          <div className="absolute left-2 top-2 flex max-w-[calc(100%-3.25rem)] flex-col items-start gap-1 sm:left-4 sm:top-4 sm:max-w-[70%]">
             {highlight && <HighlightRibbon kind={highlight} />}
             {displayBadge && (
               <Badge variant="accent" className="max-w-full truncate shadow-sm">

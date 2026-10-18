@@ -9,12 +9,25 @@ function pseudo(i: number, salt: number): number {
   return x - Math.floor(x);
 }
 
-export default function AutumnLeaves({ count = 16, scale = 1, className }: { count?: number; scale?: number; className?: string }) {
+// Paleta „aprinsă" (pe fundal închis, ca la etichetele de pe produse): portocaliu, roșu, galben, ruginiu, chihlimbar.
+const BRIGHT = ["#ff8811", "#ee5522", "#ffcc33", "#cc3311", "#ffbb44"];
+
+export default function AutumnLeaves({
+  count = 16,
+  scale = 1,
+  palette = "natural",
+  className,
+}: {
+  count?: number;
+  scale?: number;
+  palette?: "natural" | "bright";
+  className?: string;
+}) {
   const leaves = Array.from({ length: count }, (_, i) => {
     const shape = LEAF_SHAPES[i % LEAF_SHAPES.length];
     return {
       shape,
-      color: shape.colors[Math.floor(pseudo(i, 1) * shape.colors.length)],
+      color: palette === "bright" ? BRIGHT[(i * 2 + Math.floor(pseudo(i, 1) * 3)) % BRIGHT.length] : shape.colors[Math.floor(pseudo(i, 1) * shape.colors.length)],
       left: ((i + pseudo(i, 2) * 0.8) / count) * 100,
       size: (11 + pseudo(i, 3) * 8) * scale,
       dur: 8 + pseudo(i, 4) * 6,

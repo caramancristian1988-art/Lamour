@@ -3,7 +3,7 @@
 //  - Best seller: cel puțin 10 vânzări confirmate (același prag de la care numărul de vânzări devine vizibil pe site);
 //  - Nou: bifat „Produs nou" în admin, sau adăugat în ultimele 30 de zile;
 //  - Popular: cel puțin 3 vânzări confirmate;
-//  - Toamnă (eticheta „De sezon"): produsele din categoriile de sezon de mai jos (greble, borcane și capace pentru conserve, mături, lădițe, găleți).
+//  - Autumn Sale (eticheta „De sezon"): produsele din categoriile de sezon de mai jos (greble, borcane și capace pentru conserve, mături, lădițe, găleți).
 // „Foarte util" se pune doar manual. Nu se inventează „best seller" fără vânzări.
 
 export type HighlightKind = "bestseller" | "popular" | "nou" | "sezon" | "util";
@@ -12,7 +12,7 @@ export const HIGHLIGHT_LABELS: Record<HighlightKind, string> = {
   bestseller: "Best seller",
   popular: "Popular",
   nou: "Nou",
-  sezon: "Toamnă",
+  sezon: "Autumn Sale",
   util: "Foarte util",
 };
 
@@ -23,7 +23,7 @@ export const HIGHLIGHT_OPTIONS: { value: string; label: string }[] = [
   { value: "bestseller", label: "Best seller" },
   { value: "popular", label: "Popular" },
   { value: "nou", label: "Nou" },
-  { value: "sezon", label: "Toamnă (frunză de stejar)" },
+  { value: "sezon", label: "Autumn Sale (toamnă)" },
   { value: "util", label: "Foarte util" },
 ];
 
