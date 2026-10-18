@@ -52,7 +52,7 @@ export const metadata: Metadata = {
 // Pagină STATICĂ: nu citește searchParams. Produsele (în formă compactă) sunt trimise o singură dată, iar filtrarea,
 // căutarea, sortarea și „Încarcă mai multe" rulează în browser (ProductsCatalog) — fără cereri la server la fiecare filtru.
 // Se reface la cel mult o oră sau imediat când adminul modifică produse/categorii (updateTag + revalidatePath).
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 interface CategoryRow {
   id: string;

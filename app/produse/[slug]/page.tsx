@@ -44,7 +44,7 @@ import JsonLd from "../../components/JsonLd";
 import { breadcrumbList, collectionPage, productSchema } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const allFallbackProducts = [
   ...fallbackProducts,

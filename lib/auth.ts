@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import { prisma } from "./prisma";
 
 const SESSION_COOKIE = "session_token";
+export const LOGGED_IN_COOKIE = "logged_in";
 const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export async function createSession(userId: string) {
@@ -14,6 +15,14 @@ export async function createSession(userId: string) {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires: expiresAt,
+  });
+  // Semn NE-secret, citibil din JavaScript: arată doar că există o sesiune (tokenul rămâne httpOnly). Clienții anonimi n-au
+  // nevoie să întrebe serverul dacă sunt autentificați.
+  cookieStore.set(LOGGED_IN_COOKIE, "1", {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
@@ -39,4 +48,5 @@ export async function destroySession() {
     await prisma.session.deleteMany({ where: { token } });
   }
   cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(LOGGED_IN_COOKIE);
 }

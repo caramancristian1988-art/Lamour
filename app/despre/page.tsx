@@ -13,7 +13,7 @@ import { INTRO_VIDEO, TEAM_VIDEO, PRODUCTS_VIDEO } from "@/lib/siteVideos";
 import { breadcrumbList } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 // Un fundal CSS repetat nu poate fi un <Image>, dar poate folosi aceeași poză optimizată de Next (/_next/image: format modern,
 // lățime potrivită — banda are 48 px, deci 96 px la ecrane dense), în loc de fișierul original.

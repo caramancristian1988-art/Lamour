@@ -9,7 +9,7 @@ import JsonLd from "@/app/components/JsonLd";
 import { breadcrumbList, faqPageSchema } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const FAQ_TITLE = `Întrebări frecvente | ${SITE_NAME}`;
 const FAQ_DESCRIPTION = `Răspunsuri la cele mai frecvente întrebări despre produsele și serviciile ${SITE_NAME}.`;

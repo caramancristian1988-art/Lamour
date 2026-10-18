@@ -18,7 +18,7 @@ import JsonLd from "../components/JsonLd";
 import { breadcrumbList } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const CONTACT_TITLE = `Contact | ${SITE_NAME}`;
 const CONTACT_DESCRIPTION = `Ai nevoie de sprijin, consultanță sau informații despre produsele și serviciile ${SITE_NAME}? Scrie-ne și revenim rapid cu un răspuns.`;

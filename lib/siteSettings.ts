@@ -22,6 +22,8 @@ const DEFAULTS: SectionFlags = {
   installmentMonths: 4,
 };
 
+export const SETTINGS_TAG = "site-settings";
+
 // Single cached Settings fetch — shared across all derived getters.
 // unstable_cache persists across requests (5 min TTL); React cache() deduplicates within one request.
 const getSettingsRaw = unstable_cache(
@@ -33,7 +35,8 @@ const getSettingsRaw = unstable_cache(
     }
   },
   ["settings-raw"],
-  { revalidate: 300 }
+  // 24 de ore + etichetă: salvarea setărilor din admin o invalidează imediat (updateTag(SETTINGS_TAG)).
+  { revalidate: 86400, tags: [SETTINGS_TAG] }
 );
 
 // React cache() wraps unstable_cache so multiple callers within one render share the same promise.
@@ -144,7 +147,7 @@ const getHeaderCategoriesRaw = unstable_cache(
     }
   },
   ["header-categories-v2"],
-  { revalidate: 300, tags: [CATALOG_TAG] }
+  { revalidate: 86400, tags: [CATALOG_TAG] }
 );
 
 export const getHeaderCategories = cache(getHeaderCategoriesRaw);

@@ -18,7 +18,10 @@ const loadCatalog = unstable_cache(
     return { categories: sortCategories(categories), products };
   },
   ["catalog-v2"],
-  { revalidate: 300, tags: [CATALOG_TAG] }
+  // 24 de ore: orice modificare din admin / Telegram invalidează imediat prin CATALOG_TAG (updateTag / invalidateCatalog).
+  // Înainte erau 5 minute, iar TOATE paginile statice (prima pagină, Catalog, cele ~190 de produse) se re-randau la fiecare 5 minute —
+  // adică Fluid CPU consumat fără ca ceva să se fi schimbat.
+  { revalidate: 86400, tags: [CATALOG_TAG] }
 );
 
 // Pentru orice altă schimbare care apare pe cardurile din /produse (stele de la recenzii, nr. de vânzări): merge și din

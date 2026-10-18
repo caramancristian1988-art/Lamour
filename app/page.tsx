@@ -15,7 +15,7 @@ import JsonLd from "@/app/components/JsonLd";
 import { homepageGraph } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const HOME_TITLE = "LuminTehnica | Produse fabricate în Moldova";
 const HOME_DESCRIPTION =

@@ -1,6 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
+import { CATALOG_TAG } from "./catalog";
+import { SETTINGS_TAG } from "./siteSettings";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { onlyVisible } from "./productVisibility";
@@ -54,35 +56,48 @@ export async function getPopupProduct(): Promise<PopupProduct | null> {
   }
 }
 
-// Picks up to `count` distinct discounted products for the popup's story
-// carousel. Same candidate pool/priority as getPopupProduct, just sampled
-// without replacement instead of a single pick.
+// Picks up to `count` distinct discounted products for the popup's story carousel.
+// Toate produsele posibile (cu cea mai bună recenzie a lor) se calculează O SINGURĂ DATĂ și stau în cache (cu eticheta
+// catalogului, deci se reîmprospătează când se schimbă produsele) — înainte, FIECARE vizitator declanșa din browser o interogare
+// pe tot catalogul (cu descrieri) + câte 2 căutări în ~5.700 de recenzii pe fiecare produs ales. Acum apelul doar amestecă lista din cache.
+const loadPopupPool = unstable_cache(
+  async (): Promise<PopupProduct[]> => {
+    let candidates = await prisma.product.findMany({
+      where: onlyVisible({ popupEnabled: true, oldPrice: { not: null } }),
+      select: { slug: true, name: true, image: true, price: true, oldPrice: true, rating: true, reviewCount: true, installmentsEnabled: true },
+    });
+    if (candidates.length === 0) {
+      candidates = await prisma.product.findMany({
+        where: onlyVisible({ oldPrice: { not: null } }),
+        select: { slug: true, name: true, image: true, price: true, oldPrice: true, rating: true, reviewCount: true, installmentsEnabled: true },
+      });
+    }
+    // cel mult 40 de produse în pool (suficient pentru varietate), ca numărul de căutări de recenzii să rămână mic
+    const pool = candidates.slice(0, 40);
+    return Promise.all(
+      pool.map(async (pick) => ({
+        slug: pick.slug,
+        name: pick.name,
+        image: pick.image,
+        price: pick.price,
+        oldPrice: pick.oldPrice,
+        rating: pick.rating,
+        reviewCount: pick.reviewCount,
+        review: await findBestReview(pick.name),
+        installmentsEnabled: pick.installmentsEnabled,
+      }))
+    );
+  },
+  ["popup-pool-v1"],
+  { revalidate: 86400, tags: [CATALOG_TAG] }
+);
+
 export async function getPopupProducts(count: number): Promise<PopupProduct[]> {
   try {
-    let candidates = await prisma.product.findMany({ where: onlyVisible({ popupEnabled: true, oldPrice: { not: null } }) });
-    if (candidates.length === 0) {
-      candidates = await prisma.product.findMany({ where: onlyVisible({ oldPrice: { not: null } }) });
-    }
+    const pool = await loadPopupPool();
     // Fără produse reale la reducere, popup-ul nu se afișează (înainte apăreau produse demo cu linkuri 404).
-    if (candidates.length === 0) return [];
-
-    const shuffled = [...candidates].sort(() => Math.random() - 0.5).slice(0, count);
-    return await Promise.all(
-      shuffled.map(async (pick) => {
-        const review = await findBestReview(pick.name);
-        return {
-          slug: pick.slug,
-          name: pick.name,
-          image: pick.image,
-          price: pick.price,
-          oldPrice: pick.oldPrice,
-          rating: pick.rating,
-          reviewCount: pick.reviewCount,
-          review,
-          installmentsEnabled: pick.installmentsEnabled,
-        };
-      })
-    );
+    if (pool.length === 0) return [];
+    return [...pool].sort(() => Math.random() - 0.5).slice(0, count);
   } catch {
     return [];
   }
@@ -132,15 +147,23 @@ const DEFAULT_COUNTDOWN_MINUTES = 10;
 // Settings.popupCountdownMinutes was added before the Prisma client could be
 // regenerated locally, so it's read/written via raw commands for now — safe
 // to switch to the typed prisma.settings API once a generate succeeds.
+const loadCountdownMinutes = unstable_cache(
+  async (): Promise<number> => {
+    try {
+      const result = (await prisma.$runCommandRaw({ find: "Settings", filter: {}, limit: 1 })) as {
+        cursor?: { firstBatch?: { popupCountdownMinutes?: number }[] };
+      };
+      return result.cursor?.firstBatch?.[0]?.popupCountdownMinutes ?? DEFAULT_COUNTDOWN_MINUTES;
+    } catch {
+      return DEFAULT_COUNTDOWN_MINUTES;
+    }
+  },
+  ["popup-countdown-v1"],
+  { revalidate: 86400, tags: [SETTINGS_TAG] }
+);
+
 export async function getPopupCountdownMinutes(): Promise<number> {
-  try {
-    const result = (await prisma.$runCommandRaw({ find: "Settings", filter: {}, limit: 1 })) as {
-      cursor?: { firstBatch?: { popupCountdownMinutes?: number }[] };
-    };
-    return result.cursor?.firstBatch?.[0]?.popupCountdownMinutes ?? DEFAULT_COUNTDOWN_MINUTES;
-  } catch {
-    return DEFAULT_COUNTDOWN_MINUTES;
-  }
+  return loadCountdownMinutes();
 }
 
 export async function updatePopupTimerAction(formData: FormData) {
@@ -175,6 +198,7 @@ export async function updatePopupTimerAction(formData: FormData) {
     });
   }
 
+  updateTag(SETTINGS_TAG);
   revalidatePath("/admin/popup");
 }
 
@@ -201,6 +225,7 @@ export async function updatePopupColorsAction(formData: FormData) {
     await prisma.settings.create({ data });
   }
 
+  updateTag(SETTINGS_TAG);
   revalidatePath("/admin/popup");
   revalidatePath("/", "layout");
 }

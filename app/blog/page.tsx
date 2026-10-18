@@ -9,7 +9,7 @@ import JsonLd from "@/app/components/JsonLd";
 import { breadcrumbList, collectionPage } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const BLOG_TITLE = `Blog | ${SITE_NAME}`;
 const BLOG_DESCRIPTION = `Articole, ghiduri și noutăți din activitatea ${SITE_NAME}.`;

@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { SETTINGS_TAG } from "./siteSettings";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
 import { requireAdmin } from "./adminAuth";
@@ -33,6 +34,7 @@ export async function updateSettingsAction(formData: FormData) {
     await prisma.settings.create({ data });
   }
 
+  updateTag(SETTINGS_TAG);
   revalidatePath("/admin/setari");
   revalidatePath("/", "layout");
   redirect("/admin/setari?salvat=1");

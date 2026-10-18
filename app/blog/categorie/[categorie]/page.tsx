@@ -11,7 +11,7 @@ import { absoluteUrl } from "@/lib/seo";
 import { BLOG_CATEGORIES, BLOG_FALLBACK_IMAGE, formatBlogDate, readingTime } from "@/lib/blog";
 import { BlogHeader, BlogTabs, BlogCard, BlogNewsletter } from "@/app/components/blog/BlogParts";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const categoryNames: Record<string, string> = Object.fromEntries(BLOG_CATEGORIES.map((c) => [c.slug, c.label]));
 

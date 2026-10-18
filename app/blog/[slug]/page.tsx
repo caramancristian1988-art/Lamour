@@ -16,7 +16,16 @@ import { getRecommendedProducts } from "@/lib/recommendedProducts";
 import { BlogCard, BlogNewsletter } from "@/app/components/blog/BlogParts";
 import { HeadingFlourish } from "@/app/components/ui/motif";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
+
+export async function generateStaticParams() {
+  try {
+    const posts = await prisma.blogPost.findMany({ where: { published: true }, select: { slug: true } });
+    return posts.map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
