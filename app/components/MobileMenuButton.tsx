@@ -105,7 +105,7 @@ export default function MobileMenuButton({
             </nav>
 
             <div className="mt-2 flex flex-col gap-2 border-t border-border px-1 pt-3 sm:flex-row">
-              <AccessibilityToggle className="flex-1 justify-center border border-border" />
+              <AccessibilityToggle className="h-14 shrink-0 justify-center border-2 border-border sm:h-12 sm:flex-1" />
               {/* Numărul vine din Setări (ca în bara de sus și footer). */}
               {phone && phoneTel && (
                 <a
