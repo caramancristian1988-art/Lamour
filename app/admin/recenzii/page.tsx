@@ -47,7 +47,7 @@ function ReviewAvatar({ name, image }: { name: string; image: string | null }) {
   return (
     <div className="relative w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
       {image ? (
-        <Image src={image} alt={name} fill className="object-cover" />
+        <Image src={image} alt={name} fill sizes="40px" className="object-cover" />
       ) : (
         name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
       )}

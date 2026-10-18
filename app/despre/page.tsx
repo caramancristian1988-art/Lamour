@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -14,6 +14,10 @@ import { breadcrumbList } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
 
 export const revalidate = 3600;
+
+// Un fundal CSS repetat nu poate fi un <Image>, dar poate folosi aceeași poză optimizată de Next (/_next/image: format modern,
+// lățime potrivită — banda are 48 px, deci 96 px la ecrane dense), în loc de fișierul original.
+const motifBand = getImageProps({ src: "/despre/motiv-vertical.jpg", alt: "", width: 96, height: 872, quality: 70 });
 
 
 
@@ -109,7 +113,7 @@ export default async function DesprePage() {
           <div
             aria-hidden
             className="hidden lg:block w-12 bg-repeat-y"
-            style={{ backgroundImage: "url(/despre/motiv-vertical.jpg)", backgroundSize: "100% auto" }}
+            style={{ backgroundImage: `url(${motifBand.props.src})`, backgroundSize: "100% auto" }}
           />
 
           <FacebookVideo

@@ -113,7 +113,7 @@ export default function BannerImagePositionField({
               if (t) startDrag(t.clientX, t.clientY);
             }}
           >
-            <Image src={url} alt="" fill className="object-cover pointer-events-none" />
+            <Image src={url} alt="" fill sizes="(max-width: 1024px) 100vw, 800px" className="object-cover pointer-events-none" />
             <div
               className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 pointer-events-none"
               style={{ left: `${posX}%`, top: `${posY}%` }}

@@ -56,7 +56,7 @@ export default function MultiImageUploadField({
         <div className="flex flex-wrap gap-2 mb-1">
           {urls.map((url, i) => (
             <div key={url + i} className="relative w-16 h-16 rounded-xl bg-muted border border-border overflow-hidden group">
-              <Image src={url} alt="" fill className="object-cover" />
+              <Image src={url} alt="" fill sizes="64px" className="object-cover" />
               <button
                 type="button"
                 onClick={() => removeAt(i)}

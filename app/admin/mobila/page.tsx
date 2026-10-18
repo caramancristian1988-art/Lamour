@@ -21,7 +21,7 @@ function ListingRow({ listing }: { listing: Awaited<ReturnType<typeof getListing
     <div className="flex items-start gap-3 p-4">
       <div className="relative w-12 h-12 rounded-xl bg-muted overflow-hidden shrink-0 mt-0.5">
         {listing.image ? (
-          <Image src={listing.image} alt={listing.title} fill className="object-cover" />
+          <Image src={listing.image} alt={listing.title} fill sizes="48px" className="object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
             <ImageOff className="w-6 h-6" aria-hidden />

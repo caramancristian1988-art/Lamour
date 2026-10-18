@@ -43,7 +43,7 @@ export default async function AdminBannerePage() {
             <div key={b.id} className="bg-card border border-border rounded-2xl overflow-hidden">
               <div className="relative h-32 bg-muted">
                 {b.image ? (
-                  <Image src={b.image} alt={b.alt} fill className="object-cover" />
+                  <Image src={b.image} alt={b.alt} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                     <ImageOff className="w-8 h-8" aria-hidden />

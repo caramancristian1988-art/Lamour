@@ -25,7 +25,7 @@ import {
   variantSortValue,
   type VariantOption,
 } from "@/lib/productListing";
-import ProductCard from "../../components/ProductCard";
+import ProductsSection from "../../components/ProductsSection";
 import ProductBuyBox from "../../components/ProductBuyBox";
 import { normalizeTiers, type PriceTier } from "@/lib/pricing";
 import ProductGallery from "../../components/ProductGallery";
@@ -96,11 +96,11 @@ const getProductData = cache(async (slug: string) => {
           categoryId: product.categoryId,
           NOT: [{ id: product.id }, { variantGroupId: familyId }, { id: familyId }],
         }),
-        take: 4,
+        take: 40,
       }),
       prisma.review.findMany({ where: { product: product.name, approved: true } }),
     ]);
-    const related = dedupeVariants(relatedRaw);
+    const related = dedupeVariants(relatedRaw).slice(0, 12);
     const relatedVariantOptionsMap = buildVariantOptionsMap(relatedRaw);
     // Fetched separately so a hiccup here (e.g. a not-yet-migrated client)
     // can't take down the whole product page and fall back to demo data.
@@ -752,29 +752,16 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
         </section>
       )}
 
-      {/* Related products */}
+      {/* Produse similare: carusel cu butoane stânga / dreapta (pe telefon se glisează cu degetul) */}
       {related.length > 0 && (
-        <section className="py-14">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-            <h2 className="text-2xl font-extrabold text-foreground uppercase tracking-wide mb-8">
-              Produse <span className="text-accent">similare</span>
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
-              {related.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  {...p}
-                  name={localProductNames[p.slug] ?? p.name}
-                  image={localProductImages[p.slug] ?? p.image}
-                  badge={localProductBadges[p.slug] ?? p.badge}
-                  installmentsEnabled={ratesEnabled && p.installmentsEnabled !== false}
-                  installmentMonths={installmentMonths}
-                  variantOptions={relatedVariantOptionsMap.get(p.id)}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+        <ProductsSection
+          products={related}
+          title="Produse"
+          highlighted="similare"
+          viewAllHref={category ? `/produse?cat=${category.slug}` : "/produse"}
+          viewAllLabel="Vezi toată categoria"
+          variantOptionsMap={relatedVariantOptionsMap}
+        />
       )}
 
       {/* CTA */}

@@ -32,6 +32,7 @@ export default function FactoryGallery() {
                 src={`https://placehold.co/600x600/${photo.color}/ffffff?text=${encodeURIComponent(photo.label)}`}
                 alt={photo.label}
                 fill
+                sizes="(max-width: 640px) 50vw, 25vw"
                 className="object-cover"
               />
             </div>

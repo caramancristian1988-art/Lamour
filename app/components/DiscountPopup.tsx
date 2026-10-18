@@ -285,7 +285,7 @@ export default function DiscountPopup({ buttonColor, bannerColor }: DiscountPopu
           }}
         >
           {product.image && (
-            <Image key={activeIndex} src={product.image} alt={product.name} fill className="object-contain p-3" priority />
+            <Image key={activeIndex} src={product.image} alt={product.name} fill sizes="(max-width: 640px) 90vw, 440px" className="object-contain p-3" priority />
           )}
 
           {products.length > 1 && (

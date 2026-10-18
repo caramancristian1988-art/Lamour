@@ -192,7 +192,7 @@ export default function NewsletterCampaignPanel({
                     <Checkbox id={id} checked={selectedProducts.has(p.id)} onCheckedChange={() => toggleProduct(p.id)} />
                     <div className="relative w-10 h-10 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center">
                       {p.image ? (
-                        <Image src={p.image} alt={p.name} fill className="object-contain p-1" />
+                        <Image src={p.image} alt={p.name} fill sizes="40px" className="object-contain p-1" />
                       ) : (
                         <ImageOff className="w-4 h-4 text-muted-foreground" aria-hidden />
                       )}

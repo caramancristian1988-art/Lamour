@@ -86,7 +86,7 @@ function ProductRow({ product, deleteAction }: { product: Awaited<ReturnType<typ
     <div className={`flex items-start gap-3 p-4 ${product.hidden ? "bg-muted/40" : ""}`}>
       <div className={`relative w-12 h-12 rounded-xl bg-muted overflow-hidden shrink-0 mt-0.5 ${product.hidden ? "opacity-50" : ""}`}>
         {product.image ? (
-          <Image src={product.image} alt={product.name} fill className="object-contain" />
+          <Image src={product.image} alt={product.name} fill sizes="48px" className="object-contain" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
             <ImageIcon className="w-6 h-6" aria-hidden />

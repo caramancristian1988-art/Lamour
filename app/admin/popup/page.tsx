@@ -215,7 +215,7 @@ export default async function AdminPopupPage({
                   <div key={stat.slug} className="flex items-center gap-4 px-3 py-2.5 border border-border rounded-xl">
                     <div className="relative w-10 h-10 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center">
                       {stat.image ? (
-                        <Image src={stat.image} alt={stat.name} fill className="object-contain p-1" />
+                        <Image src={stat.image} alt={stat.name} fill sizes="40px" className="object-contain p-1" />
                       ) : (
                         <ImageOff className="w-4 h-4 text-muted-foreground" aria-hidden />
                       )}
@@ -316,7 +316,7 @@ function ProductRow({
       <Checkbox name="productIds" value={product.id} defaultChecked={checked} />
       <div className="relative w-12 h-12 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center">
         {product.image ? (
-          <Image src={product.image} alt={product.name} fill className="object-contain p-1" />
+          <Image src={product.image} alt={product.name} fill sizes="48px" className="object-contain p-1" />
         ) : (
           <ImageOff className="w-5 h-5 text-muted-foreground" aria-hidden />
         )}

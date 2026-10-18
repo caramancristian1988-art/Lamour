@@ -48,7 +48,7 @@ function OfferFormPanel({
       <div className="flex items-center gap-3 my-5 p-3 border border-border rounded-xl bg-muted">
         <span className="relative w-14 h-14 rounded-lg bg-card overflow-hidden shrink-0 border border-border flex items-center justify-center">
           {productImage ? (
-            <Image src={productImage} alt={productName} fill className="object-contain p-1" />
+            <Image src={productImage} alt={productName} fill sizes="56px" className="object-contain p-1" />
           ) : (
             <ImageOff className="w-6 h-6 text-muted-foreground" aria-hidden />
           )}

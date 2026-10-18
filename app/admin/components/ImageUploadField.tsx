@@ -47,7 +47,7 @@ export default function ImageUploadField({
       <div className="flex items-center gap-3 flex-wrap">
         {url && (
           <div className="relative w-16 h-16 rounded-xl bg-muted border border-border overflow-hidden shrink-0">
-            <Image src={url} alt="" fill className="object-contain" />
+            <Image src={url} alt="" fill sizes="64px" className="object-contain" />
           </div>
         )}
         <label className="inline-flex items-center gap-2 border-2 border-input hover:bg-muted text-sm font-semibold text-primary px-4 py-2.5 rounded-xl cursor-pointer transition-colors">
