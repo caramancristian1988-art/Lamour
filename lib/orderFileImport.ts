@@ -6,6 +6,7 @@ import { normalizeTiers, unitPriceFor, formatPrice, type PriceTier } from "./pri
 import { CART_ORDER_SOURCE } from "./orderStages";
 import { submitContactMessageAction, advanceOrderStageReport } from "./adminMessageActions";
 import { matchLocality } from "./localityMatch";
+import { POSTAL_CODE_BY_LOCALITY } from "./moldovaPostalCodes";
 
 // Comandă nouă dintr-un fișier Excel/CSV/PDF trimis de client (operatorii primesc adesea o listă de produse așa, în
 // loc s-o retasteze pe site) — recunoaște produsele și cantitățile, apoi creează o comandă normală "din coș", care
@@ -685,9 +686,12 @@ const LOCALITY_PREFIX = /^(mun(icipiul)?\.?|or(a[sș]ul)?\.?|s(atul)?\.?|com(una
  * Împarte o adresă scrisă liber în ce are nevoie EVS: localitate (EXACT din nomenclatorul EVS), stradă și cod poștal de
  * 4 cifre. Codul poștal se recunoaște după „MD-2001” / „cod poștal 2001” sau ca un număr de 4 cifre singur între virgule;
  * un număr de 4 cifre lipit de o stradă (ex. „str. Mihai Viteazu 1234”) NU se ia drept cod. Ce nu se recunoaște rămâne null.
+ * Dacă lipsește codul și localitatea are un singur cod în lista oficială (lib/moldovaPostalCodes.ts), îl completează (zipAuto).
  */
-export function parseCourierAddress(raw: string | null | undefined): { locality: string | null; street: string | null; zip: string | null } {
-  if (!raw?.trim()) return { locality: null, street: null, zip: null };
+export function parseCourierAddress(
+  raw: string | null | undefined
+): { locality: string | null; street: string | null; zip: string | null; zipAuto: boolean } {
+  if (!raw?.trim()) return { locality: null, street: null, zip: null, zipAuto: false };
   let text = raw.trim();
   let zip: string | null = null;
 
@@ -717,7 +721,9 @@ export function parseCourierAddress(raw: string | null | undefined): { locality:
     }
     rest.push(part);
   }
-  return { locality, street: rest.join(", ") || null, zip };
+  // Fără cod poștal în fișier: îl completăm din lista oficială, DOAR dacă localitatea are un singur cod (nu Chișinău, nu omonime).
+  const auto = !zip && locality ? POSTAL_CODE_BY_LOCALITY[locality] ?? null : null;
+  return { locality, street: rest.join(", ") || null, zip: zip ?? auto, zipAuto: Boolean(auto) };
 }
 
 // ── Anti-dublură: același expeditor trimite Excel ȘI PDF pentru aceeași comandă ─────────────────────────────────

@@ -179,7 +179,10 @@ Admin → Telegram → drepturi pe grup, ex. „Export comenzi”) creează o co
 - AWB-ul poartă numele, telefonul, adresa, greutatea, rambursul (0 dacă „plată prin transfer”) și, în `Comment`, **toate produsele** cu cantități.
 - Botul răspunde în același grup: **AWB creat** (cu cod, client, adresă, greutate, ramburs, produse) sau **eroarea exactă** de la EVS / ce lipsește
   (de ex. codul poștal) și cum se repară. Rezultatul apare și în jurnalul serverului (`import fișier (curier): …`).
-- Codul poștal se recunoaște ca `MD-2001`, `cod poștal 2001` sau ca număr de 4 cifre singur între virgule. Fără el, AWB-ul nu se poate crea (EVS cere ZIP).
+- Codul poștal se recunoaște ca `MD-2001`, `cod poștal 2001` sau ca număr de 4 cifre singur între virgule. Dacă lipsește, se **completează automat** din
+  lista oficială (`lib/moldovaPostalCodes.ts`, generată cu `scripts/build-postal-codes.js` din „Coduri poștale RM”, dataset.gov.md) **doar pentru localitățile cu
+  un singur cod** (nu pentru Chișinău și nu pentru nume omonime); în mesajul din grup apare o notă „cod completat automat”. Fără cod (și fără completare), AWB-ul
+  nu se poate crea (EVS cere ZIP) și mesajul din grup spune ce lipsește.
 - **Anti-dublură (Excel + PDF ale aceleiași comenzi):** cheia comenzii (`OrderImportKey`, index unic) = numărul extern „Comanda Nr.” + luna, sau o
   amprentă a conținutului (telefon + produse + cantități) pe zi. Al doilea fișier e ignorat cu un mesaj; nu se creează nici comandă, nici AWB nou.
   Dacă primul import eșuează, cheia se eliberează ca retrimiterea să poată reuși.

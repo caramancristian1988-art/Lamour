@@ -415,9 +415,12 @@ async function handleOrderFileMessage(message: TelegramDocumentMessage): Promise
     .join("\n");
   const addressText = [courierAddress?.locality, courierAddress?.street, courierAddress?.zip].filter(Boolean).join(", ") || address || "—";
   const payText = parsed.header.paymentByTransfer ? "plătită prin transfer (fără ramburs)" : `ramburs ${(result.codAmount ?? 0).toLocaleString("ro-MD")} MDL`;
+  const zipNote = courierAddress?.zipAuto
+    ? `\nℹ️ Codul poștal MD-${escapeHtml(courierAddress.zip ?? "")} a fost completat automat din lista oficială (nu era în fișier) — verifică-l dacă livrarea e într-o zonă cu mai multe coduri.`
+    : "";
   const dataBlock =
     `\n\n👤 ${escapeHtml(name)} · ${escapeHtml(phone)}` +
-    `\n📍 ${escapeHtml(addressText)}` +
+    `\n📍 ${escapeHtml(addressText)}${zipNote}` +
     `\n⚖️ ${result.weightKg ? formatKg(result.weightKg) : "greutate calculată la confirmare"} · ${payText}` +
     `\n\n${productLines}`;
 
