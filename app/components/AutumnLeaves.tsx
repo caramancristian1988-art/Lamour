@@ -16,11 +16,14 @@ export default function AutumnLeaves({
   count = 16,
   scale = 1,
   palette = "natural",
+  speed = 1,
   className,
 }: {
   count?: number;
   scale?: number;
   palette?: "natural" | "bright";
+  /** >1 = cad mai repede (durata căderii se împarte la valoare). */
+  speed?: number;
   className?: string;
 }) {
   const leaves = Array.from({ length: count }, (_, i) => {
@@ -30,8 +33,8 @@ export default function AutumnLeaves({
       color: palette === "bright" ? BRIGHT[(i * 2 + Math.floor(pseudo(i, 1) * 3)) % BRIGHT.length] : shape.colors[Math.floor(pseudo(i, 1) * shape.colors.length)],
       left: ((i + pseudo(i, 2) * 0.8) / count) * 100,
       size: (11 + pseudo(i, 3) * 8) * scale,
-      dur: 8 + pseudo(i, 4) * 6,
-      delay: -pseudo(i, 5) * 14,
+      dur: (8 + pseudo(i, 4) * 6) / speed,
+      delay: (-pseudo(i, 5) * 14) / speed,
       sway: (pseudo(i, 6) > 0.5 ? 1 : -1) * (6 + pseudo(i, 7) * 10) * scale,
       spin: (pseudo(i, 8) > 0.5 ? 1 : -1) * (140 + pseudo(i, 9) * 160),
     };

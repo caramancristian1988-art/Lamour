@@ -9,12 +9,12 @@ import AutumnLeaves from "./AutumnLeaves";
 const GRADIENT: Record<HighlightKind, string> = {
   bestseller: "linear-gradient(120deg, #6b3d00 0%, #c47a0a 45%, #f2b01e 100%)",
   popular: "linear-gradient(120deg, #5c0a0a 0%, #c62a1c 50%, #ff6a3d 100%)",
-  nou: "linear-gradient(120deg, #0b3d2a 0%, #1b8a5a 50%, #63d39a 100%)",
+  nou: "linear-gradient(120deg, #064e3b 0%, #0f9d6b 48%, #b6e63a 100%)",
   sezon: "linear-gradient(120deg, #4a1804 0%, #c2410c 50%, #ff9d1f 100%)",
   util: "linear-gradient(120deg, #0b2f55 0%, #1c6ba5 50%, #5fb8e8 100%)",
 };
 
-const LEAVES: Record<HighlightKind, number> = { bestseller: 7, popular: 7, nou: 6, sezon: 10, util: 6 };
+const LEAVES: Record<HighlightKind, number> = { bestseller: 7, popular: 7, nou: 9, sezon: 10, util: 6 };
 
 export default function HighlightRibbon({ kind, className }: { kind: HighlightKind; className?: string }) {
   return (
@@ -26,7 +26,7 @@ export default function HighlightRibbon({ kind, className }: { kind: HighlightKi
       )}
     >
       <span className="relative z-20 truncate [text-shadow:0_1px_2px_rgba(0,0,0,0.55)]">{HIGHLIGHT_LABELS[kind]}</span>
-      <AutumnLeaves count={LEAVES[kind]} scale={0.4} palette="bright" className="!inset-0 z-10" />
+      <AutumnLeaves count={LEAVES[kind]} scale={0.4} palette="bright" speed={kind === "nou" ? 1.6 : 1} className="!inset-0 z-10" />
     </span>
   );
 }
