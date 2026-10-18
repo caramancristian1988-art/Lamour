@@ -108,7 +108,7 @@ export default function StickyHeader({
           </div>
 
           <div className="flex items-center gap-1 justify-end py-7">
-            <AccessibilityToggle className="px-2" labelClassName="hidden xl:inline" />
+            <AccessibilityToggle className="mr-1 border border-border px-3.5 xl:px-4" labelClassName="hidden xl:inline" />
             <AccountMenuLink className="flex items-center justify-center w-11 h-11 rounded-xl text-foreground hover:bg-muted hover:text-primary transition-colors">
               <User className="w-5 h-5 shrink-0" aria-hidden />
             </AccountMenuLink>

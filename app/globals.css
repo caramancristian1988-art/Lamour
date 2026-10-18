@@ -214,20 +214,78 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: 1rem; /* rem (nu px): mărirea textului din panoul de accesibilitate și din browser se aplică și textului de bază */
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Accessibility mode — larger text and higher-contrast muted/border tones. */
-html.a11y-mode {
-  font-size: 18.5px;
-  --muted-foreground: #3d2226;
-  --border: #a9706e;
+/* ---------------------------------------------------------------------
+   Accessibility — clasele de pe <html> sunt puse de panoul „Accesibilitate" (lib/a11y.ts). Regulile sunt în afara
+   layer-elor, deci câștigă în fața utilitarelor Tailwind. Mărimea se dă în % din setarea browserului, nu în px.
+--------------------------------------------------------------------- */
+html.a11y-text-1 { font-size: 112.5%; }
+html.a11y-text-2 { font-size: 125%; }
+html.a11y-text-3 { font-size: 145%; }
+
+/* Contrast ridicat: text secundar și margini mai închise, focus mai gros */
+html.a11y-contrast {
+  --foreground: #2b0d12;
+  --card-foreground: #2b0d12;
+  --muted-foreground: #2f3436;
+  --border: #6f7274;
+}
+html.a11y-contrast :focus-visible:not([data-own-focus]) {
+  outline-width: 4px;
 }
 
-html.a11y-mode body {
-  line-height: 1.75;
+/* Linkuri subliniate (fără cele care înfășoară imagini / titluri — cardurile de produs nu devin subliniate peste tot) */
+html.a11y-links a:not(:has(img, svg, h1, h2, h3, h4)) {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+/* Font ușor de citit: literă simplă, fără serife / cursive (și pe titluri) */
+html.a11y-font body,
+html.a11y-font body * {
+  font-family: Verdana, "Segoe UI", Tahoma, Arial, sans-serif;
+  font-style: normal;
+}
+
+/* Spațiere: peste valorile minime WCAG 1.4.12 (rânduri 1,5×, litere 0,12em, cuvinte 0,16em) */
+html.a11y-spacing body {
+  line-height: 1.9;
+  letter-spacing: 0.05em;
+  word-spacing: 0.16em;
+}
+html.a11y-spacing :is(p, li, dd, blockquote, td, th) {
+  line-height: 1.9;
+}
+
+/* Fără animații: frunzele de toamnă dispar, restul se oprește pe starea finală (la fel ca „mișcare redusă" din sistem) */
+html.a11y-motion *,
+html.a11y-motion *::before,
+html.a11y-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+html.a11y-motion .autumn-leaves {
+  display: none;
+}
+html.a11y-motion .animate-marquee {
+  animation: none !important;
+}
+
+/* Cursor mare: săgeată 32px cu contur alb; roșie peste ce se poate apăsa */
+html.a11y-cursor,
+html.a11y-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M5 3v22l5.5-5 4 8.5 3.5-1.7-4-8.3H22z' fill='%23111' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3, auto !important;
+}
+html.a11y-cursor :is(a, button, [role="button"], [role="tab"], [role="menuitem"], [role="switch"], summary, label[for], select, input[type="checkbox"], input[type="radio"]),
+html.a11y-cursor :is(a, button, [role="button"], [role="tab"], [role="menuitem"], [role="switch"], summary, label[for]) * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M5 3v22l5.5-5 4 8.5 3.5-1.7-4-8.3H22z' fill='%23710808' stroke='%23fff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 5 3, pointer !important;
 }
 
 h1, h2, h3 {
@@ -290,7 +348,7 @@ h1, h2, h3 {
   input,
   select,
   textarea {
-    font-size: 16px;
+    font-size: max(16px, 1rem);
   }
 }
 

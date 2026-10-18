@@ -10,6 +10,9 @@ function pseudo(i: number, salt: number): number {
 }
 
 // Paleta „aprinsă" (pe fundal închis, ca la etichetele de pe produse): portocaliu, roșu, galben, ruginiu, chihlimbar.
+// Rotunjire la 2 zecimale: serverul și browserul serializează diferit numerele cu multe zecimale (apărea avertisment de hidratare).
+const r2 = (n: number) => Math.round(n * 100) / 100;
+
 const BRIGHT = ["#ff8811", "#ee5522", "#ffcc33", "#cc3311", "#ffbb44"];
 
 export default function AutumnLeaves({
@@ -31,12 +34,12 @@ export default function AutumnLeaves({
     return {
       shape,
       color: palette === "bright" ? BRIGHT[(i * 2 + Math.floor(pseudo(i, 1) * 3)) % BRIGHT.length] : shape.colors[Math.floor(pseudo(i, 1) * shape.colors.length)],
-      left: ((i + pseudo(i, 2) * 0.8) / count) * 100,
-      size: (11 + pseudo(i, 3) * 8) * scale,
-      dur: (8 + pseudo(i, 4) * 6) / speed,
-      delay: (-pseudo(i, 5) * 14) / speed,
-      sway: (pseudo(i, 6) > 0.5 ? 1 : -1) * (6 + pseudo(i, 7) * 10) * scale,
-      spin: (pseudo(i, 8) > 0.5 ? 1 : -1) * (140 + pseudo(i, 9) * 160),
+      left: r2(((i + pseudo(i, 2) * 0.8) / count) * 100),
+      size: r2((11 + pseudo(i, 3) * 8) * scale),
+      dur: r2((8 + pseudo(i, 4) * 6) / speed),
+      delay: r2((-pseudo(i, 5) * 14) / speed),
+      sway: r2((pseudo(i, 6) > 0.5 ? 1 : -1) * (6 + pseudo(i, 7) * 10) * scale),
+      spin: r2((pseudo(i, 8) > 0.5 ? 1 : -1) * (140 + pseudo(i, 9) * 160)),
     };
   });
 

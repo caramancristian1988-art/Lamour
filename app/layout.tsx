@@ -16,6 +16,8 @@ import EditSessionBanner from "./components/EditSessionBanner";
 import ScrollToTop from "./components/ScrollToTop";
 import { FavoritesProvider } from "./components/FavoritesProvider";
 import { AccessibilityProvider } from "./components/AccessibilityProvider";
+import SkipToContent from "./components/SkipToContent";
+import { A11Y_BOOT_SCRIPT } from "@/lib/a11y";
 import { CartProvider } from "./components/CartProvider";
 import { AuthProvider } from "./components/AuthProvider";
 import { AuthModalProvider } from "./components/AuthModalProvider";
@@ -100,8 +102,13 @@ export default async function RootLayout({
   ]);
 
   return (
-    <html lang="ro" className={`${GeistSans.variable} ${playfairDisplay.variable}`}>
+    // suppressHydrationWarning: scriptul din <head> pune pe <html> clasele de accesibilitate alese de vizitator înainte de hidratare
+    <html lang="ro" className={`${GeistSans.variable} ${playfairDisplay.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: A11Y_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-screen flex flex-col">
+        <SkipToContent />
         <AccessibilityProvider>
           <AuthProvider>
             <AuthModalProvider>

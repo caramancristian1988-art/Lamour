@@ -43,16 +43,20 @@ interface SheetContentProps
     VariantProps<typeof sheetVariants> {
   /** Clase pentru butonul X (ex. mai mare / cu fundal), fără a schimba celelalte panouri. */
   closeClassName?: string;
+  /** Eticheta vocală a butonului X (implicit „Închide meniul"). */
+  closeLabel?: string;
+  /** Clase pentru fundalul din spatele panoului (ex. mai transparent, ca schimbările să se vadă în pagină). */
+  overlayClassName?: string;
 }
 
 const SheetContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Content>, SheetContentProps>(
-  ({ side = "right", className, closeClassName, children, ...props }, ref) => (
+  ({ side = "right", className, closeClassName, closeLabel = "Închide meniul", overlayClassName, children, ...props }, ref) => (
     <SheetPortal>
-      <SheetOverlay />
+      <SheetOverlay className={overlayClassName} />
       <DialogPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
         {children}
         <DialogPrimitive.Close
-          aria-label="Închide meniul"
+          aria-label={closeLabel}
           className={cn(
             "absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground hover:rotate-90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-accent/30",
             closeClassName
@@ -78,4 +82,12 @@ const SheetTitle = React.forwardRef<
 ));
 SheetTitle.displayName = DialogPrimitive.Title.displayName;
 
-export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetTitle };
+const SheetDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+));
+SheetDescription.displayName = DialogPrimitive.Description.displayName;
+
+export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetDescription };
