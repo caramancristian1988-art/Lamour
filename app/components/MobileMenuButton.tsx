@@ -61,7 +61,7 @@ export default function MobileMenuButton({
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={open ? "Închide meniul" : "Meniu"}
-        className="flex items-center justify-center w-9 h-10 min-[360px]:w-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted transition-colors"
+        className="flex items-center justify-center w-[36px] h-[40px] min-[360px]:w-[40px] min-[430px]:w-[44px] min-[430px]:h-[44px] rounded-xl text-foreground hover:bg-muted transition-colors"
       >
         {open ? <X className="w-6 h-6" aria-hidden /> : <Menu className="w-6 h-6" aria-hidden />}
       </button>

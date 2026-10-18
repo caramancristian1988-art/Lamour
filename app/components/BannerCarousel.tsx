@@ -73,7 +73,7 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
                 <>
                   <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
                   <div className="absolute inset-0 flex items-center justify-start px-4 sm:px-12 lg:px-16">
-                    <div className="flex flex-col gap-2 sm:gap-3 max-w-xl items-start text-left">
+                    <div className="a11y-fixed flex flex-col gap-2 sm:gap-3 max-w-xl items-start text-left">
                       {banner.title && (
                         <h2 className="font-serif italic text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight text-balance">
                           {banner.title}
@@ -95,7 +95,7 @@ export default function BannerCarousel({ banners }: { banners: BannerSlide[] }) 
                     asChild
                     variant="accent"
                     size="lg"
-                    className="h-9 px-4 text-xs sm:h-14 sm:px-8 sm:text-base whitespace-nowrap"
+                    className="a11y-nofont h-9 px-4 text-xs sm:h-14 sm:px-8 sm:text-base whitespace-nowrap"
                   >
                     <span>{banner.ctaLabel}</span>
                   </Button>

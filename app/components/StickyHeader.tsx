@@ -38,23 +38,23 @@ export default function StickyHeader({
           <div className="flex items-center justify-between px-4 py-2">
             <Link href="/" className="relative flex items-center gap-2 min-w-0 rounded-lg">
               <Logo size={48} className="border-2 border-logo-silver shadow-sm max-[359px]:!h-10 max-[359px]:!w-10" />
-              <span className="block min-w-0 overflow-hidden leading-tight">
-                <span className="block pr-1 text-[15px] min-[360px]:text-base min-[430px]:text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)]">
+              <span className="a11y-zoom block min-w-0 overflow-hidden leading-tight">
+                <span className="a11y-keep block pr-1 text-[15px] min-[360px]:text-base min-[430px]:text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)]">
                   {SITE_SHORT_NAME}
                 </span>
-                <span className="block pr-1 text-[13px] min-[360px]:text-sm min-[430px]:text-base font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)] -mt-0.5">
+                <span className="a11y-keep block pr-1 text-[13px] min-[360px]:text-sm min-[430px]:text-base font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)] -mt-0.5">
                   Lamour
                 </span>
               </span>
               <AutumnLeaves count={14} scale={0.85} />
             </Link>
             <div className="flex items-center shrink-0 min-[430px]:gap-1">
-              <AccountMenuLink className="flex items-center justify-center w-9 h-10 min-[360px]:w-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-primary transition-colors">
+              <AccountMenuLink className="flex items-center justify-center w-[36px] h-[40px] min-[360px]:w-[40px] min-[430px]:w-[44px] min-[430px]:h-[44px] rounded-xl text-foreground hover:bg-muted hover:text-primary transition-colors">
                 <User className="w-6 h-6 shrink-0" aria-hidden />
               </AccountMenuLink>
               <Link
                 href="/favorite"
-                className="flex items-center justify-center w-9 h-10 min-[360px]:w-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
+                className="flex items-center justify-center w-[36px] h-[40px] min-[360px]:w-[40px] min-[430px]:w-[44px] min-[430px]:h-[44px] rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
                 aria-label="Produsele mele favorite"
               >
                 <Heart className="w-6 h-6" aria-hidden />
@@ -62,7 +62,7 @@ export default function StickyHeader({
               </Link>
               <Link
                 href="/cos"
-                className="flex items-center justify-center w-9 h-10 min-[360px]:w-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
+                className="flex items-center justify-center w-[36px] h-[40px] min-[360px]:w-[40px] min-[430px]:w-[44px] min-[430px]:h-[44px] rounded-xl text-foreground hover:bg-muted hover:text-accent transition-colors relative"
                 aria-label="Coș"
               >
                 <ShoppingCart className="w-6 h-6" aria-hidden />

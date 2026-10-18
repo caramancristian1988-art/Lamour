@@ -52,7 +52,8 @@ export default function AccessibilityToggle({ className, labelClassName }: { cla
         className="max-w-md gap-0 overflow-hidden p-0"
         closeClassName="right-3 top-3 z-20 flex h-12 w-12 items-center justify-center bg-primary p-0 text-white shadow-lg ring-2 ring-white hover:bg-brand-maroon-dark hover:text-white [&>svg]:h-6 [&>svg]:w-6"
       >
-        <SheetHeader className="shrink-0 border-b border-border px-5 pb-4 pt-5 pr-[4.5rem]">
+        {/* a11y-fixed: pe telefon panoul rămâne la mărimea lui normală când textul paginii e mărit (altfel ar umple tot ecranul și titlul s-ar rupe) */}
+        <SheetHeader className="a11y-fixed shrink-0 border-b border-border px-5 pb-4 pt-5 pr-[4.5rem]">
           <SheetTitle className="flex items-center gap-2 text-xl">
             <Accessibility className="h-6 w-6 text-primary" aria-hidden />
             Accesibilitate
@@ -60,7 +61,7 @@ export default function AccessibilityToggle({ className, labelClassName }: { cla
           <SheetDescription>Schimbările se văd imediat și rămân salvate pe acest dispozitiv.</SheetDescription>
         </SheetHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain px-5 py-5">
+        <div className="a11y-fixed flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain px-5 py-5">
           <section aria-labelledby="a11y-text-title">
             <h3 id="a11y-text-title" className="mb-2 font-sans text-sm font-bold uppercase tracking-wide text-primary">
               Mărimea textului
@@ -107,7 +108,7 @@ export default function AccessibilityToggle({ className, labelClassName }: { cla
         </div>
 
         {/* Bara de jos, mereu vizibilă: ieșire cu un buton mare, plus resetarea */}
-        <div className="flex shrink-0 gap-2 border-t border-border bg-card px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="a11y-fixed flex shrink-0 gap-2 border-t border-border bg-card px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={reset}
