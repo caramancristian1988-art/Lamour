@@ -1,7 +1,7 @@
 "use client";
 
-import { Accessibility, Contrast, Link2, MousePointer2, PauseCircle, RotateCcw, Space, Type } from "lucide-react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
+import { Accessibility, Contrast, Link2, MousePointer2, PauseCircle, RotateCcw, Space, Type, X } from "lucide-react";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { Switch } from "./ui/switch";
 import { useAccessibility } from "./AccessibilityProvider";
 import { TEXT_LEVELS, type A11yToggleKey } from "@/lib/a11y";
@@ -48,10 +48,11 @@ export default function AccessibilityToggle({ className, labelClassName }: { cla
         side="right"
         closeLabel="Închide setările de accesibilitate"
         overlayClassName="bg-black/20"
-        className="max-w-md gap-0 overflow-y-auto p-0"
-        closeClassName="right-3 top-3 bg-muted p-2.5"
+        // Panoul nu derulează în ansamblu: antetul (cu X) și bara de jos rămân pe loc, doar lista de opțiuni derulează — X-ul „vine după noi".
+        className="max-w-md gap-0 overflow-hidden p-0"
+        closeClassName="right-3 top-3 z-20 flex h-12 w-12 items-center justify-center bg-primary p-0 text-white shadow-lg ring-2 ring-white hover:bg-brand-maroon-dark hover:text-white [&>svg]:h-6 [&>svg]:w-6"
       >
-        <SheetHeader className="border-b border-border px-5 pb-4 pt-5">
+        <SheetHeader className="shrink-0 border-b border-border px-5 pb-4 pt-5 pr-[4.5rem]">
           <SheetTitle className="flex items-center gap-2 text-xl">
             <Accessibility className="h-6 w-6 text-primary" aria-hidden />
             Accesibilitate
@@ -59,7 +60,7 @@ export default function AccessibilityToggle({ className, labelClassName }: { cla
           <SheetDescription>Schimbările se văd imediat și rămân salvate pe acest dispozitiv.</SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-col gap-6 px-5 py-5">
+        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain px-5 py-5">
           <section aria-labelledby="a11y-text-title">
             <h3 id="a11y-text-title" className="mb-2 font-sans text-sm font-bold uppercase tracking-wide text-primary">
               Mărimea textului
@@ -103,15 +104,23 @@ export default function AccessibilityToggle({ className, labelClassName }: { cla
             </ul>
           </section>
 
+        </div>
+
+        {/* Bara de jos, mereu vizibilă: ieșire cu un buton mare, plus resetarea */}
+        <div className="flex shrink-0 gap-2 border-t border-border bg-card px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={reset}
             disabled={!active}
-            className="flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-border text-sm font-bold text-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
+            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-border text-sm font-bold text-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
           >
             <RotateCcw className="h-4 w-4" aria-hidden />
-            Resetează toate setările
+            Resetează
           </button>
+          <SheetClose className="flex h-12 flex-[1.4] items-center justify-center gap-2 rounded-xl bg-primary text-sm font-bold text-white transition-colors hover:bg-brand-maroon-dark">
+            <X className="h-4 w-4" aria-hidden />
+            Închide
+          </SheetClose>
         </div>
       </SheetContent>
     </Sheet>
