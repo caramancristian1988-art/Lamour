@@ -20,6 +20,8 @@ interface Props {
   onQuantityChange: (quantity: number) => void;
   /** Mai compact, pentru cardurile din listă / ferestre. */
   compact?: boolean;
+  /** Treptele și blocurile apar pe rând (urcă și se arată) — pentru fereastra care se deschide de pe card. */
+  animate?: boolean;
 }
 
 /**
@@ -34,6 +36,7 @@ export default function TierQuantityPicker({
   quantity,
   onQuantityChange,
   compact = false,
+  animate = false,
 }: Props) {
   const unitPrice = unitPriceFor(price, tiers, quantity);
   const total = lineTotal(price, tiers, quantity);
@@ -68,7 +71,7 @@ export default function TierQuantityPicker({
     <div className="flex flex-col gap-5">
       {tiers.length > 0 && (
         <div>
-          <p className="mb-2.5 text-xs font-extrabold uppercase tracking-widest text-accent">
+          <p className={cn("mb-2.5 text-xs font-extrabold uppercase tracking-widest text-accent", animate && "animate-fade-up")} style={animate ? { animationDelay: "100ms" } : undefined}>
             Cu cât cumperi mai mult, cu atât e mai ieftin
           </p>
           <div className="flex flex-col gap-2" role="group" aria-label="Preț în funcție de cantitate">
@@ -87,8 +90,10 @@ export default function TierQuantityPicker({
                     setQuantity(step.minQty);
                   }}
                   aria-pressed={isActive}
+                  style={animate ? { animationDelay: `${180 + i * 80}ms` } : undefined}
                   className={cn(
-                    "relative flex items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200",
+                    "relative flex items-center gap-3 rounded-2xl border-2 text-left transition-all duration-200 hover:-translate-y-px active:scale-[0.99]",
+                    animate && "animate-fade-up",
                     compact ? "px-3.5 py-2.5" : "px-4 py-3",
                     isActive
                       ? "border-accent bg-accent/[0.06] shadow-sm"
@@ -100,7 +105,7 @@ export default function TierQuantityPicker({
                     aria-hidden
                     className={cn(
                       "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                      isActive ? "border-accent bg-accent text-accent-foreground" : "border-border bg-card text-transparent"
+                      isActive ? "animate-pop border-accent bg-accent text-accent-foreground" : "border-border bg-card text-transparent"
                     )}
                   >
                     <Check className="h-3.5 w-3.5" strokeWidth={3} />
@@ -130,7 +135,10 @@ export default function TierQuantityPicker({
       )}
 
       {/* Cantitate + total */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-muted/70 p-3.5">
+      <div
+        className={cn("flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-muted/70 p-3.5", animate && "animate-fade-up")}
+        style={animate ? { animationDelay: `${200 + steps.length * 80}ms` } : undefined}
+      >
         <div className="flex items-center gap-1.5">
           <button
             type="button"
@@ -170,7 +178,8 @@ export default function TierQuantityPicker({
         </div>
 
         <div className="text-right">
-          <span className="block text-2xl font-extrabold leading-tight text-primary" aria-live="polite">
+          {/* key = totalul: la fiecare schimbare cifra „sare" puțin, ca să se vadă că s-a recalculat */}
+          <span key={total} className="block animate-pop text-2xl font-extrabold leading-tight text-primary" aria-live="polite">
             {formatPrice(total)} MDL
           </span>
           <span className="block text-xs text-muted-foreground">
@@ -180,7 +189,7 @@ export default function TierQuantityPicker({
       </div>
 
       {percent > 0 && (
-        <p className="-mt-2 flex items-center gap-2 rounded-xl bg-success/10 px-3.5 py-2 text-sm font-bold text-success">
+        <p className={cn("-mt-2 flex animate-fade-up items-center gap-2 rounded-xl bg-success/10 px-3.5 py-2 text-sm font-bold text-success", animate && "[animation-delay:520ms]")}>
           <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
           Economisești {formatPrice(saved)} MDL (−{percent}%)
         </p>
@@ -190,9 +199,9 @@ export default function TierQuantityPicker({
         <button
           type="button"
           onClick={() => setQuantity(upcoming.tier.minQty)}
-          className="-mt-1 flex items-center gap-3 rounded-2xl border-2 border-dashed border-brand-rose bg-card px-4 py-3 text-left text-sm text-primary transition-colors hover:border-accent hover:bg-accent/5"
+          className={cn("group -mt-1 flex animate-fade-up items-center gap-3 rounded-2xl border-2 border-dashed border-brand-rose bg-card px-4 py-3 text-left text-sm text-primary transition-colors hover:border-accent hover:bg-accent/5", animate && "[animation-delay:560ms]")}
         >
-          <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-accent">
+          <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-accent transition-transform duration-300 group-hover:rotate-90 group-hover:scale-110">
             <Plus className="h-5 w-5" />
           </span>
           <span>

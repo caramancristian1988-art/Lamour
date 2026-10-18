@@ -118,11 +118,37 @@
   --animate-scale-in: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-bump: bump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-fade-out: fade-out 0.2s ease-in both;
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-dialog-in: dialog-in 0.4s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+  --animate-dialog-out: dialog-out 0.22s ease-in both;
 }
 
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Elemente care urcă și apar pe rând (cu animation-delay pe fiecare). */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ferestrele (Dialog): intră de jos, cu o mică „săritură", și ies înapoi în jos. Poziția centrată e dată de proprietatea
+   `translate` (Tailwind), deci aici `transform` se adună peste ea fără să o strice. */
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(28px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes dialog-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(20px) scale(0.95); }
 }
 
 @keyframes slide-up {
@@ -220,6 +246,32 @@ h1, h2, h3 {
 /* Câmpurile cu propriul indicator de focus nu primesc nici conturul implicit al browserului (cel alb-negru, pătrat). */
 [data-own-focus]:focus-visible {
   outline: none;
+}
+
+/* Cursorul „mână" pe tot ce se poate apăsa (Tailwind v4 lasă butoanelor cursorul implicit). În layer-ul de bază, deci
+   clasele de tip cursor-not-allowed / cursor-default rămân valabile. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="switch"],
+  summary,
+  label[for],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="submit"]:not(:disabled),
+  input[type="range"]:not(:disabled) {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

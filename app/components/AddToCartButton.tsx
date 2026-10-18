@@ -149,18 +149,18 @@ export default function AddToCartButton({
               <div aria-hidden className="pointer-events-none absolute inset-0 bg-footer-pattern opacity-[0.08]" />
               <DialogClose
                 aria-label="Închide fereastra"
-                className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-white/85 transition-colors hover:bg-white/15 hover:text-white"
+                className="group absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full text-white/85 transition-all duration-200 hover:bg-white/20 hover:text-white active:scale-90"
               >
-                <X className="h-5 w-5" aria-hidden />
+                <X className="h-5 w-5 transition-transform duration-300 group-hover:rotate-90" aria-hidden />
               </DialogClose>
-              <DialogTitle className="relative pr-10 font-serif text-2xl font-bold italic leading-tight text-white">{dialogTitle}</DialogTitle>
-              <DialogDescription className="relative mt-1 text-sm text-white/75">
+              <DialogTitle className="relative animate-fade-up pr-12 font-serif text-2xl font-bold italic leading-tight text-white [animation-delay:80ms]">{dialogTitle}</DialogTitle>
+              <DialogDescription className="relative mt-1 animate-fade-up text-sm text-white/75 [animation-delay:140ms]">
                 {hasVariants ? "Alege mărimea și cantitatea, apoi adaugă produsul în coș." : "Cu cât cumperi mai mult, cu atât prețul pe bucată scade."}
               </DialogDescription>
             </div>
 
             <div className="flex flex-col gap-5 p-5 sm:p-6">
-              <div className="flex items-center gap-4 rounded-2xl border border-brand-rose/60 bg-card p-3 shadow-sm">
+              <div className="flex animate-fade-up items-center gap-4 rounded-2xl border border-brand-rose/60 bg-card p-3 shadow-sm [animation-delay:160ms]">
                 <span className="relative flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-white">
                   {image ? (
                     <Image src={image} alt="" fill className="object-contain p-1.5" sizes="72px" />
@@ -172,7 +172,7 @@ export default function AddToCartButton({
               </div>
 
               {hasVariants && (
-                <div>
+                <div className="animate-fade-up [animation-delay:220ms]">
                   <p className="mb-2.5 text-xs font-extrabold uppercase tracking-widest text-accent">Mărime / variantă</p>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {variantOptions!.map((v) => (
@@ -206,9 +206,10 @@ export default function AddToCartButton({
                   quantity={pendingQty}
                   onQuantityChange={setPendingQty}
                   compact
+                  animate
                 />
               ) : (
-                <div className="flex flex-wrap items-center gap-2.5 rounded-2xl bg-muted/70 p-4">
+                <div className="flex animate-fade-up flex-wrap items-center gap-2.5 rounded-2xl bg-muted/70 p-4 [animation-delay:240ms]">
                   <span className="text-3xl font-extrabold text-primary">{formatPrice(pending.price)} MDL</span>
                   {pending.oldPrice && (
                     <>
@@ -224,10 +225,10 @@ export default function AddToCartButton({
               )}
             </div>
 
-            <div className="sticky bottom-0 shrink-0 border-t border-brand-rose/60 bg-card/95 p-4 backdrop-blur sm:px-6">
+            <div className="sticky bottom-0 shrink-0 animate-fade-up border-t border-brand-rose/60 bg-card/95 p-4 backdrop-blur [animation-delay:380ms] sm:px-6">
               <button
                 type="button"
-                className="flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-accent px-6 text-base font-bold text-accent-foreground shadow-md transition-all hover:bg-brand-red-dark hover:shadow-lg active:scale-[0.98]"
+                className="group relative flex h-14 w-full items-center justify-center gap-2.5 overflow-hidden rounded-full bg-accent px-6 text-base font-bold text-accent-foreground shadow-md transition-all hover:-translate-y-0.5 hover:bg-brand-red-dark hover:shadow-lg active:translate-y-0 active:scale-[0.98]"
                 onClick={() => {
                   confirmAdd(
                     pending.slug,
@@ -240,9 +241,18 @@ export default function AddToCartButton({
                   setPickerOpen(false);
                 }}
               >
-                <ShoppingCart className="h-5 w-5" aria-hidden />
-                Adaugă în coș
-                {pendingTiers.length > 0 && <span className="font-extrabold">· {formatPrice(lineTotal(pending.price, pendingTiers, pendingQty))} MDL</span>}
+                {/* strălucire care trece peste buton la hover */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 -left-full w-1/2 -skew-x-12 bg-white/25 transition-all duration-700 group-hover:left-[150%]"
+                />
+                <ShoppingCart className="relative h-5 w-5 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" aria-hidden />
+                <span className="relative">Adaugă în coș</span>
+                {pendingTiers.length > 0 && (
+                  <span key={lineTotal(pending.price, pendingTiers, pendingQty)} className="relative animate-pop font-extrabold">
+                    · {formatPrice(lineTotal(pending.price, pendingTiers, pendingQty))} MDL
+                  </span>
+                )}
               </button>
             </div>
           </DialogContent>
