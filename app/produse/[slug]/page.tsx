@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowRight, Banknote, MessageCircle, Truck, PackageCheck, ShieldCheck, ChevronDown } from "lucide-react";
+import { ArrowRight, Banknote, MessageCircle, Truck, PackageCheck, ShieldCheck, ChevronDown, FileText, ListChecks } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
@@ -657,13 +657,18 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
                 productId={product.id}
                 productName={displayName}
                 productImage={displayImage}
-                className="group w-full flex items-center justify-center gap-1.5 text-muted-foreground hover:text-accent text-sm transition-colors active:scale-95"
+                className="group flex w-full items-center gap-3 rounded-2xl border-2 border-accent/40 bg-accent/10 px-4 py-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-accent hover:bg-accent hover:shadow-md active:translate-y-0 active:scale-[0.98]"
               >
-                <MessageCircle className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" aria-hidden />
-                <span className="relative">
-                  Cere consultație
-                  <span className="absolute left-0 -bottom-0.5 w-0 h-px bg-accent transition-all duration-300 group-hover:w-full" />
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-white transition-colors group-hover:bg-white group-hover:text-accent" aria-hidden>
+                  <MessageCircle className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
                 </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-extrabold leading-tight text-primary transition-colors group-hover:text-white">Cere consultație</span>
+                  <span className="block text-xs leading-snug text-muted-foreground transition-colors group-hover:text-white/85">
+                    Întreabă-ne orice despre acest produs
+                  </span>
+                </span>
+                <ArrowRight className="h-5 w-5 shrink-0 text-accent transition-all duration-300 group-hover:translate-x-1 group-hover:text-white" aria-hidden />
               </ProductOfferModal>
             </div>
 
@@ -691,42 +696,64 @@ async function ProductView({ product, category, related, relatedVariantOptionsMa
             </div>
 
             {product.description && (
-              <details className="group border border-border rounded-2xl bg-card overflow-hidden">
-                <summary className="cursor-pointer list-none flex items-center justify-between gap-3 px-5 py-4 font-bold text-primary select-none">
-                  <span className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-accent" aria-hidden />
-                    Vezi descrierea
+              <details className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:border-accent/50 open:border-accent/50 open:shadow-md">
+                <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 select-none [&::-webkit-details-marker]:hidden">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-open:bg-accent group-open:text-white" aria-hidden>
+                    <FileText className="h-5 w-5" strokeWidth={1.9} />
                   </span>
-                  <ChevronDown className="w-4 h-4 shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-extrabold leading-tight text-primary">Vezi descrierea</span>
+                    <span className="block text-xs text-muted-foreground">Despre acest produs</span>
+                  </span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-primary transition-colors group-open:bg-primary group-open:text-white" aria-hidden>
+                    <ChevronDown className="h-4 w-4 transition-transform duration-300 group-open:rotate-180" />
+                  </span>
                 </summary>
-                <div className="border-t border-border px-5 py-4">
-                  <p className="text-foreground/80 text-[15px] leading-relaxed whitespace-pre-line">
-                    {product.description}
-                  </p>
+                <div className="animate-slide-up border-t border-border/70 bg-muted/30 px-5 py-4 sm:px-6">
+                  <div className="space-y-3 text-[15px] leading-relaxed text-foreground/85">
+                    {product.description
+                      .split(/\n{2,}/)
+                      .filter((p) => p.trim())
+                      .map((p, i) => (
+                        <p key={i} className="whitespace-pre-line">
+                          {p.trim()}
+                        </p>
+                      ))}
+                  </div>
                 </div>
               </details>
             )}
 
             {allSpecs.length > 0 && (
-              <details className="group border border-border rounded-2xl bg-card overflow-hidden">
-                <summary className="cursor-pointer list-none flex items-center justify-between gap-3 px-5 py-4 font-bold text-primary select-none">
-                  <span className="flex items-center gap-2">
-                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${inStock ? "bg-success" : "bg-muted-foreground"}`} aria-hidden />
-                    Vezi caracteristici
+              <details className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:border-accent/50 open:border-accent/50 open:shadow-md">
+                <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3.5 select-none [&::-webkit-details-marker]:hidden">
+                  <span
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${inStock ? "bg-success/10 text-success group-open:bg-success group-open:text-white" : "bg-muted text-muted-foreground group-open:bg-primary group-open:text-white"}`}
+                    aria-hidden
+                  >
+                    <ListChecks className="h-5 w-5" strokeWidth={1.9} />
                   </span>
-                  <ChevronDown className="w-4 h-4 shrink-0 transition-transform duration-200 group-open:rotate-180" aria-hidden />
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-extrabold leading-tight text-primary">Vezi caracteristici</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {allSpecs.length} {allSpecs.length === 1 ? "caracteristică" : "caracteristici"}
+                    </span>
+                  </span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-primary transition-colors group-open:bg-primary group-open:text-white" aria-hidden>
+                    <ChevronDown className="h-4 w-4 transition-transform duration-300 group-open:rotate-180" />
+                  </span>
                 </summary>
-                <div className="border-t border-border">
+                <dl className="animate-slide-up border-t border-border/70">
                   {allSpecs.map((spec, i) => (
                     <div
                       key={`${spec.label}-${i}`}
-                      className={`flex items-center justify-between px-5 py-3 ${i % 2 === 1 ? "bg-muted/40" : ""}`}
+                      className={`flex items-baseline justify-between gap-4 px-5 py-3 sm:px-6 ${i % 2 === 0 ? "bg-muted/40" : ""}`}
                     >
-                      <span className="text-sm text-muted-foreground">{spec.label}</span>
-                      <span className="text-sm font-bold text-primary text-right">{spec.value}</span>
+                      <dt className="text-sm text-muted-foreground">{spec.label}</dt>
+                      <dd className="text-right text-sm font-bold text-primary">{spec.value}</dd>
                     </div>
                   ))}
-                </div>
+                </dl>
               </details>
             )}
           </div>
