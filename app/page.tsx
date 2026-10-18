@@ -111,7 +111,7 @@ async function getData() {
     // una reală, cădem pe prima poză de produs găsită — poza categoriei
     // din seed e doar un placeholder.
     const isPlaceholder = (url: string | null | undefined) => !url || url.includes("placehold.co");
-    const categories = sortCategories(rawCategories).slice(0, 18).map(({ products, ...cat }) => {
+    const categories = sortCategories(rawCategories).map(({ products, ...cat }) => {
       const categoryImage = isPlaceholder(cat.image) ? null : cat.image;
       const productImage = products
         .flatMap((p) => [p.image, ...p.images])
@@ -166,7 +166,7 @@ export default async function HomePage() {
           products={essentialProducts}
           title="Hârtie igienică"
           highlighted="& prosoape de bucătărie"
-          viewAllHref="/produse?division=uz-casnic"
+          viewAllHref="/produse"
           viewAllLabel="Vezi toate produsele"
           variantOptionsMap={variantOptionsMap}
         />
@@ -176,7 +176,7 @@ export default async function HomePage() {
           products={offerProducts}
           title="Oferte"
           highlighted="speciale"
-          viewAllHref="/produse?division=uz-casnic&oferte=1"
+          viewAllHref="/produse?oferte=1"
           viewAllLabel="Vezi toate ofertele"
           variantOptionsMap={variantOptionsMap}
         />
@@ -186,7 +186,7 @@ export default async function HomePage() {
           products={newProducts}
           title="Produse"
           highlighted="noi"
-          viewAllHref="/produse?division=uz-casnic"
+          viewAllHref="/produse"
           viewAllLabel="Vezi toate produsele"
           variantOptionsMap={variantOptionsMap}
         />
@@ -196,7 +196,7 @@ export default async function HomePage() {
           products={recommendedProducts}
           title="Produse"
           highlighted="recomandate"
-          viewAllHref="/produse?division=uz-casnic"
+          viewAllHref="/produse"
           viewAllLabel="Vezi toate produsele"
           variantOptionsMap={variantOptionsMap}
         />

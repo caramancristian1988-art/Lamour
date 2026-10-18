@@ -10,7 +10,7 @@ import {
 } from "@/lib/fallbackData";
 import { getCatalog } from "@/lib/catalog";
 import ProductsCatalog from "../components/ProductsCatalog";
-import { DivisionTabs, Breadcrumb } from "../components/CatalogTabs";
+import { Breadcrumb } from "../components/CatalogTabs";
 import { sortProducts, paginate, dedupeVariants } from "@/lib/productListing";
 import { toCatalogProduct, variantOptionsRecord } from "@/lib/clientCatalog";
 import JsonLd from "../components/JsonLd";
@@ -136,7 +136,6 @@ export default async function ProdusePage() {
 
       <section className="pt-2 pb-10 sm:py-10">
         <div className="max-w-[110rem] mx-auto px-4 sm:px-6">
-          <DivisionTabs active="uz-casnic" />
           <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight mb-4 sm:mb-6">Produse de uz casnic</h1>
 
           <ProductsCatalog

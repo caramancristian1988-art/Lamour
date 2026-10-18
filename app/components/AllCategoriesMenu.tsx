@@ -91,7 +91,7 @@ export default function AllCategoriesMenu({ className, buttonClassName, label = 
             (document.activeElement as HTMLElement | null)?.blur?.();
           }
         }}
-        className="w-[calc(100vw-2rem)] sm:w-[min(calc(100vw-3rem),104rem)] max-h-[min(86vh,64rem)] overflow-y-auto scrollbar-brand p-4 sm:p-6 rounded-2xl"
+        className="w-[calc(100vw-2rem)] sm:w-[min(calc(100vw-3rem),104rem)] max-h-[min(var(--radix-dropdown-menu-content-available-height),64rem)] overflow-y-auto scrollbar-brand p-4 sm:p-6 rounded-2xl"
       >
         <div className="flex items-center gap-3 mb-4 sm:mb-5">
           <h2 className="text-lg sm:text-xl font-bold text-primary tracking-tight uppercase">Categorii</h2>

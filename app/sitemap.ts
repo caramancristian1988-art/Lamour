@@ -11,8 +11,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: absoluteUrl("/"), changeFrequency: "daily", priority: 1 },
-    { url: absoluteUrl("/mobila"), changeFrequency: "weekly", priority: 0.8 },
-    { url: absoluteUrl("/spatii-comerciale"), changeFrequency: "daily", priority: 0.8 },
     { url: absoluteUrl("/confidentialitate"), changeFrequency: "yearly", priority: 0.2 },
     { url: absoluteUrl("/termeni"), changeFrequency: "yearly", priority: 0.2 },
   ];
@@ -35,29 +33,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const dynamicRoutes: MetadataRoute.Sitemap = [];
-
-  try {
-    const [furnitureListings, spaceListings] = await Promise.all([
-      prisma.furnitureListing.findMany({ select: { slug: true, createdAt: true } }),
-      prisma.spaceListing.findMany({ select: { slug: true, createdAt: true } }),
-    ]);
-    dynamicRoutes.push(
-      ...furnitureListings.map((l) => ({
-        url: absoluteUrl(`/mobila/${l.slug}`),
-        lastModified: l.createdAt,
-        changeFrequency: "monthly" as const,
-        priority: 0.6,
-      })),
-      ...spaceListings.map((l) => ({
-        url: absoluteUrl(`/spatii-comerciale/${l.slug}`),
-        lastModified: l.createdAt,
-        changeFrequency: "weekly" as const,
-        priority: 0.6,
-      }))
-    );
-  } catch {
-    // MongoDB unreachable at build/export time — ship the static routes only.
-  }
 
   if (produseEnabled) {
     try {

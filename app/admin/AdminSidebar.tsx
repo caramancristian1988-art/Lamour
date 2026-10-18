@@ -8,8 +8,8 @@ import {
   LayoutDashboard,
   Bell,
   Package,
-  Armchair,
-  Building2,
+
+
   GalleryHorizontal,
   FileText,
   MessageSquare,
@@ -37,8 +37,6 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/notificari", label: "Notificări", icon: Bell },
   { href: "/admin/produse", label: "Produse", icon: Package },
-  { href: "/admin/mobila", label: "Mobilă", icon: Armchair },
-  { href: "/admin/chirie", label: "Chirie", icon: Building2 },
   { href: "/admin/bannere", label: "Bannere", icon: GalleryHorizontal },
   { href: "/admin/blog", label: "Blog", icon: FileText },
   { href: "/admin/mesaje", label: "Cereri și comenzi", icon: MessageSquare },

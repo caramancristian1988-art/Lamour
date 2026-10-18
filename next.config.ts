@@ -32,20 +32,15 @@ const nextConfig: NextConfig = {
       "node_modules/prisma/**",
     ],
   },
-  // /produse?division=mobila|chirie (galeriile din Catalog) se servesc din app/produse-divizii: pagina /produse în sine nu
-  // mai citește searchParams, deci e statică (HTML pregătit dinainte, servit direct din CDN).
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: "/produse",
-          has: [{ type: "query", key: "division", value: "(mobila|chirie)" }],
-          destination: "/produse-divizii",
-        },
-      ],
-      afterFiles: [],
-      fallback: [],
-    };
+  // Paginile „Mobilă” și „Spații comerciale” au fost scoase: Catalogul e singura pagină de produse (dacă vor mai fi nevoie,
+  // se adaugă ca categorii). Adresele vechi duc la /produse, ca linkurile salvate / din Google să nu dea 404.
+  async redirects() {
+    return [
+      { source: "/mobila", destination: "/produse", permanent: true },
+      { source: "/mobila/:path*", destination: "/produse", permanent: true },
+      { source: "/spatii-comerciale", destination: "/produse", permanent: true },
+      { source: "/spatii-comerciale/:path*", destination: "/produse", permanent: true },
+    ];
   },
   async headers() {
     return [

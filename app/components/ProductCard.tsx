@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ImageOff, ShoppingCart, Eye } from "lucide-react";
+import { ImageOff, ShoppingCart, Eye, Layers } from "lucide-react";
 import FavoriteButton from "./FavoriteButton";
 import AddToCartButton from "./AddToCartButton";
 import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
 import { stripVariantSuffix } from "@/lib/productListing";
-import { normalizeTiers, type PriceTier } from "@/lib/pricing";
+import { normalizeTiers, savingsPercent, type PriceTier } from "@/lib/pricing";
 
 interface VariantOption {
   slug: string;
@@ -68,6 +68,10 @@ export default function ProductCard({
   const displayBadge = badge ?? (discount ? `-${discount}%` : null);
 
   const specs = [packageQuantity || null].filter(Boolean).join(", ");
+
+  // Preț redus la cantitate (setat în admin): îl arătăm discret pe card, ca omul să afle că merită să ia mai multe bucăți.
+  const quantityTier = normalizeTiers({ priceTiers, bulkMinQty, bulkPrice })[0];
+  const quantityTierPercent = quantityTier ? savingsPercent(price, quantityTier.price) : 0;
 
   // A size/quantity is picked via the "Adaugă în coș" popup, not on the card
   // itself, so the raw trailing "1L" / "2 role" etc. baked into the name
@@ -147,6 +151,16 @@ export default function ProductCard({
             )}
             <span className="text-lg lg:text-xl font-bold text-foreground">{price.toLocaleString("ro-MD")} MDL</span>
           </div>
+
+          {quantityTier && (
+            <p className="mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full bg-accent/[0.07] px-2.5 py-1 text-[11px] font-semibold leading-tight text-accent sm:text-xs">
+              <Layers className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span className="min-w-0">
+                De la {quantityTier.minQty} buc.: <b>{quantityTier.price.toLocaleString("ro-MD")} MDL/buc</b>
+                {quantityTierPercent > 0 && <> (−{quantityTierPercent}%)</>}
+              </span>
+            </p>
+          )}
 
           {installmentsEnabled !== false && (
             <div className="inline-flex items-center gap-1.5 bg-secondary/40 rounded-full px-2.5 py-1 mb-3">

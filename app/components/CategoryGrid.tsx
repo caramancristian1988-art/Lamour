@@ -40,7 +40,7 @@ export default function CategoryGrid({ categories }: Props) {
             <span className="h-px flex-1 bg-gradient-to-r from-brand-rose to-brand-rose/15" />
           </div>
           <Button asChild variant="accent" size="sm" className="shrink-0">
-            <Link href="/produse?division=uz-casnic">Vezi toate categoriile</Link>
+            <Link href="/produse">Vezi toate categoriile</Link>
           </Button>
         </div>
 
