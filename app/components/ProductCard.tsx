@@ -10,6 +10,7 @@ import { Badge } from "@/app/components/ui/badge";
 import { stripVariantSuffix } from "@/lib/productListing";
 import { normalizeTiers, savingsPercent, type PriceTier } from "@/lib/pricing";
 import HighlightRibbon from "./HighlightRibbon";
+import AutumnLeaves from "./AutumnLeaves";
 import type { HighlightKind } from "@/lib/productHighlight";
 
 interface VariantOption {
@@ -160,20 +161,22 @@ export default function ProductCard({
           </div>
 
           {quantityTier && (
-            // Oferta la cantitate: un singur rând subțire, sub preț — insigna cu procent + „de la N buc.: preț/buc".
-            <p className="mb-2.5 flex items-center gap-1.5 text-[11px] leading-tight text-primary/80 sm:text-xs">
-              {quantityTierPercent > 0 ? (
-                <span className="rounded-md bg-gradient-to-r from-accent to-brand-maroon px-1.5 py-0.5 text-[11px] font-extrabold text-white shadow-sm">
-                  −{quantityTierPercent}%
-                </span>
-              ) : (
-                <Layers className="h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
-              )}
-              <span>
-                la {quantityTier.minQty}+ buc.: <b className="font-extrabold text-primary">
-                  {quantityTier.price.toLocaleString("ro-MD")} MDL<span className="hidden sm:inline">/buc</span>
+            // Oferta la cantitate: un singur rând subțire, sub preț — „la N buc.: preț/buc" și, DUPĂ el, insigna cu procentul.
+            <p className="mb-2.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[10px] leading-tight text-primary/80 min-[400px]:text-[11px] sm:text-xs">
+              {quantityTierPercent <= 0 && <Layers className="h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />}
+              <span className="min-w-0">
+                <span className="hidden sm:inline">la </span>{quantityTier.minQty}+ buc.:{" "}
+                <b className="font-extrabold text-primary">
+                  {quantityTier.price.toLocaleString("ro-MD")} MDL/buc
                 </b>
               </span>
+              {quantityTierPercent > 0 && (
+                <span className="relative shrink-0 overflow-hidden rounded-md bg-gradient-to-r from-accent to-brand-maroon px-1.5 py-0.5 text-[11px] font-extrabold text-white shadow-sm">
+                  <span className="relative z-20">−{quantityTierPercent}%</span>
+                  {/* frunze de toamnă care cad și peste insigna cu procentul */}
+                  <AutumnLeaves count={4} scale={0.42} className="!inset-0 z-10" />
+                </span>
+              )}
             </p>
           )}
 
