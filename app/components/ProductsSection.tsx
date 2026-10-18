@@ -97,6 +97,7 @@ export default async function ProductsSection({ products, title = "Produse", hig
               installmentMonths={installmentMonths}
               variantOptions={variantOptionsMap?.get(product.id)}
               highlight={resolveHighlight({
+                name: product.name,
                 highlight: product.highlight,
                 isNewProduct: product.isNewProduct,
                 salesCount: product.salesCount,

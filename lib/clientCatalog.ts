@@ -94,6 +94,7 @@ export function toCatalogProduct(p: SourceProduct, rootCategorySlug?: string | n
     createdAt: +new Date(p.createdAt),
     code: p.code ?? null,
     highlight: resolveHighlight({
+      name: p.name,
       highlight: p.highlight,
       isNewProduct: p.isNewProduct,
       salesCount: p.salesCount,

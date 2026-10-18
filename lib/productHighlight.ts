@@ -3,7 +3,7 @@
 //  - Best seller: cel puțin 10 vânzări confirmate (același prag de la care numărul de vânzări devine vizibil pe site);
 //  - Nou: bifat „Produs nou" în admin, sau adăugat în ultimele 30 de zile;
 //  - Popular: cel puțin 3 vânzări confirmate;
-//  - De sezon (toamnă): produsele din categoriile de sezon de mai jos (greble, borcane și capace pentru conserve, mături, lădițe, găleți).
+//  - Toamnă (eticheta „De sezon"): produsele din categoriile de sezon de mai jos (greble, borcane și capace pentru conserve, mături, lădițe, găleți).
 // „Foarte util" se pune doar manual. Nu se inventează „best seller" fără vânzări.
 
 export type HighlightKind = "bestseller" | "popular" | "nou" | "sezon" | "util";
@@ -12,7 +12,7 @@ export const HIGHLIGHT_LABELS: Record<HighlightKind, string> = {
   bestseller: "Best seller",
   popular: "Popular",
   nou: "Nou",
-  sezon: "De sezon",
+  sezon: "Toamnă",
   util: "Foarte util",
 };
 
@@ -23,11 +23,13 @@ export const HIGHLIGHT_OPTIONS: { value: string; label: string }[] = [
   { value: "bestseller", label: "Best seller" },
   { value: "popular", label: "Popular" },
   { value: "nou", label: "Nou" },
-  { value: "sezon", label: "De sezon · toamnă" },
+  { value: "sezon", label: "Toamnă (frunză de stejar)" },
   { value: "util", label: "Foarte util" },
 ];
 
 export const SEASONAL_CATEGORY_SLUGS = ["greble", "capace-de-conservat-metal-plastic", "borcane-din-plastic", "maturi", "ladite", "galeti"];
+
+const SEASONAL_NAME_PATTERN = /conserv|twist[\s\-–]*of/i;
 
 const BESTSELLER_MIN_SALES = 10;
 const POPULAR_MIN_SALES = 3;
@@ -39,6 +41,7 @@ export function isHighlightKind(value: string | null | undefined): value is High
 
 export function resolveHighlight(
   p: {
+    name?: string | null;
     highlight?: string | null;
     isNewProduct?: boolean | null;
     salesCount?: number | null;
@@ -57,6 +60,8 @@ export function resolveHighlight(
   if (p.isNewProduct === true || (created !== null && now - created < NEW_DAYS * 86_400_000)) return "nou";
   if (sales >= POPULAR_MIN_SALES) return "popular";
   if (p.rootCategorySlug && SEASONAL_CATEGORY_SLUGS.includes(p.rootCategorySlug)) return "sezon";
+  // și după nume: capacele / borcanele pentru conserve sunt de toamnă chiar dacă produsul stă în altă categorie (ex. „Alte produse")
+  if (p.name && SEASONAL_NAME_PATTERN.test(p.name)) return "sezon";
   return null;
 }
 

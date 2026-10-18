@@ -160,24 +160,21 @@ export default function ProductCard({
           </div>
 
           {quantityTier && (
-            <div className="mb-3 flex items-center gap-2 rounded-xl border border-brand-rose/70 bg-gradient-to-r from-secondary/50 to-secondary/10 py-1.5 pl-2 pr-2 sm:pl-1.5">
-              <span aria-hidden className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground shadow-sm sm:flex">
-                <Layers className="h-4 w-4" />
-              </span>
-              <span className="min-w-0 flex-1 leading-tight">
-                <span className="block text-[11px] font-bold text-primary/70 sm:text-xs">
-                  De la {quantityTier.minQty} buc.
-                </span>
-                <span className="block whitespace-nowrap text-[13px] font-extrabold text-primary sm:text-sm">
-                  {quantityTier.price.toLocaleString("ro-MD")} MDL<span className="text-[11px] font-semibold text-primary/70">/buc</span>
-                </span>
-              </span>
-              {quantityTierPercent > 0 && (
-                <span className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[11px] font-extrabold text-accent-foreground shadow-sm sm:text-xs">
+            // Oferta la cantitate: un singur rând subțire, sub preț — insigna cu procent + „de la N buc.: preț/buc".
+            <p className="mb-2.5 flex items-center gap-1.5 text-[11px] leading-tight text-primary/80 sm:text-xs">
+              {quantityTierPercent > 0 ? (
+                <span className="rounded-md bg-gradient-to-r from-accent to-brand-maroon px-1.5 py-0.5 text-[11px] font-extrabold text-white shadow-sm">
                   −{quantityTierPercent}%
                 </span>
+              ) : (
+                <Layers className="h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
               )}
-            </div>
+              <span>
+                la {quantityTier.minQty}+ buc.: <b className="font-extrabold text-primary">
+                  {quantityTier.price.toLocaleString("ro-MD")} MDL<span className="hidden sm:inline">/buc</span>
+                </b>
+              </span>
+            </p>
           )}
 
           {installmentsEnabled !== false && (

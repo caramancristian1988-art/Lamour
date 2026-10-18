@@ -400,7 +400,7 @@ export default function ProductForm({
         </AdminSelect>
         <p className="text-xs text-muted-foreground mt-1.5">
           Apare pe poza produsului, cu gradient și frunze de toamnă. „Automat”: Best seller de la 10 vânzări, Popular de la 3, Nou (bifat „Produs nou” sau
-          adăugat în ultimele 30 de zile) și De sezon pentru greble, mături, borcane, capace de conservat, găleți și lădițe. „Foarte util” se pune doar de aici.
+          adăugat în ultimele 30 de zile) și Toamnă pentru greble, mături, borcane, capace de conservat, găleți și lădițe. „Foarte util” se pune doar de aici.
         </p>
       </div>
 
