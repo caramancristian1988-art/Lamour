@@ -1,13 +1,26 @@
-"use client";
-
 import Link from "next/link";
-import { Heart } from "lucide-react";
-import { useFavorites } from "../components/FavoritesProvider";
-import ProductCard from "../components/ProductCard";
-import { Button } from "@/app/components/ui/button";
+import { getCatalog } from "@/lib/catalog";
+import { getSectionFlags } from "@/lib/siteSettings";
+import { toCatalogProduct, variantOptionsRecord } from "@/lib/clientCatalog";
+import { rootSlugById } from "@/lib/productHighlight";
+import FavoritesView from "./FavoritesView";
 
-export default function FavoritePage() {
-  const { favorites } = useFavorites();
+// Pagină statică (fără apel la server per vizitator): catalogul compact vine odată cu pagina, iar lista de favorite
+// (din browserul vizitatorului) se potrivește cu el în FavoritesView.
+export const revalidate = 86400;
+
+export default async function FavoritePage() {
+  let products: ReturnType<typeof toCatalogProduct>[] = [];
+  let variantOptions: ReturnType<typeof variantOptionsRecord> = {};
+  try {
+    const { categories, products: all } = await getCatalog();
+    const rootSlugs = rootSlugById(categories);
+    products = all.map((p) => toCatalogProduct(p, rootSlugs.get(p.categoryId)));
+    variantOptions = variantOptionsRecord(all);
+  } catch {
+    // fără catalog: lista rămâne goală (nu afișăm carduri cu date posibil greșite)
+  }
+  const { ratesEnabled, installmentMonths } = await getSectionFlags();
 
   return (
     <main className="page-motif min-h-[60vh]">
@@ -21,31 +34,17 @@ export default function FavoritePage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold text-primary">
             Produsele mele <span className="text-accent">favorite</span>
           </h1>
-          <p className="text-muted-foreground text-sm mt-2">
-            {favorites.length > 0
-              ? `${favorites.length} produs${favorites.length === 1 ? "" : "e"} salvat${favorites.length === 1 ? "" : "e"}`
-              : "Nu ai salvat încă niciun produs favorit."}
-          </p>
         </div>
       </section>
 
-      <section className="py-10">
+      <section className="pb-10 pt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          {favorites.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-              {favorites.map((product) => (
-                <ProductCard key={product.slug} {...product} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <Heart className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" strokeWidth={1.5} aria-hidden />
-              <p className="text-muted-foreground mb-6">Apasă pe inimioara unui produs pentru a-l salva aici.</p>
-              <Button asChild variant="primary">
-                <Link href="/produse">Vezi produsele</Link>
-              </Button>
-            </div>
-          )}
+          <FavoritesView
+            products={products}
+            variantOptions={variantOptions}
+            ratesEnabled={ratesEnabled}
+            installmentMonths={installmentMonths}
+          />
         </div>
       </section>
     </main>
