@@ -166,7 +166,7 @@ function CatalogView({ mode, products: baseProducts, variantOptions, categories,
           offersCount={offersCount}
         />
 
-        <PendingRegion className="flex-1 min-w-0">
+        <PendingRegion className="w-full min-w-0 flex-1 lg:w-auto">
           {/* aria-live: cine folosește cititor de ecran află imediat câte produse au rămas după un filtru. */}
           <p className="text-sm text-muted-foreground mb-3 sm:mb-6" role="status" aria-live="polite">
             {filters.query ? (

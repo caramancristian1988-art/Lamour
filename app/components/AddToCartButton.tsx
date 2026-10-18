@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Check, ImageOff } from "lucide-react";
+import { Check, ImageOff, ShoppingCart, X } from "lucide-react";
 import { useCart, type CartVariantOption } from "./CartProvider";
 import TierQuantityPicker from "./TierQuantityPicker";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { formatPrice, normalizeTiers, type PriceTier } from "@/lib/pricing";
+import { formatPrice, lineTotal, normalizeTiers, type PriceTier } from "@/lib/pricing";
 
 interface Props {
   slug: string;
@@ -144,48 +143,63 @@ export default function AddToCartButton({
 
       {(hasVariants || hasTiers) && (
         <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>{dialogTitle}</DialogTitle>
-            </DialogHeader>
-
-            <div className="flex items-center gap-3 p-3 border border-border rounded-xl bg-muted">
-              <span className="relative w-16 h-16 rounded-lg bg-card overflow-hidden shrink-0 border border-border flex items-center justify-center">
-                {image ? (
-                  <Image src={image} alt={name} fill className="object-contain p-1" sizes="64px" />
-                ) : (
-                  <ImageOff className="w-6 h-6 text-muted-foreground" aria-hidden />
-                )}
-              </span>
-              <p className="text-sm font-bold text-primary line-clamp-2">{name}</p>
+          {/* Fereastră cu antet vișiniu (ca bara de sus a site-ului), conținut derulabil și buton „Adaugă” lipit jos. */}
+          <DialogContent hideClose className="max-w-md gap-0 overflow-hidden p-0">
+            <div className="relative shrink-0 overflow-hidden bg-gradient-to-br from-brand-maroon-dark via-brand-maroon to-brand-maroon-dark px-6 pb-5 pt-6 text-white">
+              <div aria-hidden className="pointer-events-none absolute inset-0 bg-footer-pattern opacity-[0.08]" />
+              <DialogClose
+                aria-label="Închide fereastra"
+                className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-white/85 transition-colors hover:bg-white/15 hover:text-white"
+              >
+                <X className="h-5 w-5" aria-hidden />
+              </DialogClose>
+              <DialogTitle className="relative pr-10 font-serif text-2xl font-bold italic leading-tight text-white">{dialogTitle}</DialogTitle>
+              <DialogDescription className="relative mt-1 text-sm text-white/75">
+                {hasVariants ? "Alege mărimea și cantitatea, apoi adaugă produsul în coș." : "Cu cât cumperi mai mult, cu atât prețul pe bucată scade."}
+              </DialogDescription>
             </div>
 
-            {hasVariants && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {variantOptions!.map((v) => (
-                  <button
-                    key={v.slug}
-                    type="button"
-                    onClick={() => {
-                      setPendingSlug(v.slug);
-                      // Pragurile diferă între variante, deci cantitatea aleasă
-                      // pentru una nu se mai potrivește pe alta.
-                      setPendingQty(1);
-                    }}
-                    className={`px-3 py-2.5 rounded-xl text-sm font-bold border-2 transition-all active:scale-95 ${
-                      v.slug === pendingSlug
-                        ? "bg-primary text-white border-primary shadow-md"
-                        : "bg-card text-foreground border-border hover:border-accent hover:text-accent"
-                    }`}
-                  >
-                    {v.variantLabel ?? "—"}
-                  </button>
-                ))}
+            <div className="flex flex-col gap-5 p-5 sm:p-6">
+              <div className="flex items-center gap-4 rounded-2xl border border-brand-rose/60 bg-card p-3 shadow-sm">
+                <span className="relative flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-white">
+                  {image ? (
+                    <Image src={image} alt="" fill className="object-contain p-1.5" sizes="72px" />
+                  ) : (
+                    <ImageOff className="h-6 w-6 text-muted-foreground" aria-hidden />
+                  )}
+                </span>
+                <p className="line-clamp-3 text-[15px] font-bold leading-snug text-primary">{name}</p>
               </div>
-            )}
 
-            {pendingTiers.length > 0 ? (
-              <div className="border-t border-border pt-4">
+              {hasVariants && (
+                <div>
+                  <p className="mb-2.5 text-xs font-extrabold uppercase tracking-widest text-accent">Mărime / variantă</p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {variantOptions!.map((v) => (
+                      <button
+                        key={v.slug}
+                        type="button"
+                        aria-pressed={v.slug === pendingSlug}
+                        onClick={() => {
+                          setPendingSlug(v.slug);
+                          // Pragurile diferă între variante, deci cantitatea aleasă
+                          // pentru una nu se mai potrivește pe alta.
+                          setPendingQty(1);
+                        }}
+                        className={`rounded-2xl border-2 px-3 py-3 text-sm font-bold transition-all active:scale-95 ${
+                          v.slug === pendingSlug
+                            ? "border-primary bg-primary text-white shadow-md"
+                            : "border-border bg-card text-foreground hover:border-accent hover:text-accent"
+                        }`}
+                      >
+                        {v.variantLabel ?? "—"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {pendingTiers.length > 0 ? (
                 <TierQuantityPicker
                   price={pending.price}
                   tiers={pendingTiers}
@@ -193,28 +207,27 @@ export default function AddToCartButton({
                   onQuantityChange={setPendingQty}
                   compact
                 />
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 flex-wrap border-t border-border pt-4">
-                <span className="text-2xl font-bold text-primary">{formatPrice(pending.price)} MDL</span>
-                {pending.oldPrice && (
-                  <>
-                    <span className="text-sm text-muted-foreground line-through">
-                      {formatPrice(pending.oldPrice)} MDL
-                    </span>
-                    {pendingDiscount && (
-                      <Badge variant="accent" className="normal-case">-{pendingDiscount}%</Badge>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-wrap items-center gap-2.5 rounded-2xl bg-muted/70 p-4">
+                  <span className="text-3xl font-extrabold text-primary">{formatPrice(pending.price)} MDL</span>
+                  {pending.oldPrice && (
+                    <>
+                      <span className="text-sm text-muted-foreground line-through">{formatPrice(pending.oldPrice)} MDL</span>
+                      {pendingDiscount && (
+                        <Badge variant="accent" className="normal-case">
+                          -{pendingDiscount}%
+                        </Badge>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
-            <DialogFooter>
-              <Button
+            <div className="sticky bottom-0 shrink-0 border-t border-brand-rose/60 bg-card/95 p-4 backdrop-blur sm:px-6">
+              <button
                 type="button"
-                variant="accent"
-                className="w-full sm:w-auto"
+                className="flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-accent px-6 text-base font-bold text-accent-foreground shadow-md transition-all hover:bg-brand-red-dark hover:shadow-lg active:scale-[0.98]"
                 onClick={() => {
                   confirmAdd(
                     pending.slug,
@@ -227,9 +240,11 @@ export default function AddToCartButton({
                   setPickerOpen(false);
                 }}
               >
+                <ShoppingCart className="h-5 w-5" aria-hidden />
                 Adaugă în coș
-              </Button>
-            </DialogFooter>
+                {pendingTiers.length > 0 && <span className="font-extrabold">· {formatPrice(lineTotal(pending.price, pendingTiers, pendingQty))} MDL</span>}
+              </button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
