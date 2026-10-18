@@ -152,6 +152,8 @@ function readProductFields(formData: FormData) {
   const warrantyEnabled = formData.get("warrantyEnabled") === "on";
   const recommended = formData.get("recommended") === "on";
   const isNewProduct = formData.get("isNewProduct") === "on";
+  const highlightRaw = String(formData.get("highlight") ?? "").trim();
+  const highlight = highlightRaw && highlightRaw !== "" && ["none", "bestseller", "popular", "nou", "sezon", "util"].includes(highlightRaw) ? highlightRaw : null;
   const categoryId = String(formData.get("categoryId") ?? "").trim();
   const specifications = parseSpecifications(formData);
   const variantGroupId = String(formData.get("variantGroupId") ?? "").trim() || null;
@@ -181,6 +183,7 @@ function readProductFields(formData: FormData) {
     warrantyEnabled,
     recommended,
     isNewProduct,
+    highlight,
     categoryId,
     specifications,
     variantGroupId,

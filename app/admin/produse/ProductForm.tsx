@@ -14,6 +14,7 @@ import { slugify } from "@/lib/slugify";
 import { createCategoryInlineAction, deleteCategoryInlineAction } from "@/lib/adminCategoryActions";
 import { Alert, AlertDescription } from "@/app/components/ui/alert";
 import { Checkbox } from "@/app/components/ui/checkbox";
+import { HIGHLIGHT_OPTIONS } from "@/lib/productHighlight";
 import { Label } from "@/app/components/ui/label";
 import { Button } from "@/app/components/ui/button";
 import { Switch } from "@/app/components/ui/switch";
@@ -76,6 +77,7 @@ interface ProductDefaults {
   warrantyEnabled?: boolean | null;
   recommended?: boolean | null;
   isNewProduct?: boolean | null;
+  highlight?: string | null;
   categoryId?: string;
   specifications?: { label: string; value: string }[];
   variantGroupId?: string | null;
@@ -385,6 +387,20 @@ export default function ProductForm({
         <p className="text-xs text-muted-foreground mt-1.5">
           Crește automat cu 1 când marchezi o comandă legată de acest produs ca &quot;Achitat&quot; în Mesaje.
           Poți și corecta manual aici. Rămâne ascuns pe site sub 10 bucăți vândute.
+        </p>
+      </div>
+
+      <div>
+        <AdminSelect name="highlight" label="Etichetă specială pe card" defaultValue={defaults?.highlight ?? ""}>
+          {HIGHLIGHT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </AdminSelect>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Apare pe poza produsului, cu gradient și frunze de toamnă. „Automat”: Best seller de la 10 vânzări, Popular de la 3, Nou (bifat „Produs nou” sau
+          adăugat în ultimele 30 de zile) și De sezon pentru greble, mături, borcane, capace de conservat, găleți și lădițe. „Foarte util” se pune doar de aici.
         </p>
       </div>
 

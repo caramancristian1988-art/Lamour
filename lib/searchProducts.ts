@@ -42,6 +42,7 @@ async function getSearchableData() {
         hidden: null as boolean | null,
         recommended: null as boolean | null,
         isNewProduct: null as boolean | null,
+        highlight: null as string | null,
         code: null as string | null,
         variantGroupId: null as string | null,
         variantLabel: null as string | null,

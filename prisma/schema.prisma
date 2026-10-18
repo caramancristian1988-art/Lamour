@@ -81,6 +81,8 @@ model Product {
   // fără limită). Opționale, ca produsele existente să se citească fără câmpurile.
   recommended Boolean?
   isNewProduct Boolean?
+  // Eticheta specială de pe card (lib/productHighlight.ts): bestseller | popular | nou | sezon | util | none. Gol = automat.
+  highlight   String?
   specifications ProductSpec[]
   categoryId  String   @db.ObjectId
   category    Category @relation(fields: [categoryId], references: [id])

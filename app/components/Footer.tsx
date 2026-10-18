@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Phone, Mail, MapPin, Heart } from "lucide-react";
+import { MAPS_PLACE_URL } from "@/lib/mapsLinks";
 import type { SocialLinks, ContactInfo } from "@/lib/siteSettings";
 import { Logo } from "@/app/components/Logo";
 import { SITE_NAME, SITE_SHORT_NAME, SITE_TAGLINE } from "@/lib/constants";
@@ -142,11 +143,22 @@ export default function Footer({ facebook, instagram, phone, email, address }: P
             <ColumnTitle>Contacte</ColumnTitle>
             <ul className="space-y-4">
               {address && (
-                <li className="flex items-start gap-3 text-[15px] text-white/80">
-                  <span className="mt-0.5 w-9 h-9 shrink-0 rounded-full border border-white/25 bg-white/5 flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-brand-rose-light" aria-hidden />
-                  </span>
-                  <span className="pt-1.5">{address}</span>
+                <li>
+                  {/* Adresa se deschide în Google Maps (filă nouă) */}
+                  <a
+                    href={MAPS_PLACE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-3 text-[15px] text-white/80 hover:text-white transition-colors rounded"
+                  >
+                    <span className="mt-0.5 w-9 h-9 shrink-0 rounded-full border border-white/25 bg-white/5 flex items-center justify-center">
+                      <MapPin className="w-4 h-4 text-brand-rose-light" aria-hidden />
+                    </span>
+                    <span className="pt-1.5 underline-offset-4 hover:underline">
+                      {address}
+                      <span className="sr-only"> — deschide locația în Google Maps (se deschide într-o fereastră nouă)</span>
+                    </span>
+                  </a>
                 </li>
               )}
               {phone && (

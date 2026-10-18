@@ -1,9 +1,7 @@
 import { MapPin, MapPinned, Navigation, ExternalLink } from "lucide-react";
 import { getContactInfo } from "@/lib/siteSettings";
+import { MAPS_PLACE_URL } from "@/lib/mapsLinks";
 
-// Locația „SRL Lumintehnica" din Google Maps (coordonatele reperului). Linkul lung duce la fișa locului din Maps.
-const MAPS_PLACE_URL =
-  "https://www.google.com/maps/place/SRL+Lumintehnica/@46.9996228,28.8045398,18.5z/data=!4m6!3m5!1s0x40c97f9cc0cd1731:0xd71e89ee206f9b67!8m2!3d46.9998573!4d28.8045076!16s%2Fg%2F11q8r_lfcy";
 // Aceleași coordonate, deschise în aplicația preferată: Waze (pornește navigarea) și Apple Maps (iPhone / Mac).
 const WAZE_URL = "https://waze.com/ul?ll=46.9998573%2C28.8045076&navigate=yes&zoom=17";
 const APPLE_MAPS_URL = "https://maps.apple.com/?ll=46.9998573%2C28.8045076&q=SRL%20Lumintehnica";

@@ -32,6 +32,7 @@ import ProductGallery from "../../components/ProductGallery";
 import FavoriteButton from "../../components/FavoriteButton";
 import ProductsCatalog from "../../components/ProductsCatalog";
 import { toCatalogProduct, variantOptionsRecord, type CatalogProduct } from "@/lib/clientCatalog";
+import { rootSlugById } from "@/lib/productHighlight";
 import { getCatalog } from "@/lib/catalog";
 import { onlyVisible } from "@/lib/productVisibility";
 import ReviewsGrid from "../../components/ReviewsGrid";
@@ -65,9 +66,10 @@ const getCategoryData = cache(async (slug: string) => {
     const categoryIds = new Set([category.id, ...children.map((c) => c.id)]);
 
     const products = catalogProducts.filter((p) => categoryIds.has(p.categoryId));
+    const rootSlugs = rootSlugById(categories);
     return {
       category,
-      products: dedupeVariants(products).map(toCatalogProduct),
+      products: dedupeVariants(products).map((p) => toCatalogProduct(p, rootSlugs.get(p.categoryId))),
       variantOptions: variantOptionsRecord(products),
       children,
     };
@@ -77,7 +79,7 @@ const getCategoryData = cache(async (slug: string) => {
     const products = allFallbackProducts.filter((p) => p.categoryId === category.id);
     return {
       category,
-      products: dedupeVariants(products).map(toCatalogProduct),
+      products: dedupeVariants(products).map((p) => toCatalogProduct(p)),
       variantOptions: variantOptionsRecord(products),
       children: [] as { id: string; name: string; slug: string; parentId: string | null }[],
     };

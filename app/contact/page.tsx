@@ -12,6 +12,7 @@ import FaqAccordion, { type FaqItem } from "../components/FaqAccordion";
 import ContactForm from "../components/ContactForm";
 import { PageHeader } from "../components/PageHeader";
 import LocationMap from "../components/LocationMap";
+import { MAPS_PLACE_URL } from "@/lib/mapsLinks";
 import { HeadingFlourish } from "@/app/components/ui/motif";
 import JsonLd from "../components/JsonLd";
 import { breadcrumbList } from "@/lib/structuredData";
@@ -185,7 +186,10 @@ export default async function ContactPage() {
                 </span>
                 <h3 className="font-serif text-lg font-bold text-primary">Adresa</h3>
               </div>
-              <p className="text-sm text-foreground">{address}</p>
+              <a href={MAPS_PLACE_URL} target="_blank" rel="noopener noreferrer" className="text-sm text-foreground underline-offset-4 hover:text-accent hover:underline">
+                {address}
+                <span className="sr-only"> (deschide în Google Maps, într-o fereastră nouă)</span>
+              </a>
               <Link href="#harta" className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-accent hover:underline">
                 Vezi pe hartă
                 <ArrowRight className="h-4 w-4" aria-hidden />

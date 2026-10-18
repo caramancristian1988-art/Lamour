@@ -6,6 +6,8 @@ import { localProductImages, localProductBadges, localProductNames } from "@/lib
 import { getSectionFlags } from "@/lib/siteSettings";
 import type { PriceTier } from "@/lib/pricing";
 import { MotifBackground, HeadingFlourish } from "@/app/components/ui/motif";
+import { getCatalog } from "@/lib/catalog";
+import { resolveHighlight, rootSlugById } from "@/lib/productHighlight";
 
 interface Product {
   id: string;
@@ -23,6 +25,11 @@ interface Product {
   priceTiers?: PriceTier[];
   bulkMinQty?: number | null;
   bulkPrice?: number | null;
+  categoryId?: string;
+  createdAt?: Date | string | number;
+  highlight?: string | null;
+  isNewProduct?: boolean | null;
+  salesCount?: number | null;
 }
 
 interface VariantOption {
@@ -45,6 +52,10 @@ interface Props {
 
 export default async function ProductsSection({ products, title = "Produse", highlighted = "recomandate", viewAllHref = "/produse", viewAllLabel = "Vezi toate produsele", bg = "bg-background", showDiscount = false, variantOptionsMap }: Props) {
   const { ratesEnabled, installmentMonths } = await getSectionFlags();
+  // Categoria de la rădăcină (pentru eticheta „De sezon"): din catalogul din cache, deci fără interogări în plus.
+  const rootSlugs = await getCatalog()
+    .then(({ categories }) => rootSlugById(categories))
+    .catch(() => new Map<string, string>());
   return (
     <section className={`relative overflow-hidden py-8 sm:py-10 ${bg}`}>
       <MotifBackground />
@@ -85,6 +96,13 @@ export default async function ProductsSection({ products, title = "Produse", hig
               installmentsEnabled={ratesEnabled && product.installmentsEnabled !== false}
               installmentMonths={installmentMonths}
               variantOptions={variantOptionsMap?.get(product.id)}
+              highlight={resolveHighlight({
+                highlight: product.highlight,
+                isNewProduct: product.isNewProduct,
+                salesCount: product.salesCount,
+                createdAt: product.createdAt,
+                rootCategorySlug: product.categoryId ? rootSlugs.get(product.categoryId) : null,
+              })}
             />
           ))}
         </ProductsCarousel>

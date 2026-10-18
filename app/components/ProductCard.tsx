@@ -9,6 +9,8 @@ import { StarRating } from "@/app/components/ui/star-rating";
 import { Badge } from "@/app/components/ui/badge";
 import { stripVariantSuffix } from "@/lib/productListing";
 import { normalizeTiers, savingsPercent, type PriceTier } from "@/lib/pricing";
+import HighlightRibbon from "./HighlightRibbon";
+import type { HighlightKind } from "@/lib/productHighlight";
 
 interface VariantOption {
   slug: string;
@@ -37,6 +39,8 @@ interface ProductCardProps {
   bulkPrice?: number | null;
   /** Primele carduri din pagină (vizibile fără derulare): poza se cere imediat, cu prioritate (LCP). */
   priority?: boolean;
+  /** Eticheta specială (Best seller / Popular / Nou / De sezon / Foarte util). */
+  highlight?: HighlightKind | null;
 }
 
 export default function ProductCard({
@@ -57,6 +61,7 @@ export default function ProductCard({
   bulkMinQty,
   bulkPrice,
   priority = false,
+  highlight = null,
 }: ProductCardProps) {
   // A leftover placehold.co seed image doesn't count as a "real" main image —
   // prefer an actual uploaded gallery photo over it when one exists.
@@ -103,13 +108,15 @@ export default function ProductCard({
           )}
         </Link>
 
-        {displayBadge && (
-          <Badge
-            variant="accent"
-            className="absolute top-2 left-2 sm:top-4 sm:left-4 max-w-[calc(100%-2.75rem)] sm:max-w-[70%] truncate shadow-sm"
-          >
-            {displayBadge}
-          </Badge>
+        {(highlight || displayBadge) && (
+          <div className="absolute left-2 top-2 flex max-w-[calc(100%-3.25rem)] flex-col items-start gap-1.5 sm:left-4 sm:top-4 sm:max-w-[70%]">
+            {highlight && <HighlightRibbon kind={highlight} />}
+            {displayBadge && (
+              <Badge variant="accent" className="max-w-full truncate shadow-sm">
+                {displayBadge}
+              </Badge>
+            )}
+          </div>
         )}
 
         <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
@@ -153,13 +160,24 @@ export default function ProductCard({
           </div>
 
           {quantityTier && (
-            <p className="mb-2 inline-flex max-w-full items-center gap-1.5 rounded-full bg-accent/[0.07] px-2.5 py-1 text-[11px] font-semibold leading-tight text-accent sm:text-xs">
-              <Layers className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              <span className="min-w-0">
-                De la {quantityTier.minQty} buc.: <b>{quantityTier.price.toLocaleString("ro-MD")} MDL/buc</b>
-                {quantityTierPercent > 0 && <> (−{quantityTierPercent}%)</>}
+            <div className="mb-3 flex items-center gap-2 rounded-xl border border-brand-rose/70 bg-gradient-to-r from-secondary/50 to-secondary/10 py-1.5 pl-2 pr-2 sm:pl-1.5">
+              <span aria-hidden className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground shadow-sm sm:flex">
+                <Layers className="h-4 w-4" />
               </span>
-            </p>
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="block text-[11px] font-bold text-primary/70 sm:text-xs">
+                  De la {quantityTier.minQty} buc.
+                </span>
+                <span className="block whitespace-nowrap text-[13px] font-extrabold text-primary sm:text-sm">
+                  {quantityTier.price.toLocaleString("ro-MD")} MDL<span className="text-[11px] font-semibold text-primary/70">/buc</span>
+                </span>
+              </span>
+              {quantityTierPercent > 0 && (
+                <span className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[11px] font-extrabold text-accent-foreground shadow-sm sm:text-xs">
+                  −{quantityTierPercent}%
+                </span>
+              )}
+            </div>
           )}
 
           {installmentsEnabled !== false && (

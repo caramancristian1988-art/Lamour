@@ -1,6 +1,7 @@
 import { localProductImages, localProductBadges, localProductNames } from "./productOverrides";
 import { buildVariantOptionsMap, type VariantOption } from "./productListing";
 import type { PriceTier } from "./pricing";
+import { resolveHighlight, type HighlightKind } from "./productHighlight";
 
 // Produsul "pe scurt": doar ce au nevoie cardul, filtrele și sortarea. Se trimite o singură dată către browser
 // (în pagina statică), iar filtrarea / sortarea / „Încarcă mai multe" se fac apoi acolo, instant, fără apel la server.
@@ -25,6 +26,8 @@ export interface CatalogProduct {
   /** Milisecunde (numărul se serializează mai ieftin decât un Date și se sortează direct). */
   createdAt: number;
   code: string | null;
+  /** Eticheta specială de pe card (Best seller / Popular / Nou / De sezon / Foarte util), calculată pe server. */
+  highlight: HighlightKind | null;
 }
 
 export interface CatalogCategory {
@@ -56,6 +59,9 @@ interface SourceProduct {
   code?: string | null;
   variantGroupId?: string | null;
   variantLabel?: string | null;
+  highlight?: string | null;
+  isNewProduct?: boolean | null;
+  salesCount?: number | null;
 }
 
 // Aceeași alegere pe care o făcea ProductCard: o poză-substituent (placehold.co) nu contează ca poză principală dacă
@@ -65,7 +71,7 @@ function pickImage(image: string | null, images?: string[]): string | null {
   return (!isPlaceholder && image) || images?.[0] || image || null;
 }
 
-export function toCatalogProduct(p: SourceProduct): CatalogProduct {
+export function toCatalogProduct(p: SourceProduct, rootCategorySlug?: string | null): CatalogProduct {
   const name = localProductNames[p.slug] ?? p.name;
   const image = localProductImages[p.slug] ?? pickImage(p.image, p.images);
   return {
@@ -87,6 +93,13 @@ export function toCatalogProduct(p: SourceProduct): CatalogProduct {
     categoryId: p.categoryId,
     createdAt: +new Date(p.createdAt),
     code: p.code ?? null,
+    highlight: resolveHighlight({
+      highlight: p.highlight,
+      isNewProduct: p.isNewProduct,
+      salesCount: p.salesCount,
+      createdAt: p.createdAt,
+      rootCategorySlug,
+    }),
   };
 }
 

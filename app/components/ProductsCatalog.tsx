@@ -199,6 +199,7 @@ function CatalogView({ mode, products: baseProducts, variantOptions, categories,
                   installmentsEnabled={ratesEnabled && product.installmentsEnabled}
                   installmentMonths={installmentMonths}
                   variantOptions={variantOptions[product.id]}
+                  highlight={product.highlight}
                   priority={i < 4}
                 />
               ))}

@@ -13,6 +13,7 @@ import ProductsCatalog from "../components/ProductsCatalog";
 import { Breadcrumb } from "../components/CatalogTabs";
 import { sortProducts, paginate, dedupeVariants } from "@/lib/productListing";
 import { toCatalogProduct, variantOptionsRecord } from "@/lib/clientCatalog";
+import { rootSlugById } from "@/lib/productHighlight";
 import JsonLd from "../components/JsonLd";
 import { breadcrumbList, collectionPage } from "@/lib/structuredData";
 import { absoluteUrl } from "@/lib/seo";
@@ -114,7 +115,8 @@ export default async function ProdusePage() {
   if (!produseEnabled) notFound();
 
   const { categories, products: allProducts } = await getData();
-  const products = dedupeVariants(allProducts).map(toCatalogProduct);
+  const rootSlugs = rootSlugById(categories);
+  const products = dedupeVariants(allProducts).map((p) => toCatalogProduct(p, rootSlugs.get(p.categoryId)));
   const variantOptions = variantOptionsRecord(allProducts);
   const catalogCategories = categories.map((c) => ({ id: c.id, slug: c.slug, name: c.name, parentId: c.parentId }));
 

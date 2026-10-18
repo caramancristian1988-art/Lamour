@@ -36,11 +36,8 @@ export default function StickyHeader({
         {/* MOBILE layout */}
         <div className="lg:hidden">
           <div className="flex items-center justify-between px-4 py-2">
-            <Link href="/" className="flex items-center gap-2 min-w-0 rounded-lg">
-              <span className="relative inline-flex shrink-0">
-                <Logo size={48} className="border-2 border-logo-silver shadow-sm max-[359px]:!h-10 max-[359px]:!w-10" />
-                <AutumnLeaves fall={52} />
-              </span>
+            <Link href="/" className="relative flex items-center gap-2 min-w-0 rounded-lg">
+              <Logo size={48} className="border-2 border-logo-silver shadow-sm max-[359px]:!h-10 max-[359px]:!w-10" />
               <span className="block min-w-0 overflow-hidden leading-tight">
                 <span className="block pr-1 text-[15px] min-[360px]:text-base min-[430px]:text-xl font-serif italic font-bold tracking-tight bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.3px_var(--brand-maroon)]">
                   {SITE_SHORT_NAME}
@@ -49,6 +46,7 @@ export default function StickyHeader({
                   Lamour
                 </span>
               </span>
+              <AutumnLeaves count={14} scale={0.85} />
             </Link>
             <div className="flex items-center shrink-0 min-[430px]:gap-1">
               <AccountMenuLink className="flex items-center justify-center w-9 h-10 min-[360px]:w-10 min-[430px]:w-11 min-[430px]:h-11 rounded-xl text-foreground hover:bg-muted hover:text-primary transition-colors">
@@ -91,15 +89,9 @@ export default function StickyHeader({
         {/* DESKTOP layout */}
         <div className="hidden lg:grid grid-cols-[auto_minmax(0,1fr)_auto] gap-x-4 xl:gap-x-6 max-w-[110rem] mx-auto px-4 xl:px-6">
           {/* La 1024–1279 px sigla și titlul sunt mai mici ca antetul să încapă fără să iasă din ecran */}
-          <Link href="/" className="flex items-center gap-3 xl:gap-4 py-3 xl:py-4 shrink-0 rounded-lg">
-            <span className="relative inline-flex shrink-0 xl:hidden">
-              <Logo size={112} className="border-2 border-logo-silver shadow-sm" />
-              <AutumnLeaves fall={120} scale={1.7} />
-            </span>
-            <span className="relative hidden shrink-0 xl:inline-flex">
-              <Logo size={152} className="border-2 border-logo-silver shadow-sm" />
-              <AutumnLeaves fall={160} scale={2.2} />
-            </span>
+          <Link href="/" className="relative flex items-center gap-3 xl:gap-4 py-3 xl:py-4 shrink-0 rounded-lg">
+            <Logo size={112} className="xl:hidden border-2 border-logo-silver shadow-sm" />
+            <Logo size={152} className="hidden xl:block border-2 border-logo-silver shadow-sm" />
             <span className="block leading-tight">
               <span className="block pr-2 text-3xl xl:text-4xl font-serif italic font-bold tracking-tight whitespace-nowrap bg-gradient-to-r from-brand-maroon to-brand-red bg-clip-text text-transparent [-webkit-text-stroke:0.4px_var(--brand-maroon)]">
                 {SITE_SHORT_NAME}
@@ -108,6 +100,7 @@ export default function StickyHeader({
                 Lamour
               </span>
             </span>
+            <AutumnLeaves count={26} scale={1.9} />
           </Link>
 
           <div className="flex items-center py-7">
