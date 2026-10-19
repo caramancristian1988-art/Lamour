@@ -4,7 +4,7 @@ Controlezi catalogul site-ului din orice aplicație (Excel/VBA, Python, Postman,
 pentru produse, categorii, subcategorii și oferte. Orice modificare reîmprospătează automat site-ul (cache-ul catalogului și paginile
 atinse), deci se vede imediat — nu trebuie să aștepți.
 
-Adresa de bază: `https://<site>/api/catalog` · Format: JSON (UTF-8) · Toate răspunsurile sunt `Cache-Control: no-store`.
+Adresa de bază: `https://lumina.md/api/catalog` · Format: JSON (UTF-8) · Toate răspunsurile sunt `Cache-Control: no-store`.
 
 ---
 
@@ -32,7 +32,7 @@ Vercel (Logs) ca `[catalog-api] cheia …abcd · modifică produs · slug`, cu u
 
 Verificare rapidă:
 ```bash
-curl -H "X-API-Key: $KEY" https://<site>/api/catalog
+curl -H "X-API-Key: $KEY" https://lumina.md/api/catalog
 # → { "ok": true, "produse": 312, "categorii": 24, "endpoints": [...] }
 ```
 
@@ -184,7 +184,7 @@ Răspuns: `{ total, reusite, esuate, rezultate: [ { ref, ok, error?, oferta? } ]
 
 **curl**
 ```bash
-KEY="cheia-ta"; B="https://<site>/api/catalog"
+KEY="cheia-ta"; B="https://lumina.md/api/catalog"
 
 # creează o subcategorie
 curl -X POST "$B/categorii" -H "X-API-Key: $KEY" -H "Content-Type: application/json" \
@@ -205,7 +205,7 @@ curl -H "X-API-Key: $KEY" "$B/produse?perPagina=toate&format=csv" -o produse.csv
 **Python**
 ```python
 import requests
-B, H = "https://<site>/api/catalog", {"X-API-Key": "cheia-ta"}
+B, H = "https://lumina.md/api/catalog", {"X-API-Key": "cheia-ta"}
 r = requests.patch(f"{B}/produse/grebla-12-dinti", headers=H, json={"price": 110})
 r.raise_for_status()
 print(r.json()["price"])
@@ -215,7 +215,7 @@ print(r.json()["price"])
 ```vba
 Function Catalog(metoda As String, cale As String, Optional corp As String = "") As String
     Dim http As Object: Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
-    http.Open metoda, "https://<site>/api/catalog" & cale, False
+    http.Open metoda, "https://lumina.md/api/catalog" & cale, False
     http.setRequestHeader "X-API-Key", "cheia-ta"
     http.setRequestHeader "Content-Type", "application/json"
     If corp = "" Then http.Send Else http.Send corp
