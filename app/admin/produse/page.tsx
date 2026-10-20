@@ -15,20 +15,20 @@ import AdminPagination from "../components/AdminPagination";
 import CopyableId from "../components/CopyableId";
 import WeightEditor from "../components/WeightEditor";
 import { deleteProductAction, toggleProductVisibilityAction } from "@/lib/adminProductActions";
+import { PRODUCT_CODE_RE, normalizeProductCode } from "@/lib/productCode";
 
 const OBJECT_ID_RE = /^[0-9a-fA-F]{24}$/;
-// Codul e acum un câmp real (Product.code), editabil din admin — litere/cifre, cu cratimă în interior
-// (ex. "LT-141"; același format ca în lib/adminProductActions.ts). Extras cu o etichetă opțională în
+// Codul e acum un câmp real (Product.code), editabil din admin — litere/cifre, cu spațiu / punct / cratimă între ele
+// (ex. "LT-141", "LT 141.5"; regulile sunt în lib/productCode.ts). Extras cu o etichetă opțională în
 // față, ca să meargă și dacă se lipește linia întreagă afișată pe pagina produsului ("Cod produs: LMP204").
 const CODE_LABEL_RE = /^cod\s*(produs)?\s*:?\s*/i;
-const PRODUCT_CODE_RE = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
 
 async function getData(catFilter: string, sort: string, page: number, search: string, perPage: number) {
   // O potrivire de "Cod produs" e un identificator exact, neambiguu — se caută în tot
   // catalogul, ignorând orice filtru de categorie activ. Altfel, un ?cat= rămas dintr-o
   // navigare anterioară ascunde în tăcere exact produsul căutat de admin.
   let codeMatchIds: string[] = [];
-  const codeCandidate = search.replace(CODE_LABEL_RE, "").trim().toUpperCase();
+  const codeCandidate = normalizeProductCode(search.replace(CODE_LABEL_RE, ""));
   if (codeCandidate && PRODUCT_CODE_RE.test(codeCandidate)) {
     const match = await prisma.product.findUnique({ where: { code: codeCandidate }, select: { id: true } });
     if (match) codeMatchIds = [match.id];

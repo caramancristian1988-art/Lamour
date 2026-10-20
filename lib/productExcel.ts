@@ -2,6 +2,7 @@ import * as XLSX from "xlsx";
 import type { Product } from "@prisma/client";
 import { prisma } from "./prisma";
 import { parseDecimalInput } from "./pricing";
+import { PRODUCT_CODE_HELP, PRODUCT_CODE_RE, normalizeProductCode, randomProductCode } from "./productCode";
 
 // Export / import de produse în Excel. Aceeași definiție de coloane servește ambele sensuri, ca un fișier exportat să
 // poată fi editat și reimportat. Fără "use server": e folosit doar din rutele API de admin (app/api/admin/products-*).
@@ -88,13 +89,9 @@ function cleanSlug(value: string): string {
   return /^[a-z0-9]+(?:[-._][a-z0-9]+)*$/.test(value) ? value : slugify(value);
 }
 
-const PRODUCT_CODE_RE = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
-const PRODUCT_CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-function randomProductCode(taken: Set<string>): string {
+function freshProductCode(taken: Set<string>): string {
   for (;;) {
-    let code = "";
-    for (let i = 0; i < 6; i++) code += PRODUCT_CODE_CHARS[Math.floor(Math.random() * PRODUCT_CODE_CHARS.length)];
+    const code = randomProductCode();
     if (!taken.has(code)) return code;
   }
 }
@@ -142,12 +139,12 @@ function parseCell(key: FieldKey, raw: unknown): Canon {
   const header = COLUMN_BY_KEY.get(key)!.header;
   switch (key) {
     case "code": {
-      const code = str(raw).toUpperCase();
-      if (code && !PRODUCT_CODE_RE.test(code)) throw new Error(`„${header}”: „${code}” — doar litere, cifre și cratimă între ele (ex. LT-141)`);
+      const code = normalizeProductCode(str(raw));
+      if (code && !PRODUCT_CODE_RE.test(code)) throw new Error(`„${header}”: „${code}” — doar ${PRODUCT_CODE_HELP}`);
       return code;
     }
     case "variantGroupCode": {
-      const code = str(raw).toUpperCase();
+      const code = normalizeProductCode(str(raw));
       if (code && !PRODUCT_CODE_RE.test(code)) throw new Error(`„${header}”: „${code}” nu e un cod de produs valid`);
       return code;
     }
@@ -782,7 +779,7 @@ async function analyze(buffer: Buffer): Promise<Analyzed> {
       } else if (takenSlugs.has(finalSlug)) {
         return fail(`Slug-ul „${finalSlug}” aparține altui produs`);
       }
-      const finalCode = code || randomProductCode(takenCodes);
+      const finalCode = code || freshProductCode(takenCodes);
       claims.forEach((k) => newKeys.set(k, ref));
       newKeys.set(`c:${finalCode}`, ref);
       newKeys.set(`s:${finalSlug}`, ref);

@@ -7,6 +7,7 @@ import { requireAdmin } from "./adminAuth";
 import { CATALOG_TAG } from "./catalog";
 import { parseDecimalInput } from "./pricing";
 import { slugify } from "./slugify";
+import { PRODUCT_CODE_HELP, PRODUCT_CODE_RE, normalizeProductCode, randomProductCode } from "./productCode";
 
 export interface ProductFormState {
   error?: string;
@@ -94,20 +95,7 @@ async function uniqueSlug(base: string): Promise<string> {
   return slug;
 }
 
-// Litere/cifre, cu cratimă permisă în interior (ex. "LT-141"): fără spații și fără alte semne, ca
-// să rămână ușor de dictat/tastat la telefon. Cratima nu poate fi la început/sfârșit sau dublă.
-const PRODUCT_CODE_RE = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
-const PRODUCT_CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-function normalizeProductCode(raw: string): string {
-  return raw.trim().toUpperCase();
-}
-
-function randomProductCode(): string {
-  let code = "";
-  for (let i = 0; i < 6; i++) code += PRODUCT_CODE_CHARS[Math.floor(Math.random() * PRODUCT_CODE_CHARS.length)];
-  return code;
-}
+// Regulile codului (litere, cifre, spațiu / punct / cratimă între ele) sunt în lib/productCode.ts, comune cu Excel și API-ul.
 
 // Lăsat gol în formular -> generat automat (un admin nu trebuie să inventeze un cod pentru
 // fiecare produs nou); completat manual -> verificat că nu se repetă pe alt produs.
@@ -121,7 +109,7 @@ async function resolveProductCode(rawCode: string, excludeId?: string): Promise<
 
   const code = normalizeProductCode(trimmed);
   if (!PRODUCT_CODE_RE.test(code)) {
-    return { error: "Codul produsului poate conține doar litere, cifre și cratimă între ele (ex. LT-141), fără spații sau alte semne." };
+    return { error: `Codul produsului poate conține doar ${PRODUCT_CODE_HELP}; nu poate începe sau se termina cu separator.` };
   }
   const existing = await prisma.product.findUnique({ where: { code }, select: { id: true } });
   if (existing && existing.id !== excludeId) {

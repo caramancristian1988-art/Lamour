@@ -88,7 +88,7 @@ Obligatoriu: `name`, `price`, `category` (id|slug). Restul sunt opționale.
   "variantGroup": "slug-produs-principal", "variantLabel": "2 buc"
 }
 ```
-- `code` gol/omis → se generează automat (6 caractere); dacă îl dai, trebuie să fie unic (litere, cifre, cratimă: `LT-141`).
+- `code` gol/omis → se generează automat (6 caractere); dacă îl dai, trebuie să fie unic (litere și cifre, cu spațiu, punct, cratimă, `/` sau `_` între ele: `LT-141`, `LT 141.5`).
 - `highlight`: `bestseller | popular | nou | sezon | util | none` sau `null` (= automat, după reguli).
 - `variantGroup` face din produs o **variantă** a produsului principal (care nu poate fi el însuși variantă).
 - Prag unic vechi: `bulkMinQty` + `bulkPrice` (amândouă sau niciunul). Pentru praguri noi folosește `priceTiers`.

@@ -4,6 +4,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import { slugify } from "./slugify";
+import { PRODUCT_CODE_HELP, PRODUCT_CODE_RE, normalizeProductCode, randomProductCode } from "./productCode";
 import { normalizeTiers, parseDecimalInput, type PriceTier } from "./pricing";
 import {
   addProductFamily,
@@ -250,13 +251,9 @@ export function parseProductBody(body: Record<string, unknown>): { parsed: Parse
 }
 
 // ── Coduri și slug-uri ──
-const PRODUCT_CODE_RE = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
-const CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
 async function freshCode(): Promise<string> {
   for (;;) {
-    let code = "";
-    for (let i = 0; i < 6; i++) code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+    const code = randomProductCode();
     if (!(await prisma.product.findUnique({ where: { code }, select: { id: true } }))) return code;
   }
 }
@@ -264,8 +261,8 @@ async function freshCode(): Promise<string> {
 async function resolveCode(raw: string | undefined, excludeId?: string): Promise<ApiResult<string | undefined>> {
   if (raw === undefined) return good(undefined);
   if (raw === "") return good(await freshCode());
-  const code = raw.toUpperCase();
-  if (!PRODUCT_CODE_RE.test(code)) return bad(422, "„code” poate conține doar litere, cifre și cratimă între ele (ex. LT-141).");
+  const code = normalizeProductCode(raw);
+  if (!PRODUCT_CODE_RE.test(code)) return bad(422, `„code” poate conține doar ${PRODUCT_CODE_HELP}; nu poate începe sau se termina cu separator.`);
   const existing = await prisma.product.findUnique({ where: { code }, select: { id: true } });
   if (existing && existing.id !== excludeId) return bad(409, `Există deja un produs cu codul „${code}”.`);
   return good(code);
