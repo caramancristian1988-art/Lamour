@@ -30,7 +30,10 @@ const WRITABLE = new Set([
   "warrantyEnabled", "hidden", "recommended", "isNewProduct", "highlight", "specifications", "variantLabel",
   "category", "categoryId", "variantGroup", "variantGroupId",
 ]);
-const IGNORED = new Set(["id", "createdAt", "rating", "reviewCount", "variants", "url", "discountPercent", "quantityOffers"]);
+const IGNORED = new Set([
+  "id", "createdAt", "rating", "reviewCount", "variants", "url", "discountPercent", "quantityOffers",
+  "visible", "visibility", "displayCode", "effectiveWeightKg",
+]);
 
 export interface ProductFields {
   name?: string;
@@ -287,10 +290,30 @@ export const productInclude = {
 
 type ProductWithRelations = Prisma.ProductGetPayload<{ include: typeof productInclude }>;
 
+// În baza de date unele câmpuri bifă lipsesc la produsele mai vechi (MongoDB nu le are deloc, iar Prisma le citește ca null). Pentru cine
+// consumă API-ul, „null" nu înseamnă nimic clar — de aceea bifele ies MEREU true / false, cu aceeași semnificație ca pe site:
+//   hidden: true doar dacă produsul e ascuns din admin (lipsă / null = vizibil); warrantyEnabled: lipsă = cu garanție;
+//   recommended / isNewProduct: lipsă = nu. În plus, `visible` / `visibility` spun explicit „afișat" sau „ascuns".
+// Rămân null doar câmpurile care chiar pot lipsi (descriere, brand, poză, greutate, etichetă, cod la produsele foarte vechi).
 export function productOut(p: ProductWithRelations) {
   const tiers = normalizeTiers(p);
   const discountPercent = p.oldPrice && p.oldPrice > p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
-  return { ...p, url: `/produse/${p.slug}`, discountPercent, quantityOffers: tiers };
+  const hidden = p.hidden === true;
+  return {
+    ...p,
+    hidden,
+    visible: !hidden,
+    visibility: hidden ? "ascuns" : "afisat",
+    warrantyEnabled: p.warrantyEnabled !== false,
+    recommended: p.recommended === true,
+    isNewProduct: p.isNewProduct === true,
+    // Ce afișează site-ul: produsele vechi fără cod primesc ultimele 6 caractere ale id-ului; fără greutate se socotește 1 kg.
+    displayCode: p.code ?? p.id.slice(-6).toUpperCase(),
+    effectiveWeightKg: p.weightKg ?? 1,
+    url: `/produse/${p.slug}`,
+    discountPercent,
+    quantityOffers: tiers,
+  };
 }
 
 async function loadOut(id: string) {

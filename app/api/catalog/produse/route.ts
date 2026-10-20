@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   if (!csv || !response.ok) return response;
 
   const data = (await response.json()) as { produse: Record<string, unknown>[] };
-  const columns = ["id", "code", "slug", "name", "category", "price", "oldPrice", "discountPercent", "availability", "hidden", "brand", "packageQuantity", "weightKg", "salesCount", "image"];
+  const columns = ["id", "code", "slug", "name", "category", "price", "oldPrice", "discountPercent", "availability", "visibility", "hidden", "brand", "packageQuantity", "weightKg", "salesCount", "image"];
   const rows = data.produse.map((p) => ({ ...p, category: (p.category as { slug?: string } | null)?.slug ?? "" }));
   return csvResponse("produse.csv", columns, rows);
 }

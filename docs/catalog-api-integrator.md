@@ -61,6 +61,37 @@ Parametri (toți opționali): `q` (nume / slug / cod / brand) · `categorie` (id
 ### `GET /api/catalog/produse/{ref}`
 Un produs, cu categoria și variantele lui.
 
+### Câmpurile unui produs (ce întoarce GET)
+
+**Bifele sunt mereu `true` / `false`, niciodată `null`.** (În baza de date unele produse mai vechi nu au deloc câmpul; API-ul le
+normalizează, cu aceeași semnificație ca pe site.) Lista include **și produsele ascunse** — ca să le excluzi, folosește `?ascuns=nu`.
+
+| Câmp | Tip | Poate fi `null`? | Semnificație |
+|---|---|---|---|
+| `hidden` | bool | nu | `true` = ascuns din admin (nu apare pe site); `false` = afișat |
+| `visible` | bool | nu | invers lui `hidden` (`true` = afișat pe site) |
+| `visibility` | text | nu | `"afisat"` sau `"ascuns"` — răspunsul explicit |
+| `warrantyEnabled` | bool | nu | `true` = „Garanție 2 ani”; `false` = produs fără garanție |
+| `recommended` | bool | nu | apare în „Produse recomandate” pe prima pagină |
+| `isNewProduct` | bool | nu | apare în „Produse noi” |
+| `installmentsEnabled` | bool | nu | se poate cumpăra în rate |
+| `popupEnabled` | bool | nu | poate apărea în fereastra cu oferte |
+| `id`, `slug`, `name`, `price`, `availability`, `salesCount`, `createdAt`, `categoryId` | | nu | mereu completate |
+| `code` | text | **da** (produse foarte vechi) | cod produs salvat; `displayCode` = codul afișat pe site (la lipsă, ultimele 6 caractere ale id-ului) |
+| `displayCode` | text | nu | codul de folosit la afișare / căutare |
+| `oldPrice` | număr | da | preț vechi (reducere dacă e mai mare decât `price`); `null` = fără reducere |
+| `discountPercent` | întreg | nu | procentul reducerii calculat (0 = fără reducere) |
+| `priceTiers` / `quantityOffers` | listă | nu (poate fi goală) | oferta la cantitate: `[{ minQty, price }]` (`quantityOffers` include și vechiul prag unic `bulkMinQty`/`bulkPrice`) |
+| `bulkMinQty`, `bulkPrice` | număr | da | forma veche a ofertei la cantitate (folosește `priceTiers`) |
+| `weightKg` | număr | da | greutate pe bucată; `effectiveWeightKg` = cea folosită la livrare (lipsă → 1 kg) |
+| `description`, `brand`, `badge`, `packageQuantity`, `image` | text | da | informații opționale; `null` = necompletat în admin |
+| `images`, `specifications` | listă | nu (poate fi goală) | galeria și caracteristicile |
+| `highlight` | text | da | eticheta specială aleasă manual (`bestseller`, `popular`, `nou`, `sezon`, `util`, `none`); `null` = **automat** (site-ul o alege după vânzări, dată și categorie) |
+| `variantGroupId`, `variantLabel` | text | da | `null` = produs principal (nu variantă) |
+| `rating`, `reviewCount` | număr | nu | calculate din recenzii (0 = fără recenzii) |
+
+Dacă un câmp opțional apare `null`, înseamnă **necompletat**, nu eroare. Pentru a-l completa: `PATCH` cu valoarea dorită.
+
 ### `POST /api/catalog/produse` — creează
 Obligatoriu: `name`, `price`, `category` (id|slug). Restul sunt opționale.
 ```json
