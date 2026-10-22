@@ -96,7 +96,7 @@ function normalizeText(value: string): string {
 // Fișierele externe scriu codurile cu spații/liniuțe ("LT 6007") — le comparăm fără nimic din astea, ca să
 // "LT 6007" din fișier să potrivească "LT6007" din baza noastră (cod SAU slug — vezi buildCatalogIndex).
 function normalizeCode(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
 }
 
 function tokenize(value: string): string[] {

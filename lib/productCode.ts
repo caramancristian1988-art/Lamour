@@ -1,9 +1,10 @@
 // „Cod produs": un singur loc pentru regulile codului, ca formularul din admin, importul din Excel și API-ul de catalog să accepte
-// exact aceleași coduri. Litere și cifre, iar între grupuri se pot pune separatori: spațiu, punct, cratimă, bară (/) sau liniuță
-// jos (_) — ex. „LT-141”, „LT 141.5”, „A12/B”. Nu poate începe sau se termina cu separator.
-export const PRODUCT_CODE_RE = /^[A-Z0-9]+(?:[ ._/-]+[A-Z0-9]+)*$/;
+// exact aceleași coduri. Orice LITERE (și cu diacritice: ă, â, î, ș, ț; sau chirilice) și cifre, iar între grupuri se pot pune
+// separatori: spațiu, punct, cratimă, bară (/) sau liniuță jos (_) — ex. „LT-141”, „LMP204”, „ȘTIRE 5.2”, „A12/B”.
+// Nu poate începe sau se termina cu separator. Codul se salvează cu majuscule, deci „lmp204” și „LMP204” sunt același cod.
+export const PRODUCT_CODE_RE = /^[\p{L}\p{N}]+(?:[ ._/-]+[\p{L}\p{N}]+)*$/u;
 
-export const PRODUCT_CODE_HELP = "litere și cifre, cu spațiu, punct, cratimă, / sau _ între ele (ex. LT-141, LT 141.5)";
+export const PRODUCT_CODE_HELP = "litere (mari sau mici, și cu diacritice) și cifre, cu spațiu, punct, cratimă, / sau _ între ele (ex. LMP204, LT-141, LT 141.5)";
 
 const PRODUCT_CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 

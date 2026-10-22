@@ -201,9 +201,9 @@ export default function ProductForm({
         </p>
       </div>
       <div>
-        <AdminInput label="Cod produs" name="code" defaultValue={defaults?.code ?? ""} placeholder="lasă gol pentru cod automat (litere și cifre, cu spațiu sau punct, ex. LT 141.5)" />
+        <AdminInput label="Cod produs" name="code" defaultValue={defaults?.code ?? ""} placeholder="lasă gol pentru cod automat (litere și cifre, ex. LMP204 sau LT 141.5)" />
         <p className="text-xs text-muted-foreground mt-1.5">
-          Litere și cifre; între ele poți pune spațiu, punct, cratimă, / sau _ (ex. LMP204, LT-141 sau LT 141.5). Trebuie să fie unic — dacă lași câmpul gol, se generează unul automat.
+          Litere (mari sau mici, chiar și cu diacritice) și cifre; între ele poți pune spațiu, punct, cratimă, / sau _ (ex. LMP204, LT-141 sau LT 141.5). Trebuie să fie unic — dacă lași câmpul gol, se generează unul automat.
         </p>
       </div>
       <AdminTextarea label="Descriere" name="description" defaultValue={defaults?.description ?? ""} placeholder="Descrierea produsului..." rows={3} />
