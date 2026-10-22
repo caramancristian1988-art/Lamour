@@ -8,6 +8,7 @@ import TierQuantityPicker from "./TierQuantityPicker";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
 import { formatPrice, lineTotal, normalizeTiers, type PriceTier } from "@/lib/pricing";
+import { dominantColor, peekDominantColor, themeVars, type Hsl } from "@/lib/imageTheme";
 
 interface Props {
   slug: string;
@@ -56,6 +57,15 @@ export default function AddToCartButton({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingSlug, setPendingSlug] = useState(slug);
   const [pendingQty, setPendingQty] = useState(1);
+  // Culoarea ambalajului din poza produsului: fereastra de alegere ia aceeași culoare (mov pentru „Lamour", verde pentru un detergent …).
+  const [imageColor, setImageColor] = useState<Hsl | null>(() => peekDominantColor(image) ?? null);
+  const themeStyle = imageColor ? (themeVars(imageColor) as React.CSSProperties) : undefined;
+
+  // Culoarea se calculează din timp (când treci cu mouse-ul / atingi butonul) ca fereastra să apară deja colorată; rezultatul se ține în memorie.
+  function warmUpColor() {
+    if (!image || peekDominantColor(image) !== undefined) return;
+    void dominantColor(image);
+  }
 
   const hasVariants = Boolean(variantOptions && variantOptions.length > 1);
   const ownTiers = normalizeTiers({ priceTiers: tiers });
@@ -94,6 +104,9 @@ export default function AddToCartButton({
       e.stopPropagation();
       setPendingSlug(slug);
       setPendingQty(1);
+      const known = peekDominantColor(image);
+      if (known !== undefined) setImageColor(known);
+      else void dominantColor(image).then(setImageColor); // fereastra se deschide imediat; se colorează îndată ce poza e citită
       setPickerOpen(true);
       return;
     }
@@ -127,6 +140,9 @@ export default function AddToCartButton({
       <button
         type="button"
         onClick={handleClick}
+        onPointerEnter={warmUpColor}
+        onFocus={warmUpColor}
+        onTouchStart={warmUpColor}
         disabled={!inStock}
         key={bump}
         className={`${className} active:scale-90 transition-transform duration-150 ${bump ? "animate-bump" : ""}`}
@@ -144,7 +160,7 @@ export default function AddToCartButton({
       {(hasVariants || hasTiers) && (
         <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
           {/* Fereastră cu antet vișiniu (ca bara de sus a site-ului), conținut derulabil și buton „Adaugă” lipit jos. */}
-          <DialogContent hideClose className="max-w-md gap-0 overflow-hidden p-0">
+          <DialogContent hideClose style={themeStyle} className="max-w-md gap-0 overflow-hidden p-0">
             <div className="relative shrink-0 overflow-hidden bg-gradient-to-br from-brand-maroon-dark via-brand-maroon to-brand-maroon-dark px-6 pb-5 pt-6 text-white">
               <div aria-hidden className="pointer-events-none absolute inset-0 bg-footer-pattern opacity-[0.08]" />
               <DialogClose
