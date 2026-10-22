@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { readJsonObject, runRead, runWrite } from "@/lib/catalogApi";
+import { methodOverride, readJsonObject, runRead, runWrite } from "@/lib/catalogApi";
 import { applyOffer, getOffer } from "@/lib/catalogApiOffers";
 
 type Ctx = { params: Promise<{ ref: string }> };
@@ -37,4 +37,9 @@ export async function DELETE(request: NextRequest, { params }: Ctx) {
       refresh
     )
   );
+}
+
+// POST /api/catalog/oferte/<ref>[?_method=DELETE] — pentru clienți care știu doar GET și POST: setează oferta (ca PUT) sau, cu ?_method=DELETE, o șterge.
+export async function POST(request: NextRequest, ctx: Ctx) {
+  return methodOverride(request, "PUT") === "DELETE" ? DELETE(request, ctx) : PUT(request, ctx);
 }

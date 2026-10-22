@@ -208,7 +208,7 @@ function extractMessageTotal(message: string | null): number | null {
 
 type MessageRow = Awaited<ReturnType<typeof prisma.contactMessage.findMany>>[number];
 
-async function toRegistryOrders(rows: MessageRow[]): Promise<RegistryOrder[]> {
+export async function toRegistryOrders(rows: MessageRow[]): Promise<RegistryOrder[]> {
   // Comenzile vechi nu au prețuri salvate — le estimăm din catalogul actual (marcate "estimated").
   // Codul produsului se citește mereu din catalog (se poate edita din admin), deci căutăm toate produsele comenzilor.
   const ids = [

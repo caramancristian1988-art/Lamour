@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { readJsonObject, runRead, runWrite } from "@/lib/catalogApi";
+import { methodOverride, readJsonObject, runRead, runWrite } from "@/lib/catalogApi";
 import { deleteProduct, getProduct, updateProduct } from "@/lib/catalogApiProducts";
 
 export const maxDuration = 60;
@@ -25,4 +25,9 @@ export async function DELETE(request: NextRequest, { params }: Ctx) {
   const { ref } = await params;
   const withVariants = request.nextUrl.searchParams.get("cuVariante") === "1";
   return runWrite(request, "șterge produs", `${ref}${withVariants ? " (cu variante)" : ""}`, (refresh) => deleteProduct(ref, { withVariants }, refresh));
+}
+
+// POST /api/catalog/produse/<ref>[?_method=DELETE[&cuVariante=1]] — pentru clienți care știu doar GET și POST: modifică (ca PATCH) sau, cu ?_method=DELETE, șterge.
+export async function POST(request: NextRequest, ctx: Ctx) {
+  return methodOverride(request, "PATCH") === "DELETE" ? DELETE(request, ctx) : PATCH(request, ctx);
 }

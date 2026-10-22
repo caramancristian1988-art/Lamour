@@ -24,12 +24,12 @@ import {
   escapeHtml,
   notifyOrderStageChange,
   getSiteUrl,
-  STATUSES_REQUIRING_CONFIRMATION,
 } from "./telegram";
 import { createShipment, activatePickup, removeShipment, fetchLatestAwbStatus } from "./evsExpress";
 import { getChatIdsForRole } from "./telegramRecipients";
 import { saveOrderItemsSnapshot } from "./orderRegistry";
 import { notifyRegistryOfNewOrder } from "./registryNotify";
+import { getProductsByIds, syncTelegramMessage, syncOrderTelegramMessage, buildOrderText, parseChatMessages } from "./orderTelegramSync";
 
 export interface ContactFormState {
   error?: string;
@@ -109,15 +109,6 @@ function resolveOrderItems(
     return parsed
       .map((item) => ({ productId: bySlug.get(item.slug), quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)) }))
       .filter((item): item is { productId: string; quantity: number } => Boolean(item.productId));
-  } catch {
-    return [];
-  }
-}
-
-async function getProductsByIds(productIds: string[]): Promise<{ id: string; name: string; slug: string }[]> {
-  if (productIds.length === 0) return [];
-  try {
-    return await prisma.product.findMany({ where: { id: { in: productIds } }, select: { id: true, name: true, slug: true } });
   } catch {
     return [];
   }
@@ -233,36 +224,6 @@ export async function markMessageReadAction(formData: FormData) {
   revalidatePath("/admin/notificari");
 }
 
-async function syncTelegramMessage(updated: {
-  id: string;
-  name: string;
-  phone: string;
-  email: string | null;
-  message: string | null;
-  source: string;
-  status: string;
-  mood: string | null;
-  telegramMessageId: number | null;
-  productIds: string[];
-}) {
-  if (!updated.telegramMessageId) return;
-  const statusLabel = MESSAGE_STATUSES.find((s) => s.value === updated.status)?.label ?? updated.status;
-  const moodLabel = MOODS.find((m) => m.value === updated.mood)?.label ?? null;
-  const products = await getProductsByIds(updated.productIds);
-  const text = buildContactMessageText({
-    name: updated.name,
-    phone: updated.phone,
-    email: updated.email,
-    message: updated.message,
-    source: updated.source,
-    statusLabel,
-    moodLabel,
-    products,
-  });
-  const buttons = STATUSES_REQUIRING_CONFIRMATION.includes(updated.status) ? [] : buildMessageButtons(updated.id);
-  await editTelegramMessage(updated.telegramMessageId, text, buttons);
-}
-
 // "achitat" is the only status that represents a confirmed sale — bump each
 // linked product's counter once when it's first marked as paid, and undo it
 // if the status is later corrected away from "achitat". Shared by the admin
@@ -354,76 +315,6 @@ export async function maybeCreateEvsShipment(message: {
   }
   console.error(`evs auto-shipment eșuat pentru mesajul ${message.id}:`, result.description);
   return { ok: false, description: result.description };
-}
-
-// Re-editează mesajul din Telegram al unei comenzi (buton Editează, sau o
-// tranziție de etapă) — text + butoane potrivite etapei curente.
-async function syncOrderTelegramMessage(updated: {
-  id: string;
-  name: string;
-  phone: string;
-  email: string | null;
-  message: string | null;
-  source: string;
-  orderStage: string | null;
-  editToken: string | null;
-  telegramMessageId: number | null;
-  productIds: string[];
-  awbCode: string | null;
-  awbStatus: string | null;
-  warehouseMessages: unknown;
-  orderNumber: string | null;
-  invoiceSentAt: Date | null;
-  accountantMessages: unknown;
-  deliveryWeightKg: number | null;
-}) {
-  if (!updated.telegramMessageId) return;
-  const text = await buildOrderText(updated);
-  const editUrl = `${getSiteUrl()}/editare-comanda?token=${updated.editToken ?? ""}`;
-  const buttons =
-    updated.orderStage === "noua" || updated.orderStage === "confirmata"
-      ? buildOrderStageButtons(
-          updated.id,
-          updated.orderStage,
-          editUrl,
-          Boolean(extractInvoiceBlock(updated.message)) && !updated.invoiceSentAt,
-          buildOrderPrintUrl(updated.id, updated.editToken)
-        )
-      : [];
-  await editTelegramMessage(updated.telegramMessageId, text, buttons);
-  // Copiile din privat ale contabililor (comenzi cu factură) rămân în pas cu mesajul principal.
-  await Promise.all(
-    parseChatMessages(updated.accountantMessages).map((m) => editTelegramMessage(m.messageId, text, [], m.chatId))
-  );
-}
-
-// Același text ca în grupul principal — folosit și pentru copiile trimise contabililor.
-async function buildOrderText(order: {
-  name: string;
-  phone: string;
-  email: string | null;
-  message: string | null;
-  source: string;
-  orderStage: string | null;
-  productIds: string[];
-  awbCode: string | null;
-  awbStatus: string | null;
-  orderNumber: string | null;
-  deliveryWeightKg: number | null;
-}): Promise<string> {
-  const products = await getProductsByIds(order.productIds);
-  const stageLabel = orderStageLabel(order.orderStage);
-  return buildContactMessageText({
-    name: order.name,
-    phone: order.phone,
-    email: order.email,
-    message: order.message,
-    source: order.source,
-    statusLabel: order.awbCode ? `${stageLabel} — AWB ${order.awbCode}${order.awbStatus ? ` (${order.awbStatus})` : ""}` : stageLabel,
-    products,
-    orderNumber: order.orderNumber,
-    weightKg: order.deliveryWeightKg,
-  });
 }
 
 // Actualizează o comandă existentă prin link-ul de editare (token, fără
@@ -765,14 +656,6 @@ async function syncWarehouseMessage(order: {
     await prisma.contactMessage.update({ where: { id: order.id }, data: { warehouseMessages: delivered } });
   }
   return "ok";
-}
-
-function parseChatMessages(value: unknown): { chatId: string; messageId: number }[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter(
-    (m): m is { chatId: string; messageId: number } =>
-      typeof m?.chatId === "string" && typeof m?.messageId === "number"
-  );
 }
 
 // Comenzile cu factură pe companie: contabilul primește în privat aceeași comandă ca în grupul principal

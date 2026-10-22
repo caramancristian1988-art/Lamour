@@ -245,3 +245,19 @@ export async function runWrite<T>(
     return errorResponse(err);
   }
 }
+
+/** Cine a făcut cererea, pentru jurnalul de audit al registrului (ultimele 4 caractere ale cheii, niciodată cheia întreagă). */
+export function apiActor(request: NextRequest): { channel: "api"; id: string; name: string } {
+  const tail = providedKey(request).slice(-4);
+  return { channel: "api", id: `catalog-${tail}`, name: `API catalog (cheia …${tail})` };
+}
+
+/**
+ * Clienți care știu doar GET și POST (Excel/VBA, unele CRM-uri, formulare) pot face orice operație printr-un POST pe adresa unei resurse
+ * (`/produse/{ref}`, `/categorii/{ref}`, `/oferte/{ref}`, `/comenzi/{ref}`), cu metoda dorită în `?_method=PATCH|PUT|DELETE` sau în
+ * antetul `X-HTTP-Method-Override`. Fără ele, POST pe o resursă înseamnă modificare (PATCH; la oferte PUT).
+ */
+export function methodOverride(request: NextRequest, fallback: "PATCH" | "PUT"): "PATCH" | "PUT" | "DELETE" {
+  const raw = (request.nextUrl.searchParams.get("_method") ?? request.headers.get("x-http-method-override") ?? "").toUpperCase();
+  return raw === "DELETE" || raw === "PATCH" || raw === "PUT" ? raw : fallback;
+}

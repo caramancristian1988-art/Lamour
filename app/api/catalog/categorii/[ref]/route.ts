@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { readJsonObject, runRead, runWrite } from "@/lib/catalogApi";
+import { methodOverride, readJsonObject, runRead, runWrite } from "@/lib/catalogApi";
 import { deleteCategory, getCategory, updateCategory } from "@/lib/catalogApiCategories";
 
 export const maxDuration = 60;
@@ -30,4 +30,9 @@ export async function DELETE(request: NextRequest, { params }: Ctx) {
   return runWrite(request, "șterge categorie", `${ref}${moveTo ? ` → ${moveTo}` : ""}${cascade ? " (cascade)" : ""}`, (refresh) =>
     deleteCategory(ref, { moveTo, cascade }, refresh)
   );
+}
+
+// POST /api/catalog/categorii/<ref>[?_method=DELETE[&moveTo=…|&cascade=1]] — pentru clienți care știu doar GET și POST: modifică (ca PATCH) sau, cu ?_method=DELETE, șterge.
+export async function POST(request: NextRequest, ctx: Ctx) {
+  return methodOverride(request, "PATCH") === "DELETE" ? DELETE(request, ctx) : PATCH(request, ctx);
 }

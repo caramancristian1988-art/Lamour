@@ -1,9 +1,9 @@
 # LuminTehnica — API catalog (produse, categorii, subcategorii, oferte)
 
-*Documentație pentru integratori · versiunea 1*
+*Documentație pentru integratori · versiunea 1*, comenzi
 
 Controlezi catalogul site-ului din orice aplicație (Excel/VBA, Python, Postman, un alt site): **citire, creare, editare, ștergere**
-pentru produse, categorii, subcategorii și oferte. Orice modificare reîmprospătează automat site-ul (cache-ul catalogului și paginile
+pentru produse, categorii, subcategorii, oferte și **comenzi**. Orice modificare reîmprospătează automat site-ul (cache-ul catalogului și paginile
 atinse), deci se vede imediat — nu trebuie să aștepți.
 
 Adresa de bază: `https://lumina.md/api/catalog` · Format: JSON (UTF-8) · Toate răspunsurile sunt `Cache-Control: no-store`.
@@ -43,6 +43,10 @@ curl -H "X-API-Key: $KEY" https://lumina.md/api/catalog
 - **Coduri de răspuns:** `200` ok · `201` creat · `400` cerere goală/invalidă · `401` cheie lipsă/greșită · `403` cheie doar-citire ·
   `404` nu există · `409` conflict (slug/cod duplicat, ștergere refuzată) · `422` date invalide · `503` API neactivat.
 - Erorile au forma `{ "error": "text", "details": ["…"] }`.
+- **Doar GET și POST?** Orice operație se poate face printr-un POST pe adresa resursei (`/produse/{ref}`, `/categorii/{ref}`, `/oferte/{ref}`,
+  `/comenzi/{ref}`), cu metoda dorită în `?_method=PATCH|PUT|DELETE` sau în antetul `X-HTTP-Method-Override`. Fără ele, un POST pe o resursă
+  înseamnă **modificare** (PATCH; la oferte PUT). Exemple: `POST /produse/grebla?_method=DELETE` șterge, `POST /comenzi/1052` cu `{"stage":"confirmata"}` o confirmă.
+  Creările (`POST /produse`, `/categorii`, `/comenzi`, `/oferte`, `/produse/bulk`) și citirile (GET) funcționează direct.
 - Slug-ul se normalizează (fără diacritice/spații) și e **unic între produse ȘI categorii** (pagina `/produse/{slug}` le servește pe amândouă).
 
 ## 3. Produse
@@ -201,12 +205,88 @@ Pentru o listă de produse și / sau o categorie întreagă (cu subcategoriile),
 ```
 Răspuns: `{ total, reusite, esuate, rezultate: [ { ref, ok, error?, oferta? } ] }`.
 
-## 6. Export complet
+## 6. Comenzi
+
+O comandă = o comandă „din coș” (aceeași ca în Admin → Comenzi și în Telegram). Orice faci aici **are aceleași efecte ca atunci când o face un operator**:
+mesajul din Telegram se editează, AWB-ul EVS se creează la confirmare, depozitarul / curierul sunt anunțați, vânzările produselor cresc.
+Comenzile **nu se șterg niciodată** (fac parte din registrul permanent): `DELETE` le **arhivează**; anularea reală e `"stage": "anulata"`.
+
+### Etape și statusuri
+| Câmp | Valori | Semnificație |
+|---|---|---|
+| `stage` (etapa operațională) | `noua` · `confirmata` · `predata_curier` · `anulata` | nouă → confirmată (la pregătire, se creează AWB EVS) → gata de ridicare (curierul e chemat) · anulată (definitivă: nu mai poate fi schimbată) |
+| `status` (starea plății / contactului) | `in_asteptare` · `sunat` · `nu_raspunde` · `se_gandeste` · `programat` · `in_lucru` · `achitat` · `anulat` | `achitat` crește cu 1 vânzările produselor și încearcă AWB (dacă nu există); la revenire din `achitat` scade |
+| `extraction.status` (registrul de extragere) | `neextrasa` · `rezervata` · `extrasa` | doar citire aici; se schimbă prin API-ul de registru |
+
+**Atenție:** „gata de ridicare” (`predata_curier`) crește și el vânzările produselor. Folosește fie `stage`, fie `status: "achitat"` ca să marchezi vânzarea, nu amândouă, ca să nu se numere de două ori.
+
+### `GET /api/catalog/comenzi`
+Parametri (opționali): `etapa` · `status` · `extragere` · `arhivate=da|nu` (implicit toate) · `q` (număr, nume, telefon, email) · `de` / `pana` (AAAA-LL-ZZ sau ISO) ·
+`sortare=nou|vechi` · `pagina=1` · `perPagina=50` (max 200, sau `toate`) · `format=json|csv`.
+```json
+{ "total": 120, "pagina": 1, "perPagina": 50, "pagini": 3, "comenzi": [ {
+  "id": "…", "orderNumber": "1052", "ref": "1052", "createdAt": "2026-10-20T09:15:00Z",
+  "stage": "confirmata", "stageLabel": "Confirmată — la pregătire", "status": "in_asteptare", "statusLabel": "În așteptare", "read": true,
+  "archived": false,
+  "customer": { "name": "Ion Popescu", "phone": "069123456", "email": null },
+  "delivery": { "locality": "Chișinău", "address": "str. Test 1", "zip": "2001", "weightKg": 7.5, "codAmount": 1190, "ownDelivery": false,
+                "awbCode": "…", "awbStatus": "…", "awbCreatedAt": "…" },
+  "invoice": { "requested": false, "sentAt": null },
+  "items": [ { "name": "Greblă", "code": "LT-141", "quantity": 12, "unitPrice": 80, "lineTotal": 960, "estimated": false } ],
+  "itemCount": 15, "total": 1190, "paymentMethod": "Plată la livrare", "note": "Sunați înainte",
+  "extraction": { "status": "neextrasa", "label": "Neextrasă", "exportId": null, "extractedAt": null, "extractedBy": null },
+  "message": "textul complet al comenzii"
+} ] }
+```
+`items[].unitPrice` / `lineTotal` sunt prețurile **de la plasare**; `estimated: true` = comandă veche, fără preț salvat (estimat din catalogul actual).
+`format=csv` dă un tabel cu o linie pe comandă (produsele într-o coloană).
+
+### `GET /api/catalog/comenzi/{număr | id}`
+O comandă (ex. `/comenzi/1052`). Dacă același număr a fost setat manual pe două comenzi → `409` cu id-urile; folosește atunci id-ul.
+
+### `POST /api/catalog/comenzi` — creează o comandă
+```json
+{
+  "customer": { "name": "Ion Popescu", "phone": "069123456", "email": "ion@example.com" },
+  "items": [ { "product": "grebla-12-dinti", "quantity": 12 }, { "product": "LT-141", "quantity": 1 } ],
+  "delivery": { "locality": "Chișinău", "address": "str. Test 1", "zip": "2001", "ownDelivery": false },
+  "note": "Sunați înainte",
+  "paymentByTransfer": false,
+  "invoice": { "companyName": "SRL Exemplu", "idno": "1002600000000", "address": "…", "vat": "…" },
+  "confirm": false
+}
+```
+- `product` = slug, id sau cod produs; același produs repetat se adună. Prețul se ia **din catalog** (cu pragurile de cantitate), niciodată din cerere.
+- `customer.name` și `customer.phone` sunt obligatorii. `invoice` (opțional) cere `companyName` și `idno` și trimite automat datele contabilului.
+- `delivery.ownDelivery: true` = livrăm noi (fără curier EVS). `paymentByTransfer: true` = plătită prin transfer (fără ramburs).
+- `confirm: true` o confirmă direct (ca „Confirmă” din Telegram): depozitarul o primește și se creează AWB-ul EVS dacă are adresă și cod poștal. Implicit `false`: comanda rămâne „nouă”, pentru un operator.
+- Comanda apare în Telegram și în admin ca orice altă comandă. Răspuns `201` cu comanda completă (+ `evs` dacă s-a încercat AWB).
+- **Limită:** aceeași ca formularul public al site-ului — cel mult 15 comenzi la 10 minute de la aceeași adresă IP (`429` peste).
+
+### `PATCH /api/catalog/comenzi/{ref}` — modifică (și `POST` cu `?_method=PATCH` sau fără)
+Trimite doar ce schimbi:
+```json
+{ "stage": "confirmata" }
+{ "status": "achitat" }
+{ "orderNumber": "1052", "read": true, "archived": false }
+{ "customer": { "name": "…", "phone": "…", "email": "…" } }
+{ "delivery": { "locality": "…", "address": "…", "zip": "…", "weightKg": 7.5, "codAmount": 1190, "ownDelivery": false } }
+```
+- Datele se salvează **înainte** de schimbarea etapei, deci AWB-ul se creează din adresa și greutatea noi.
+- Rândul „Livrare: …” din textul comenzii (Telegram, fișa tipărită) urmează adresa nouă. Mesajul din Telegram se editează.
+- Dacă etapa nu poate fi aplicată (ex. comandă anulată, sau EVS refuză ridicarea) → `409` cu motivul; celelalte modificări trimise rămân salvate.
+- Răspunsul conține comanda actualizată și, când s-a încercat un AWB, `evs: { ok, description }`.
+- **Produsele** unei comenzi nu se pot schimba prin API (ca să nu se strice prețurile salvate): anulează comanda și creeaz-o pe cea corectă.
+
+### `DELETE /api/catalog/comenzi/{ref}` (sau `POST …?_method=DELETE`)
+Arhivează comanda (dispare din lista `arhivate=nu`, rămâne în registru și în exporturi). Se reia cu `PATCH { "archived": false }`.
+
+## 7. Export complet
 
 `GET /api/catalog/export` → `{ exportatLa, categorii: [arbore], produse: [toate, inclusiv ascunse], totalProduse }`. Folosește-l ca **copie de siguranță**
 înainte de operații mari (`cascade`, oferte în masă).
 
-## 7. Exemple
+## 8. Exemple
 
 **curl**
 ```bash
@@ -223,6 +303,13 @@ curl -X PATCH "$B/produse/grebla-12-dinti" -H "X-API-Key: $KEY" -H "Content-Type
 # −20% la toată categoria
 curl -X POST "$B/oferte" -H "X-API-Key: $KEY" -H "Content-Type: application/json" \
   -d '{"categorie":"greble","procent":20}'
+
+# creează o comandă
+curl -X POST "$B/comenzi" -H "X-API-Key: $KEY" -H "Content-Type: application/json" \
+  -d '{"customer":{"name":"Ion","phone":"069123456"},"items":[{"product":"grebla-12-dinti","quantity":2}]}'
+
+# confirmă comanda 1052 (doar GET/POST disponibile: POST direct = modificare)
+curl -X POST "$B/comenzi/1052" -H "X-API-Key: $KEY" -H "Content-Type: application/json" -d '{"stage":"confirmata"}'
 
 # tabel CSV cu toate produsele
 curl -H "X-API-Key: $KEY" "$B/produse?perPagina=toate&format=csv" -o produse.csv
@@ -251,8 +338,9 @@ End Function
 ```
 (Textul JSON în VBA se citește cu un parser JSON, ex. VBA-JSON; pentru un tabel simplu folosește `format=csv` și Power Query.)
 
-## 8. Ce NU face
+## 9. Ce NU face
 
 - Nu setează `rating` / `reviewCount` (vin din recenzii) și nu atinge recenziile.
+- Nu schimbă produsele unei comenzi existente și nu șterge definitiv comenzi (se arhivează / se anulează).
 - Nu încarcă poze: `image` / `images` primesc adrese (URL) — pozele se încarcă separat (din admin) și se pun aici ca adresă.
 - Nu e tranzacțional în operațiile în masă: dacă o cerere cade la mijloc, ce s-a făcut până atunci rămâne făcut (răspunsul spune ce a reușit).

@@ -17,6 +17,8 @@ export async function GET(request: NextRequest) {
         "GET/POST /api/catalog/categorii",
         "GET/PATCH/DELETE /api/catalog/categorii/{id|slug}",
         "GET/POST /api/catalog/oferte",
+        "GET/POST /api/catalog/comenzi",
+        "GET/PATCH/DELETE /api/catalog/comenzi/{număr|id}  (și POST ?_method=PATCH|DELETE)",
         "GET/PUT/DELETE /api/catalog/oferte/{id|slug|cod}",
         "GET /api/catalog/export",
       ],
