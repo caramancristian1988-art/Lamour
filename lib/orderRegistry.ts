@@ -50,6 +50,8 @@ export interface Scope {
 }
 
 export interface RegistryItem {
+  /** Id-ul produsului din catalog (pentru legarea de produs în sisteme externe, ex. CRM); null dacă nu se mai știe. */
+  productId: string | null;
   name: string;
   /** Codul produsului („Cod produs” din admin); null dacă produsul a fost șters din catalog. */
   code: string | null;
@@ -232,14 +234,14 @@ export async function toRegistryOrders(rows: MessageRow[]): Promise<RegistryOrde
         const p = productId ? byId.get(productId) : undefined;
         const { productId: _omit, ...rest } = s;
         void _omit;
-        return { ...rest, code: p ? (p.code ?? p.id.slice(-6).toUpperCase()) : null, estimated: false };
+        return { productId, ...rest, code: p ? (p.code ?? p.id.slice(-6).toUpperCase()) : null, estimated: false };
       });
     } else {
       items = readStoredItems(r.orderItems).map((it) => {
         const p = byId.get(it.productId);
-        if (!p) return { name: "Produs șters", code: null, quantity: it.quantity, unitPrice: null, lineTotal: null, estimated: true };
+        if (!p) return { productId: it.productId, name: "Produs șters", code: null, quantity: it.quantity, unitPrice: null, lineTotal: null, estimated: true };
         const unitPrice = unitPriceFor(p.price, normalizeTiers(p), it.quantity);
-        return { name: p.name, code: p.code ?? p.id.slice(-6).toUpperCase(), quantity: it.quantity, unitPrice, lineTotal: Math.round(unitPrice * it.quantity * 100) / 100, estimated: true };
+        return { productId: p.id, name: p.name, code: p.code ?? p.id.slice(-6).toUpperCase(), quantity: it.quantity, unitPrice, lineTotal: Math.round(unitPrice * it.quantity * 100) / 100, estimated: true };
       });
     }
 

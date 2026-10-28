@@ -8,6 +8,7 @@ import { MESSAGE_STATUSES } from "./messageStatuses";
 import { MOODS } from "./moods";
 import { ORDER_STAGES, CART_ORDER_SOURCE, orderStageLabel, type OrderStage } from "./orderStages";
 import { nextOrderNumber } from "./orderNumber";
+import { attachOrderToNumber, noteManualOrderNumber } from "./orderNumberRegistry";
 import { allowRequest, getClientIp, TOO_MANY_REQUESTS } from "./rateLimit";
 import { isValidCourierEmail } from "./deliveryValidation";
 import { computeOrderWeightKg } from "./orderWeight";
@@ -196,6 +197,7 @@ export async function submitContactMessageAction(
   if (telegramMessageId) {
     await prisma.contactMessage.update({ where: { id: created.id }, data: { telegramMessageId } });
   }
+  if (orderNumber) await attachOrderToNumber(orderNumber, created.id);
 
   // Registrul: prețul fiecărui produs se păstrează așa cum era la plasare, iar grupul registrului primește
   // anunțul accesibil. Ambele sunt best-effort — nu pot opri o comandă deja salvată.
@@ -722,6 +724,7 @@ export async function updateOrderNumberAction(formData: FormData) {
   const orderNumber = String(formData.get("orderNumber") ?? "").trim();
   if (!id) return;
   const updated = await prisma.contactMessage.update({ where: { id }, data: { orderNumber: orderNumber || null } });
+  await noteManualOrderNumber(orderNumber, id);
   await syncOrderTelegramMessage(updated);
   revalidatePath("/admin/mesaje");
 }

@@ -1,13 +1,9 @@
-import { prisma } from "./prisma";
+import { allocateSiteOrderNumber } from "./orderNumberRegistry";
 
-const COUNTER_NAME = "order";
-
-/** Următorul număr de comandă, alocat atomic (Counter.value incrementat pe MongoDB). */
+/**
+ * Următorul număr de comandă, alocat atomic prin registrul COMUN cu CRM-ul (lib/orderNumberRegistry.ts): același allocator și același index
+ * unic ca la rezervările CRM-ului, deci site-ul și CRM-ul nu pot da niciodată același număr.
+ */
 export async function nextOrderNumber(): Promise<string> {
-  const counter = await prisma.counter.upsert({
-    where: { name: COUNTER_NAME },
-    update: { value: { increment: 1 } },
-    create: { name: COUNTER_NAME, value: 1 },
-  });
-  return String(counter.value);
+  return allocateSiteOrderNumber();
 }

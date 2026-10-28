@@ -21,6 +21,8 @@ export async function GET(request: NextRequest) {
         "GET/PATCH/DELETE /api/catalog/comenzi/{număr|id}  (și POST ?_method=PATCH|DELETE)",
         "GET/PUT/DELETE /api/catalog/oferte/{id|slug|cod}",
         "GET /api/catalog/export",
+        "POST /api/catalog/numere-comenzi/rezerva  ·  POST /api/catalog/numere-comenzi/inregistreaza-istoric  (registru comun cu CRM)",
+        "GET /api/catalog/sync  ·  GET|POST /api/catalog/sync/dispatch  ·  POST /api/catalog/sync/resync  ·  POST /api/catalog/sync/retry  (notificări către CRM)",
       ],
     });
   });

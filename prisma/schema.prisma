@@ -468,3 +468,62 @@ model Session {
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
+// ── Registrul COMUN al numerelor de comandă (site + CRM) ──
+// Aceeași alocare atomică (Counter "order") și același index unic pe `number` pentru comenzile site-ului, rezervările CRM-ului și numerele
+// istorice. Numerele nu expiră și nu se reciclează (o comandă abandonată lasă un gol). Vezi lib/orderNumberRegistry.ts.
+model OrderNumberRegistry {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  // Textul numărului, exact ca la comandă („1003", „LT-00001002"); unic în tot registrul.
+  number        String   @unique
+  // site | crm | crm-istoric | site-istoric | manual
+  source        String
+  // Identitatea cererii (idempotență): „crm" + requestId-ul CRM-ului, sau o valoare derivată pentru numerele alocate de site / istorice.
+  requestId     String
+  reservationId String
+  // Comanda de pe site căreia i-a fost atribuit numărul (după crearea ei), dacă e cazul.
+  orderId       String?  @db.ObjectId
+  createdAt     DateTime @default(now())
+
+  @@unique([source, requestId])
+}
+
+// ── Coada de notificări site → CRM (outbox persistent) ──
+// Vezi lib/siteSync*.ts. Un rând = un eveniment de trimis; trăiește în baza de date, deci supraviețuiește repornirilor / redeploy-urilor.
+model SiteSyncOutbox {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  eventId       String    @unique
+  // Contor global, monoton (Counter "siteSyncSequence"); comparat de CRM separat pentru fiecare comandă / produs / arborele de categorii.
+  sequence      Int       @unique
+  // order.upsert | product.upsert | product.delete | categories.replace
+  type          String
+  // „order:<id>" | „product:<id>" | „categories" — unește evenimentele aceleiași entități.
+  entityKey     String
+  entityId      String?
+  // pending | sent | failed (invalid permanent — nu se mai reîncearcă) 
+  status        String    @default("pending")
+  // Corpul JSON exact care se trimite (înghețat la prima încercare: o reluare păstrează același eventId și aceiași octeți).
+  // Gol („") = se construiește chiar acum din starea curentă a entității.
+  body          String?
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @default(now())
+  lastError     String?
+  lastHttpStatus Int?
+  createdAt     DateTime  @default(now())
+  sentAt        DateTime?
+
+  @@index([status, sequence])
+  @@index([entityKey, status])
+}
+
+// Starea dispecerului (un singur rând, „outbox"): lease ca două instanțe să nu trimită simultan + ultimele rezultate pentru monitorizare.
+model SiteSyncState {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String    @unique
+  leaseUntil     DateTime?
+  leaseOwner     String?
+  lastSuccessAt  DateTime?
+  lastAttemptAt  DateTime?
+  lastError      String?
+  lastHttpStatus Int?
+}

@@ -12,6 +12,7 @@ import { advanceOrderStageReport, applySalesCountForStatusChange, maybeCreateEvs
 import { syncOrderTelegramMessage } from "./orderTelegramSync";
 import { parseCartOrderMessage } from "./orderMessage";
 import { TOO_MANY_REQUESTS } from "./rateLimit";
+import { noteManualOrderNumber } from "./orderNumberRegistry";
 import { bad, findProductByRef, good, parsePositiveInt, type ApiResult } from "./catalogApi";
 
 type Row = Prisma.ContactMessageGetPayload<object>;
@@ -353,6 +354,7 @@ export async function updateOrder(ref: string, body: Record<string, unknown>, ac
   // 1) date (înainte de etapă: la confirmare, AWB-ul se creează din adresa și greutatea de acum)
   if (Object.keys(data).length > 0) {
     const updated = await prisma.contactMessage.update({ where: { id: row.id }, data });
+    if (typeof data.orderNumber === "string") await noteManualOrderNumber(data.orderNumber, row.id);
     if (touchedTelegram) await syncOrderTelegramMessage(updated);
   }
 

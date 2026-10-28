@@ -261,3 +261,14 @@ export function methodOverride(request: NextRequest, fallback: "PATCH" | "PUT"):
   const raw = (request.nextUrl.searchParams.get("_method") ?? request.headers.get("x-http-method-override") ?? "").toUpperCase();
   return raw === "DELETE" || raw === "PATCH" || raw === "PUT" ? raw : fallback;
 }
+
+/**
+ * Pornirea dispecerului de notificări: acceptă fie cheia completă a catalogului, fie secretul programatorului periodic al platformei
+ * (Vercel Cron trimite `Authorization: Bearer $CRON_SECRET`; orice alt serviciu de „ping" poate face la fel).
+ */
+export function authorizeSyncDispatch(request: NextRequest): NextResponse | null {
+  const secret = (process.env.CRON_SECRET ?? "").trim();
+  const bearer = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+  if (secret.length >= 16 && bearer && sameKey(bearer, secret)) return null;
+  return authorizeCatalogApi(request, "write");
+}
